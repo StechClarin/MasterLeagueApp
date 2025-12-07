@@ -29,6 +29,9 @@ export const GET_ALL_ROLES = gql`
     roles {
       id
       name
+      permissions {
+        id
+      }
     }
   }
 `;

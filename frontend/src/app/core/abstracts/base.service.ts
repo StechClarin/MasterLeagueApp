@@ -24,6 +24,14 @@ export abstract class BaseService {
     }
 
     /**
+     * Generic Get by ID
+     * GET /api/{endpoint}/{id}/
+     */
+    get_by_id(id: number | string): Observable<any> {
+        return this.http.get(`${this.apiUrl}/${id}/`);
+    }
+
+    /**
      * Generic Upsert (Create or Update)
      * POST /api/{endpoint}/save/
      */
