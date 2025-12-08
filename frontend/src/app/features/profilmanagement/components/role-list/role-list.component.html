@@ -97,6 +97,14 @@
                                     </button>
 
                                     <div menu class="flex items-center gap-1">
+                                        <button (click)="onDetails(role)"
+                                            class="p-2 text-blue-500 hover:text-blue-700 transition-colors"
+                                            title="Détails">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </button>
                                         <button (click)="onEdit(role)"
                                             class="p-2 text-gray-500 hover:text-indigo-600 transition-colors"
                                             title="Modifier">
@@ -138,6 +146,33 @@
 
     </ng-container>
 
+
+    <!-- Details Modal -->
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() === 'detail'" (close)="closeModal()">
+        <div class="p-6 bg-white rounded-xl shadow-xl max-w-2xl mx-auto">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Détails du Rôle: {{ selectedRole()?.name }}</h3>
+            
+            <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+                <div *ngIf="!selectedRole()?.permissions?.length" class="text-gray-500 italic">
+                    Aucune permission associée.
+                </div>
+
+                <div *ngIf="selectedRole()?.permissions?.length">
+                    <h4 class="font-semibold text-gray-700 mb-2">Permissions associées:</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span *ngFor="let perm of selectedRole()?.permissions" 
+                              class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
+                            {{ perm.name }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button (click)="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Fermer</button>
+            </div>
+        </div>
+    </app-ui-modal>
 
     <!-- Delete Modal -->
     <app-ui-modal [isOpen]="isModalOpen() && modalMode() === 'delete'" (close)="closeModal()">

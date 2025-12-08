@@ -2,10 +2,10 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 // Trigger rebuild
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseListComponent } from '@core/abstracts/base-list.component';
 import { RoleService } from '../../services/role.service';
-import { GET_ALL_ROLES } from '../../graphql/user.queries';
+// import { GET_ALL_ROLES } from '../../graphql/user.queries'; // REMOVED
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
@@ -19,29 +19,33 @@ import { ToastService } from '@core/services/toast.service';
 })
 export class RoleListComponent extends BaseListComponent<any> implements OnInit {
 
-    query = GET_ALL_ROLES;
+    // query = GET_ALL_ROLES; // REMOVED
+    query = inject(RoleService).getQuery(); // Dynamic Query
     responseKey = 'roles';
 
     public service = inject(RoleService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     // toastService inherited from BaseListComponent is protected, so we can use it.
 
     searchControl = new FormControl('');
 
     // Modal State
     isModalOpen = signal(false);
-    modalMode = signal<'delete'>('delete');
+    modalMode = signal<'delete' | 'detail'>('delete');
     selectedRole = signal<any>(null);
 
     // Dropdown State
     activeMenuId = signal<number | null>(null);
 
     override ngOnInit(): void {
+        console.error('[RoleListComponent] Initializing...');
         super.ngOnInit();
 
         // Simple search filter (local filtering could be done if backend doesn't support it, 
         // but BaseListComponent sends it to query. If query ignores it, we're fine).
         this.searchControl.valueChanges.subscribe(val => {
+            console.log('[RoleListComponent] Search:', val);
             this.filterForm.patchValue({ name: val });
             this.refresh();
         });
@@ -56,7 +60,14 @@ export class RoleListComponent extends BaseListComponent<any> implements OnInit 
     // Actions
     onEdit(role: any) {
         this.closeMenu();
-        this.router.navigate(['/profils/roles/edit', role.id]);
+        this.router.navigate(['edit', role.id], { relativeTo: this.route });
+    }
+
+    onDetails(role: any) {
+        this.closeMenu();
+        this.selectedRole.set(role);
+        this.modalMode.set('detail');
+        this.isModalOpen.set(true);
     }
 
     onDelete(role: any) {

@@ -7,11 +7,12 @@ import { map, take, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/o
 
 import { BaseListComponent } from '@core/abstracts/base-list.component';
 import { User } from '../../models/user.model';
-import { GET_ALL_USERS, GET_ALL_ROLES } from '../../graphql/user.queries';
+// import { GET_ALL_ROLES } from '../../graphql/user.queries'; // REMOVED
 import { UserActions, selectUserFilters } from '../../store/user/user.store';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { UserDetailComponent } from '../user-detail/user-detail.component';
 import { UserService } from '../../services/user.service';
+import { RoleService } from '../../services/role.service';
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { ToastService } from '@core/services/toast.service';
 import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
@@ -34,7 +35,8 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
     this.destroy$.complete();
   }
 
-  query = GET_ALL_USERS;
+  // query = GET_ALL_USERS; // REMOVED
+  query = inject(UserService).getQuery(); // Dynamic Query
   responseKey = 'users';
 
   private store = inject(Store);
@@ -90,6 +92,7 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
   }
 
   public service = inject(UserService); // Public pour être accessible par le template si besoin
+  private roleService = inject(RoleService); // Injected here for use in ngOnInit
   // private toastService = inject(ToastService); // Déjà dans BaseListComponent
 
   onSeeMore(user: User) {
@@ -226,19 +229,22 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
 
     // Charger les rôles pour le filtre
     this.roles$ = this.apollo.watchQuery<any>({
-      query: GET_ALL_ROLES
+      query: this.roleService.getQuery()
     }).valueChanges.pipe(
       map(result => result.data.roles)
     );
 
     // 1. Restauration des filtres depuis le Store (AVANT d'initialiser la query)
+    console.log('[UserListComponent] Waiting for filters...');
     this.store.select(selectUserFilters).pipe(take(1)).subscribe(filters => {
+      console.log('[UserListComponent] Filters received:', filters);
       if (filters && Object.keys(filters).length > 0) {
         console.log("⚡ Filtres restaurés:", filters);
         this.filterForm.patchValue(filters, { emitEvent: false });
       }
 
       // 2. Initialisation de la requête (QueryRef) une fois les filtres appliqués
+      console.log('[UserListComponent] Initializing query...');
       this.initQuery();
     });
 

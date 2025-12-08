@@ -39,6 +39,7 @@ export abstract class BaseListComponent<T> implements OnInit {
   }
 
   protected initQuery(): void {
+    console.log('[BaseListComponent] initQuery called with query:', this.query);
     this.queryRef = this.apollo.watchQuery({
       query: this.query,
       variables: {
