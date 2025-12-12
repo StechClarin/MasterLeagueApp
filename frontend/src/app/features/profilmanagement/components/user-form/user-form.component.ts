@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
+import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UserService } from '../../services/user.service';
 import { GET_ALL_ROLES } from '../../graphql/role.queries';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
@@ -15,102 +16,81 @@ import { CustomValidators } from '@core/validators/custom-validators';
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UiInputComponent],
+  imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent],
   template: `
-    <div class="bg-white rounded-xl shadow-xl border border-gray-200 max-w-2xl mx-auto">
-      
-      <div class="p-6 border-b border-gray-100">
-        <h2 class="text-xl font-bold text-gray-800">{{ user ? 'Modifier l\\'Utilisateur' : 'Nouvel Utilisateur' }}</h2>
+    <app-ui-form
+      [title]="user ? 'Modifier l\\'Utilisateur' : 'Nouvel Utilisateur'"
+      [formGroup]="form"
+      [isLoading]="isSubmitting"
+      [errorMessage]="errorMessage"
+      [submitLabel]="user ? 'Modifier' : 'Créer'"
+      (submitForm)="onSubmit()"
+      (cancel)="onCancel()">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        
+        <app-ui-input
+          label="Nom d'utilisateur"
+          [control]="form.controls.username"
+          [required]="true"
+          placeholder="ex: jdupont"
+        ></app-ui-input>
+
+        <app-ui-input
+          label="Email professionnel"
+          type="email"
+          [control]="form.controls.email"
+          [required]="true"
+          placeholder="jean.dupont@company.com"
+        ></app-ui-input>
+
       </div>
 
-      <div class="p-6">
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <app-ui-input
-              label="Nom d'utilisateur"
-              [control]="form.controls.username"
-              [required]="true"
-              placeholder="ex: jdupont"
-            ></app-ui-input>
-
-            <app-ui-input
-              label="Email professionnel"
-              type="email"
-              [control]="form.controls.email"
-              [required]="true"
-              placeholder="jean.dupont@company.com"
-            ></app-ui-input>
-
+      <!-- Sélection du Rôle -->
+      <div class="mb-6">
+        <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">
+          Rôle <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <select
+            id="role"
+            formControlName="role"
+            class="block w-full pl-4 pr-10 py-3 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer shadow-sm"
+          >
+            <option [ngValue]="null" disabled>Sélectionnez un rôle</option>
+            <option *ngFor="let role of roles$ | async" [ngValue]="role.id">
+              {{ role.name }}
+            </option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
           </div>
-
-          <!-- Sélection du Rôle -->
-          <div class="mb-4">
-            <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
-              Rôle <span class="text-red-500">*</span>
-            </label>
-            <select
-              id="role"
-              formControlName="role"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option [ngValue]="null" disabled>Sélectionnez un rôle</option>
-              <option *ngFor="let role of roles$ | async" [ngValue]="role.id">
-                {{ role.name }}
-              </option>
-            </select>
-            <div *ngIf="form.controls.role.invalid && (form.controls.role.dirty || form.controls.role.touched)" class="text-red-600 text-sm mt-1">
-              Le rôle est requis.
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <app-ui-input
-                label="Mot de passe"
-                type="password"
-                [control]="form.controls.password"
-                [required]="!user"
-              ></app-ui-input>
-
-              <app-ui-input
-                label="Confirmation"
-                type="password"
-                [control]="form.controls.password2"
-                [required]="!user"
-                errorMessage="Les mots de passe ne correspondent pas."
-              ></app-ui-input>
-          </div>
-
-          <!-- Message d'erreur global -->
-          <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-            {{ errorMessage }}
-          </div>
-
-          <div class="flex justify-end mt-6 pt-4 border-t border-gray-100">
-            <button 
-              type="button" 
-              (click)="onCancel()"
-              class="mr-3 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-              Annuler
-            </button>
-            
-            <button 
-              type="submit" 
-              [disabled]="form.invalid || isSubmitting"
-              class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md flex items-center">
-              <span *ngIf="isSubmitting" class="mr-2">
-                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </span>
-              {{ user ? 'Modifier' : 'Créer' }} l'utilisateur
-            </button>
-          </div>
-        </form>
+        </div>
+        <div *ngIf="form.controls.role.invalid && (form.controls.role.dirty || form.controls.role.touched)" class="text-red-500 text-xs mt-1.5 ml-1 font-medium">
+          Le rôle est requis.
+        </div>
       </div>
-    </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <app-ui-input
+            label="Mot de passe"
+            type="password"
+            [control]="form.controls.password"
+            [required]="!user"
+          ></app-ui-input>
+
+          <app-ui-input
+            label="Confirmation"
+            type="password"
+            [control]="form.controls.password2"
+            [required]="!user"
+            errorMessage="Les mots de passe ne correspondent pas."
+          ></app-ui-input>
+      </div>
+
+    </app-ui-form>
   `
 })
 export class UserFormComponent extends BaseFormComponent implements OnInit, OnChanges {

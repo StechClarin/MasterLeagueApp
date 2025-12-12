@@ -1,22 +1,24 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RoleService } from '../../services/role.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '@core/services/toast.service';
+import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 
 @Component({
     selector: 'app-role-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [CommonModule, ReactiveFormsModule, UiFormComponent],
     templateUrl: './role-form.component.html'
 })
-export class RoleFormComponent implements OnInit {
+export class RoleFormComponent implements OnInit, OnChanges {
     fb = inject(FormBuilder);
     roleService = inject(RoleService);
-    route = inject(ActivatedRoute);
-    router = inject(Router);
     toast = inject(ToastService);
+
+    @Input() role: any | null = null;
+    @Output() cancel = new EventEmitter<void>();
+    @Output() success = new EventEmitter<void>();
 
     form: FormGroup;
     isEditMode = false;
@@ -38,14 +40,28 @@ export class RoleFormComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadPermissions();
+        this.initForm();
+    }
 
-        this.route.params.subscribe(params => {
-            if (params['id']) {
-                this.isEditMode = true;
-                this.roleId = +params['id'];
-                this.loadRole(this.roleId);
-            }
-        });
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['role']) {
+            this.initForm();
+        }
+    }
+
+    initForm() {
+        if (this.role) {
+            this.isEditMode = true;
+            this.roleId = this.role.id;
+            this.form.patchValue({ name: this.role.name });
+            // role.permissions est une liste d'objets, on veut les IDs
+            this.selectedPermissions = this.role.permissions ? this.role.permissions.map((p: any) => p.id) : [];
+        } else {
+            this.isEditMode = false;
+            this.roleId = null;
+            this.form.reset();
+            this.selectedPermissions = [];
+        }
     }
 
     loadPermissions() {
@@ -72,19 +88,7 @@ export class RoleFormComponent implements OnInit {
         }));
     }
 
-    loadRole(id: number) {
-        this.roleService.get_by_id(id).subscribe({
-            next: (role: any) => {
-                this.form.patchValue({ name: role.name });
-                // role.permissions est une liste d'IDs (grâce au Serializer)
-                this.selectedPermissions = role.permissions || [];
-            },
-            error: (err: any) => {
-                this.toast.error('Impossible de charger le rôle');
-                this.router.navigate(['/profils/roles']); // Redirection si erreur
-            }
-        });
-    }
+    // loadRole removed as we use Input now
 
     togglePermission(permId: number, event: any) {
         const checked = event.target.checked;
@@ -113,8 +117,8 @@ export class RoleFormComponent implements OnInit {
 
         request$.subscribe({
             next: () => {
-                this.toast.success(`Rôle ${this.isEditMode ? 'modifié' : 'créé'} avec succès`);
-                this.router.navigate(['/profils/roles']); // Retour liste (à adapter)
+                // this.toast.success(`Rôle ${this.isEditMode ? 'modifié' : 'créé'} avec succès`); // Handled by parent
+                this.success.emit();
             },
             error: (err) => {
                 console.error(err);

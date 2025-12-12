@@ -1,55 +1,51 @@
-<div class="p-6 bg-white rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-4">{{ isEditMode ? 'Modifier' : 'Créer' }} un Rôle</h2>
+<app-ui-form
+    [title]="isEditMode ? 'Modifier le Rôle' : 'Créer un Rôle'"
+    [formGroup]="form"
+    [submitLabel]="isEditMode ? 'Modifier' : 'Créer'"
+    (submitForm)="save()"
+    (cancel)="cancel.emit()">
 
-    <form [formGroup]="form" (ngSubmit)="save()">
-
-        <!-- Nom du Rôle -->
-        <div class="mb-6">
-            <label for="name" class="block text-gray-700 font-medium mb-2">Nom du Rôle</label>
-            <input type="text" id="name" formControlName="name"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                [class.border-red-500]="form.get('name')?.invalid && form.get('name')?.touched"
-                placeholder="Ex: Gestionnaire RH">
-            <div *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="text-red-500 text-sm mt-1">
-                Le nom est requis (min 3 chars).
-            </div>
+    <!-- Nom du Rôle -->
+    <div class="mb-8">
+        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Nom du Rôle</label>
+        <input type="text" id="name" formControlName="name"
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+            [class.border-red-500]="form.get('name')?.invalid && form.get('name')?.touched"
+            placeholder="Ex: Gestionnaire RH">
+        <div *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="text-red-500 text-xs mt-1.5 ml-1 font-medium">
+            Le nom est requis (min 3 chars).
         </div>
+    </div>
 
-        <!-- Permissions Groupées -->
-        <div class="mb-8">
-            <h3 class="text-xl font-semibold mb-4 text-gray-800">Permissions</h3>
+    <!-- Permissions Groupées -->
+    <div class="mb-2">
+        <h3 class="text-lg font-bold mb-6 text-gray-800 flex items-center">
+            <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg mr-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11.542 17H11v2H9v2H7v2H5a2 2 0 01-2-2v-6l-3.172-3.172a6 6 0 015.743-7.744A6 6 0 0115 7z"></path></svg>
+            </span>
+            Permissions
+        </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div *ngFor="let group of permissionGroups" class="border rounded-lg p-4 bg-gray-50">
-                    <h4 class="font-bold text-lg mb-3 capitalize border-b pb-2 text-indigo-700">
-                        {{ group.tag }}
-                    </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div *ngFor="let group of permissionGroups" class="border border-gray-200 rounded-xl p-5 bg-gray-50/50 hover:bg-white hover:shadow-md transition-all duration-300">
+                <h4 class="font-bold text-sm uppercase tracking-wider mb-4 pb-2 border-b border-gray-200 text-indigo-600">
+                    {{ group.tag }}
+                </h4>
 
-                    <div class="space-y-2">
-                        <div *ngFor="let perm of group.permissions" class="flex items-center">
+                <div class="space-y-3">
+                    <div *ngFor="let perm of group.permissions" class="flex items-start">
+                        <div class="flex items-center h-5">
                             <input type="checkbox" [id]="'perm-' + perm.id" [checked]="isPermissionSelected(perm.id)"
                                 (change)="togglePermission(perm.id, $event)"
-                                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                            <label [for]="'perm-' + perm.id" class="ml-2 text-gray-700 text-sm cursor-pointer">
-                                {{ perm.name }}
-                            </label>
+                                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer transition-all">
                         </div>
+                        <label [for]="'perm-' + perm.id" class="ml-3 text-sm text-gray-600 cursor-pointer select-none hover:text-gray-900 transition-colors">
+                            {{ perm.name }}
+                        </label>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Actions -->
-        <div class="flex justify-end gap-4">
-            <button type="button" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-                (click)="router.navigate(['/profils/roles'])">
-                Annuler
-            </button>
-            <button type="submit" [disabled]="form.invalid"
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                Enregistrer
-            </button>
-        </div>
-
-    </form>
-</div>
+</app-ui-form>

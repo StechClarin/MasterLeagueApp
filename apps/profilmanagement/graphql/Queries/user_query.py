@@ -22,19 +22,30 @@ class UserQuery(graphene.ObjectType):
     user = graphene.Field(UserType, id=graphene.Int())
 
     @staticmethod
-    def resolve_users(root, info, username=None, email=None, role=None, page=1, page_size=10, **kwargs):
-        queryset = User.objects.all().order_by('-date_joined')
-
-        if username:
-            queryset = queryset.filter(username__icontains=username)
+    def resolve_users(root, info, **kwargs):
+        # On instancie le service
+        from ...services.user_service import UserService
+        service = UserService()
         
-        if email:
-            queryset = queryset.filter(email__icontains=email)
+        # Construction des filtres avec les bons lookups (icontains)
+        filters = {}
+        if kwargs.get('username'):
+            filters['username__icontains'] = kwargs['username']
+        if kwargs.get('email'):
+            filters['email__icontains'] = kwargs['email']
+        if kwargs.get('role'):
+            filters['roles__name__iexact'] = kwargs['role']
 
-        if role:
-            # Filtrage par nom de rôle (relation ManyToMany)
-            queryset = queryset.filter(roles__name__iexact=role)
+        # On délègue le filtrage au service
+        queryset = service.list(filters=filters)
+        
+        # On gère le tri par défaut
+        queryset = queryset.order_by('-date_joined')
 
+        # Pagination
+        page = kwargs.get('page', 1)
+        page_size = kwargs.get('page_size', 10)
+        
         paginator = Paginator(queryset, page_size)
         
         try:
@@ -52,7 +63,9 @@ class UserQuery(graphene.ObjectType):
 
     @staticmethod
     def resolve_user(root, info, id):
+        from ...services.user_service import UserService
+        service = UserService()
         try:
-            return User.objects.get(pk=id)
-        except User.DoesNotExist:
+            return service.get_by_id(id)
+        except Exception:
             return None

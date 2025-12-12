@@ -7,13 +7,20 @@ class RoleQuery(graphene.ObjectType):
     roles = graphene.List(RoleType, name=graphene.String(required=False))
 
     def resolve_role(root, info, id):
+        from ...services.role_service import RoleService
+        service = RoleService()
         try:
-            return Role.objects.get(pk=id)
-        except Role.DoesNotExist:
+            return service.get_by_id(id)
+        except Exception:
             return None
 
     def resolve_roles(root, info, name=None, **kwargs):
-        queryset = Role.objects.all()
+        from ...services.role_service import RoleService
+        service = RoleService()
+        
+        # Le service attend un dictionnaire de filtres
+        filters = {}
         if name:
-            queryset = queryset.filter(name__icontains=name)
-        return queryset
+            filters['name__icontains'] = name
+            
+        return service.list(filters=filters)

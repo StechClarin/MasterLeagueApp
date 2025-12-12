@@ -25,6 +25,20 @@ MODULE_STRUCTURE = [
                 "link": "/roles",
                 "tags": ["role",]
             },
+            {
+                "title": "Personne",
+                "icon": "person-icon",
+                "order": 3,
+                "link": "/personnes",
+                "tags": ["personne"]
+            },
+            {
+                "title": "Ecole",
+                "icon": "school-icon",
+                "order": 4,
+                "link": "/ecoles",
+                "tags": ["ecole"]
+            }
         ]
     },
     # --- AJOUTE TES AUTRES MODULES ICI ---

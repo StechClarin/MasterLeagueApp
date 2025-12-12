@@ -1,204 +1,166 @@
-<div class="p-6 min-h-screen bg-gray-50/50 space-y-8" (click)="closeMenu()">
+<app-ui-list-page 
+  title="Rôles" 
+  description="Gérez les rôles et leurs permissions."
+  [isLoading]="isLoading()"
+  [isEmpty]="!isLoading() && (!items$ || (items$ | async)?.length === 0)">
 
-    <!-- Header -->
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div>
-            <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight font-sans">Rôles</h2>
-            <p class="text-sm text-gray-500 mt-1 font-medium">Gérez les rôles et leurs permissions.</p>
-        </div>
+  <!-- Header Actions -->
+  <ng-container header-actions>
+    <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher un rôle...">
+      <button (click)="openModal()"
+          class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center font-medium text-sm">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Nouveau Rôle
+      </button>
+    </app-ui-toolbar>
+  </ng-container>
 
-        <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <!-- Search -->
-            <div class="relative group flex-grow sm:flex-grow-0 min-w-[300px]">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
-                <input type="text" [formControl]="searchControl" placeholder="Rechercher un rôle..."
-                    class="block w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm hover:border-gray-300" />
-            </div>
+  <!-- Filters / Toolbar -->
+  <ng-container filters>
+      <div class="flex justify-end">
+          <button (click)="openExportModal()"
+              class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
+              <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Exporter
+          </button>
+      </div>
+  </ng-container>
 
-            <!-- Add Button -->
-            <a routerLink="/profils/roles/new"
-                class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center font-medium text-sm">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+  <!-- Table -->
+  <ng-container table>
+      <app-ui-table 
+        [data]="(items$ | async) || []" 
+        [columns]="tableColumns"
+        [actionsTemplate]="actionsCell">
+      </app-ui-table>
+
+      <!-- Custom Column Templates -->
+      <ng-template #permissionsCell let-role>
+        <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+            {{ role.permissions?.length || 0 }} permissions
+        </span>
+      </ng-template>
+
+      <ng-template #actionsCell let-role>
+        <app-ui-dropdown [isOpen]="activeMenuId() === role.id" direction="horizontal"
+            (isOpenChange)="$event ? toggleMenu(role.id) : closeMenu()">
+
+            <button trigger
+                class="bg-gray-100 text-gray-600 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
-                Nouveau Rôle
-            </a>
-        </div>
-    </div>
+            </button>
 
-    <!-- Export Toolbar (Simplified) -->
-    <div class="flex justify-end">
-        <button (click)="openExportModal()"
-            class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
-            <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Exporter
-        </button>
-    </div>
-
-    <!-- List Content -->
-    <ng-container *ngIf="{ roles: items$ | async } as data">
-
-        <!-- Loading State -->
-        <div *ngIf="isLoading()"
-            class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4 animate-pulse">
-            <div class="h-12 bg-gray-100 rounded-lg w-full" *ngFor="let i of [1,2,3]"></div>
-        </div>
-
-        <!-- Table -->
-        <div *ngIf="!isLoading()"
-            class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all hover:shadow-md">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100 border-b-2 border-gray-200">
-                        <tr>
-                            <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nom
-                                du Rôle</th>
-                            <th scope="col"
-                                class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                                Permissions</th>
-                            <th scope="col" class="relative px-6 py-4"><span class="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        <tr *ngFor="let role of data.roles || []" class="hover:bg-indigo-50/30 transition-colors group">
-
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-gray-900">{{ role.name }}</div>
-                            </td>
-
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span
-                                    class="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                                    {{ role.permissions?.length || 0 }} permissions
-                                </span>
-                            </td>
-
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
-                                <app-ui-dropdown [isOpen]="activeMenuId() === role.id" direction="horizontal"
-                                    (isOpenChange)="$event ? toggleMenu(role.id) : closeMenu()">
-
-                                    <button trigger
-                                        class="bg-gray-100 text-gray-600 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200 transition-colors">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 6h16M4 12h16M4 18h16"></path>
-                                        </svg>
-                                    </button>
-
-                                    <div menu class="flex items-center gap-1">
-                                        <button (click)="onDetails(role)"
-                                            class="p-2 text-blue-500 hover:text-blue-700 transition-colors"
-                                            title="Détails">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </button>
-                                        <button (click)="onEdit(role)"
-                                            class="p-2 text-gray-500 hover:text-indigo-600 transition-colors"
-                                            title="Modifier">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                                </path>
-                                            </svg>
-                                        </button>
-                                        <button (click)="onDelete(role)"
-                                            class="p-2 text-red-500 hover:text-red-700 transition-colors"
-                                            title="Supprimer">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                                </path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </app-ui-dropdown>
-                            </td>
-
-                        </tr>
-                    </tbody>
-                </table>
+            <div menu class="flex items-center gap-1">
+                <button (click)="onDetails(role)"
+                    class="p-2 text-blue-500 hover:text-blue-700 transition-colors"
+                    title="Détails">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </button>
+                <button (click)="onEdit(role)"
+                    class="p-2 text-gray-500 hover:text-indigo-600 transition-colors"
+                    title="Modifier">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                        </path>
+                    </svg>
+                </button>
+                <button (click)="onDelete(role)"
+                    class="p-2 text-red-500 hover:text-red-700 transition-colors"
+                    title="Supprimer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </button>
             </div>
+        </app-ui-dropdown>
+      </ng-template>
+  </ng-container>
 
-            <!-- Empty State -->
-            <div *ngIf="!isLoading() && (!data.roles || data.roles.length === 0)" class="text-center py-10">
-                <p class="text-gray-500">Aucun rôle trouvé.</p>
-            </div>
+  <!-- Empty Actions -->
+  <ng-container empty-actions>
+      <p class="text-gray-500">Aucun rôle trouvé.</p>
+  </ng-container>
 
-        </div>
+  <!-- Pagination -->
+  <ng-container pagination>
+    <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
+      [numPages]="numPages()" (prev)="prevPage()" (next)="nextPage()"
+      (goTo)="goToPage($event)"></app-ui-pagination>
+  </ng-container>
 
-        <!-- Pagination -->
-        <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
-            [numPages]="numPages()" (prev)="prevPage()" (next)="nextPage()"
-            (goTo)="goToPage($event)"></app-ui-pagination>
+  <!-- Modals -->
+  <ng-container modals>
+      <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+          <ng-container [ngSwitch]="modalMode()">
+  
+              <!-- Mode Détail -->
+              <div *ngSwitchCase="'detail'" class="p-6 bg-white rounded-xl shadow-xl max-w-2xl mx-auto">
+                  <h3 class="text-xl font-bold text-gray-900 mb-4">Détails du Rôle: {{ selectedItem()?.name }}</h3>
+                  
+                  <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+                      <div *ngIf="!selectedItem()?.permissions?.length" class="text-gray-500 italic">
+                          Aucune permission associée.
+                      </div>
+  
+                      <div *ngIf="selectedItem()?.permissions?.length">
+                          <h4 class="font-semibold text-gray-700 mb-2">Permissions associées:</h4>
+                          <div class="flex flex-wrap gap-2">
+                              <span *ngFor="let perm of selectedItem()?.permissions" 
+                                    class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
+                                  {{ perm.name }}
+                              </span>
+                          </div>
+                      </div>
+                  </div>
+  
+                  <div class="mt-6 flex justify-end">
+                      <button (click)="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Fermer</button>
+                  </div>
+              </div>
+  
+              <!-- Mode Suppression -->
+              <app-ui-confirm-modal *ngSwitchCase="'delete'"
+                  title="Confirmer la suppression"
+                  [message]="'Voulez-vous vraiment supprimer le rôle \'' + selectedItem()?.name + '\' ?'"
+                  confirmLabel="Supprimer"
+                  cancelLabel="Annuler"
+                  type="danger"
+                  (confirm)="confirmDelete()"
+                  (cancel)="closeModal()">
+              </app-ui-confirm-modal>
+  
+              <!-- Mode Création / Édition -->
+              <app-role-form *ngSwitchDefault 
+                  [role]="selectedItem()" 
+                  (cancel)="closeModal()"
+                  (success)="onSave()">
+              </app-role-form>
+  
+          </ng-container>
+      </app-ui-modal>
+  
+      <!-- Export Modal -->
+      <app-ui-export-modal 
+        [isOpen]="showExportModal()" 
+        [isExporting]="isExporting()"
+        (close)="closeExportModal()"
+        (confirm)="confirmExport($event)">
+      </app-ui-export-modal>
+  </ng-container>
 
-    </ng-container>
-
-
-    <!-- Details Modal -->
-    <app-ui-modal [isOpen]="isModalOpen() && modalMode() === 'detail'" (close)="closeModal()">
-        <div class="p-6 bg-white rounded-xl shadow-xl max-w-2xl mx-auto">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Détails du Rôle: {{ selectedRole()?.name }}</h3>
-            
-            <div class="space-y-4 max-h-[60vh] overflow-y-auto">
-                <div *ngIf="!selectedRole()?.permissions?.length" class="text-gray-500 italic">
-                    Aucune permission associée.
-                </div>
-
-                <div *ngIf="selectedRole()?.permissions?.length">
-                    <h4 class="font-semibold text-gray-700 mb-2">Permissions associées:</h4>
-                    <div class="flex flex-wrap gap-2">
-                        <span *ngFor="let perm of selectedRole()?.permissions" 
-                              class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
-                            {{ perm.name }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <button (click)="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Fermer</button>
-            </div>
-        </div>
-    </app-ui-modal>
-
-    <!-- Delete Modal -->
-    <app-ui-modal [isOpen]="isModalOpen() && modalMode() === 'delete'" (close)="closeModal()">
-        <div class="p-6 bg-white rounded-xl shadow-xl max-w-md mx-auto text-center">
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Confirmer la suppression</h3>
-            <p class="text-gray-500 mb-6">Voulez-vous vraiment supprimer le rôle "{{ selectedRole()?.name }}" ?</p>
-            <div class="flex justify-center gap-4">
-                <button (click)="closeModal()"
-                    class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Annuler</button>
-                <button (click)="confirmDelete()"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Supprimer</button>
-            </div>
-        </div>
-    </app-ui-modal>
-
-    <!-- Export Modal -->
-    <app-ui-modal [isOpen]="showExportModal()" (close)="closeExportModal()">
-        <div class="p-6 bg-white rounded-xl shadow-xl max-w-md mx-auto text-center">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Format d'Export</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <button (click)="confirmExport('excel')"
-                    class="p-4 border rounded hover:bg-green-50 text-green-700 border-green-200">Excel</button>
-                <button (click)="confirmExport('pdf')"
-                    class="p-4 border rounded hover:bg-red-50 text-red-700 border-red-200">PDF</button>
-            </div>
-        </div>
-    </app-ui-modal>
-
-</div>
+</app-ui-list-page>

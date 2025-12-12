@@ -16,15 +16,16 @@ import { UiToastComponent } from '@shared/components/ui-toast/ui-toast.component
     <div class="flex h-screen bg-slate-50 overflow-hidden">
       <app-ui-toast></app-ui-toast>
       
-      <!-- Sidebar -->
+      <!-- Sidebar (Fixed) -->
       <app-sidebar></app-sidebar>
 
-      <div class="pl-72 flex flex-col min-h-screen transition-all duration-300">
+      <!-- Main Content Wrapper (Scrollable) -->
+      <div class="ml-72 flex-1 flex flex-col h-screen overflow-y-auto overflow-x-hidden transition-all duration-300">
         
         <app-header></app-header>
 
-        <main class="flex-1 pt-24 px-8 pb-8 overflow-x-hidden">
-          <div class="max-w-7xl mx-auto">
+        <main class="flex-1 pt-24 pb-8">
+          <div class="w-full">
             <router-outlet></router-outlet>
           </div>
         </main>

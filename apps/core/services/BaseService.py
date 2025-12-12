@@ -123,6 +123,14 @@ class BaseService:
 
     # ... (imports et début de classe inchangés)
 
+    def get_queryset_for_export(self):
+        """
+        [HOOK] Retourne le queryset utilisé pour l'export.
+        À surcharger pour optimiser avec select_related() ou prefetch_related().
+        Par défaut : self.model.objects.all()
+        """
+        return self.model.objects.all()
+
     def export_data(self, format_type='csv'):
         """
         Génère un fichier (CSV/Excel) contenant les données.
@@ -151,8 +159,8 @@ class BaseService:
             header_mapping = {f: f for f in fields_to_query}
 
         # 2. Requête optimisée
-        # On utilise .values() avec les chemins Django (ex: role__name)
-        queryset = self.model.objects.all().values(*fields_to_query)
+        # On utilise le hook pour permettre les optimisations (select_related)
+        queryset = self.get_queryset_for_export().values(*fields_to_query)
         
         # 3. Renommage des clés (Mapping)
         # On transforme [{'username': 'toto', 'role__name': 'Admin'}]
@@ -173,21 +181,40 @@ class BaseService:
             return ExportFile.to_excel(data_list, filename)
         return ExportFile.to_csv(data_list, filename)
 
-    def relation_in_import(self, field_name, value, config):
+    def relation_in_import(self, field_name, value, config, cache=None):
         """
         Helper pour résoudre une clé étrangère lors de l'import.
         Ex: Transforme "Manager" en l'objet Role(id=5).
+        Utilise un cache local pour éviter les requêtes répétitives (N+1).
         """
         if not value:
             return None
             
+        value_str = str(value).strip()
+        value_key = value_str.lower() # Clé de cache normalisée (insensible à la casse)
+
+        # 1. Vérification du cache
+        if cache is not None:
+            if field_name not in cache:
+                cache[field_name] = {}
+            
+            if value_key in cache[field_name]:
+                return cache[field_name][value_key]
+
         related_model = config.get('model')
         search_field = config.get('search_field', 'name')
         
         try:
             # Recherche insensible à la casse (iexact)
-            query = {f"{search_field}__iexact": str(value).strip()}
-            return related_model.objects.get(**query)
+            query = {f"{search_field}__iexact": value_str}
+            obj = related_model.objects.get(**query)
+
+            # 2. Mise en cache
+            if cache is not None:
+                cache[field_name][value_key] = obj
+            
+            return obj
+
         except related_model.DoesNotExist:
             raise ValueError(f"Le {field_name} '{value}' n'existe pas.")
         except Exception as e:
@@ -215,6 +242,9 @@ class BaseService:
                 else:
                     simple_fields.add(field)
         
+        # Cache local pour toute la durée de l'import
+        relation_cache = {}
+
         try:
             with transaction.atomic():
                 for index, row in enumerate(raw_data):
@@ -227,10 +257,10 @@ class BaseService:
                             if not self.import_fields or key in simple_fields:
                                 data_to_save[key] = value
                             
-                            # Cas 2 : Relation configurée (Résolution auto)
+                            # Cas 2 : Relation configurée (Résolution auto avec Cache)
                             elif key in relation_configs:
                                 config = relation_configs[key]
-                                data_to_save[key] = self.relation_in_import(key, value, config)
+                                data_to_save[key] = self.relation_in_import(key, value, config, relation_cache)
 
                         # Appel au flux de sauvegarde complet (Hooks inclus !)
                         self.save(data_to_save, instance=None)
