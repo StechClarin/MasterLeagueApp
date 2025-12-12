@@ -74,6 +74,29 @@ export type EcoleType = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type EvenementPaginatedType = {
+  __typename?: 'EvenementPaginatedType';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<EvenementType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type EvenementType = {
+  __typename?: 'EvenementType';
+  createdAt: Scalars['DateTime']['output'];
+  dateDebut: Scalars['DateTime']['output'];
+  dateFin: Scalars['DateTime']['output'];
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  lieu: Scalars['String']['output'];
+  nom: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 export type ModuleType = {
   __typename?: 'ModuleType';
   /** ex: card-view, list-view */
@@ -161,6 +184,8 @@ export type Query = {
   contacts?: Maybe<Array<Maybe<ContactType>>>;
   ecole?: Maybe<EcoleType>;
   ecoles?: Maybe<EcolePaginatedType>;
+  evenement?: Maybe<EvenementType>;
+  evenements?: Maybe<EvenementPaginatedType>;
   modules?: Maybe<Array<Maybe<ModuleType>>>;
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
   personne?: Maybe<PersonneType>;
@@ -171,6 +196,8 @@ export type Query = {
   roles?: Maybe<Array<Maybe<RoleType>>>;
   user?: Maybe<UserType>;
   users?: Maybe<UserPaginatedType>;
+  voiture?: Maybe<VoitureType>;
+  voitures?: Maybe<VoiturePaginatedType>;
 };
 
 
@@ -199,6 +226,18 @@ export type QueryEcolesArgs = {
   nom?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryEvenementArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryEvenementsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -242,6 +281,18 @@ export type QueryUsersArgs = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+
+export type QueryVoitureArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryVoituresArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type RoleType = {
   __typename?: 'RoleType';
   id: Scalars['ID']['output'];
@@ -273,6 +324,25 @@ export type UserType = {
   lastName: Scalars['String']['output'];
   roles: Array<RoleType>;
   username: Scalars['String']['output'];
+};
+
+export type VoiturePaginatedType = {
+  __typename?: 'VoiturePaginatedType';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<VoitureType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type VoitureType = {
+  __typename?: 'VoitureType';
+  couleur: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  matricule: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type UserFieldsFragment = { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> };
@@ -356,6 +426,42 @@ export type GetEcoleByIdQueryVariables = Exact<{
 
 export type GetEcoleByIdQuery = { __typename?: 'Query', ecole?: { __typename?: 'EcoleType', id: string, nom: string, adresse?: string | null, createdAt: any, updatedAt: any } | null };
 
+export type VoitureItemFragment = { __typename?: 'VoitureType', id: string, name: string, couleur: string, matricule: string, createdAt: any, updatedAt: any };
+
+export type GetAllVoituresQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllVoituresQuery = { __typename?: 'Query', voitures?: { __typename?: 'VoiturePaginatedType', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'VoitureType', id: string, name: string, couleur: string, matricule: string, createdAt: any, updatedAt: any } | null> | null } | null };
+
+export type GetVoitureByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetVoitureByIdQuery = { __typename?: 'Query', voiture?: { __typename?: 'VoitureType', id: string, name: string, couleur: string, matricule: string, createdAt: any, updatedAt: any } | null };
+
+export type EvenementItemFragment = { __typename?: 'EvenementType', id: string, nom: string, lieu: string, dateDebut: any, dateFin: any, createdAt: any, updatedAt: any };
+
+export type GetAllEvenementsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllEvenementsQuery = { __typename?: 'Query', evenements?: { __typename?: 'EvenementPaginatedType', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EvenementType', id: string, nom: string, lieu: string, dateDebut: any, dateFin: any, createdAt: any, updatedAt: any } | null> | null } | null };
+
+export type GetEvenementByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetEvenementByIdQuery = { __typename?: 'Query', evenement?: { __typename?: 'EvenementType', id: string, nom: string, lieu: string, dateDebut: any, dateFin: any, createdAt: any, updatedAt: any } | null };
+
 export const UserFieldsFragmentDoc = gql`
     fragment UserFields on UserType {
   id
@@ -422,6 +528,27 @@ export const EcoleItemFragmentDoc = gql`
   id
   nom
   adresse
+  createdAt
+  updatedAt
+}
+    `;
+export const VoitureItemFragmentDoc = gql`
+    fragment VoitureItem on VoitureType {
+  id
+  name
+  couleur
+  matricule
+  createdAt
+  updatedAt
+}
+    `;
+export const EvenementItemFragmentDoc = gql`
+    fragment EvenementItem on EvenementType {
+  id
+  nom
+  lieu
+  dateDebut
+  dateFin
   createdAt
   updatedAt
 }
@@ -610,6 +737,88 @@ export const GetEcoleByIdDocument = gql`
   })
   export class GetEcoleByIdGQL extends Apollo.Query<GetEcoleByIdQuery, GetEcoleByIdQueryVariables> {
     document = GetEcoleByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllVoituresDocument = gql`
+    query GetAllVoitures($search: String, $page: Int, $pageSize: Int) {
+  voitures(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...VoitureItem
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    ${VoitureItemFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllVoituresGQL extends Apollo.Query<GetAllVoituresQuery, GetAllVoituresQueryVariables> {
+    document = GetAllVoituresDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetVoitureByIdDocument = gql`
+    query GetVoitureById($id: ID!) {
+  voiture(id: $id) {
+    ...VoitureItem
+  }
+}
+    ${VoitureItemFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetVoitureByIdGQL extends Apollo.Query<GetVoitureByIdQuery, GetVoitureByIdQueryVariables> {
+    document = GetVoitureByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllEvenementsDocument = gql`
+    query GetAllEvenements($search: String, $page: Int, $pageSize: Int) {
+  evenements(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...EvenementItem
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    ${EvenementItemFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllEvenementsGQL extends Apollo.Query<GetAllEvenementsQuery, GetAllEvenementsQueryVariables> {
+    document = GetAllEvenementsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetEvenementByIdDocument = gql`
+    query GetEvenementById($id: ID!) {
+  evenement(id: $id) {
+    ...EvenementItem
+  }
+}
+    ${EvenementItemFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetEvenementByIdGQL extends Apollo.Query<GetEvenementByIdQuery, GetEvenementByIdQueryVariables> {
+    document = GetEvenementByIdDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

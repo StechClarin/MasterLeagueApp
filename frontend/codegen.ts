@@ -2,7 +2,15 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
     overwrite: true,
-    schema: "http://localhost:8000/graphql/",
+    schema: [
+        {
+            "http://127.0.0.1:8000/graphql/": {
+                headers: {
+                    Authorization: `Bearer ${process.env['JWT_TOKEN']}`
+                }
+            }
+        }
+    ],
     documents: "src/**/*.graphql",
     generates: {
         "src/app/graphql/generated.ts": {

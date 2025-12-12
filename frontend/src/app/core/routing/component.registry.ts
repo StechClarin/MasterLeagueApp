@@ -11,6 +11,8 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/personnes': () => import('../../features/profilmanagement/components/personne-list/personne-list.component').then(m => m.PersonneListComponent),
   '/ecoles': () => import('../../features/profilmanagement/components/ecole-list/ecole-list.component').then(m => m.EcoleListComponent),
   '/products': () => import('../../features/products/components/product-list/product-list.component').then(m => m.ProductListComponent),
+  '/voitures': () => import('../../features/profilmanagement/components/voiture-list/voiture-list.component').then(m => m.VoitureListComponent),
+  '/evenements': () => import('../../features/profilmanagement/components/evenement-list/evenement-list.component').then(m => m.EvenementListComponent),
 
   // Ajoute tes futurs modules ici...
 };

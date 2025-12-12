@@ -5,3 +5,5 @@ from .contact_serializer import ContactSerializer
 from .ecole_serializer import EcoleSerializer
 
 __all__ = ['PersonneSerializer', 'ContactSerializer', 'EcoleSerializer']
+from .voiture_serializer import VoitureSerializer
+from .evenement_serializer import EvenementSerializer

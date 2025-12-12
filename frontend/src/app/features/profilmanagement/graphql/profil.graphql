@@ -161,3 +161,64 @@ query GetEcoleById($id: ID!) {
     ...EcoleItem
   }
 }
+
+# ==============================================================================
+# VOITURE QUERIES
+# ==============================================================================
+
+fragment VoitureItem on VoitureType {
+  id
+  name
+  couleur
+  matricule
+  createdAt
+  updatedAt
+}
+
+query GetAllVoitures($search: String, $page: Int, $pageSize: Int) {
+  voitures(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...VoitureItem
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetVoitureById($id: ID!) {
+  voiture(id: $id) {
+    ...VoitureItem
+  }
+}
+
+# ==============================================================================
+# EVENEMENT QUERIES
+# ==============================================================================
+
+fragment EvenementItem on EvenementType {
+  id
+  nom
+  lieu
+  dateDebut
+  dateFin
+  createdAt
+  updatedAt
+}
+
+query GetAllEvenements($search: String, $page: Int, $pageSize: Int) {
+  evenements(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...EvenementItem
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetEvenementById($id: ID!) {
+  evenement(id: $id) {
+    ...EvenementItem
+  }
+}

@@ -1,0 +1,29 @@
+<app-ui-list-page title="Gestion des Voitures" description="Consultez et gérez la flotte de véhicules."
+    [isLoading]="isLoading()" [isEmpty]="!isLoading() && (!items$ || (items$ | async)?.length === 0)">
+
+    <!-- Header Actions -->
+    <ng-container header-actions>
+        <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher (nom, matricule)...">
+            <button (click)="refresh()"
+                class="px-4 py-2 bg-indigo-600 text-white rounded transition hover:bg-indigo-700">
+                Rafraîchir
+            </button>
+        </app-ui-toolbar>
+    </ng-container>
+
+    <!-- Table -->
+    <ng-container table>
+        <app-ui-table [data]="(items$ | async) || []" [columns]="tableColumns">
+        </app-ui-table>
+    </ng-container>
+
+    <!-- Pagination -->
+    <ng-container pagination>
+        <div class="mt-2">
+            <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
+                [numPages]="numPages()" (prev)="prevPage()" (next)="nextPage()" (goTo)="goToPage($event)">
+            </app-ui-pagination>
+        </div>
+    </ng-container>
+
+</app-ui-list-page>

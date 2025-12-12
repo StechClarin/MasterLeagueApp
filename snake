@@ -28,7 +28,7 @@ case "$COMMAND" in
     config-server)
         echo "--- Configuration du serveur (automigrate) ---"
         python3 manage.py craft automigrate
-        python3 manage.py craft seed:all
+        "$0" seed:all
         ;;
 
     help)

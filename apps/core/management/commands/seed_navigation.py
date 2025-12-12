@@ -38,6 +38,20 @@ MODULE_STRUCTURE = [
                 "order": 4,
                 "link": "/ecoles",
                 "tags": ["ecole"]
+            },
+            {
+                "title": "Voiture",
+                "icon": "car-icon",
+                "order": 5,
+                "link": "/voitures",
+                "tags": ["voiture"]
+            },
+            {
+                "title": "Evénement",
+                "icon": "calendar-icon",
+                "order": 6,
+                "link": "/evenements",
+                "tags": ["evenement"]
             }
         ]
     },

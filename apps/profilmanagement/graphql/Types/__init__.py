@@ -5,3 +5,5 @@ from .contact_type import ContactType
 from .ecole_type import EcoleType
 
 __all__ = ['PersonneType', 'ContactType', 'EcoleType']
+from .voiture_type import VoitureType
+from .evenement_type import EvenementType

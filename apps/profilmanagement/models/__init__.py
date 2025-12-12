@@ -6,3 +6,5 @@ from .contact import Contact
 from .ecole import Ecole
 
 __all__ = ['Personne', 'Contact', 'Ecole']
+from .voiture import Voiture
+from .evenement import Evenement
