@@ -19,6 +19,9 @@
       ],
       "@env/*": [
         "src/environments/*"
+      ],
+      "@app/*": [
+        "src/app/*"
       ]
     },
     "outDir": "./dist/out-tsc",

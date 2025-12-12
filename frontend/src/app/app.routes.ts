@@ -34,6 +34,12 @@ export const routes: Routes = [
         loadChildren: () => import('@features/products/products.routes').then(m => m.PRODUCTS_ROUTES)
       },
 
+      // 3. Module Profils (Lazy Loading de ROUTES via alias)
+      {
+        path: 'profils/roles',
+        loadChildren: () => import('@features/profilmanagement/profil.routes').then(m => m.PROFIL_ROUTES)
+      },
+
     ]
   },
 

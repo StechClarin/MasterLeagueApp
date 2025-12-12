@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -145,6 +145,8 @@ export class SidebarComponent implements OnInit {
   loading = true;
   expandedModules: Record<string, boolean> = {};
 
+  private router = inject(Router);
+
   ngOnInit() {
     this.modules$ = this.apollo.watchQuery<any>({
       query: GET_SIDEBAR_MODULES
@@ -152,10 +154,17 @@ export class SidebarComponent implements OnInit {
       tap(() => this.loading = false),
       map(result => {
         const modules = result.data.modules;
-        // Optionnel : Ouvrir le premier module par défaut
-        if (modules.length > 0 && Object.keys(this.expandedModules).length === 0) {
-          // this.expandedModules[modules[0].id] = true; 
+
+        // Auto-expand module based on current route
+        if (modules) {
+          const currentUrl = this.router.url;
+          modules.forEach((module: SidebarModule) => {
+            if (module.pages.some(page => currentUrl.includes(page.link))) {
+              this.expandedModules[module.id] = true;
+            }
+          });
         }
+
         return modules;
       })
     );

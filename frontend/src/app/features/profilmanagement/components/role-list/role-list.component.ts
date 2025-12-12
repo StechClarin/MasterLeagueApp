@@ -1,120 +1,63 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-// Trigger rebuild
+import { Component, OnInit, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
-import { BaseListComponent } from '@core/abstracts/base-list.component';
+import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { RoleService } from '../../services/role.service';
-// import { GET_ALL_ROLES } from '../../graphql/user.queries'; // REMOVED
-import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
+import { UiListPageComponent } from '@shared/components/ui-list-page/ui-list-page.component';
+import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
+import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.component';
+import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
+import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
-import { ToastService } from '@core/services/toast.service';
+import { RoleFormComponent } from '../role-form/role-form.component';
+import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component'; // Assuming UiModalComponent is needed and imported somewhere else, or it's a typo in the original imports. I'll keep it as it was in the original imports.
 
 @Component({
     selector: 'app-role-list',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, UiModalComponent, UiPaginationComponent, UiDropdownComponent],
+    imports: [CommonModule, ReactiveFormsModule, UiPaginationComponent, UiDropdownComponent, UiModalComponent, RoleFormComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiConfirmModalComponent, UiTableComponent],
     templateUrl: './role-list.component.html'
 })
-export class RoleListComponent extends BaseListComponent<any> implements OnInit {
+export class RoleListComponent extends BaseModalListComponent<any> implements OnInit, AfterViewInit {
 
-    // query = GET_ALL_ROLES; // REMOVED
     query = inject(RoleService).getQuery(); // Dynamic Query
     responseKey = 'roles';
 
     public service = inject(RoleService);
-    private router = inject(Router);
-    private route = inject(ActivatedRoute);
-    // toastService inherited from BaseListComponent is protected, so we can use it.
 
     searchControl = new FormControl('');
 
-    // Modal State
-    isModalOpen = signal(false);
-    modalMode = signal<'delete' | 'detail'>('delete');
-    selectedRole = signal<any>(null);
-
-    // Dropdown State
-    activeMenuId = signal<number | null>(null);
-
     override ngOnInit(): void {
-        console.error('[RoleListComponent] Initializing...');
         super.ngOnInit();
 
-        // Simple search filter (local filtering could be done if backend doesn't support it, 
-        // but BaseListComponent sends it to query. If query ignores it, we're fine).
         this.searchControl.valueChanges.subscribe(val => {
-            console.log('[RoleListComponent] Search:', val);
             this.filterForm.patchValue({ name: val });
             this.refresh();
         });
     }
 
+    @ViewChild('permissionsCell') permissionsCell!: TemplateRef<any>;
+    @ViewChild('actionsCell') actionsCell!: TemplateRef<any>;
+
+    tableColumns: UiTableColumn[] = [];
+
     initFilterForm(): FormGroup {
         return this.fb.group({
-            name: [''] // Paramètre 'name' pour le filtrage éventuel
+            name: ['']
         });
     }
 
-    // Actions
-    onEdit(role: any) {
-        this.closeMenu();
-        this.router.navigate(['edit', role.id], { relativeTo: this.route });
-    }
+    private cdr = inject(ChangeDetectorRef);
 
-    onDetails(role: any) {
-        this.closeMenu();
-        this.selectedRole.set(role);
-        this.modalMode.set('detail');
-        this.isModalOpen.set(true);
-    }
-
-    onDelete(role: any) {
-        this.closeMenu();
-        this.selectedRole.set(role);
-        this.modalMode.set('delete');
-        this.isModalOpen.set(true);
-    }
-
-    confirmDelete() {
-        const role = this.selectedRole();
-        if (!role) return;
-
-        this.service.delete(role.id).subscribe({
-            next: () => {
-                this.refresh();
-                this.closeModal();
-                this.toastService.success(`Rôle "${role.name}" supprimé avec succès.`);
-            },
-            error: (err) => {
-                console.error('Erreur suppression role', err);
-                this.toastService.error('Impossible de supprimer ce rôle.');
-            }
+    ngAfterViewInit() {
+        setTimeout(() => {
+            this.tableColumns = [
+                { header: 'Nom du Rôle', key: 'name', className: 'font-semibold text-gray-900' },
+                { header: 'Permissions', template: this.permissionsCell }
+            ];
+            this.cdr.detectChanges();
         });
-    }
-
-    // UI Helpers
-    openModal() {
-        this.isModalOpen.set(true);
-    }
-
-    closeModal() {
-        this.isModalOpen.set(false);
-        this.selectedRole.set(null);
-    }
-
-    toggleMenu(roleId: number, event?: Event) {
-        if (event) event.stopPropagation();
-        if (this.activeMenuId() === roleId) {
-            this.closeMenu();
-        } else {
-            this.activeMenuId.set(roleId);
-        }
-    }
-
-    closeMenu() {
-        this.activeMenuId.set(null);
     }
 
     protected override getExportConfig() {

@@ -2,6 +2,8 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 class GraphQLController(GraphQLView):
     """
@@ -22,6 +24,8 @@ class GraphQLController(GraphQLView):
         # 2. SÉCURITÉ (Le Garde du Corps)
         # Pour toute requête de données (POST), l'utilisateur DOIT être identifié.
         # (Notre JWTMiddleware a déjà rempli request.user si le token était bon)
+        authentication_classes = [JWTAuthentication]
+        permission_classes = [IsAuthenticated]
         if not request.user.is_authenticated:
             return JsonResponse(
                 {"errors": [{"message": "Authentification requise (Token invalide ou absent)."}]}, 

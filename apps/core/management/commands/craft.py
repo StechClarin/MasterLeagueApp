@@ -74,6 +74,9 @@ class Command(BaseCommand):
         fr = sub.add_parser('fresh', help='Reset des migrations')
         fr.add_argument('app_name', type=str)
 
+        # Alias pour standard migrate
+        mg = sub.add_parser('migrate', help='Applique les migrations (wrapper django migrate)')
+
     def _check_dependencies(self):
         try:
             import rest_framework
@@ -326,4 +329,9 @@ class {model_name}Query(graphene.ObjectType):
             call_command('makemigrations', app_name_simple)
             call_command('migrate', app_name_simple)
             self.stdout.write(self.style.SUCCESS(f"✔ Fresh migrations OK."))
+            return
+
+        if cmd == 'migrate':
+            call_command('migrate')
+            self.stdout.write(self.style.SUCCESS("✔ Migrations appliquées."))
             return

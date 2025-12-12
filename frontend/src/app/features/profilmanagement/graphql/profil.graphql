@@ -1,0 +1,163 @@
+# ==============================================================================
+# FRAGMENTS (DRY)
+# ==============================================================================
+
+fragment UserFields on UserType {
+  id
+  username
+  email
+  firstName
+  lastName
+  isActive
+  dateJoined
+  roles {
+    id
+    name
+  }
+}
+
+fragment RoleFields on RoleType {
+  id
+  name
+  permissions {
+    id
+    name
+    codename
+  }
+}
+
+fragment PermissionFields on PermissionType {
+  id
+  name
+  codename
+  tag
+}
+
+fragment PersonneItem on PersonneType {
+  id
+  nom
+  prenom
+  age
+  nationalite
+  genre
+  taille
+  poid
+  createdAt
+  updatedAt
+}
+
+fragment ContactItem on ContactType {
+  id
+  telephone
+  email
+  adresse
+  personne {
+    id
+    nom
+    prenom
+  }
+}
+
+# ==============================================================================
+# USER QUERIES
+# ==============================================================================
+
+query GetAllUsers($username: String, $email: String, $role: String, $page: Int, $pageSize: Int) {
+  users(username: $username, email: $email, role: $role, page: $page, pageSize: $pageSize) {
+    items {
+      ...UserFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetUserById($id: Int!) {
+  user(id: $id) {
+    ...UserFields
+  }
+}
+
+# ==============================================================================
+# ROLE QUERIES
+# ==============================================================================
+
+query GetAllRoles($name: String) {
+  roles(name: $name) {
+    ...RoleFields
+  }
+}
+
+query GetRoleById($id: ID!) {
+  role(id: $id) {
+    ...RoleFields
+  }
+}
+
+# ==============================================================================
+# PERMISSION QUERIES
+# ==============================================================================
+
+query GetAllPermissions {
+  permissions {
+    ...PermissionFields
+  }
+}
+
+
+# ==============================================================================
+# PERSONNE QUERIES
+# ==============================================================================
+
+query GetAllPersonnes($nom: String, $page: Int, $pageSize: Int) {
+  personnes(nom: $nom, page: $page, pageSize: $pageSize) {
+    items {
+      ...PersonneItem
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetPersonneById($id: ID!) {
+  personne(id: $id) {
+    ...PersonneItem
+    contacts {
+      id
+      telephone
+      email
+      adresse
+    }
+  }
+}
+
+# ==============================================================================
+# ECOLE QUERIES
+# ==============================================================================
+
+fragment EcoleItem on EcoleType {
+  id
+  nom
+  adresse
+  createdAt
+  updatedAt
+}
+
+query GetAllEcoles($nom: String, $page: Int, $pageSize: Int) {
+  ecoles(nom: $nom, page: $page, pageSize: $pageSize) {
+    items {
+      ...EcoleItem
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetEcoleById($id: ID!) {
+  ecole(id: $id) {
+    ...EcoleItem
+  }
+}

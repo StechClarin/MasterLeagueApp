@@ -1,0 +1,408 @@
+==============================================================================
+GUIDE TECHNIQUE ET THÉORIQUE : IMPLÉMENTATION BACKEND COMPLÈTE
+Exemple : Gestion de Produits avec Variations (Relation One-to-Many)
+==============================================================================
+
+Ce guide détaille l'implémentation d'une fonctionnalité complète dans notre architecture Django.
+Nous prenons l'exemple d'un "Produit" qui possède plusieurs "Variations" (taille, couleur, prix spécifique).
+
+SCÉNARIO :
+- Produit : { id, nom, prix_de_base }
+- Variation : { id, produit_id, prix, couleurs, poid }
+
+L'objectif est de comprendre l'ordre de création et le rôle précis de chaque fichier.
+
+------------------------------------------------------------------------------
+ORDRE D'IMPLÉMENTATION
+------------------------------------------------------------------------------
+
+1. MODELS (La structure de données)
+2. SERIALIZERS (La validation et transformation)
+3. SERVICES (La logique métier et l'orchestration)
+4. CONTROLLERS (L'exposition API REST - Écriture)
+5. GRAPHQL TYPES (Le schéma de lecture)
+6. GRAPHQL QUERIES (L'exposition API GraphQL - Lecture)
+
+------------------------------------------------------------------------------
+DÉTAIL ÉTAPE PAR ÉTAPE
+------------------------------------------------------------------------------
+
+==============================================================================
+ÉTAPE 1 : LES MODÈLES (apps/shop/models/)
+==============================================================================
+Rôle : Définir la structure de la base de données. C'est le contrat avec le stockage.
+
+Fichier : `product.py`
+-----------------------
+class Product(models.Model):
+    nom = models.CharField(max_length=255)
+    prix = models.DecimalField(...)
+
+Fichier : `variation.py`
+------------------------
+class Variation(models.Model):
+    product = models.ForeignKey(Product, related_name='variations', ...)
+    couleurs = models.CharField(...)
+    poid = models.DecimalField(...)
+
+> POURQUOI ? Sans modèle, pas de stockage. C'est la fondation.
+> NOTE : `related_name='variations'` est crucial pour accéder aux variations depuis le produit (product.variations.all()).
+
+==============================================================================
+ÉTAPE 2 : LES SERIALIZERS (apps/shop/api/serializers/)
+==============================================================================
+Rôle : Convertir les objets Python en JSON (et inversement) et VALIDER les données entrantes.
+
+Fichier : `variation_serializer.py`
+-----------------------------------
+class VariationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Variation
+        fields = '__all__'
+
+Fichier : `product_serializer.py`
+---------------------------------
+class ProductSerializer(serializers.ModelSerializer):
+    # On inclut les variations pour permettre la création imbriquée (Nested Write)
+    variations = VariationSerializer(many=True, required=False)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'nom', 'prix', 'variations']
+
+> POURQUOI ? Le frontend envoie du JSON. Django parle en Objets Python. Le Serializer fait le traducteur et le douanier (validation).
+
+==============================================================================
+ÉTAPE 3 : LES SERVICES (apps/shop/services/)
+==============================================================================
+Rôle : C'est le CERVEAU. Il contient toute la logique métier.
+Il orchestre la sauvegarde complexe (Produit + ses Variations).
+Il hérite de `BaseService`.
+
+Fichier : `product_service.py`
+------------------------------
+class ProductService(BaseService):
+    model = Product
+
+    def save_process(self, data, instance=None):
+        # 1. Extraction des données imbriquées (Variations)
+        variations_data = data.pop('variations', [])
+
+        # 2. Sauvegarde du Parent (Produit) via le parent (BaseService)
+        product, created = super().save_process(data, instance)
+
+        # 3. Gestion des Enfants (Variations)
+        if variations_data:
+            # Logique pour créer/mettre à jour les variations liées
+            for var_data in variations_data:
+                var_data['product'] = product # On lie la variation au produit créé
+                Variation.objects.create(**var_data) 
+                # (Note: Dans un vrai cas, on gère aussi l'update/delete des variations existantes)
+
+        return product, created
+
+> POURQUOI ? 
+> - Si on met cette logique dans la Vue (Controller), on ne peut pas la réutiliser.
+> - Si on la met dans le Serializer, on mélange validation et sauvegarde.
+> - Le Service garantit que la logique est CENTRALISÉE et TRANSACTIONNELLE (tout ou rien).
+
+==============================================================================
+ÉTAPE 4 : LES CONTROLLERS (apps/shop/api/controllers/)
+==============================================================================
+Rôle : Recevoir la requête HTTP (POST/PUT), vérifier les droits, et appeler le Service.
+Il hérite de `BaseController`.
+
+Fichier : `product_controller.py`
+---------------------------------
+class ProductController(BaseController):
+    service_class = ProductService
+    serializer_class = ProductSerializer
+    # C'est tout ! BaseController fait tout le travail (post, put, delete).
+
+> POURQUOI ? Le Controller doit être "maigre" (Thin Controller). Il ne fait que passer les plats entre le Web (HTTP) et le Métier (Service).
+
+------------------------------------------------------------------------------
+LE ROUTEUR DYNAMIQUE (apps/core/api/controllers/RouterController.py)
+------------------------------------------------------------------------------
+Rôle : C'est le chef d'orchestre des URLs. Au lieu d'écrire une URL par contrôleur,
+ce routeur reçoit TOUTES les requêtes API et les redirige dynamiquement.
+
+Fonctionnement :
+URL : `/api/{model_name}/{method_name}/`
+Exemple : `/api/product/list/` -> Instancie `ProductController` -> Appelle `list()`
+
+> AVANTAGE : On n'a plus besoin de toucher au fichier `urls.py` à chaque fois qu'on crée un nouveau contrôleur. C'est automatique.
+
+==============================================================================
+ÉTAPE 5 : GRAPHQL TYPES (apps/shop/graphql/Types/)
+==============================================================================
+Rôle : Définir comment les données sont présentées pour la LECTURE via GraphQL.
+
+Fichier : `variation_type.py`
+-----------------------------
+class VariationType(DjangoObjectType):
+    class Meta:
+        model = Variation
+
+Fichier : `product_type.py`
+---------------------------
+class ProductType(DjangoObjectType):
+    class Meta:
+        model = Product
+    
+    # Graphene gère automatiquement le champ 'variations' grâce au related_name du Modèle !
+
+> POURQUOI ? GraphQL a besoin de connaître la forme exacte des données qu'il peut renvoyer.
+
+==============================================================================
+ÉTAPE 6 : GRAPHQL QUERIES (apps/shop/graphql/Queries/)
+==============================================================================
+Rôle : Définir les points d'entrée pour récupérer les données (Get, List).
+C'est ici qu'on connecte GraphQL au SERVICE (et non directement à la BDD !).
+
+Fichier : `product_query.py`
+----------------------------
+class ProductQuery(graphene.ObjectType):
+    products = graphene.List(ProductType, nom=graphene.String())
+
+    def resolve_products(root, info, nom=None, **kwargs):
+        # APPEL AU SERVICE (Bonne Pratique)
+        service = ProductService()
+        filters = {}
+        if nom:
+            filters['nom__icontains'] = nom
+        
+        return service.list(filters=filters)
+
+> POURQUOI ? En passant par le Service, on s'assure que les règles métier (ex: ne pas montrer les produits archivés) sont respectées partout, que ce soit en REST ou en GraphQL.
+
+==============================================================================
+OUTILS DE DÉVELOPPEMENT (apps/core/management/commands/craft.py)
+==============================================================================
+Rôle : Un générateur de code (Scaffolding) pour aller plus vite.
+Au lieu de créer les 6 fichiers à la main, on utilise une commande.
+
+Commande : `python manage.py craft scaffold Product shop`
+
+Ce que ça fait :
+1. Crée `models/product.py`
+2. Crée `api/serializers/product_serializer.py`
+3. Crée `services/product_service.py`
+4. Crée `api/controllers/product_controller.py`
+5. Crée `graphql/Types/product_type.py`
+6. Crée `graphql/Queries/product_query.py`
+7. Crée et joue les migrations BDD.
+
+> POURQUOI ? Pour standardiser le code et éviter les erreurs copier-coller.
+> C'est votre "Usine à fonctionnalités".
+
+==============================================================================
+RÉSUMÉ DU FLUX DE DONNÉES
+==============================================================================
+
+ÉCRITURE (Création d'un produit) :
+Frontend (JSON) -> Controller -> Serializer (Validation) -> SERVICE (Logique + Save BDD) -> BDD
+
+LECTURE (Affichage liste) :
+Frontend (Query GraphQL) -> GraphQL Query -> SERVICE (Récupération) -> GraphQL Type -> Frontend (JSON)
+
+==============================================================================
+POURQUOI CETTE ARCHITECTURE ?
+==============================================================================
+1. Séparation des responsabilités : Chaque fichier a un rôle unique.
+2. Maintenabilité : Si on change la logique de sauvegarde, on ne touche qu'au Service.
+3. Testabilité : On peut tester le Service sans lancer de serveur HTTP.
+4. Flexibilité : On peut changer d'API (REST vers GraphQL ou inversement) sans toucher au Métier (Service).
+
+==============================================================================
+PARTIE 2 : IMPLÉMENTATION FRONTEND (Angular)
+==============================================================================
+Objectif : Créer l'interface utilisateur complète (Liste, Formulaire, Actions).
+Nous suivons l'architecture "Smart Components" et "Base Classes".
+
+------------------------------------------------------------------------------
+ORDRE D'IMPLÉMENTATION
+------------------------------------------------------------------------------
+1. GRAPHQL (Le contrat de lecture)
+2. SERVICE (Le pont avec le Backend)
+3. LIST COMPONENT (Affichage, Filtres, Export/Import)
+4. FORM COMPONENT (Création, Édition)
+5. ROUTING (Navigation)
+
+------------------------------------------------------------------------------
+DÉTAIL ÉTAPE PAR ÉTAPE
+------------------------------------------------------------------------------
+
+==============================================================================
+ÉTAPE 1 : DÉFINITION GRAPHQL (src/app/features/shop/graphql/)
+==============================================================================
+Rôle : Définir précisément quelles données on veut récupérer.
+On utilise des "Fragments" pour éviter de répéter les champs.
+
+Fichier : `product.graphql`
+---------------------------
+fragment ProductItem on ProductType {
+  id
+  nom
+  prix
+}
+
+query GetAllProducts($nom: String, $page: Int, $pageSize: Int) {
+  products(nom: $nom, page: $page, pageSize: $pageSize) {
+    items { ...ProductItem }
+    totalCount
+  }
+}
+
+query GetProductById($id: ID!) {
+  product(id: $id) {
+    ...ProductItem
+    variations { id couleurs poid } # On récupère aussi les relations
+  }
+}
+
+> ACTION : Lancer `npm run codegen`.
+> Cela va générer les services TypeScript : `GetAllProductsGQL` et `GetProductByIdGQL`.
+
+==============================================================================
+ÉTAPE 2 : LE SERVICE (src/app/features/shop/services/)
+==============================================================================
+Rôle : Centraliser toute la communication avec le serveur.
+Il combine REST (pour écrire) et GraphQL (pour lire).
+
+Fichier : `product.service.ts`
+------------------------------
+@Injectable({ providedIn: 'root' })
+export class ProductService extends BaseService {
+    override endpoint = 'product'; // Pour les appels REST (save, delete, export)
+
+    // Injection des services générés par Codegen
+    private getAllGQL = inject(GetAllProductsGQL);
+    private getByIdGQL = inject(GetProductByIdGQL);
+
+    // Surcharge de la méthode de lecture (utilisée par la Liste)
+    override list(variables: any) {
+        return this.getAllGQL.fetch(variables).pipe(
+            map(res => res.data.products)
+        );
+    }
+
+    // Surcharge de la méthode de récupération (utilisée par le Formulaire)
+    override get_by_id(id: string) {
+        return this.getByIdGQL.fetch({ id }).pipe(
+            map(res => res.data.product)
+        );
+    }
+}
+
+> NOTE : Les méthodes `save` (Create/Update), `delete`, `export` et `import` sont déjà gérées par `BaseService` via l'API REST générique !
+
+------------------------------------------------------------------------------
+INFRASTRUCTURE TRANSVERSE (Apollo & NgRx)
+------------------------------------------------------------------------------
+Bien que masqués par nos abstractions, ces deux piliers soutiennent tout l'édifice.
+
+1. APOLLO CLIENT (La couche Transport)
+   - C'est le moteur qui envoie les requêtes GraphQL.
+   - Il gère le cache en mémoire (évite de re-télécharger les mêmes données).
+   - Dans notre architecture, il est encapsulé par les services générés (`GetAllProductsGQL`).
+   - Vous n'avez jamais besoin de l'appeler directement (`apollo.watchQuery`), utilisez les services générés !
+
+2. NGRX (Le State Management Global)
+   - Il gère l'état GLOBAL de l'application (ex: Utilisateur connecté, Thème, Notifications).
+   - Pour les données métier (ex: Liste des produits), nous privilégions souvent le "Local State" (géré par `BaseListComponent` et RxJS) pour plus de simplicité.
+   - NgRx est utilisé quand une donnée doit être partagée entre plusieurs pages très différentes (ex: le panier d'achat dans le header).
+
+==============================================================================
+ÉTAPE 3 : LA LISTE (src/app/features/shop/components/product-list/)
+==============================================================================
+Rôle : Afficher les données, filtrer, paginer et gérer les actions de masse.
+
+Fichier : `product-list.component.ts`
+-------------------------------------
+export class ProductListComponent extends BaseModalListComponent<any> {
+    service = inject(ProductService); // On branche le service
+
+    // 1. Configuration des Colonnes (pour UiTableComponent)
+    tableColumns = [
+        { header: 'Nom', key: 'nom' },
+        { header: 'Prix', key: 'prix', type: 'currency' },
+        { header: 'Actions', type: 'actions' } // Boutons Edit/Delete auto
+    ];
+
+    // 2. Configuration des Filtres
+    initFilterForm() {
+        return this.fb.group({
+            nom: [''] // Lié automatiquement à la variable GraphQL $nom
+        });
+    }
+
+    // 3. Configuration de l'Export
+    override getExportConfig() {
+        return {
+            title: 'Export Produits',
+            columns: [{ header: 'Nom', key: 'nom' }, { header: 'Prix', key: 'prix' }]
+        };
+    }
+}
+
+> FONCTIONNALITÉS AUTOMATIQUES (via BaseModalListComponent) :
+> - Pagination (page, pageSize)
+> - Tri
+> - Recherche (dès que le formulaire de filtre change)
+> - Suppression (avec modale de confirmation)
+> - Export (Excel/CSV)
+> - Import (via UiImportModal)
+
+==============================================================================
+ÉTAPE 4 : LE FORMULAIRE (src/app/features/shop/components/product-form/)
+==============================================================================
+Rôle : Créer ou Modifier un produit. Gère aussi les Variations (Formulaire Complexe).
+
+Fichier : `product-form.component.ts`
+-------------------------------------
+export class ProductFormComponent implements OnInit {
+    form: FormGroup;
+
+    constructor(private service: ProductService) {
+        this.form = this.fb.group({
+            id: [null],
+            nom: ['', Validators.required],
+            prix: [0],
+            variations: this.fb.array([]) // FormArray pour les variations
+        });
+    }
+
+    save() {
+        // Appelle la méthode REST générique du service
+        // Le backend (ProductService.py) saura gérer les variations imbriquées !
+        this.service.save(this.form.value).subscribe(() => {
+            this.closeModal();
+        });
+    }
+}
+
+> UI : On utilise `UiTabsComponent` pour séparer "Infos Générales" et "Variations".
+
+==============================================================================
+ÉTAPE 5 : LE ROUTING (src/app/features/shop/)
+==============================================================================
+Rôle : Rendre les pages accessibles.
+
+Fichier : `shop.routes.ts`
+--------------------------
+export const SHOP_ROUTES: Routes = [
+    { path: 'products', component: ProductListComponent },
+    // Pas besoin de route 'create' ou 'edit' si on utilise des Modales.
+    // Sinon : { path: 'products/:id', component: ProductFormComponent }
+];
+
+==============================================================================
+RÉSUMÉ DU FLUX FRONTEND
+==============================================================================
+1. L'utilisateur ouvre la liste -> `ProductListComponent` s'initialise.
+2. Il tape "Chemise" dans le filtre -> `BaseListComponent` met à jour les variables.
+3. `ProductService.list()` est appelé -> Requête GraphQL envoyée.
+4. L'utilisateur clique sur "Créer" -> `ProductFormComponent` s'ouvre.
+5. Il remplit les infos et variations -> `ProductService.save()` envoie un POST JSON.
+6. Le Backend (voir Partie 1) reçoit le JSON, valide, et sauvegarde tout en une transaction.

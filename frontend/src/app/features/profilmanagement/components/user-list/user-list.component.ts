@@ -1,55 +1,47 @@
-import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, OnDestroy, signal, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormBuilder, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
 import { map, take, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
-import { BaseListComponent } from '@core/abstracts/base-list.component';
+import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { User } from '../../models/user.model';
-// import { GET_ALL_ROLES } from '../../graphql/user.queries'; // REMOVED
 import { UserActions, selectUserFilters } from '../../store/user/user.store';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { UserDetailComponent } from '../user-detail/user-detail.component';
 import { UserService } from '../../services/user.service';
 import { RoleService } from '../../services/role.service';
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
-import { ToastService } from '@core/services/toast.service';
 import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
 
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiStatusBadgeComponent } from '@shared/components/ui-status-badge/ui-status-badge.component';
 import { UiAvatarComponent } from '@shared/components/ui-avatar/ui-avatar.component';
+import { UiListPageComponent } from '@shared/components/ui-list-page/ui-list-page.component';
+import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
+import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.component';
+import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
+import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
+import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UserFormComponent, UiModalComponent, UiPaginationComponent, UiDropdownComponent, UiStatusBadgeComponent, UiAvatarComponent, UserDetailComponent],
+  imports: [CommonModule, ReactiveFormsModule, UserFormComponent, UiModalComponent, UiPaginationComponent, UiDropdownComponent, UiStatusBadgeComponent, UiAvatarComponent, UserDetailComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiFilterPanelComponent, UiConfirmModalComponent, UiTableComponent],
   templateUrl: './user-list.component.html'
 })
-export class UserListComponent extends BaseListComponent<User> implements OnInit, OnDestroy {
-  // ... existing code ...
+export class UserListComponent extends BaseModalListComponent<User> implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  // query = GET_ALL_USERS; // REMOVED
   query = inject(UserService).getQuery(); // Dynamic Query
   responseKey = 'users';
 
   private store = inject(Store);
-
-  // Utilisateur sélectionné pour édition
-  selectedUser = signal<User | null>(null);
-
-  // État de la modale
-  isModalOpen = signal(false);
-  modalMode = signal<'create' | 'edit' | 'detail' | 'delete'>('create');
-
-  // État du menu d'actions (ID de l'utilisateur dont le menu est ouvert)
-  activeMenuId = signal<string | null>(null);
 
   // Contrôles de formulaire pour les filtres
   protected Math = Math;
@@ -58,76 +50,8 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
 
   private destroy$ = new Subject<void>();
 
-  openModal(user: User | null = null, mode: 'create' | 'edit' | 'detail' | 'delete' = 'create') {
-    this.selectedUser.set(user);
-    this.modalMode.set(mode);
-    this.isModalOpen.set(true);
-  }
-
-  closeModal() {
-    this.isModalOpen.set(false);
-    this.selectedUser.set(null);
-  }
-
-  // Gestion du menu d'actions
-  toggleMenu(userId: string, event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    if (this.activeMenuId() === userId) {
-      this.closeMenu();
-    } else {
-      this.activeMenuId.set(userId);
-    }
-  }
-
-  closeMenu() {
-    this.activeMenuId.set(null);
-  }
-
-  // Actions
-  onEdit(user: User) {
-    this.closeMenu();
-    this.openModal(user, 'edit');
-  }
-
   public service = inject(UserService); // Public pour être accessible par le template si besoin
   private roleService = inject(RoleService); // Injected here for use in ngOnInit
-  // private toastService = inject(ToastService); // Déjà dans BaseListComponent
-
-  onSeeMore(user: User) {
-    console.log('See more user:', user);
-    this.closeMenu();
-    this.openModal(user, 'detail');
-  }
-
-  onDelete(user: User) {
-    this.closeMenu();
-    this.openModal(user, 'delete');
-  }
-
-  confirmDelete() {
-    const user = this.selectedUser();
-    if (!user) return;
-
-    this.service.delete(user.id).subscribe({
-      next: () => {
-        this.refresh();
-        this.closeModal();
-        this.toastService.success(`Utilisateur ${user.username} supprimé avec succès.`);
-      },
-      error: (err) => {
-        console.error('Erreur lors de la suppression', err);
-        this.toastService.error('Une erreur est survenue lors de la suppression.');
-      }
-    });
-  }
-
-  onUserCreated() {
-    this.closeModal();
-    this.refresh(); // On recharge la liste pour voir le nouvel utilisateur
-    this.toastService.success('Utilisateur enregistré avec succès.');
-  }
 
   // === Import / Export (DRY Pattern) ===
 
@@ -185,8 +109,6 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
     input.click();
   }
 
-
-
   /**
    * Télécharge le modèle d'import
    */
@@ -213,6 +135,15 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
 
   roles$!: Observable<any[]>;
 
+  // Templates for custom columns
+  @ViewChild('userCell') userCell!: TemplateRef<any>;
+  @ViewChild('roleCell') roleCell!: TemplateRef<any>;
+  @ViewChild('statusCell') statusCell!: TemplateRef<any>;
+  @ViewChild('dateCell') dateCell!: TemplateRef<any>;
+  @ViewChild('actionsCell') actionsCell!: TemplateRef<any>;
+
+  tableColumns: UiTableColumn[] = [];
+
   initFilterForm(): FormGroup {
     return this.fb.group({
       username: [''], // Mappé au searchControl via sync
@@ -221,11 +152,16 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
     });
   }
 
-  // Pagination state and methods are now inherited from BaseListComponent
-
   override ngOnInit(): void {
     // 0. Initialiser le formulaire AVANT tout le reste
     this.filterForm = this.initFilterForm();
+
+    // Initialize table columns
+    // We need to do this in ngAfterViewInit normally to access ViewChilds, 
+    // but since we pass templates to the child component, we can define the structure here 
+    // and the templates will be resolved when passed to the input.
+    // However, ViewChilds are only available after view init.
+    // So we'll initialize columns in ngAfterViewInit.
 
     // Charger les rôles pour le filtre
     this.roles$ = this.apollo.watchQuery<any>({
@@ -277,6 +213,21 @@ export class UserListComponent extends BaseListComponent<User> implements OnInit
 
   toggleFilters() {
     this.isFiltersOpen.update(v => !v);
+  }
+
+  private cdr = inject(ChangeDetectorRef);
+
+  ngAfterViewInit() {
+    // Initialize columns once templates are available
+    setTimeout(() => {
+      this.tableColumns = [
+        { header: 'Utilisateur', template: this.userCell },
+        { header: 'Rôle', template: this.roleCell },
+        { header: 'Statut', template: this.statusCell },
+        { header: 'Date d\'inscription', template: this.dateCell }
+      ];
+      this.cdr.detectChanges(); // Force view update
+    });
   }
 
   resetFilters() {
