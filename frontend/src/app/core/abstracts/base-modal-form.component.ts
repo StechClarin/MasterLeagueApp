@@ -20,7 +20,8 @@ export abstract class BaseModalFormComponent extends BaseFormComponent implement
         return this._data;
     }
 
-    ngOnInit(): void {
+    override ngOnInit(): void {
+        super.ngOnInit();
         this.form = this.initForm();
         if (this._data) {
             this.patchValue(this._data);

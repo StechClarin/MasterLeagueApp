@@ -1,14 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from '../services/logging.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export abstract class BaseService {
     protected http = inject(HttpClient);
+    protected logger = inject(LoggingService);
+    protected serviceName = this.constructor.name;
 
     // Endpoint spécifique à définir par l'enfant (ex: 'user', 'product')
     abstract endpoint: string;
@@ -28,7 +31,15 @@ export abstract class BaseService {
      * GET /api/{endpoint}/{id}/
      */
     get_by_id(id: number | string): Observable<any> {
-        return this.http.get(`${this.apiUrl}/${id}/`);
+        const url = `${this.apiUrl}/${id}/`;
+        this.logger.logApi('GET', url, 'START');
+        return this.http.get(url).pipe(
+            tap(res => this.logger.logApi('GET', url, 'SUCCESS', res)),
+            catchError(err => {
+                this.logger.logApi('GET', url, 'ERROR', err);
+                throw err;
+            })
+        );
     }
 
     /**
@@ -36,11 +47,24 @@ export abstract class BaseService {
      * POST /api/{endpoint}/save/
      */
     save(data: any): Observable<any> {
-        const request = data.id
-            ? this.http.post(`${this.apiUrl}/save/${data.id}/`, data)
-            : this.http.post(`${this.apiUrl}/save/`, data);
+        let url = `${this.apiUrl}/save/`;
+        if (data.id) {
+            url += `${data.id}/`;
+        }
 
-        return request.pipe(tap(() => this._refresh$.next()));
+        this.logger.logApi('POST', url, 'START', data);
+        const request = this.http.post(url, data);
+
+        return request.pipe(
+            tap(res => {
+                this.logger.logApi('POST', url, 'SUCCESS', res);
+                this._refresh$.next();
+            }),
+            catchError(err => {
+                this.logger.logApi('POST', url, 'ERROR', err);
+                throw err;
+            })
+        );
     }
 
     /**
@@ -48,8 +72,18 @@ export abstract class BaseService {
      * DELETE /api/{endpoint}/delete/{id}/
      */
     delete(id: number | string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/delete/${id}/`, {}).pipe(
-            tap(() => this._refresh$.next())
+        const url = `${this.apiUrl}/delete/${id}/`;
+        this.logger.logApi('POST (DELETE)', url, 'START');
+
+        return this.http.post(url, {}).pipe(
+            tap(res => {
+                this.logger.logApi('POST (DELETE)', url, 'SUCCESS', res);
+                this._refresh$.next();
+            }),
+            catchError(err => {
+                this.logger.logApi('POST (DELETE)', url, 'ERROR', err);
+                throw err;
+            })
         );
     }
 
@@ -58,7 +92,8 @@ export abstract class BaseService {
      * POST /api/{endpoint}/status/{id}/
      */
     status(id: number | string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/status/${id}/`, {}).pipe(
+        const url = `${this.apiUrl}/status/${id}/`;
+        return this.http.post(url, {}).pipe(
             tap(() => this._refresh$.next())
         );
     }
@@ -71,8 +106,18 @@ export abstract class BaseService {
     import(file: File): Observable<any> {
         const formData = new FormData();
         formData.append('file', file);
-        return this.http.post(`${this.apiUrl}/import_data/`, formData).pipe(
-            tap(() => this._refresh$.next())
+        const url = `${this.apiUrl}/import_data/`;
+        this.logger.logApi('POST', url, 'START', { file: file.name });
+
+        return this.http.post(url, formData).pipe(
+            tap(res => {
+                this.logger.logApi('POST', url, 'SUCCESS', res);
+                this._refresh$.next();
+            }),
+            catchError(err => {
+                this.logger.logApi('POST', url, 'ERROR', err);
+                throw err;
+            })
         );
     }
 
@@ -82,9 +127,17 @@ export abstract class BaseService {
      * Downloads data as CSV or Excel file
      */
     export(format: 'csv' | 'excel' = 'excel'): Observable<Blob> {
-        return this.http.get(`${this.apiUrl}/export_data?format=${format}`, {
+        const url = `${this.apiUrl}/export_data?format=${format}`;
+        this.logger.logApi('GET (EXPORT)', url, 'START');
+        return this.http.get(url, {
             responseType: 'blob'
-        });
+        }).pipe(
+            tap(() => this.logger.logApi('GET (EXPORT)', url, 'SUCCESS')),
+            catchError(err => {
+                this.logger.logApi('GET (EXPORT)', url, 'ERROR', err);
+                throw err;
+            })
+        );
     }
 
     /**

@@ -151,3 +151,106 @@ CONVENTIONS
 - Nommage : PascalCase pour les Classes/Types, camelCase pour les champs API.
 - Architecture : Modèle > Service > Controller > GraphQL (Back) -> Generated Service > Component (Front).
 - Pagination : Toujours implémenter `PaginatedType` pour les listes.
+
+4. FRONTEND : STANDARDISATION UI & MODALES
+------------------------------------------
+Pour garantir une interface cohérente et un code maintenable, nous utilisons des composants partagés.
+
+a) Listes Standardisées
+   Utilisez `<app-ui-list-page>` dans votre template.
+   
+   Exemple (HTML) :
+   ------------------------------------------------------------
+   <app-ui-list-page title="Titre" [isLoading]="..." [isEmpty]="...">
+     <ng-container header-actions>...</ng-container>
+     <ng-container table>
+       <app-ui-table [columns]="tableColumns" ...></app-ui-table>
+     </ng-container>
+     <ng-container pagination>...</ng-container>
+   </app-ui-list-page>
+   ------------------------------------------------------------
+
+   Côté TypeScript, étendez `BaseModalListComponent<T>` pour bénéficier de la gestion automatique des modales (Create/Edit/Delete/Details).
+
+b) Formulaires & Modales
+   Ne créez pas de pages dédiées pour les formulaires simples/moyens. Utilisez des modales.
+   
+   1. Créez un composant Form (ex: `VoitureFormComponent`) qui étend `BaseFormComponent`.
+   2. Utilisez `<app-ui-form>` et `<app-ui-input>` pour une UI standard.
+   3. Intégrez ce formulaire dans la liste via `<app-ui-modal>` et `<ng-container [ngSwitch]="modalMode()">`.
+
+   Exemple d'intégration (Liste HTML) :
+   ------------------------------------------------------------
+   <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+     <ng-container [ngSwitch]="modalMode()">
+        <!-- Suppression -->
+        <app-ui-confirm-modal *ngSwitchCase="'delete'" ...></app-ui-confirm-modal>
+        
+        <!-- Formulaire (Création/Édition) -->
+        <app-voiture-form *ngSwitchDefault 
+            [item]="selectedItem()" 
+            (cancel)="closeModal()" 
+            (success)="onSave()">
+        </app-voiture-form>
+     </ng-container>
+   </app-ui-modal>
+   ------------------------------------------------------------
+
+5. UTILITAIRES PARTAGÉS (BACKEND)
+---------------------------------
+- Pagination : `apps.core.utils.pagination.paginate_queryset` (DRY).
+
+6. FORMULAIRES COMPLEXES (CAS D'ÉTUDE : PERSONNE)
+--------------------------------------------------
+Pour des entités avec relations (1-N) ou beaucoup de champs, suivez ce pattern (ex: Personne + Contacts).
+
+a) Frontend : Architecture du Formulaire
+   - **Tabs** : Utilisez `<app-ui-tabs>` pour organiser les champs.
+   - **FormArray** : Pour les relations 1-N (Contacts), utilisez un `FormArray`.
+   - **UX Validation** :
+     - Activez le bouton Submit en permanence : `[disableInvalid]="false"`.
+     - Surchargez `onSubmit()` pour vérifier la validité :
+       * Si invalide : Affichez un Toast warning + Changez d'onglet automatiquement vers l'erreur.
+       * Si valide : Appelez `super.submit()` ou `save()`.
+
+   Exemple (PersonneFormComponent) :
+   ------------------------------------------------------------
+   override ngOnInit() {
+       super.ngOnInit(); // CRITIQUE pour les logs
+   }
+
+   onSubmit() {
+       if (this.form.valid) {
+           this.save().subscribe(...);
+       } else {
+           // Logique custom : Switch tab si erreur dans les contacts
+           if (this.contactsArray.invalid) {
+               this.activeTab = 'contacts';
+               this.toastService.warning('Veuillez corriger les contacts.');
+           }
+           this.form.markAllAsTouched();
+       }
+   }
+   ------------------------------------------------------------
+
+b) Backend : Nested Writes (Écritures Imbriquées)
+   L'architecture supporte la création/modification d'enfants via le parent.
+
+   Fichier : apps/<app>/api/serializers/<entite>_serializer.py
+   Action  : Déclarez le serializer enfant.
+
+   Exemple :
+   ------------------------------------------------------------
+   class PersonneSerializer(BaseSerializer):
+       # Nested Write activé par BaseSerializer
+       contacts = ContactSerializer(many=True, required=False)
+
+       class Meta:
+           model = Personne
+           fields = '__all__'
+   ------------------------------------------------------------
+   
+   Note : Le `BaseSerializer` détecte automatiquement les champs relationnels et gère le `create` et `update` des enfants (via `saved_id` du parent).
+
+==============================================================================
+

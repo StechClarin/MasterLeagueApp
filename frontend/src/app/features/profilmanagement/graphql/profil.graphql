@@ -44,6 +44,12 @@ fragment PersonneItem on PersonneType {
   poid
   createdAt
   updatedAt
+  contacts {
+    id
+    telephone
+    email
+    adresse
+  }
 }
 
 fragment ContactItem on ContactType {
@@ -110,8 +116,8 @@ query GetAllPermissions {
 # PERSONNE QUERIES
 # ==============================================================================
 
-query GetAllPersonnes($nom: String, $page: Int, $pageSize: Int) {
-  personnes(nom: $nom, page: $page, pageSize: $pageSize) {
+query GetAllPersonnes($search: String, $page: Int, $pageSize: Int) {
+  personnes(search: $search, page: $page, pageSize: $pageSize) {
     items {
       ...PersonneItem
     }

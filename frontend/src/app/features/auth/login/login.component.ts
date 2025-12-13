@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { Observable } from 'rxjs';
+import { DynamicRouterService } from '@core/routing/dynamic-router.service';
 
 @Component({
   selector: 'app-login',
@@ -221,6 +222,7 @@ export class LoginComponent extends BaseFormComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private dynamicRouter = inject(DynamicRouterService);
 
   // Typage strict du formulaire
   override form = this.fb.nonNullable.group({
@@ -261,7 +263,8 @@ export class LoginComponent extends BaseFormComponent {
 
   floatingIcons: any[] = [];
 
-  ngOnInit() {
+  override ngOnInit() {
+    super.ngOnInit();
     this.floatingIcons = Array(40).fill(0).map(() => {
       const icons = Object.keys(this.iconPaths);
       const randomIcon = icons[Math.floor(Math.random() * icons.length)];
@@ -288,7 +291,10 @@ export class LoginComponent extends BaseFormComponent {
   // Surcharge de submit pour gérer la redirection après succès
   override submit() {
     // On s'abonne à l'événement success émis par BaseFormComponent
-    this.success.subscribe(() => {
+    this.success.subscribe(async () => {
+      // 1. Recharger les routes dynamiques maintenant qu'on est authentifié
+      await this.dynamicRouter.loadDynamicRoutes();
+      // 2. Rediriger
       this.router.navigate(['/dashboard']);
     });
     super.submit();

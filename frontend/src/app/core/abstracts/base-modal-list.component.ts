@@ -1,8 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { BaseListComponent } from './base-list.component';
+import { LoggingService } from '../services/logging.service';
 
 @Component({ template: '' })
-export abstract class BaseModalListComponent<T> extends BaseListComponent<T> {
+export abstract class BaseModalListComponent<T> extends BaseListComponent<T> implements OnInit {
+
+    protected logger = inject(LoggingService);
+    protected componentName = this.constructor.name;
 
     // État de la modale
     isModalOpen = signal(false);
@@ -12,9 +16,15 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> {
     // État du menu d'actions (pour les listes qui ont un menu dropdown par ligne)
     activeMenuId = signal<string | number | null>(null);
 
+    override ngOnInit() {
+        super.ngOnInit();
+        this.logger.logLifecycle(this.componentName, 'Initialized');
+    }
+
     // --- Modal Management ---
 
     openModal(item: T | null = null, mode: 'create' | 'edit' | 'detail' | 'delete' = 'create') {
+        this.logger.logAction(this.componentName, `Open Modal [${mode}]`, item);
         this.selectedItem.set(item);
         this.modalMode.set(mode);
         this.isModalOpen.set(true);
@@ -22,6 +32,7 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> {
     }
 
     closeModal() {
+        this.logger.logAction(this.componentName, 'Close Modal');
         this.isModalOpen.set(false);
         this.selectedItem.set(null);
     }
@@ -29,14 +40,17 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> {
     // --- Actions Standards ---
 
     onEdit(item: T) {
+        this.logger.logAction(this.componentName, 'Click Edit', item);
         this.openModal(item, 'edit');
     }
 
     onDetails(item: T) {
+        this.logger.logAction(this.componentName, 'Click Details', item);
         this.openModal(item, 'detail');
     }
 
     onDelete(item: T) {
+        this.logger.logAction(this.componentName, 'Click Delete', item);
         this.openModal(item, 'delete');
     }
 
@@ -46,7 +60,7 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> {
         this.refresh();
         const mode = this.modalMode();
         const action = mode === 'create' ? 'créé' : 'modifié';
-        // Note: On pourrait rendre le message plus dynamique si besoin
+        this.logger.logAction(this.componentName, `Save Success [${mode}]`);
         this.toastService.success(`Élément ${action} avec succès`);
     }
 
@@ -64,6 +78,7 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> {
             return;
         }
 
+        this.logger.logAction(this.componentName, 'Confirm Delete', { id });
         this.service.delete(id).subscribe({
             next: () => {
                 this.toastService.success('Élément supprimé avec succès');
@@ -85,6 +100,7 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> {
         if (this.activeMenuId() === id) {
             this.closeMenu();
         } else {
+            this.logger.logAction(this.componentName, 'Open Action Menu', { id });
             this.activeMenuId.set(id);
         }
     }

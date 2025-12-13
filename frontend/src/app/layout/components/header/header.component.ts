@@ -149,7 +149,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // 1. Récupérer toutes les pages (aplaties)
     const allPages$ = this.apollo.watchQuery<any>({
-      query: GET_SIDEBAR_MODULES
+      query: GET_SIDEBAR_MODULES,
+      fetchPolicy: 'network-only'
     }).valueChanges.pipe(
       map(result => {
         const modules = result.data.modules;

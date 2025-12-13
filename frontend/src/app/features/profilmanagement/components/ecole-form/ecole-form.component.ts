@@ -48,7 +48,8 @@ export class EcoleFormComponent extends BaseFormComponent implements OnInit, OnC
         adresse: ['']
     });
 
-    ngOnInit() {
+    override ngOnInit() {
+        super.ngOnInit();
     }
 
     ngOnChanges(changes: SimpleChanges) {

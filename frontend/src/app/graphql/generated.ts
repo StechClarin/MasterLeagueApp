@@ -351,7 +351,7 @@ export type RoleFieldsFragment = { __typename?: 'RoleType', id: string, name: st
 
 export type PermissionFieldsFragment = { __typename?: 'PermissionType', id: string, name: string, codename: string, tag: string };
 
-export type PersonneItemFragment = { __typename?: 'PersonneType', id: string, nom: string, prenom: string, age: number, nationalite: string, genre: ProfilmanagementPersonneGenreChoices, taille: any, poid: any, createdAt: any, updatedAt: any };
+export type PersonneItemFragment = { __typename?: 'PersonneType', id: string, nom: string, prenom: string, age: number, nationalite: string, genre: ProfilmanagementPersonneGenreChoices, taille: any, poid: any, createdAt: any, updatedAt: any, contacts: Array<{ __typename?: 'ContactType', id: string, telephone: string, email: string, adresse: string }> };
 
 export type ContactItemFragment = { __typename?: 'ContactType', id: string, telephone: string, email: string, adresse: string, personne: { __typename?: 'PersonneType', id: string, nom: string, prenom: string } };
 
@@ -508,6 +508,12 @@ export const PersonneItemFragmentDoc = gql`
   poid
   createdAt
   updatedAt
+  contacts {
+    id
+    telephone
+    email
+    adresse
+  }
 }
     `;
 export const ContactItemFragmentDoc = gql`
@@ -572,16 +578,16 @@ export const GetAllUsersDocument = gql`
 }
     ${UserFieldsFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllUsersGQL extends Apollo.Query<GetAllUsersQuery, GetAllUsersQueryVariables> {
-    document = GetAllUsersDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllUsersGQL extends Apollo.Query<GetAllUsersQuery, GetAllUsersQueryVariables> {
+  document = GetAllUsersDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetUserByIdDocument = gql`
     query GetUserById($id: Int!) {
   user(id: $id) {
@@ -590,16 +596,16 @@ export const GetUserByIdDocument = gql`
 }
     ${UserFieldsFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetUserByIdGQL extends Apollo.Query<GetUserByIdQuery, GetUserByIdQueryVariables> {
-    document = GetUserByIdDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetUserByIdGQL extends Apollo.Query<GetUserByIdQuery, GetUserByIdQueryVariables> {
+  document = GetUserByIdDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetAllRolesDocument = gql`
     query GetAllRoles($name: String) {
   roles(name: $name) {
@@ -608,16 +614,16 @@ export const GetAllRolesDocument = gql`
 }
     ${RoleFieldsFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllRolesGQL extends Apollo.Query<GetAllRolesQuery, GetAllRolesQueryVariables> {
-    document = GetAllRolesDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllRolesGQL extends Apollo.Query<GetAllRolesQuery, GetAllRolesQueryVariables> {
+  document = GetAllRolesDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetRoleByIdDocument = gql`
     query GetRoleById($id: ID!) {
   role(id: $id) {
@@ -626,16 +632,16 @@ export const GetRoleByIdDocument = gql`
 }
     ${RoleFieldsFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetRoleByIdGQL extends Apollo.Query<GetRoleByIdQuery, GetRoleByIdQueryVariables> {
-    document = GetRoleByIdDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetRoleByIdGQL extends Apollo.Query<GetRoleByIdQuery, GetRoleByIdQueryVariables> {
+  document = GetRoleByIdDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetAllPermissionsDocument = gql`
     query GetAllPermissions {
   permissions {
@@ -644,19 +650,19 @@ export const GetAllPermissionsDocument = gql`
 }
     ${PermissionFieldsFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllPermissionsGQL extends Apollo.Query<GetAllPermissionsQuery, GetAllPermissionsQueryVariables> {
-    document = GetAllPermissionsDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllPermissionsGQL extends Apollo.Query<GetAllPermissionsQuery, GetAllPermissionsQueryVariables> {
+  document = GetAllPermissionsDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetAllPersonnesDocument = gql`
-    query GetAllPersonnes($nom: String, $page: Int, $pageSize: Int) {
-  personnes(nom: $nom, page: $page, pageSize: $pageSize) {
+    query GetAllPersonnes($search: String, $page: Int, $pageSize: Int) {
+  personnes(search: $search, page: $page, pageSize: $pageSize) {
     items {
       ...PersonneItem
     }
@@ -667,16 +673,16 @@ export const GetAllPersonnesDocument = gql`
 }
     ${PersonneItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllPersonnesGQL extends Apollo.Query<GetAllPersonnesQuery, GetAllPersonnesQueryVariables> {
-    document = GetAllPersonnesDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllPersonnesGQL extends Apollo.Query<GetAllPersonnesQuery, GetAllPersonnesQueryVariables> {
+  document = GetAllPersonnesDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetPersonneByIdDocument = gql`
     query GetPersonneById($id: ID!) {
   personne(id: $id) {
@@ -691,16 +697,16 @@ export const GetPersonneByIdDocument = gql`
 }
     ${PersonneItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetPersonneByIdGQL extends Apollo.Query<GetPersonneByIdQuery, GetPersonneByIdQueryVariables> {
-    document = GetPersonneByIdDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetPersonneByIdGQL extends Apollo.Query<GetPersonneByIdQuery, GetPersonneByIdQueryVariables> {
+  document = GetPersonneByIdDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetAllEcolesDocument = gql`
     query GetAllEcoles($nom: String, $page: Int, $pageSize: Int) {
   ecoles(nom: $nom, page: $page, pageSize: $pageSize) {
@@ -714,16 +720,16 @@ export const GetAllEcolesDocument = gql`
 }
     ${EcoleItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllEcolesGQL extends Apollo.Query<GetAllEcolesQuery, GetAllEcolesQueryVariables> {
-    document = GetAllEcolesDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllEcolesGQL extends Apollo.Query<GetAllEcolesQuery, GetAllEcolesQueryVariables> {
+  document = GetAllEcolesDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetEcoleByIdDocument = gql`
     query GetEcoleById($id: ID!) {
   ecole(id: $id) {
@@ -732,16 +738,16 @@ export const GetEcoleByIdDocument = gql`
 }
     ${EcoleItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetEcoleByIdGQL extends Apollo.Query<GetEcoleByIdQuery, GetEcoleByIdQueryVariables> {
-    document = GetEcoleByIdDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetEcoleByIdGQL extends Apollo.Query<GetEcoleByIdQuery, GetEcoleByIdQueryVariables> {
+  document = GetEcoleByIdDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetAllVoituresDocument = gql`
     query GetAllVoitures($search: String, $page: Int, $pageSize: Int) {
   voitures(search: $search, page: $page, pageSize: $pageSize) {
@@ -755,16 +761,16 @@ export const GetAllVoituresDocument = gql`
 }
     ${VoitureItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllVoituresGQL extends Apollo.Query<GetAllVoituresQuery, GetAllVoituresQueryVariables> {
-    document = GetAllVoituresDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllVoituresGQL extends Apollo.Query<GetAllVoituresQuery, GetAllVoituresQueryVariables> {
+  document = GetAllVoituresDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetVoitureByIdDocument = gql`
     query GetVoitureById($id: ID!) {
   voiture(id: $id) {
@@ -773,16 +779,16 @@ export const GetVoitureByIdDocument = gql`
 }
     ${VoitureItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetVoitureByIdGQL extends Apollo.Query<GetVoitureByIdQuery, GetVoitureByIdQueryVariables> {
-    document = GetVoitureByIdDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetVoitureByIdGQL extends Apollo.Query<GetVoitureByIdQuery, GetVoitureByIdQueryVariables> {
+  document = GetVoitureByIdDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetAllEvenementsDocument = gql`
     query GetAllEvenements($search: String, $page: Int, $pageSize: Int) {
   evenements(search: $search, page: $page, pageSize: $pageSize) {
@@ -796,16 +802,16 @@ export const GetAllEvenementsDocument = gql`
 }
     ${EvenementItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllEvenementsGQL extends Apollo.Query<GetAllEvenementsQuery, GetAllEvenementsQueryVariables> {
-    document = GetAllEvenementsDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllEvenementsGQL extends Apollo.Query<GetAllEvenementsQuery, GetAllEvenementsQueryVariables> {
+  document = GetAllEvenementsDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}
 export const GetEvenementByIdDocument = gql`
     query GetEvenementById($id: ID!) {
   evenement(id: $id) {
@@ -814,13 +820,13 @@ export const GetEvenementByIdDocument = gql`
 }
     ${EvenementItemFragmentDoc}`;
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetEvenementByIdGQL extends Apollo.Query<GetEvenementByIdQuery, GetEvenementByIdQueryVariables> {
-    document = GetEvenementByIdDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
+@Injectable({
+  providedIn: 'root'
+})
+export class GetEvenementByIdGQL extends Apollo.Query<GetEvenementByIdQuery, GetEvenementByIdQueryVariables> {
+  document = GetEvenementByIdDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
   }
+}

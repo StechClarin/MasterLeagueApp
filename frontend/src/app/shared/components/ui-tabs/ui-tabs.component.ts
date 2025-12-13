@@ -2,19 +2,20 @@ import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface Tab {
-    id: string;
-    label: string;
-    hasError?: boolean;
+  id: string;
+  label: string;
+  hasError?: boolean;
 }
 
 @Component({
-    selector: 'app-ui-tabs',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-ui-tabs',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="border-b border-gray-200">
       <nav class="-mb-px flex space-x-8" aria-label="Tabs">
         <button *ngFor="let tab of tabs" 
+                type="button"
                 (click)="selectTab(tab)"
                 [class.border-indigo-500]="activeTab() === tab.id"
                 [class.text-indigo-600]="activeTab() === tab.id"
@@ -40,17 +41,17 @@ export interface Tab {
   `
 })
 export class UiTabsComponent {
-    @Input() tabs: Tab[] = [];
-    @Input() set currentTab(value: string) {
-        this.activeTab.set(value);
-    }
+  @Input() tabs: Tab[] = [];
+  @Input() set currentTab(value: string) {
+    this.activeTab.set(value);
+  }
 
-    @Output() tabChange = new EventEmitter<string>();
+  @Output() tabChange = new EventEmitter<string>();
 
-    activeTab = signal<string>('');
+  activeTab = signal<string>('');
 
-    selectTab(tab: Tab) {
-        this.activeTab.set(tab.id);
-        this.tabChange.emit(tab.id);
-    }
+  selectTab(tab: Tab) {
+    this.activeTab.set(tab.id);
+    this.tabChange.emit(tab.id);
+  }
 }

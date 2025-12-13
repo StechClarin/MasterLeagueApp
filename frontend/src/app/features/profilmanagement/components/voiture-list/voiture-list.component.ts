@@ -1,19 +1,24 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { BaseListComponent } from '@core/abstracts/base-list.component';
+import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { VoitureService } from '../../services/voiture.service';
 import { UiListPageComponent } from '@shared/components/ui-list-page/ui-list-page.component';
 import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.component';
 import { UiTableComponent } from '@shared/components/ui-table/ui-table.component';
 import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
+import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
+import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
+import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { VoitureFormComponent } from '../voiture-form/voiture-form.component';
+
 @Component({
     selector: 'app-voiture-list',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, UiListPageComponent, UiToolbarComponent, UiTableComponent, UiPaginationComponent],
+    imports: [CommonModule, ReactiveFormsModule, UiListPageComponent, UiToolbarComponent, UiTableComponent, UiPaginationComponent, UiModalComponent, UiConfirmModalComponent, UiDropdownComponent, VoitureFormComponent],
     templateUrl: './voiture-list.component.html'
 })
-export class VoitureListComponent extends BaseListComponent<any> {
+export class VoitureListComponent extends BaseModalListComponent<any> {
 
     // 2. Injection du Service (AVANT la query si on veut utiliser inject() dans la prop)
     // Mais BaseListComponent initQuery est appelé dans ngOnInit, donc c'est bon.

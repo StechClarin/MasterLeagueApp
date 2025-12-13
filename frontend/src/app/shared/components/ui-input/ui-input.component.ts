@@ -1,4 +1,4 @@
-import { Component, Input, Self, Optional } from '@angular/core';
+import { Component, Input, Self, Optional, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule } from '@angular/forms';
 
@@ -17,6 +17,7 @@ import { AbstractControl, ControlValueAccessor, FormControl, NgControl, Reactive
         [formControl]="control"
         [placeholder]="placeholder"
         [ngClass]="inputClasses"
+        (blur)="onBlur()"
       />
       <div *ngIf="control.invalid && (control.dirty || control.touched)" class="text-red-600 text-sm mt-1">
         <div *ngIf="control.errors?.['required']">Ce champ est requis.</div>
@@ -28,7 +29,7 @@ import { AbstractControl, ControlValueAccessor, FormControl, NgControl, Reactive
     </div>
   `
 })
-export class UiInputComponent implements ControlValueAccessor {
+export class UiInputComponent implements ControlValueAccessor, OnInit {
   @Input() label: string = '';
   @Input() type: string = 'text';
   @Input() placeholder: string = '';
@@ -48,14 +49,42 @@ export class UiInputComponent implements ControlValueAccessor {
   }
 
 
+  onChange: any = () => { };
+  onTouch: any = () => { };
+
   constructor(@Self() @Optional() public ngControl?: NgControl) {
     if (this.ngControl) {
       this.ngControl.valueAccessor = this;
     }
   }
 
-  writeValue(obj: any): void { }
-  registerOnChange(fn: any): void { }
-  registerOnTouched(fn: any): void { }
-  setDisabledState?(isDisabled: boolean): void { }
+  ngOnInit() {
+    // Sync internal control changes to parent form
+    this.control.valueChanges.subscribe(value => {
+      this.onChange(value);
+    });
+  }
+
+  writeValue(value: any): void {
+    // Prevent infinite loop if value is same
+    if (this.control.value !== value) {
+      this.control.setValue(value, { emitEvent: false });
+    }
+  }
+
+  registerOnChange(fn: any): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: any): void {
+    this.onTouch = fn;
+  }
+
+  setDisabledState?(isDisabled: boolean): void {
+    isDisabled ? this.control.disable() : this.control.enable();
+  }
+
+  onBlur() {
+    this.onTouch();
+  }
 }

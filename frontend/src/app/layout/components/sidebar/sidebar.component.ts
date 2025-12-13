@@ -149,7 +149,8 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit() {
     this.modules$ = this.apollo.watchQuery<any>({
-      query: GET_SIDEBAR_MODULES
+      query: GET_SIDEBAR_MODULES,
+      fetchPolicy: 'network-only' // Force refresh after login
     }).valueChanges.pipe(
       tap(() => this.loading = false),
       map(result => {

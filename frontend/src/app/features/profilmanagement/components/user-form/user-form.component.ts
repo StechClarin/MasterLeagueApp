@@ -113,7 +113,8 @@ export class UserFormComponent extends BaseFormComponent implements OnInit, OnCh
     password2: ['', [Validators.required]]
   }, { validators: CustomValidators.match('password', 'password2') });
 
-  ngOnInit() {
+  override ngOnInit() {
+    super.ngOnInit();
     // Chargement des rôles via GraphQL
     this.roles$ = this.apollo
       .watchQuery({ query: GET_ALL_ROLES })

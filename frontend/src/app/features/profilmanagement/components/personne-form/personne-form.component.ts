@@ -29,13 +29,14 @@ import { Personne } from '../../models/personne.model';
       [isLoading]="isSubmitting"
       [errorMessage]="errorMessage"
       [submitLabel]="personne ? 'Modifier' : 'Créer'"
+      [disableInvalid]="false"
       (submitForm)="onSubmit()"
       (cancel)="onCancel()">
 
       <app-ui-tabs [tabs]="tabs" (tabChange)="activeTab = $event">
         
         <!-- TAB 1: Informations Générales -->
-        <div *ngIf="activeTab === 'general'" class="mt-6">
+        <div [class.hidden]="activeTab !== 'general'" class="mt-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <app-ui-input label="Nom" formControlName="nom" [required]="true" placeholder="Ex: Doe"></app-ui-input>
             <app-ui-input label="Prénom" formControlName="prenom" [required]="true" placeholder="Ex: John"></app-ui-input>
@@ -59,7 +60,7 @@ import { Personne } from '../../models/personne.model';
         </div>
 
         <!-- TAB 2: Contacts -->
-        <div *ngIf="activeTab === 'contacts'" class="mt-6">
+        <div [class.hidden]="activeTab !== 'contacts'" class="mt-6">
           <div class="space-y-4">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-lg font-medium text-gray-900">Liste des contacts</h3>
@@ -125,8 +126,12 @@ export class PersonneFormComponent extends BaseFormComponent implements OnInit, 
     return this.form.get('contacts') as FormArray;
   }
 
-  ngOnInit() {
-    // Nothing special for now
+  override ngOnInit() {
+    super.ngOnInit();
+    // Ensure form is reset if no personne passed initially
+    if (!this.personne) {
+      this.resetForm();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -156,12 +161,16 @@ export class PersonneFormComponent extends BaseFormComponent implements OnInit, 
           });
         }
       } else {
-        // Mode Création (Reset)
-        this.form.reset();
-        this.contactsArray.clear();
-        this.form.patchValue({ genre: 'M' }); // Default
+        this.resetForm();
       }
     }
+  }
+
+  resetForm() {
+    this.form.reset();
+    this.contactsArray.clear();
+    this.form.patchValue({ genre: 'M' }); // Default
+    this.activeTab = 'general'; // Reset to first tab
   }
 
   addContact() {
@@ -179,10 +188,56 @@ export class PersonneFormComponent extends BaseFormComponent implements OnInit, 
   }
 
   onSubmit() {
-    super.submit();
+    console.log('PersonneFormComponent.onSubmit called. Form Valid:', this.form.valid);
+
+    if (this.form.valid) {
+      this.isSubmitting = true;
+      this.errorMessage = null;
+
+      this.save().subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.success.emit();
+        },
+        error: (err) => {
+          console.error('Erreur soumission:', err);
+          this.isSubmitting = false;
+          this.toastService.error('Erreur lors de l\'enregistrement');
+        }
+      });
+    } else {
+      this.form.markAllAsTouched();
+
+      // Collect errors for debugging and user feedback
+      const invalidControls = [];
+      for (const name in this.form.controls) {
+        if (this.form.controls[name].invalid) {
+          invalidControls.push(name);
+        }
+      }
+      if (this.contactsArray.invalid) {
+        invalidControls.push('contacts (liste)');
+        // Check specific contacts
+        this.contactsArray.controls.forEach((ctrl, index) => {
+          if (ctrl.invalid) invalidControls.push(`contact #${index + 1}`);
+        });
+      }
+
+      const errorMsg = `Formulaire invalide. Champs en erreur : ${invalidControls.join(', ')}`;
+      console.warn(errorMsg);
+      this.toastService.warning(errorMsg);
+
+      // Auto-switch to tab with error
+      if (this.form.get('nom')?.invalid || this.form.get('prenom')?.invalid) {
+        this.activeTab = 'general';
+      } else if (this.contactsArray.invalid) {
+        this.activeTab = 'contacts';
+      }
+    }
   }
 
   save(): Observable<any> {
+    console.log('PersonneFormComponent.save called');
     const payload: any = {
       ...this.form.value
     };
@@ -191,6 +246,7 @@ export class PersonneFormComponent extends BaseFormComponent implements OnInit, 
       payload.id = this.personne.id;
     }
 
+    console.log('Payload:', payload);
     return this.personneService.save(payload);
   }
 }

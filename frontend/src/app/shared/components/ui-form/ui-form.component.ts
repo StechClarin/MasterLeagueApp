@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-ui-form',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
-    template: `
+  selector: 'app-ui-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
     <div class="bg-white rounded-xl shadow-xl border border-gray-200 max-w-2xl mx-auto overflow-hidden">
       
       <!-- Header -->
@@ -41,7 +41,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             
             <button 
               type="submit" 
-              [disabled]="formGroup.invalid || isLoading"
+              [disabled]="(disableInvalid && formGroup.invalid) || isLoading"
               class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-500/20 flex items-center">
               <span *ngIf="isLoading" class="mr-2">
                 <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -59,26 +59,27 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   `
 })
 export class UiFormComponent {
-    @Input() title: string = '';
-    @Input() description: string = '';
-    @Input() formGroup!: FormGroup;
-    @Input() isLoading: boolean = false;
-    @Input() errorMessage: string | null = null;
-    @Input() submitLabel: string = 'Enregistrer';
-    @Input() cancelLabel: string = 'Annuler';
+  @Input() title: string = '';
+  @Input() description: string = '';
+  @Input() formGroup!: FormGroup;
+  @Input() isLoading: boolean = false;
+  @Input() errorMessage: string | null = null;
+  @Input() submitLabel: string = 'Enregistrer';
+  @Input() cancelLabel: string = 'Annuler';
+  @Input() disableInvalid: boolean = true;
 
-    @Output() submitForm = new EventEmitter<void>();
-    @Output() cancel = new EventEmitter<void>();
+  @Output() submitForm = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
 
-    onSubmit() {
-        if (this.formGroup.valid && !this.isLoading) {
-            this.submitForm.emit();
-        } else {
-            this.formGroup.markAllAsTouched();
-        }
+  onSubmit() {
+    if ((!this.disableInvalid || this.formGroup.valid) && !this.isLoading) {
+      this.submitForm.emit();
+    } else {
+      this.formGroup.markAllAsTouched();
     }
+  }
 
-    onCancel() {
-        this.cancel.emit();
-    }
+  onCancel() {
+    this.cancel.emit();
+  }
 }
