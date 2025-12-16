@@ -5,8 +5,5 @@ export const PROFIL_ROUTES: Routes = [
     path: 'roles',
     loadComponent: () => import('./components/role-list/role-list.component').then(m => m.RoleListComponent)
   },
-  {
-    path: 'personnes',
-    loadComponent: () => import('./components/personne-list/personne-list.component').then(m => m.PersonneListComponent)
-  },
+
 ];

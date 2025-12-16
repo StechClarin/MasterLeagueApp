@@ -1,9 +1,4 @@
 from .user_serializer import UserSerializer
 from .role_serializer import RoleSerializer
-from .personne_serializer import PersonneSerializer
-from .contact_serializer import ContactSerializer
-from .ecole_serializer import EcoleSerializer
 
-__all__ = ['PersonneSerializer', 'ContactSerializer', 'EcoleSerializer']
-from .voiture_serializer import VoitureSerializer
-from .evenement_serializer import EvenementSerializer
+__all__ = ['UserSerializer', 'RoleSerializer']

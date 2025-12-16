@@ -1,0 +1,10 @@
+<app-ui-form [title]="cycle ? 'Modifier le Cycle' : 'Nouveau Cycle'" [formGroup]="form" [isLoading]="isSubmitting"
+    [errorMessage]="errorMessage" [submitLabel]="cycle ? 'Modifier' : 'Créer'" (submitForm)="submit()"
+    (cancel)="onCancel()">
+
+    <div class="grid grid-cols-1 gap-6 mb-6">
+        <app-ui-input label="Nom du cycle" [control]="form.controls.name" [required]="true"></app-ui-input>
+        <app-ui-input label="Ordre d'affichage" type="number" [control]="form.controls.order"
+            [required]="true"></app-ui-input>
+    </div>
+</app-ui-form>

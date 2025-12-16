@@ -5,6 +5,49 @@ from apps.core.models import Module, Page
 
 # TA STRUCTURE DE SEED POUR LE MENU
 MODULE_STRUCTURE = [
+        {
+        "name": "Structure",
+        "order": 0,
+        "display_mod": "card-view",
+        "icon": "pascal-icon-dashboard",
+        "pages": [
+            {
+                "title": "Établissements",
+                "icon": "etablisement-icon",
+                "order": 0,
+                "link": "/establishments",
+                "tags": ["establishment"]
+            },
+            {
+                "title": "Années Scolaires",
+                "icon": "calendar-icon",
+                "order": 1,
+                "link": "/years",
+                "tags": ["academic_year"]
+            },
+            {
+                "title": "Cycles & Niveaux",
+                "icon": "tree-icon",
+                "order": 2,
+                "link": "/tree",
+                "tags": ["level"]
+            },
+            {
+                "title": "Classes",
+                "icon": "class-icon",
+                "order": 3,
+                "link": "/classes",
+                "tags": ["classroom"]
+            },
+            {
+                "title": "Matières",
+                "icon": "subject-icon",
+                "order": 4,
+                "link": "/subjects",
+                "tags": ["subject"]
+            },
+        ]
+    },
     {
         "name": "Admin",
         "order": 1,
@@ -24,34 +67,6 @@ MODULE_STRUCTURE = [
                 "order": 2,
                 "link": "/roles",
                 "tags": ["role",]
-            },
-            {
-                "title": "Personne",
-                "icon": "person-icon",
-                "order": 3,
-                "link": "/personnes",
-                "tags": ["personne"]
-            },
-            {
-                "title": "Ecole",
-                "icon": "school-icon",
-                "order": 4,
-                "link": "/ecoles",
-                "tags": ["ecole"]
-            },
-            {
-                "title": "Voiture",
-                "icon": "car-icon",
-                "order": 5,
-                "link": "/voitures",
-                "tags": ["voiture"]
-            },
-            {
-                "title": "Evénement",
-                "icon": "calendar-icon",
-                "order": 6,
-                "link": "/evenements",
-                "tags": ["evenement"]
             }
         ]
     },

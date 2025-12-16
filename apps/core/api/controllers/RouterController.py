@@ -35,6 +35,10 @@ class RouterView(APIView):
         # 2. Instancier et Vérifier la méthode
         controller_instance = controller_class()
         
+        # [CRITICAL UPDATE] On doit appeler initial() manuellement pour que le BaseController
+        # puisse injecter le contexte (Set Context) avant l'exécution de l'action.
+        controller_instance.initial(request)
+        
         if not hasattr(controller_instance, method_name):
             return Response(
                 {"detail": f"Méthode '{method_name}' non trouvée dans '{model_name}'."}, 
@@ -99,19 +103,28 @@ class RouterView(APIView):
 
         app_label = self.get_app_name_from_model(model_name)
         if not app_label:
+            # Retry with removed underscores (e.g. academic_year -> academicyear)
+            app_label = self.get_app_name_from_model(model_name.replace('_', ''))
+            
+        if not app_label:
             raise LookupError(f"Aucune application ne contient le modèle '{model_name}'")
         
         # Construction du chemin :
         # app: 'profilmanagement'
-        # fichier: 'role_controller' (minuscule)
-        # classe: 'RoleController' (Capitalisé)
-        module_path = f'apps.{app_label}.api.controllers.{model_name.lower()}_controller'
+        # fichier: 'role_controller' (minuscule, snake_case)
+        # classe: 'RoleController' (PascalCase)
+        
+        # Fichier : on garde le snake_case (ou on le force si besoin)
+        file_name = model_name.lower()
+        module_path = f'apps.{app_label}.api.controllers.{file_name}_controller'
         
         # Importation du module
         module = import_module(module_path)
         
-        # Récupération de la classe
-        class_name = f'{model_name.capitalize()}Controller'
+        # Récupération de la classe: academic_year -> AcademicYear
+        class_name_base = model_name.replace('_', ' ').title().replace(' ', '')
+        class_name = f'{class_name_base}Controller'
+        
         return getattr(module, class_name)
 
     def get_app_name_from_model(self, model_name):

@@ -8,11 +8,10 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   // Clé (URL BDD)      // Valeur (Import du Composant Standalone)
   '/users': () => import('../../features/profilmanagement/components/user-list/user-list.component').then(m => m.UserListComponent),
   '/roles': () => import('../../features/profilmanagement/components/role-list/role-list.component').then(m => m.RoleListComponent),
-  '/personnes': () => import('../../features/profilmanagement/components/personne-list/personne-list.component').then(m => m.PersonneListComponent),
-  '/ecoles': () => import('../../features/profilmanagement/components/ecole-list/ecole-list.component').then(m => m.EcoleListComponent),
-  '/products': () => import('../../features/products/components/product-list/product-list.component').then(m => m.ProductListComponent),
-  '/voitures': () => import('../../features/profilmanagement/components/voiture-list/voiture-list.component').then(m => m.VoitureListComponent),
-  '/evenements': () => import('../../features/profilmanagement/components/evenement-list/evenement-list.component').then(m => m.EvenementListComponent),
-
+  '/years': () => import('../../features/structure/components/academic-year-list/academic-year-list.component').then(m => m.AcademicYearListComponent),
+  '/subjects': () => import('../../features/structure/components/subject-list/subject-list.component').then(m => m.SubjectListComponent),
+  '/classes': () => import('../../features/structure/components/classroom-list/classroom-list.component').then(m => m.ClassRoomListComponent),
+  '/establishments': () => import('../../features/structure/components/establishment-list/establishment-list.component').then(m => m.EstablishmentListComponent),
+  '/tree': () => import('../../features/structure/components/structure-tree/structure-tree.component').then(m => m.StructureTreeComponent),
   // Ajoute tes futurs modules ici...
 };

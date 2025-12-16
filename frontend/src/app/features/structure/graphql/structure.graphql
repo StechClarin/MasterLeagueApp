@@ -1,0 +1,199 @@
+# ==============================================================================
+# FRAGMENTS
+# ==============================================================================
+
+fragment EstablishmentFields on EstablishmentType {
+  id
+  name
+  # code aliased/used if needed, but keeping simple
+  phone
+  email
+  address
+  logo
+  isActive
+}
+
+fragment AcademicYearFields on AcademicYearType {
+  id
+  name
+  start_date
+  end_date
+  isActive
+  isArchived
+}
+
+fragment CycleFields on CycleType {
+  id
+  name
+  order
+  isActive
+}
+
+fragment LevelFields on LevelType {
+  id
+  name
+  shortName
+  order
+  isActive
+  cycle {
+    id
+    name
+  }
+}
+
+fragment ClassRoomFields on ClassRoomType {
+  id
+  name
+  capacity
+  isActive
+  level {
+    id
+    name
+    cycle {
+      id
+      name
+    }
+  }
+  academicYear {
+    id
+    name
+  }
+  # mainTeacher removed because likely not in Type yet or causing issues
+}
+
+fragment LevelSubjectFields on LevelSubjectType {
+  id
+  coefficient
+  hourlyQuota
+  level {
+    id
+    name
+  }
+}
+
+fragment SubjectFields on SubjectType {
+  id
+  name
+  code
+  isOptional
+  isActive
+  levelSubjects {
+    ...LevelSubjectFields
+  }
+}
+
+fragment StructureResponse on StructureResponseType {
+  activeAcademicYear {
+    id
+    name
+    start_date
+    end_date
+    isActive
+    isArchived
+  }
+  cycles {
+    ...CycleFields
+    levels {
+      ...LevelFields
+    }
+  }
+}
+
+# ==============================================================================
+# QUERIES (Read-Only for now)
+#Matches backend: academicyears -> [AcademicYearType]
+# ==============================================================================
+
+query GetAllEstablishments($search: String, $page: Int, $pageSize: Int) {
+  establishments(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...EstablishmentFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetEstablishmentById($id: ID!) {
+  establishment(id: $id) {
+    ...EstablishmentFields
+  }
+}
+
+query GetAllAcademicYears($search: String, $page: Int, $pageSize: Int) {
+  academicyears(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...AcademicYearFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAcademicYearById($id: ID!) {
+  academicyear(id: $id) {
+    ...AcademicYearFields
+  }
+}
+
+query GetAllCycles($search: String, $page: Int, $pageSize: Int) {
+  cycles(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...CycleFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAllLevels($search: String, $page: Int, $pageSize: Int) {
+  levels(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...LevelFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAllClassRooms($search: String, $page: Int, $pageSize: Int) {
+  classrooms(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...ClassRoomFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetClassRoomById($id: ID!) {
+  classroom(id: $id) {
+    ...ClassRoomFields
+  }
+}
+
+query GetAllSubjects($search: String, $page: Int, $pageSize: Int) {
+  subjects(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...SubjectFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+# ==============================================================================
+# SPECIAL STRUCTURE QUERIES
+# ==============================================================================
+
+query GetActiveStructure {
+  activeStructure {
+    ...StructureResponse
+  }
+}

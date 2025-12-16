@@ -8,6 +8,8 @@ import { map, startWith, takeUntil } from 'rxjs/operators';
 
 // ✅ On utilise l'alias @core pour l'import propre
 import { AuthService } from '@core/services/auth.service';
+import { StructureStateService } from '@core/services/structure-state.service';
+import { GetAllEstablishmentsGQL, EstablishmentType } from '@app/graphql/generated';
 import { GET_SIDEBAR_MODULES } from '../sidebar/sidebar.queries';
 
 interface Page {
@@ -36,12 +38,35 @@ interface Page {
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             <span class="text-indigo-600">Vue d'ensemble</span>
           </div>
+      
+
         </div>
       </div>
 
       <!-- Right Section: Actions & Profile -->
       <div class="flex items-center gap-6">
         
+        <!-- Establishment Selector -->
+        <div class="hidden md:flex items-center">
+        <div class="relative group">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m8-2a2 2 0 100-4 2 2 0 000 4"></path></svg>
+            </div>
+            <select 
+                [value]="structureState.currentEstablishmentId() || ''"
+                (change)="onEstablishmentChange($event)"
+                class="pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full appearance-none hover:bg-white hover:border-indigo-300 transition-all cursor-pointer font-medium">
+                <option value="">Tous les établissements</option>
+                <option *ngFor="let ets of establishments$ | async" [value]="ets?.id">
+                    {{ ets?.name }}
+                </option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+        </div>
+        </div>
+
         <!-- Search Bar -->
         <div class="hidden md:flex items-center relative group">
           <svg class="w-4 h-4 absolute left-3 text-gray-400 group-focus-within:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -139,6 +164,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private apollo = inject(Apollo);
   private router = inject(Router);
+  public structureState = inject(StructureStateService);
+  private getAllEstablishmentsGQL = inject(GetAllEstablishmentsGQL);
+
+  establishments$ = this.getAllEstablishmentsGQL.watch().valueChanges.pipe(
+    map(res => res.data.establishments?.items || [])
+  );
+
+  onEstablishmentChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const selectedId = select.value || null;
+    console.log('[Header] Établissement sélectionné (Raw):', selectedId);
+    this.structureState.setEstablishment(selectedId);
+  }
 
   searchControl = new FormControl('');
   filteredPages$!: Observable<Page[]>;

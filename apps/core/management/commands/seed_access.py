@@ -24,7 +24,66 @@ GROUP_STRUCTURE = [
             {"name": "Supprimer un rôle", "codename": "delete_role"},
         ]
     },
-    # --- AJOUTE TES AUTRES GROUPES ET PERMISSIONS ICI ---
+    {
+        "name": "Gestion des Classes",
+        "tag": "classroom",
+        "permissions": [
+            {"name": "Lire les classes", "codename": "view_classroom"},
+            {"name": "Ajouter une classe", "codename": "add_classroom"},
+            {"name": "Modifier une classe", "codename": "change_classroom"},
+            {"name": "Supprimer une classe", "codename": "delete_classroom"},
+        ]
+    },
+    {
+        "name": "Gestion des Niveaux",
+        "tag": "level",
+        "permissions": [
+            {"name": "Lire les niveaux", "codename": "view_level"},
+            {"name": "Ajouter un niveau", "codename": "add_level"},
+            {"name": "Modifier un niveau", "codename": "change_level"},
+            {"name": "Supprimer un niveau", "codename": "delete_level"},
+        ]
+    },
+    {
+        "name": "Gestion des Matières",
+        "tag": "subject",
+        "permissions": [
+            {"name": "Lire les matières", "codename": "view_subject"},
+            {"name": "Ajouter une matière", "codename": "add_subject"},
+            {"name": "Modifier une matière", "codename": "change_subject"},
+            {"name": "Supprimer une matière", "codename": "delete_subject"},
+        ]
+    },
+    {
+        "name": "Gestion des Années Académiques",
+        "tag": "academic_year",
+        "permissions": [
+            {"name": "Lire les années académiques", "codename": "view_academic_year"},
+            {"name": "Ajouter une année académique", "codename": "add_academic_year"},
+            {"name": "Modifier une année académique", "codename": "change_academic_year"},
+            {"name": "Supprimer une année académique", "codename": "delete_academic_year"},
+        ]
+    },
+    {
+        "name": "Gestion des Cycles",
+        "tag": "cycle",
+        "permissions": [
+            {"name": "Lire les cycles", "codename": "view_cycle"},
+            {"name": "Ajouter un cycle", "codename": "add_cycle"},
+            {"name": "Modifier un cycle", "codename": "change_cycle"},
+            {"name": "Supprimer un cycle", "codename": "delete_cycle"},
+        ]
+    },
+    {
+        "name": "Gestion des Etablissements",
+        "tag": "establishment",
+        "permissions": [
+            {"name": "Lire les établissements", "codename": "view_establishment"},
+            {"name": "Ajouter un établissement", "codename": "add_establishment"},
+            {"name": "Modifier un établissement", "codename": "change_establishment"},
+            {"name": "Supprimer un établissement", "codename": "delete_establishment"},
+        ]
+    },
 ]
 
 class Command(BaseCommand):

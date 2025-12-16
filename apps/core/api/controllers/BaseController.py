@@ -26,6 +26,18 @@ class BaseController(APIView):
         self.service = self.service_class()
         self.serializer = self.serializer_class
 
+    def initial(self, request, *args, **kwargs):
+        """
+        Surcharge de la méthode initial de DRF (exécutée avant chaque action).
+        On en profite pour injecter le contexte (User, Etablissement) dans le service.
+        """
+        super().initial(request, *args, **kwargs)
+        
+        if self.service and hasattr(self.service, 'set_context'):
+            # request.establishment_id est défini par notre EstablishmentMiddleware
+            est_id = getattr(request, 'establishment_id', None)
+            self.service.set_context(request.user, est_id)
+
     # --- HELPER POUR RÉPONSE STANDARD ---
     def success_response(self, data, message, status_code):
         return Response({
@@ -86,7 +98,21 @@ class BaseController(APIView):
         # 2. VALIDATION (Serializer)
         # On valide les données préparées
         serializer = self.serializer(instance, data=prepared_data, partial=bool(instance))
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            # DEBUG INTENSIF : On renvoie tout ce qu'on sait pour comprendre pourquoi l'injection échoue
+            debug_info = {
+                "errors": serializer.errors,
+                "debug_context": {
+                    "request_establishment_id": getattr(request, 'establishment_id', 'NOT FOUND IN REQUEST'),
+                    "service_establishment_id": getattr(self.service, 'establishment_id', 'NOT FOUND IN SERVICE'),
+                    "prepared_data_has_establishment": 'establishment' in prepared_data,
+                    "prepared_data_establishment_value": prepared_data.get('establishment'),
+                    "header_x_establishment_id": request.headers.get('x-establishment-id') or request.headers.get('X-Establishment-ID'),
+                    "all_headers_keys": list(request.headers.keys())
+                }
+            }
+            return Response(debug_info, status=status.HTTP_400_BAD_REQUEST)
+        
         validated_data = serializer.validated_data
 
         # 3. EXÉCUTION (Service)

@@ -33,36 +33,36 @@ fragment PermissionFields on PermissionType {
   tag
 }
 
-fragment PersonneItem on PersonneType {
-  id
-  nom
-  prenom
-  age
-  nationalite
-  genre
-  taille
-  poid
-  createdAt
-  updatedAt
-  contacts {
-    id
-    telephone
-    email
-    adresse
-  }
-}
-
-fragment ContactItem on ContactType {
-  id
-  telephone
-  email
-  adresse
-  personne {
-    id
-    nom
-    prenom
-  }
-}
+# fragment PersonneItem on PersonneType {
+#   id
+#   nom
+#   prenom
+#   age
+#   nationalite
+#   genre
+#   taille
+#   poid
+#   createdAt
+#   updatedAt
+#   contacts {
+#     id
+#     telephone
+#     email
+#     adresse
+#   }
+# }
+# 
+# fragment ContactItem on ContactType {
+#   id
+#   telephone
+#   email
+#   adresse
+#   personne {
+#     id
+#     nom
+#     prenom
+#   }
+# }
 
 # ==============================================================================
 # USER QUERIES
@@ -112,119 +112,4 @@ query GetAllPermissions {
 }
 
 
-# ==============================================================================
-# PERSONNE QUERIES
-# ==============================================================================
 
-query GetAllPersonnes($search: String, $page: Int, $pageSize: Int) {
-  personnes(search: $search, page: $page, pageSize: $pageSize) {
-    items {
-      ...PersonneItem
-    }
-    totalCount
-    numPages
-    currentPage
-  }
-}
-
-query GetPersonneById($id: ID!) {
-  personne(id: $id) {
-    ...PersonneItem
-    contacts {
-      id
-      telephone
-      email
-      adresse
-    }
-  }
-}
-
-# ==============================================================================
-# ECOLE QUERIES
-# ==============================================================================
-
-fragment EcoleItem on EcoleType {
-  id
-  nom
-  adresse
-  createdAt
-  updatedAt
-}
-
-query GetAllEcoles($nom: String, $page: Int, $pageSize: Int) {
-  ecoles(nom: $nom, page: $page, pageSize: $pageSize) {
-    items {
-      ...EcoleItem
-    }
-    totalCount
-    numPages
-    currentPage
-  }
-}
-
-query GetEcoleById($id: ID!) {
-  ecole(id: $id) {
-    ...EcoleItem
-  }
-}
-
-# ==============================================================================
-# VOITURE QUERIES
-# ==============================================================================
-
-fragment VoitureItem on VoitureType {
-  id
-  name
-  couleur
-  matricule
-  createdAt
-  updatedAt
-}
-
-query GetAllVoitures($search: String, $page: Int, $pageSize: Int) {
-  voitures(search: $search, page: $page, pageSize: $pageSize) {
-    items {
-      ...VoitureItem
-    }
-    totalCount
-    numPages
-    currentPage
-  }
-}
-
-query GetVoitureById($id: ID!) {
-  voiture(id: $id) {
-    ...VoitureItem
-  }
-}
-
-# ==============================================================================
-# EVENEMENT QUERIES
-# ==============================================================================
-
-fragment EvenementItem on EvenementType {
-  id
-  nom
-  lieu
-  dateDebut
-  dateFin
-  createdAt
-  updatedAt
-}
-
-query GetAllEvenements($search: String, $page: Int, $pageSize: Int) {
-  evenements(search: $search, page: $page, pageSize: $pageSize) {
-    items {
-      ...EvenementItem
-    }
-    totalCount
-    numPages
-    currentPage
-  }
-}
-
-query GetEvenementById($id: ID!) {
-  evenement(id: $id) {
-    ...EvenementItem
-  }
-}

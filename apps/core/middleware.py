@@ -55,3 +55,22 @@ class JWTMiddleware:
         # ou l'utilisateur de session s'il existe (cas rare de double auth)
         from django.contrib.auth.middleware import get_user
         return get_user(request)
+
+class EstablishmentMiddleware:
+    """
+    Middleware pour extraire l'ID de l'établissement du Header custom.
+    X-Establishment-ID -> request.establishment_id
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Utilisation de request.headers (plus robuste et insensible à la casse)
+        # Le header envoyé est 'X-Establishment-ID'
+        est_id = request.headers.get('x-establishment-id') or request.headers.get('X-Establishment-ID')
+        
+        # On stocke l'ID dans la request pour l'utiliser plus tard (Contrôleurs, Services)
+        # On peut aussi valider si l'ID est un entier ou existe, mais restons légers ici.
+        request.establishment_id = est_id if est_id else None
+        
+        return self.get_response(request)

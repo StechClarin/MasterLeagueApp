@@ -1,0 +1,16 @@
+<app-ui-form [title]="classroom ? 'Modifier la Classe' : 'Nouvelle Classe'" [formGroup]="form"
+    [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="classroom ? 'Modifier' : 'Créer'"
+    (submitForm)="submit()" (cancel)="onCancel()">
+
+    <div class="grid grid-cols-1 gap-6 mb-6">
+        <app-ui-select label="Niveau" [control]="form.controls.levelId" [options]="levels" [required]="true"
+            placeholder="Sélectionner un niveau"></app-ui-select>
+
+        <app-ui-input label="Nom de la classe" [control]="form.controls.name" [required]="true"
+            placeholder="ex: 6ème A"></app-ui-input>
+
+        <app-ui-input label="Capacité (élèves)" type="number" [control]="form.controls.capacity"
+            [required]="true"></app-ui-input>
+    </div>
+
+</app-ui-form>

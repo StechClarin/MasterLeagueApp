@@ -1,0 +1,13 @@
+import graphene
+from graphene_django.types import DjangoObjectType
+from ...models.academic_year import AcademicYear
+
+class AcademicYearType(DjangoObjectType):
+    # On force le snake_case pour correspondre à la requête frontend révisée
+    start_date = graphene.Date(name='start_date', source='start_date')
+    end_date = graphene.Date(name='end_date', source='end_date')
+
+    class Meta:
+        model = AcademicYear
+        # On exclut les champs automatiques pour éviter que Graphene génère startDate/endDate
+        exclude = ('start_date', 'end_date')

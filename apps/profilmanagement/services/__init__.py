@@ -1,5 +1,4 @@
-from .personne_service import PersonneService
-from .contact_service import ContactService
-from .ecole_service import EcoleService
+from .user_service import UserService
+from .role_service import RoleService
 
-__all__ = ['PersonneService', 'ContactService', 'EcoleService']
+__all__ = ['UserService', 'RoleService']

@@ -16,6 +16,12 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   /**
+   * The `Date` scalar type represents a Date
+   * value as specified by
+   * [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+   */
+  Date: { input: any; output: any; }
+  /**
    * The `DateTime` scalar type represents a DateTime
    * value as specified by
    * [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
@@ -32,69 +38,134 @@ export type Scalars = {
   JSONString: { input: any; output: any; }
 };
 
-export type CarType = {
-  __typename?: 'CarType';
-  brand: Scalars['String']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  displayName?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
-  isSold: Scalars['Boolean']['output'];
-  modelName: Scalars['String']['output'];
-  price: Scalars['Decimal']['output'];
-  updatedAt: Scalars['DateTime']['output'];
-  year: Scalars['Int']['output'];
-};
-
-export type ContactType = {
-  __typename?: 'ContactType';
-  adresse: Scalars['String']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  email: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  personne: PersonneType;
-  telephone: Scalars['String']['output'];
-  updatedAt: Scalars['DateTime']['output'];
-};
-
-export type EcolePaginatedType = {
-  __typename?: 'EcolePaginatedType';
-  currentPage?: Maybe<Scalars['Int']['output']>;
-  items?: Maybe<Array<Maybe<EcoleType>>>;
-  numPages?: Maybe<Scalars['Int']['output']>;
-  pageSize?: Maybe<Scalars['Int']['output']>;
-  totalCount?: Maybe<Scalars['Int']['output']>;
-};
-
-export type EcoleType = {
-  __typename?: 'EcoleType';
-  adresse?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['DateTime']['output'];
-  id: Scalars['ID']['output'];
-  nom: Scalars['String']['output'];
-  updatedAt: Scalars['DateTime']['output'];
-};
-
-export type EvenementPaginatedType = {
-  __typename?: 'EvenementPaginatedType';
-  currentPage?: Maybe<Scalars['Int']['output']>;
-  items?: Maybe<Array<Maybe<EvenementType>>>;
-  numPages?: Maybe<Scalars['Int']['output']>;
-  pageSize?: Maybe<Scalars['Int']['output']>;
-  totalCount?: Maybe<Scalars['Int']['output']>;
-};
-
-export type EvenementType = {
-  __typename?: 'EvenementType';
-  createdAt: Scalars['DateTime']['output'];
-  dateDebut: Scalars['DateTime']['output'];
-  dateFin: Scalars['DateTime']['output'];
-  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+export type AcademicYearType = {
+  __typename?: 'AcademicYearType';
+  classrooms: Array<ClassRoomType>;
+  end_date: Scalars['Date']['output'];
+  establishment: EstablishmentType;
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
-  isDeleted: Scalars['Boolean']['output'];
-  lieu: Scalars['String']['output'];
-  nom: Scalars['String']['output'];
+  isArchived: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  start_date: Scalars['Date']['output'];
+};
+
+export type AcademicYearTypePaginated = {
+  __typename?: 'AcademicYearTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<AcademicYearType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type ClassRoomType = {
+  __typename?: 'ClassRoomType';
+  academicYear: AcademicYearType;
+  capacity: Scalars['Int']['output'];
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  level: LevelType;
+  mainTeacher?: Maybe<UserType>;
+  name: Scalars['String']['output'];
+  isActive: Scalars['Boolean']['output'];
+};
+
+export type ClassRoomTypePaginated = {
+  __typename?: 'ClassRoomTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<ClassRoomType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type CycleType = {
+  __typename?: 'CycleType';
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  levels: Array<LevelType>;
+  name: Scalars['String']['output'];
+  order: Scalars['Int']['output'];
+  isActive: Scalars['Boolean']['output'];
+};
+
+export type CycleTypePaginated = {
+  __typename?: 'CycleTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<CycleType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type EstablishmentType = {
+  __typename?: 'EstablishmentType';
+  academicyearSet: Array<AcademicYearType>;
+  address?: Maybe<Scalars['String']['output']>;
+  classroomSet: Array<ClassRoomType>;
+  code?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  cycleSet: Array<CycleType>;
+  email?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  levelSet: Array<LevelType>;
+  levelsubjectSet: Array<LevelSubjectType>;
+  logo?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  phone?: Maybe<Scalars['String']['output']>;
+  subjectSet: Array<SubjectType>;
   updatedAt: Scalars['DateTime']['output'];
+  users: Array<UserType>;
+  isActive: Scalars['Boolean']['output'];
+};
+
+export type EstablishmentTypePaginated = {
+  __typename?: 'EstablishmentTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<EstablishmentType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type LevelSubjectType = {
+  __typename?: 'LevelSubjectType';
+  coefficient: Scalars['Decimal']['output'];
+  establishment: EstablishmentType;
+  /** Volume horaire annuel */
+  hourlyQuota: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  level: LevelType;
+  subject: SubjectType;
+};
+
+export type LevelType = {
+  __typename?: 'LevelType';
+  classes?: Maybe<Array<Maybe<ClassRoomType>>>;
+  classrooms: Array<ClassRoomType>;
+  cycle: CycleType;
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  levelSubjects: Array<LevelSubjectType>;
+  name: Scalars['String']['output'];
+  order: Scalars['Int']['output'];
+  shortName?: Maybe<Scalars['String']['output']>;
+  isActive: Scalars['Boolean']['output'];
+};
+
+
+export type LevelTypeClassesArgs = {
+  year?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type LevelTypePaginated = {
+  __typename?: 'LevelTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<LevelType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 export type ModuleType = {
@@ -132,129 +203,87 @@ export type PermissionType = {
   tag: Scalars['String']['output'];
 };
 
-export type PersonnePaginatedType = {
-  __typename?: 'PersonnePaginatedType';
-  currentPage?: Maybe<Scalars['Int']['output']>;
-  items?: Maybe<Array<Maybe<PersonneType>>>;
-  numPages?: Maybe<Scalars['Int']['output']>;
-  pageSize?: Maybe<Scalars['Int']['output']>;
-  totalCount?: Maybe<Scalars['Int']['output']>;
-};
-
-export type PersonneType = {
-  __typename?: 'PersonneType';
-  age: Scalars['Int']['output'];
-  contacts: Array<ContactType>;
-  createdAt: Scalars['DateTime']['output'];
-  genre: ProfilmanagementPersonneGenreChoices;
-  id: Scalars['ID']['output'];
-  nationalite: Scalars['String']['output'];
-  nom: Scalars['String']['output'];
-  /** Poids en kg */
-  poid: Scalars['Decimal']['output'];
-  prenom: Scalars['String']['output'];
-  /** Taille en mètres */
-  taille: Scalars['Decimal']['output'];
-  updatedAt: Scalars['DateTime']['output'];
-};
-
-export type ProductType = {
-  __typename?: 'ProductType';
-  createdAt: Scalars['DateTime']['output'];
-  id: Scalars['ID']['output'];
-  name: Scalars['String']['output'];
-  updatedAt: Scalars['DateTime']['output'];
-};
-
-/** An enumeration. */
-export enum ProfilmanagementPersonneGenreChoices {
-  /** Féminin */
-  F = 'F',
-  /** Masculin */
-  M = 'M',
-  /** Autre */
-  O = 'O'
-}
-
 export type Query = {
   __typename?: 'Query';
-  car?: Maybe<CarType>;
-  cars?: Maybe<Array<Maybe<CarType>>>;
-  contact?: Maybe<ContactType>;
-  contacts?: Maybe<Array<Maybe<ContactType>>>;
-  ecole?: Maybe<EcoleType>;
-  ecoles?: Maybe<EcolePaginatedType>;
-  evenement?: Maybe<EvenementType>;
-  evenements?: Maybe<EvenementPaginatedType>;
+  academicyear?: Maybe<AcademicYearType>;
+  academicyears?: Maybe<AcademicYearTypePaginated>;
+  activeStructure?: Maybe<StructureResponseType>;
+  classroom?: Maybe<ClassRoomType>;
+  classrooms?: Maybe<ClassRoomTypePaginated>;
+  cycle?: Maybe<CycleType>;
+  cycles?: Maybe<CycleTypePaginated>;
+  establishment?: Maybe<EstablishmentType>;
+  establishments?: Maybe<EstablishmentTypePaginated>;
+  level?: Maybe<LevelType>;
+  levels?: Maybe<LevelTypePaginated>;
   modules?: Maybe<Array<Maybe<ModuleType>>>;
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
-  personne?: Maybe<PersonneType>;
-  personnes?: Maybe<PersonnePaginatedType>;
-  product?: Maybe<ProductType>;
-  products?: Maybe<Array<Maybe<ProductType>>>;
   role?: Maybe<RoleType>;
   roles?: Maybe<Array<Maybe<RoleType>>>;
+  subject?: Maybe<SubjectType>;
+  subjects?: Maybe<SubjectTypePaginated>;
   user?: Maybe<UserType>;
   users?: Maybe<UserPaginatedType>;
-  voiture?: Maybe<VoitureType>;
-  voitures?: Maybe<VoiturePaginatedType>;
 };
 
 
-export type QueryCarArgs = {
+export type QueryAcademicyearArgs = {
   id: Scalars['ID']['input'];
 };
 
 
-export type QueryCarsArgs = {
-  brand?: InputMaybe<Scalars['String']['input']>;
-  isSold?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-
-export type QueryContactArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryEcoleArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryEcolesArgs = {
-  nom?: InputMaybe<Scalars['String']['input']>;
-  page?: InputMaybe<Scalars['Int']['input']>;
-  pageSize?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-export type QueryEvenementArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryEvenementsArgs = {
+export type QueryAcademicyearsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type QueryPersonneArgs = {
+export type QueryClassroomArgs = {
   id: Scalars['ID']['input'];
 };
 
 
-export type QueryPersonnesArgs = {
-  nom?: InputMaybe<Scalars['String']['input']>;
+export type QueryClassroomsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type QueryProductArgs = {
+export type QueryCycleArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryCyclesArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryEstablishmentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryEstablishmentsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryLevelArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryLevelsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -265,6 +294,18 @@ export type QueryRoleArgs = {
 
 export type QueryRolesArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QuerySubjectArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QuerySubjectsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -281,24 +322,37 @@ export type QueryUsersArgs = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
-
-export type QueryVoitureArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryVoituresArgs = {
-  page?: InputMaybe<Scalars['Int']['input']>;
-  pageSize?: InputMaybe<Scalars['Int']['input']>;
-  search?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type RoleType = {
   __typename?: 'RoleType';
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
   users: Array<UserType>;
+};
+
+export type StructureResponseType = {
+  __typename?: 'StructureResponseType';
+  activeAcademicYear?: Maybe<AcademicYearType>;
+  cycles?: Maybe<Array<Maybe<CycleType>>>;
+};
+
+export type SubjectType = {
+  __typename?: 'SubjectType';
+  code: Scalars['String']['output'];
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  isOptional: Scalars['Boolean']['output'];
+  levelSubjects?: Maybe<Array<Maybe<LevelSubjectType>>>;
+  name: Scalars['String']['output'];
+};
+
+export type SubjectTypePaginated = {
+  __typename?: 'SubjectTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<SubjectType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 export type UserPaginatedType = {
@@ -314,6 +368,7 @@ export type UserType = {
   __typename?: 'UserType';
   dateJoined: Scalars['DateTime']['output'];
   email: Scalars['String']['output'];
+  establishment?: Maybe<EstablishmentType>;
   firstName: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
@@ -322,27 +377,9 @@ export type UserType = {
   isSuperuser: Scalars['Boolean']['output'];
   lastLogin?: Maybe<Scalars['DateTime']['output']>;
   lastName: Scalars['String']['output'];
+  mainClassrooms: Array<ClassRoomType>;
   roles: Array<RoleType>;
   username: Scalars['String']['output'];
-};
-
-export type VoiturePaginatedType = {
-  __typename?: 'VoiturePaginatedType';
-  currentPage?: Maybe<Scalars['Int']['output']>;
-  items?: Maybe<Array<Maybe<VoitureType>>>;
-  numPages?: Maybe<Scalars['Int']['output']>;
-  pageSize?: Maybe<Scalars['Int']['output']>;
-  totalCount?: Maybe<Scalars['Int']['output']>;
-};
-
-export type VoitureType = {
-  __typename?: 'VoitureType';
-  couleur: Scalars['String']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  id: Scalars['ID']['output'];
-  matricule: Scalars['String']['output'];
-  name: Scalars['String']['output'];
-  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type UserFieldsFragment = { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> };
@@ -350,10 +387,6 @@ export type UserFieldsFragment = { __typename?: 'UserType', id: string, username
 export type RoleFieldsFragment = { __typename?: 'RoleType', id: string, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string } | null> | null };
 
 export type PermissionFieldsFragment = { __typename?: 'PermissionType', id: string, name: string, codename: string, tag: string };
-
-export type PersonneItemFragment = { __typename?: 'PersonneType', id: string, nom: string, prenom: string, age: number, nationalite: string, genre: ProfilmanagementPersonneGenreChoices, taille: any, poid: any, createdAt: any, updatedAt: any, contacts: Array<{ __typename?: 'ContactType', id: string, telephone: string, email: string, adresse: string }> };
-
-export type ContactItemFragment = { __typename?: 'ContactType', id: string, telephone: string, email: string, adresse: string, personne: { __typename?: 'PersonneType', id: string, nom: string, prenom: string } };
 
 export type GetAllUsersQueryVariables = Exact<{
   username?: InputMaybe<Scalars['String']['input']>;
@@ -392,75 +425,101 @@ export type GetAllPermissionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetAllPermissionsQuery = { __typename?: 'Query', permissions?: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string, tag: string } | null> | null };
 
-export type GetAllPersonnesQueryVariables = Exact<{
-  nom?: InputMaybe<Scalars['String']['input']>;
-  page?: InputMaybe<Scalars['Int']['input']>;
-  pageSize?: InputMaybe<Scalars['Int']['input']>;
-}>;
+export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean };
 
+export type AcademicYearFieldsFragment = { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean };
 
-export type GetAllPersonnesQuery = { __typename?: 'Query', personnes?: { __typename?: 'PersonnePaginatedType', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonneType', id: string, nom: string, prenom: string, age: number, nationalite: string, genre: ProfilmanagementPersonneGenreChoices, taille: any, poid: any, createdAt: any, updatedAt: any } | null> | null } | null };
+export type CycleFieldsFragment = { __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean };
 
-export type GetPersonneByIdQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
-}>;
+export type LevelFieldsFragment = { __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string } };
 
+export type ClassRoomFieldsFragment = { __typename?: 'ClassRoomType', id: string, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: string, name: string, cycle: { __typename?: 'CycleType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } };
 
-export type GetPersonneByIdQuery = { __typename?: 'Query', personne?: { __typename?: 'PersonneType', id: string, nom: string, prenom: string, age: number, nationalite: string, genre: ProfilmanagementPersonneGenreChoices, taille: any, poid: any, createdAt: any, updatedAt: any, contacts: Array<{ __typename?: 'ContactType', id: string, telephone: string, email: string, adresse: string }> } | null };
+export type LevelSubjectFieldsFragment = { __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } };
 
-export type EcoleItemFragment = { __typename?: 'EcoleType', id: string, nom: string, adresse?: string | null, createdAt: any, updatedAt: any };
+export type SubjectFieldsFragment = { __typename?: 'SubjectType', id: string, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } } | null> | null };
 
-export type GetAllEcolesQueryVariables = Exact<{
-  nom?: InputMaybe<Scalars['String']['input']>;
-  page?: InputMaybe<Scalars['Int']['input']>;
-  pageSize?: InputMaybe<Scalars['Int']['input']>;
-}>;
+export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, levels: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, cycle: { __typename?: 'CycleType', id: string, name: string } }> } | null> | null };
 
-
-export type GetAllEcolesQuery = { __typename?: 'Query', ecoles?: { __typename?: 'EcolePaginatedType', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EcoleType', id: string, nom: string, adresse?: string | null, createdAt: any, updatedAt: any } | null> | null } | null };
-
-export type GetEcoleByIdQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
-}>;
-
-
-export type GetEcoleByIdQuery = { __typename?: 'Query', ecole?: { __typename?: 'EcoleType', id: string, nom: string, adresse?: string | null, createdAt: any, updatedAt: any } | null };
-
-export type VoitureItemFragment = { __typename?: 'VoitureType', id: string, name: string, couleur: string, matricule: string, createdAt: any, updatedAt: any };
-
-export type GetAllVoituresQueryVariables = Exact<{
+export type GetAllEstablishmentsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllVoituresQuery = { __typename?: 'Query', voitures?: { __typename?: 'VoiturePaginatedType', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'VoitureType', id: string, name: string, couleur: string, matricule: string, createdAt: any, updatedAt: any } | null> | null } | null };
+export type GetAllEstablishmentsQuery = { __typename?: 'Query', establishments?: { __typename?: 'EstablishmentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null } | null> | null } | null };
 
-export type GetVoitureByIdQueryVariables = Exact<{
+export type GetEstablishmentByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetVoitureByIdQuery = { __typename?: 'Query', voiture?: { __typename?: 'VoitureType', id: string, name: string, couleur: string, matricule: string, createdAt: any, updatedAt: any } | null };
+export type GetEstablishmentByIdQuery = { __typename?: 'Query', establishment?: { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null } | null };
 
-export type EvenementItemFragment = { __typename?: 'EvenementType', id: string, nom: string, lieu: string, dateDebut: any, dateFin: any, createdAt: any, updatedAt: any };
-
-export type GetAllEvenementsQueryVariables = Exact<{
+export type GetAllAcademicYearsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllEvenementsQuery = { __typename?: 'Query', evenements?: { __typename?: 'EvenementPaginatedType', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EvenementType', id: string, nom: string, lieu: string, dateDebut: any, dateFin: any, createdAt: any, updatedAt: any } | null> | null } | null };
+export type GetAllAcademicYearsQuery = { __typename?: 'Query', academicyears?: { __typename?: 'AcademicYearTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null> | null } | null };
 
-export type GetEvenementByIdQueryVariables = Exact<{
+export type GetAcademicYearByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetEvenementByIdQuery = { __typename?: 'Query', evenement?: { __typename?: 'EvenementType', id: string, nom: string, lieu: string, dateDebut: any, dateFin: any, createdAt: any, updatedAt: any } | null };
+export type GetAcademicYearByIdQuery = { __typename?: 'Query', academicyear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null };
+
+export type GetAllCyclesQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllCyclesQuery = { __typename?: 'Query', cycles?: { __typename?: 'CycleTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number } | null> | null } | null };
+
+export type GetAllLevelsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllLevelsQuery = { __typename?: 'Query', levels?: { __typename?: 'LevelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, cycle: { __typename?: 'CycleType', id: string, name: string } } | null> | null } | null };
+
+export type GetAllClassRoomsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllClassRoomsQuery = { __typename?: 'Query', classrooms?: { __typename?: 'ClassRoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'ClassRoomType', id: string, name: string, capacity: number, level: { __typename?: 'LevelType', id: string, name: string, cycle: { __typename?: 'CycleType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null> | null } | null };
+
+export type GetClassRoomByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetClassRoomByIdQuery = { __typename?: 'Query', classroom?: { __typename?: 'ClassRoomType', id: string, name: string, capacity: number, level: { __typename?: 'LevelType', id: string, name: string, cycle: { __typename?: 'CycleType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null };
+
+export type GetAllSubjectsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllSubjectsQuery = { __typename?: 'Query', subjects?: { __typename?: 'SubjectTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'SubjectType', id: string, name: string, code: string, isOptional: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } } | null> | null } | null> | null } | null };
+
+export type GetActiveStructureQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetActiveStructureQuery = { __typename?: 'Query', activeStructure?: { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, levels: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, cycle: { __typename?: 'CycleType', id: string, name: string } }> } | null> | null } | null };
 
 export const UserFieldsFragmentDoc = gql`
     fragment UserFields on UserType {
@@ -496,69 +555,110 @@ export const PermissionFieldsFragmentDoc = gql`
   tag
 }
     `;
-export const PersonneItemFragmentDoc = gql`
-    fragment PersonneItem on PersonneType {
-  id
-  nom
-  prenom
-  age
-  nationalite
-  genre
-  taille
-  poid
-  createdAt
-  updatedAt
-  contacts {
-    id
-    telephone
-    email
-    adresse
-  }
-}
-    `;
-export const ContactItemFragmentDoc = gql`
-    fragment ContactItem on ContactType {
-  id
-  telephone
-  email
-  adresse
-  personne {
-    id
-    nom
-    prenom
-  }
-}
-    `;
-export const EcoleItemFragmentDoc = gql`
-    fragment EcoleItem on EcoleType {
-  id
-  nom
-  adresse
-  createdAt
-  updatedAt
-}
-    `;
-export const VoitureItemFragmentDoc = gql`
-    fragment VoitureItem on VoitureType {
+export const EstablishmentFieldsFragmentDoc = gql`
+    fragment EstablishmentFields on EstablishmentType {
   id
   name
-  couleur
-  matricule
-  createdAt
-  updatedAt
+  phone
+  email
+  address
+  logo
+  isActive
 }
     `;
-export const EvenementItemFragmentDoc = gql`
-    fragment EvenementItem on EvenementType {
+export const AcademicYearFieldsFragmentDoc = gql`
+    fragment AcademicYearFields on AcademicYearType {
   id
-  nom
-  lieu
-  dateDebut
-  dateFin
-  createdAt
-  updatedAt
+  name
+  start_date
+  end_date
+  isActive
+  isArchived
 }
     `;
+export const ClassRoomFieldsFragmentDoc = gql`
+    fragment ClassRoomFields on ClassRoomType {
+  id
+  name
+  capacity
+  isActive
+  level {
+    id
+    name
+    cycle {
+      id
+      name
+    }
+  }
+  academicYear {
+    id
+    name
+  }
+}
+    `;
+export const LevelSubjectFieldsFragmentDoc = gql`
+    fragment LevelSubjectFields on LevelSubjectType {
+  id
+  coefficient
+  hourlyQuota
+  level {
+    id
+    name
+  }
+}
+    `;
+export const SubjectFieldsFragmentDoc = gql`
+    fragment SubjectFields on SubjectType {
+  id
+  name
+  code
+  isOptional
+  isActive
+  levelSubjects {
+    ...LevelSubjectFields
+  }
+}
+    ${LevelSubjectFieldsFragmentDoc}`;
+export const CycleFieldsFragmentDoc = gql`
+    fragment CycleFields on CycleType {
+  id
+  name
+  order
+  isActive
+}
+    `;
+export const LevelFieldsFragmentDoc = gql`
+    fragment LevelFields on LevelType {
+  id
+  name
+  shortName
+  order
+  isActive
+  cycle {
+    id
+    name
+  }
+}
+    `;
+export const StructureResponseFragmentDoc = gql`
+    fragment StructureResponse on StructureResponseType {
+  activeAcademicYear {
+    id
+    name
+    start_date
+    end_date
+    isActive
+    isArchived
+  }
+  cycles {
+    ...CycleFields
+    levels {
+      ...LevelFields
+    }
+  }
+}
+    ${CycleFieldsFragmentDoc}
+${LevelFieldsFragmentDoc}`;
 export const GetAllUsersDocument = gql`
     query GetAllUsers($username: String, $email: String, $role: String, $page: Int, $pageSize: Int) {
   users(
@@ -660,171 +760,211 @@ export class GetAllPermissionsGQL extends Apollo.Query<GetAllPermissionsQuery, G
     super(apollo);
   }
 }
-export const GetAllPersonnesDocument = gql`
-    query GetAllPersonnes($search: String, $page: Int, $pageSize: Int) {
-  personnes(search: $search, page: $page, pageSize: $pageSize) {
+export const GetAllEstablishmentsDocument = gql`
+    query GetAllEstablishments($search: String, $page: Int, $pageSize: Int) {
+  establishments(search: $search, page: $page, pageSize: $pageSize) {
     items {
-      ...PersonneItem
+      ...EstablishmentFields
     }
     totalCount
     numPages
     currentPage
   }
 }
-    ${PersonneItemFragmentDoc}`;
+    ${EstablishmentFieldsFragmentDoc}`;
 
 @Injectable({
   providedIn: 'root'
 })
-export class GetAllPersonnesGQL extends Apollo.Query<GetAllPersonnesQuery, GetAllPersonnesQueryVariables> {
-  document = GetAllPersonnesDocument;
+export class GetAllEstablishmentsGQL extends Apollo.Query<GetAllEstablishmentsQuery, GetAllEstablishmentsQueryVariables> {
+  document = GetAllEstablishmentsDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
   }
 }
-export const GetPersonneByIdDocument = gql`
-    query GetPersonneById($id: ID!) {
-  personne(id: $id) {
-    ...PersonneItem
-    contacts {
-      id
-      telephone
-      email
-      adresse
-    }
+export const GetEstablishmentByIdDocument = gql`
+    query GetEstablishmentById($id: ID!) {
+  establishment(id: $id) {
+    ...EstablishmentFields
   }
 }
-    ${PersonneItemFragmentDoc}`;
+    ${EstablishmentFieldsFragmentDoc}`;
 
 @Injectable({
   providedIn: 'root'
 })
-export class GetPersonneByIdGQL extends Apollo.Query<GetPersonneByIdQuery, GetPersonneByIdQueryVariables> {
-  document = GetPersonneByIdDocument;
+export class GetEstablishmentByIdGQL extends Apollo.Query<GetEstablishmentByIdQuery, GetEstablishmentByIdQueryVariables> {
+  document = GetEstablishmentByIdDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
   }
 }
-export const GetAllEcolesDocument = gql`
-    query GetAllEcoles($nom: String, $page: Int, $pageSize: Int) {
-  ecoles(nom: $nom, page: $page, pageSize: $pageSize) {
+export const GetAllAcademicYearsDocument = gql`
+    query GetAllAcademicYears($search: String, $page: Int, $pageSize: Int) {
+  academicyears(search: $search, page: $page, pageSize: $pageSize) {
     items {
-      ...EcoleItem
+      ...AcademicYearFields
     }
     totalCount
     numPages
     currentPage
   }
 }
-    ${EcoleItemFragmentDoc}`;
+    ${AcademicYearFieldsFragmentDoc}`;
 
 @Injectable({
   providedIn: 'root'
 })
-export class GetAllEcolesGQL extends Apollo.Query<GetAllEcolesQuery, GetAllEcolesQueryVariables> {
-  document = GetAllEcolesDocument;
+export class GetAllAcademicYearsGQL extends Apollo.Query<GetAllAcademicYearsQuery, GetAllAcademicYearsQueryVariables> {
+  document = GetAllAcademicYearsDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
   }
 }
-export const GetEcoleByIdDocument = gql`
-    query GetEcoleById($id: ID!) {
-  ecole(id: $id) {
-    ...EcoleItem
+export const GetAcademicYearByIdDocument = gql`
+    query GetAcademicYearById($id: ID!) {
+  academicyear(id: $id) {
+    ...AcademicYearFields
   }
 }
-    ${EcoleItemFragmentDoc}`;
+    ${AcademicYearFieldsFragmentDoc}`;
 
 @Injectable({
   providedIn: 'root'
 })
-export class GetEcoleByIdGQL extends Apollo.Query<GetEcoleByIdQuery, GetEcoleByIdQueryVariables> {
-  document = GetEcoleByIdDocument;
+export class GetAcademicYearByIdGQL extends Apollo.Query<GetAcademicYearByIdQuery, GetAcademicYearByIdQueryVariables> {
+  document = GetAcademicYearByIdDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
   }
 }
-export const GetAllVoituresDocument = gql`
-    query GetAllVoitures($search: String, $page: Int, $pageSize: Int) {
-  voitures(search: $search, page: $page, pageSize: $pageSize) {
+export const GetAllCyclesDocument = gql`
+    query GetAllCycles($search: String, $page: Int, $pageSize: Int) {
+  cycles(search: $search, page: $page, pageSize: $pageSize) {
     items {
-      ...VoitureItem
+      ...CycleFields
     }
     totalCount
     numPages
     currentPage
   }
 }
-    ${VoitureItemFragmentDoc}`;
+    ${CycleFieldsFragmentDoc}`;
 
 @Injectable({
   providedIn: 'root'
 })
-export class GetAllVoituresGQL extends Apollo.Query<GetAllVoituresQuery, GetAllVoituresQueryVariables> {
-  document = GetAllVoituresDocument;
+export class GetAllCyclesGQL extends Apollo.Query<GetAllCyclesQuery, GetAllCyclesQueryVariables> {
+  document = GetAllCyclesDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
   }
 }
-export const GetVoitureByIdDocument = gql`
-    query GetVoitureById($id: ID!) {
-  voiture(id: $id) {
-    ...VoitureItem
-  }
-}
-    ${VoitureItemFragmentDoc}`;
-
-@Injectable({
-  providedIn: 'root'
-})
-export class GetVoitureByIdGQL extends Apollo.Query<GetVoitureByIdQuery, GetVoitureByIdQueryVariables> {
-  document = GetVoitureByIdDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
-}
-export const GetAllEvenementsDocument = gql`
-    query GetAllEvenements($search: String, $page: Int, $pageSize: Int) {
-  evenements(search: $search, page: $page, pageSize: $pageSize) {
+export const GetAllLevelsDocument = gql`
+    query GetAllLevels($search: String, $page: Int, $pageSize: Int) {
+  levels(search: $search, page: $page, pageSize: $pageSize) {
     items {
-      ...EvenementItem
+      ...LevelFields
     }
     totalCount
     numPages
     currentPage
   }
 }
-    ${EvenementItemFragmentDoc}`;
+    ${LevelFieldsFragmentDoc}`;
 
 @Injectable({
   providedIn: 'root'
 })
-export class GetAllEvenementsGQL extends Apollo.Query<GetAllEvenementsQuery, GetAllEvenementsQueryVariables> {
-  document = GetAllEvenementsDocument;
+export class GetAllLevelsGQL extends Apollo.Query<GetAllLevelsQuery, GetAllLevelsQueryVariables> {
+  document = GetAllLevelsDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
   }
 }
-export const GetEvenementByIdDocument = gql`
-    query GetEvenementById($id: ID!) {
-  evenement(id: $id) {
-    ...EvenementItem
+export const GetAllClassRoomsDocument = gql`
+    query GetAllClassRooms($search: String, $page: Int, $pageSize: Int) {
+  classrooms(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...ClassRoomFields
+    }
+    totalCount
+    numPages
+    currentPage
   }
 }
-    ${EvenementItemFragmentDoc}`;
+    ${ClassRoomFieldsFragmentDoc}`;
 
 @Injectable({
   providedIn: 'root'
 })
-export class GetEvenementByIdGQL extends Apollo.Query<GetEvenementByIdQuery, GetEvenementByIdQueryVariables> {
-  document = GetEvenementByIdDocument;
+export class GetAllClassRoomsGQL extends Apollo.Query<GetAllClassRoomsQuery, GetAllClassRoomsQueryVariables> {
+  document = GetAllClassRoomsDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetClassRoomByIdDocument = gql`
+    query GetClassRoomById($id: ID!) {
+  classroom(id: $id) {
+    ...ClassRoomFields
+  }
+}
+    ${ClassRoomFieldsFragmentDoc}`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class GetClassRoomByIdGQL extends Apollo.Query<GetClassRoomByIdQuery, GetClassRoomByIdQueryVariables> {
+  document = GetClassRoomByIdDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetAllSubjectsDocument = gql`
+    query GetAllSubjects($search: String, $page: Int, $pageSize: Int) {
+  subjects(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...SubjectFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    ${SubjectFieldsFragmentDoc}`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class GetAllSubjectsGQL extends Apollo.Query<GetAllSubjectsQuery, GetAllSubjectsQueryVariables> {
+  document = GetAllSubjectsDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetActiveStructureDocument = gql`
+    query GetActiveStructure {
+  activeStructure {
+    ...StructureResponse
+  }
+}
+    ${StructureResponseFragmentDoc}`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class GetActiveStructureGQL extends Apollo.Query<GetActiveStructureQuery, GetActiveStructureQueryVariables> {
+  document = GetActiveStructureDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

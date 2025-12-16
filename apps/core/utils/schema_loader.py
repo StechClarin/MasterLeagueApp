@@ -28,8 +28,15 @@ def load_all_queries():
         try:
             # On essaie d'importer le package (le dossier)
             queries_module = importlib.import_module(queries_package_name)
-        except ImportError:
-            # Si le dossier n'existe pas pour cette app, on passe à la suivante
+        except ImportError as e:
+            # Si c'est le package Queries qui manque, on passe
+            if e.name == queries_package_name:
+                continue
+            
+            # Sinon, c'est une vraie erreur dans le fichier (dépendance manquante, syntaxe...)
+            print(f"⚠️  ERREUR LORS DU CHARGEMENT DES QUERIES DE {app_config.name} :")
+            print(f"    {e}")
+            # On pourrait raise e pour stopper le serveur, ou continue pour charger le reste
             continue
 
         # 2. On parcourt tous les fichiers .py dans ce dossier

@@ -1,0 +1,76 @@
+<app-ui-form [title]="subject ? 'Modifier la Matière' : 'Nouvelle Matière'" [formGroup]="form"
+    [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="subject ? 'Modifier' : 'Créer'"
+    (submitForm)="submit()" (cancel)="onCancel()">
+
+    <app-ui-tabs [tabs]="tabs" [currentTab]="activeTab()" (tabChange)="activeTab.set($event)"></app-ui-tabs>
+
+    <div class="mt-6" [ngSwitch]="activeTab()">
+
+        <!-- GENERAL TAB -->
+        <div *ngSwitchCase="'general'" class="grid grid-cols-1 gap-6">
+            <app-ui-input label="Nom de la matière" [control]="form.controls['name']" [required]="true"
+                placeholder="ex: Mathématiques"></app-ui-input>
+
+            <app-ui-input label="Code" [control]="form.controls['code']" [required]="true"
+                placeholder="ex: MATHS"></app-ui-input>
+
+            <div class="flex items-center gap-2 mt-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" formControlName="isOptional" class="form-checkbox text-indigo-600 rounded">
+                    <span class="text-sm text-gray-700 font-medium">Matière Optionnelle</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- LEVELS TAB -->
+        <div *ngSwitchCase="'levels'">
+            <div class="overflow-x-auto border rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                                #
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Niveau
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                                Coefficient
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                                Volume Hor.
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" formArrayName="levelSubjects">
+                        <tr *ngFor="let control of levelSubjectsArray.controls; let i = index" [formGroupName]="i">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="checkbox" formControlName="isSelected"
+                                    class="form-checkbox text-indigo-600 rounded">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ control.get('levelName')?.value }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="number" formControlName="coefficient" min="0" step="0.5"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm disabled:bg-gray-100 disabled:text-gray-400">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="number" formControlName="hourlyQuota" min="0"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm disabled:bg-gray-100 disabled:text-gray-400">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div *ngIf="levelSubjectsArray.length === 0" class="p-4 text-center text-gray-500 text-sm">
+                    Aucun niveau disponible.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</app-ui-form>

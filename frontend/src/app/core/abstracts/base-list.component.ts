@@ -1,19 +1,23 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms'; // N'oublie pas ces imports
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { Apollo, QueryRef } from 'apollo-angular';
 import { DocumentNode } from 'graphql';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { ToastService } from '@core/services/toast.service';
+import { StructureStateService } from '@core/services/structure-state.service';
 
 @Component({ template: '' })
 export abstract class BaseListComponent<T> implements OnInit {
   protected apollo = inject(Apollo);
-  protected fb = inject(FormBuilder); // Important pour l'enfant
+  protected fb = inject(FormBuilder);
+  protected structureState = inject(StructureStateService);
+  protected toastService = inject(ToastService);
 
   abstract query: DocumentNode;
   abstract responseKey: string;
   abstract initFilterForm(): FormGroup;
+  abstract service: any; // Service pour les opérations d'écriture
 
   filterForm!: FormGroup;
   items$!: Observable<T[]>;
@@ -25,6 +29,23 @@ export abstract class BaseListComponent<T> implements OnInit {
   pageSize = signal(10);
   totalCount = signal(0);
   numPages = signal(0);
+
+  // Export State
+  showExportModal = signal(false);
+  isExporting = signal(false);
+
+  constructor() {
+    // Golden Rule 2: Reactivity
+    // Dès que l'établissement change, on rafraîchit la liste active.
+    effect(() => {
+      const _estId = this.structureState.currentEstablishmentId();
+      // On ne refresh que si la query est déjà initialisée (sinon initQuery le fera)
+      if (this.queryRef) {
+        console.log(`[${this.constructor.name}] Context switched to ${_estId || 'All'}, refreshing...`);
+        this.refresh();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.filterForm = this.initFilterForm();
@@ -43,7 +64,7 @@ export abstract class BaseListComponent<T> implements OnInit {
     this.queryRef = this.apollo.watchQuery({
       query: this.query,
       variables: {
-        ...this.filterForm.value,
+        ...this.getFilterVariables(),
         page: this.currentPage(),
         pageSize: this.pageSize()
       },
@@ -54,6 +75,9 @@ export abstract class BaseListComponent<T> implements OnInit {
     this.items$ = this.queryRef.valueChanges.pipe(
       tap(result => this.isLoading.set(result.loading)),
       map((result: any) => {
+        if (!result.data) {
+          return [];
+        }
         const data = result.data[this.responseKey];
         // Support both camelCase (Graphene default) and snake_case (Python raw)
         const totalCount = data?.totalCount ?? data?.total_count;
@@ -72,11 +96,17 @@ export abstract class BaseListComponent<T> implements OnInit {
   }
 
   refresh() {
+    if (!this.queryRef) return;
+
     this.queryRef.refetch({
-      ...this.filterForm.value,
+      ...this.getFilterVariables(),
       page: this.currentPage(),
       pageSize: this.pageSize()
     });
+  }
+
+  protected getFilterVariables(): any {
+    return this.filterForm.value;
   }
 
   // Pagination Methods
@@ -100,24 +130,14 @@ export abstract class BaseListComponent<T> implements OnInit {
       this.refresh();
     }
   }
-  // Service pour les opérations d'écriture (REST)
-  abstract service: any; // On utilise any ou une interface commune si possible (ex: BaseService)
-  protected toastService = inject(ToastService);
 
   // Status Toggle Generic
   toggleStatus(item: any) {
     if (!item || !item.id) return;
 
-    // On suppose que l'item a une propriété isActive ou is_active
-    // Mais le backend renvoie souvent isActive en camelCase via GraphQL
-    // Le service attend l'ID.
-
     this.service.status(item.id).subscribe({
       next: (updatedItem: any) => {
-        // On peut soit rafraîchir toute la liste
         this.refresh();
-        // Soit mettre à jour localement si on veut être optimiste (mais refresh est plus sûr)
-        const status = updatedItem.isActive ?? updatedItem.is_active;
         this.toastService.success(`Statut modifié avec succès.`);
       },
       error: (err: any) => {
@@ -126,9 +146,6 @@ export abstract class BaseListComponent<T> implements OnInit {
       }
     });
   }
-  // Export State
-  showExportModal = signal(false);
-  isExporting = signal(false);
 
   openExportModal() {
     this.showExportModal.set(true);
@@ -144,7 +161,6 @@ export abstract class BaseListComponent<T> implements OnInit {
 
     try {
       // 1. Fetch ALL data (bypass pagination)
-      // On utilise une requête unique avec une limite élevée
       const result = await this.apollo.query({
         query: this.query,
         variables: {
@@ -183,23 +199,18 @@ export abstract class BaseListComponent<T> implements OnInit {
 
   private generateExcel(data: any[]) {
     import('xlsx').then(XLSX => {
-      // Aplatir les données si nécessaire (ex: roles: [{name: 'Admin'}] -> roles: 'Admin')
       const flatData = data.map(item => this.flattenItemForExport(item));
-
       const worksheet = XLSX.utils.json_to_sheet(flatData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Export');
-
       const fileName = `export_${new Date().toISOString().slice(0, 10)}.xlsx`;
       XLSX.writeFile(workbook, fileName);
     });
   }
 
-  // Configuration de l'export (à surcharger par les enfants)
   protected getExportConfig(): { title: string, columns?: { header: string, key: string, format?: (val: any) => string }[] } {
     return {
       title: 'Export des données',
-      // Par défaut, pas de colonnes spécifiques (tout exporter)
     };
   }
 
@@ -208,17 +219,11 @@ export abstract class BaseListComponent<T> implements OnInit {
       import('jspdf'),
       import('jspdf-autotable')
     ]).then(([jsPDFModule, autoTableModule]) => {
-      // 1. Instanciation robuste de jsPDF
       const JsPDF = (jsPDFModule as any).default || jsPDFModule;
       const doc = new JsPDF();
-
-      // 2. Récupération de autoTable (fonction ou side-effect)
-      // Note: jspdf-autotable v3+ s'attache souvent au prototype, mais v5 peut différer
       const autoTable = (autoTableModule as any).default || autoTableModule;
-
       const config = this.getExportConfig();
 
-      // ... (Préparation des données - inchangé) ...
       let headers: string[] = [];
       let rows: any[][] = [];
 
@@ -237,19 +242,16 @@ export abstract class BaseListComponent<T> implements OnInit {
         rows = flatData.map(item => Object.values(item));
       }
 
-      // ... (En-tête - inchangé) ...
       const title = config.title;
       const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
       doc.setFontSize(18);
       doc.setTextColor(40);
       doc.text(title, 14, 22);
-
       doc.setFontSize(10);
       doc.setTextColor(100);
       doc.text(`Généré le ${date}`, 14, 30);
 
-      // 3. Génération du tableau (Support double : prototype ou fonction)
       const tableConfig = {
         head: [headers],
         body: rows,
@@ -283,22 +285,18 @@ export abstract class BaseListComponent<T> implements OnInit {
     });
   }
 
-  // Helper pour récupérer une valeur imbriquée (ex: 'roles[0].name')
   private getValueByPath(obj: any, path: string): any {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
   }
 
-  // Helper pour nettoyer les objets avant export (à surcharger si besoin)
   protected flattenItemForExport(item: any): any {
     const flat: any = {};
     for (const key in item) {
       if (item.hasOwnProperty(key) && key !== '__typename') {
         const val = item[key];
         if (Array.isArray(val)) {
-          // Ex: roles: [{name: 'Admin'}, {name: 'User'}] -> "Admin, User"
           flat[key] = val.map(v => v.name || v).join(', ');
         } else if (typeof val === 'object' && val !== null) {
-          // Ex: profile: { bio: '...' } -> "..." (simplification)
           flat[key] = val.name || JSON.stringify(val);
         } else {
           flat[key] = val;

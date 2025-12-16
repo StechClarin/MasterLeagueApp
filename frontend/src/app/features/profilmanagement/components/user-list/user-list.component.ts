@@ -148,8 +148,26 @@ export class UserListComponent extends BaseModalListComponent<User> implements O
     return this.fb.group({
       username: [''], // Mappé au searchControl via sync
       email: [''],
-      role: ['']
+      role: [''],
+      status_active: [false],
+      status_inactive: [false]
     });
+  }
+
+  protected override getFilterVariables(): any {
+    const values = { ...this.filterForm.value };
+
+    // Map checkboxes to isActive boolean
+    if (values.status_active && !values.status_inactive) {
+      values.isActive = true;
+    } else if (!values.status_active && values.status_inactive) {
+      values.isActive = false;
+    }
+
+    delete values.status_active;
+    delete values.status_inactive;
+
+    return values;
   }
 
   override ngOnInit(): void {

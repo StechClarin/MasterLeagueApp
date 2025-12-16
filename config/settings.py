@@ -31,9 +31,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'apps.core.apps.CoreConfig',
-    'apps.profilmanagement.apps.ProfilmanagementConfig',    
-    'apps.cars.apps.CarsConfig',
-    'apps.shop.apps.ShopConfig',
+    'apps.profilmanagement.apps.ProfilmanagementConfig',
+    'apps.structure.apps.StructureConfig',   
 
     'rest_framework',
     'rest_framework_simplejwt',
@@ -82,6 +81,7 @@ MIDDLEWARE = [
     'apps.core.middleware.JWTMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.middleware.EstablishmentMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -107,6 +107,12 @@ DATABASES = {
     'default': env.db()
 }
 CORS_ALLOW_ALL_ORIGINS = True
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-establishment-id',
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:4200",

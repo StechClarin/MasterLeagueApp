@@ -10,6 +10,7 @@ import { routes } from './app.routes';
 import { graphqlProvider } from './core/providers/graphql.provider';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { graphqlNameInterceptor } from './core/interceptors/graphql-name.interceptor';
+import { establishmentInterceptor } from './core/interceptors/establishment.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 export function initializeRoutes(dynamicRouter: DynamicRouterService) {
@@ -25,8 +26,9 @@ export const appConfig: ApplicationConfig = {
     // HTTP Client with Interceptors
     provideHttpClient(withInterceptors([
       authInterceptor,      // 1. Token
-      graphqlNameInterceptor, // 2. URL renaming
-      errorInterceptor      // 3. Global Error Handling
+      establishmentInterceptor, // 2. Establishment Context
+      graphqlNameInterceptor, // 3. URL renaming
+      errorInterceptor      // 4. Global Error Handling
     ])),
 
     {

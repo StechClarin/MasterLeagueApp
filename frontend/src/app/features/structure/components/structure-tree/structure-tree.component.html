@@ -1,0 +1,121 @@
+<app-ui-list-page title="Cycles & Niveaux" [isLoading]="false">
+
+    <!-- Header Actions (Search + Add) -->
+    <ng-container header-actions>
+        <app-ui-toolbar [searchControl]="searchControl"
+            [placeholder]="activeTab() === 'cycles' ? 'Rechercher un cycle...' : 'Rechercher un niveau...'"
+            (toggleFilters)="onToggleFilters()">
+
+            <button (click)="onAdd()"
+                class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 focus:ring-4 focus:ring-indigo-500/30 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center font-medium text-sm transform hover:-translate-y-0.5">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                {{ activeTab() === 'cycles' ? 'Nouveau Cycle' : 'Nouveau Niveau' }}
+            </button>
+        </app-ui-toolbar>
+    </ng-container>
+
+    <!-- Context-Aware Secondary Actions -->
+    <ng-container filters>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+
+            <!-- Filter Toggle (Left) - Kept for alignment consistency, or strictly enabled if filters exist -->
+            <div class="flex items-center gap-2">
+                <button (click)="onToggleFilters()"
+                    class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-indigo-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
+                    <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Filtres
+                    <svg class="w-4 h-4 ml-2 text-gray-400 transform transition-transform duration-200"
+                        [class.rotate-180]="isFiltersOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Action Buttons (Right) -->
+            <div class="flex items-center gap-3">
+                <button (click)="onDownloadTemplate()"
+                    class="px-4 py-2.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all flex items-center justify-center font-medium text-sm group border border-indigo-100">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {{ activeTab() === 'cycles' ? 'Trame Cycles' : 'Trame Niveaux' }}
+                </button>
+
+                <button (click)="onImport()"
+                    class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-green-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
+                    <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-green-600" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Importer
+                </button>
+
+                <button (click)="onExport()"
+                    class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
+                    <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Exporter
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Filter Panel (Placed inside filters slot, below buttons, matching UserList) -->
+        <app-ui-filter-panel
+            [isOpen]="(activeTab() === 'cycles' ? cycleList?.isFiltersOpen() : levelList?.isFiltersOpen()) ?? false"
+            [form]="(activeTab() === 'cycles' ? cycleList?.filterForm : levelList?.filterForm) || fallbackForm"
+            (reset)="activeTab() === 'cycles' ? cycleList?.resetFilters() : levelList?.resetFilters()"
+            (search)="activeTab() === 'cycles' ? cycleList?.dispatchFilters() : levelList?.dispatchFilters()">
+
+            <!-- Conditional Form Content -->
+            <form *ngIf="activeTab() === 'cycles' && cycleList" [formGroup]="cycleList.filterForm">
+                <!-- Cycle Filters -->
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rechercher</label>
+                    <input type="text" [formControl]="cycleList.searchControl"
+                        class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                        placeholder="Nom du cycle...">
+                </div>
+            </form>
+
+            <form *ngIf="activeTab() === 'levels' && levelList" [formGroup]="levelList.filterForm">
+                <!-- Level Filters -->
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rechercher</label>
+                    <input type="text" [formControl]="levelList.searchControl"
+                        class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                        placeholder="Nom du niveau...">
+                </div>
+            </form>
+
+        </app-ui-filter-panel>
+    </ng-container>
+
+    <!-- Main Content: Tabs + Lists -->
+    <ng-container table>
+
+        <app-ui-tabs [tabs]="tabs" [currentTab]="activeTab()" (tabChange)="onTabChange($event)">
+
+            <div [class.hidden]="activeTab() !== 'cycles'">
+                <app-cycle-list [isEmbedded]="true"></app-cycle-list>
+            </div>
+
+            <div [class.hidden]="activeTab() !== 'levels'">
+                <app-level-list [isEmbedded]="true"></app-level-list>
+            </div>
+
+        </app-ui-tabs>
+    </ng-container>
+
+</app-ui-list-page>

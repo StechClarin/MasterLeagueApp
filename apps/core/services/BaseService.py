@@ -30,13 +30,33 @@ class BaseService:
     # 1. MÉTHODES DE LECTURE (Read)
     # ==========================================================================
 
+    def set_context(self, user, establishment_id=None):
+        """
+        Injecte le contexte de la requête (User, Etablissement).
+        Appelé par le Contrôleur avant chaque action.
+        """
+        self.user = user
+        self.establishment_id = establishment_id
+
     def list(self, filters=None):
         """
-        Récupère une liste d'objets, avec filtrage optionnel.
+        Récupère une liste d'objets, avec filtrage optionnel et contextuel.
         """
+        queryset = self.model.objects.all()
+
+        # Filtrage contextuel (Establishment)
+        est_id = getattr(self, 'establishment_id', None)
+        if est_id:
+            # Cas 1 : Le modèle appartient à un établissement (ex: Classroom, Subject)
+            if hasattr(self.model, 'establishment'):
+                queryset = queryset.filter(establishment_id=est_id)
+            # Cas 2 : Le modèle EST l'établissement (on ne voit que soi-même)
+            elif self.model.__name__ == 'Establishment':
+                queryset = queryset.filter(id=est_id)
+
         if filters:
-            return self.model.objects.filter(**filters)
-        return self.model.objects.all()
+            return queryset.filter(**filters)
+        return queryset
 
     def get_by_id(self, pk):
         """
@@ -57,6 +77,15 @@ class BaseService:
         Sert à nettoyer les données brutes (trim, upper case, formatage).
         Doit retourner le dictionnaire 'data' modifié.
         """
+        # Injection automatique de l'établissement si le modèle est lié
+        if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
+             print(f"DEBUG: Injecting establishment_id {self.establishment_id} into data")
+             # On ne l'ajoute que s'il n'est pas déjà présent (permet de forcer si besoin)
+             if 'establishment' not in data and 'establishment_id' not in data:
+                 data['establishment'] = self.establishment_id
+        else:
+            print(f"DEBUG: Skip injection. Model:{hasattr(self.model, 'establishment')}, ID:{getattr(self, 'establishment_id', 'Not Set')}")
+        
         return data
 
     def save(self, validated_data, instance=None):

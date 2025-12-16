@@ -23,6 +23,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         related_name="users"
     )
 
+    establishment = models.ForeignKey(
+        'core.Establishment',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        verbose_name="Établissement"
+    )
+
     objects = UserManager()
 
     EMAIL_FIELD = 'email'
