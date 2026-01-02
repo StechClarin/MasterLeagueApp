@@ -1,12 +1,16 @@
-import { Component, inject, Input, OnChanges, OnInit, SimpleChanges, signal, effect } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit, SimpleChanges, signal, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { SubjectService } from '../../services/subject.service';
-import { SubjectType, LevelType, GetAllLevelsGQL, LevelSubjectType } from '../../../../graphql/generated';
+import { SubjectType, LevelType, LevelSubjectType } from '../../../../graphql/generated';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
-import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component'; // Verify export
+import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
+import { StructureStateService } from '@core/services/structure-state.service';
+import { LevelService } from '../../services/level.service';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
     selector: 'app-subject-form',
@@ -17,10 +21,12 @@ import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.compone
 export class SubjectFormComponent extends BaseFormComponent implements OnChanges, OnInit {
     private fb = inject(FormBuilder);
     private service = inject(SubjectService);
-    private levelsGQL = inject(GetAllLevelsGQL);
+    private levelService = inject(LevelService);
+    private structureState = inject(StructureStateService);
+    private cdr = inject(ChangeDetectorRef);
 
     @Input() subject: SubjectType | null = null;
-    @Input() isReadOnly = false; // Add readonly mode support
+    @Input() isReadOnly = false;
 
     // Tabs configuration
     tabs: Tab[] = [
@@ -45,7 +51,8 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
 
     constructor() {
         super();
-        // Effect to handle readonly state
+
+        // ReadOnly Effect
         effect(() => {
             if (this.isReadOnly) {
                 this.form.disable();
@@ -53,19 +60,23 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
                 this.form.enable();
             }
         });
+
+        // Reactive Loading with SwitchMap to avoid leaks
+        toObservable(this.structureState.currentEstablishmentId)
+            .pipe(
+                takeUntilDestroyed(),
+                switchMap(estId => this.levelService.getAll(estId))
+            )
+            .subscribe((res: any) => {
+                this.allLevels = (res.data?.levels?.items as LevelType[]) || [];
+                // Re-initialize controls when establishment (and thus level list) changes
+                this.initLevelControls();
+                this.cdr.markForCheck();
+            });
     }
 
     override ngOnInit() {
-        this.fetchLevels();
-    }
-
-    // ...
-
-    fetchLevels() {
-        this.levelsGQL.watch({ page: 1, pageSize: 100 }).valueChanges.subscribe(res => {
-            this.allLevels = res.data.levels?.items as LevelType[] || [];
-            this.initLevelControls();
-        });
+        // Init handled by constructor subscription
     }
 
     // Initialize controls for ALL levels (ViewModel pattern)
@@ -93,17 +104,19 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             });
 
             // Enable/Disable inputs based on selection
-            group.get('isSelected')?.valueChanges.subscribe(checked => {
-                const coeff = group.get('coefficient');
-                const quota = group.get('hourlyQuota');
-                if (checked) {
-                    coeff?.enable();
-                    quota?.enable();
-                } else {
-                    coeff?.disable();
-                    quota?.disable();
-                }
-            });
+            group.get('isSelected')?.valueChanges
+                .pipe(takeUntilDestroyed()) // Ensure cleanup of these subscriptions too!
+                .subscribe(checked => {
+                    const coeff = group.get('coefficient');
+                    const quota = group.get('hourlyQuota');
+                    if (checked) {
+                        coeff?.enable();
+                        quota?.enable();
+                    } else {
+                        coeff?.disable();
+                        quota?.disable();
+                    }
+                });
 
             this.levelSubjectsArray.push(group);
         });
@@ -111,7 +124,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['subject']) {
-            this.activeTab.set('general'); // FIX: Reset tab to first one
+            this.activeTab.set('general');
 
             if (this.subject) {
                 const patch = {
@@ -132,7 +145,6 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             }
         }
 
-        // Handle readOnly changes explicitly if needed, or rely on effect/template
         if (changes['isReadOnly']) {
             if (this.isReadOnly) this.form.disable();
             else this.form.enable();
@@ -140,13 +152,13 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     }
 
     save() {
-        const formValue = this.form.getRawValue(); // Get raw value to include disabled/hidden fields if needed, but here we process manually
+        const formValue = this.form.getRawValue();
 
         // Filter selected levels and unnecessary fields
         const selectedLevels = formValue.levelSubjects
             .filter((ls: any) => ls.isSelected)
             .map((ls: any) => ({
-                level: ls.levelId, // Auto-matches ID or object depending on serializer. Usually ID for FK.
+                level: ls.levelId,
                 coefficient: ls.coefficient,
                 hourly_quota: ls.hourlyQuota
             }));
@@ -155,7 +167,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             name: formValue.name,
             code: formValue.code,
             is_optional: formValue.isOptional,
-            level_subjects: selectedLevels // Field name must match Serializer
+            level_subjects: selectedLevels
         };
 
         if (this.subject && this.subject.id) {

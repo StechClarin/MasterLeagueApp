@@ -1,0 +1,111 @@
+query GetAllStudents($search: String, $classroomId: ID, $parentPhone: String, $page: Int, $pageSize: Int) {
+  students(search: $search, classroomId: $classroomId, parentPhone: $parentPhone, page: $page, pageSize: $pageSize) {
+    totalCount
+    numPages
+    items {
+      id
+      matricule
+      firstName
+      lastName
+      gender
+      photo
+      dateOfBirth
+      placeOfBirth
+      address
+      enrollments {
+        id
+        status
+        isRepeater
+        classroom {
+          id
+          name
+          level {
+            id
+            name
+          }
+        }
+        academicYear {
+          id
+          name
+        }
+      }
+      health {
+        id
+        bloodGroup
+        allergies
+        medicalConditions
+        emergencyContactName
+        emergencyContactPhone
+      }
+      guardians {
+        id
+        firstName
+        lastName
+        phoneNumber
+        profession
+        user {
+          firstName
+          lastName
+          email
+        }
+      }
+    }
+  }
+}
+
+query GetStudent($id: ID!) {
+  student(id: $id) {
+    id
+    matricule
+    firstName
+    lastName
+    gender
+    photo
+    dateOfBirth
+    placeOfBirth
+    address
+    health {
+      id
+      bloodGroup
+      allergies
+      medicalConditions
+      emergencyContactName
+      emergencyContactPhone
+    }
+    enrollments {
+      id
+      status
+      classroom {
+        id
+        name
+        level {
+          id
+          name
+        }
+      }
+      academicYear {
+        id
+        name
+      }
+    }
+    guardians {
+      id
+      phoneNumber
+      profession
+      user {
+        firstName
+        lastName
+        email
+      }
+    }
+    siblings {
+      id
+      matricule
+      firstName
+      lastName
+      gender
+      photo
+      dateOfBirth
+    }
+  }
+}

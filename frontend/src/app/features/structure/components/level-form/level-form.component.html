@@ -4,7 +4,8 @@
 
     <div class="grid grid-cols-1 gap-6 mb-6">
         <app-ui-select label="Cycle" [control]="form.controls.cycleId" [options]="cycles" [required]="true"
-            placeholder="Sélectionner un cycle"></app-ui-select>
+            placeholder="Sélectionner un cycle">
+        </app-ui-select>
 
         <app-ui-input label="Nom du niveau" [control]="form.controls.name" [required]="true"></app-ui-input>
         <app-ui-input label="Abréviation (ex: 6eme)" [control]="form.controls.shortName"

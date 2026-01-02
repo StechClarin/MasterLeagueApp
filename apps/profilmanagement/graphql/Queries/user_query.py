@@ -3,12 +3,13 @@ from django.core.paginator import Paginator
 from ...models import User
 from ..Types.user_type import UserType
 
-class UserPaginatedType(graphene.ObjectType):
-    items = graphene.List(UserType)
-    total_count = graphene.Int()
-    num_pages = graphene.Int()
-    current_page = graphene.Int()
-    page_size = graphene.Int()
+
+# Importation standard pour la pagination
+from apps.core.graphql.Types.paginated_type import get_paginated_type
+from apps.core.utils.pagination import paginate_queryset
+
+# Création du type paginé
+UserPaginatedType = get_paginated_type(UserType)
 
 class UserQuery(graphene.ObjectType):
     users = graphene.Field(
@@ -42,24 +43,12 @@ class UserQuery(graphene.ObjectType):
         # On gère le tri par défaut
         queryset = queryset.order_by('-date_joined')
 
-        # Pagination
+        # Utilisation de l'utilitaire de pagination (DRY)
         page = kwargs.get('page', 1)
         page_size = kwargs.get('page_size', 10)
-        
-        paginator = Paginator(queryset, page_size)
-        
-        try:
-            page_obj = paginator.page(page)
-        except:
-            page_obj = paginator.page(1)
+        paginated_data = paginate_queryset(queryset, page, page_size)
 
-        return UserPaginatedType(
-            items=page_obj.object_list,
-            total_count=paginator.count,
-            num_pages=paginator.num_pages,
-            current_page=page_obj.number,
-            page_size=page_size
-        )
+        return UserPaginatedType(**paginated_data)
 
     @staticmethod
     def resolve_user(root, info, id):

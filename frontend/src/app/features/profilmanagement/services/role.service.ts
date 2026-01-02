@@ -14,6 +14,10 @@ export class RoleService extends BaseService {
     private getRoleByIdGQL = inject(GetRoleByIdGQL);
     private getAllPermissionsGQL = inject(GetAllPermissionsGQL);
 
+    getAll(search = '', page = 1, pageSize = 100) {
+        return this.getAllRolesGQL.watch({ name: search, page, pageSize }).valueChanges;
+    }
+
     getPermissions(): Observable<any[]> {
         console.log('[RoleService] Fetching permissions...');
         return this.getAllPermissionsGQL.fetch().pipe(

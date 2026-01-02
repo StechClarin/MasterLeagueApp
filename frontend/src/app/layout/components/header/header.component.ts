@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Apollo } from 'apollo-angular';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { map, startWith, takeUntil } from 'rxjs/operators';
@@ -23,7 +23,7 @@ interface Page {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <header class="fixed top-0 right-0 left-72 h-20 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 z-40 transition-all duration-300">
       
@@ -53,11 +53,11 @@ interface Page {
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m8-2a2 2 0 100-4 2 2 0 000 4"></path></svg>
             </div>
             <select 
-                [value]="structureState.currentEstablishmentId() || ''"
-                (change)="onEstablishmentChange($event)"
+                [ngModel]="structureState.currentEstablishmentId()"
+                (ngModelChange)="structureState.setEstablishment($event || null)"
                 class="pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full appearance-none hover:bg-white hover:border-indigo-300 transition-all cursor-pointer font-medium">
-                <option value="">Tous les établissements</option>
-                <option *ngFor="let ets of establishments$ | async" [value]="ets?.id">
+                <option [ngValue]="null">Tous les établissements</option>
+                <option *ngFor="let ets of establishments$ | async" [ngValue]="ets?.id">
                     {{ ets?.name }}
                 </option>
             </select>
@@ -114,6 +114,7 @@ interface Page {
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           
           <!-- Tooltip -->
+
           <div class="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
             <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Notifications</p>
             <div class="text-sm text-gray-700 py-1">3 nouveaux messages</div>
@@ -167,15 +168,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public structureState = inject(StructureStateService);
   private getAllEstablishmentsGQL = inject(GetAllEstablishmentsGQL);
 
-  establishments$ = this.getAllEstablishmentsGQL.watch().valueChanges.pipe(
+  establishments$ = this.getAllEstablishmentsGQL.watch({}, { fetchPolicy: 'cache-and-network' }).valueChanges.pipe(
     map(res => res.data.establishments?.items || [])
   );
 
-  onEstablishmentChange(event: Event) {
+  onEstablishmentChange() {
+    // With ngModel, the signal is updated directly via the setter or we read the control
+    // But since we bind directly to the signal in the template (not quite right with signals), 
+    // let's use a robust approach: read the value from the event or control.
+    // Actually, simpler: keep the (change) event but use proper value binding.
+    // Best way with Signal Service:
+    // The Select value is driven by structureState.currentEstablishmentId()
+    // The Change updates structureState.setEstablishment()
+  }
+
+  // Handled in template directly now via (change) passing value
+  onEstablishmentSelect(event: Event) {
     const select = event.target as HTMLSelectElement;
-    const selectedId = select.value || null;
-    console.log('[Header] Établissement sélectionné (Raw):', selectedId);
-    this.structureState.setEstablishment(selectedId);
+    const val = select.value || null;
+    console.log('[Header] Selection changed to:', val);
+    this.structureState.setEstablishment(val);
   }
 
   searchControl = new FormControl('');

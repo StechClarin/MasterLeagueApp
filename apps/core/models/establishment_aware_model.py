@@ -11,6 +11,8 @@ class EstablishmentAwareModel(models.Model):
         related_name="%(class)s_set"
     )
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         abstract = True

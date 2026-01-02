@@ -1,0 +1,57 @@
+query GetAllPersonnels($search: String, $page: Int, $pageSize: Int) {
+  personnels(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      user {
+        id
+        firstName
+        lastName
+        email
+      }
+      role {
+        id
+        name
+      }
+      matricule
+      jobTitle
+      emailPro
+      phoneNumber
+      isActive
+      establishment {
+        id
+        name
+      }
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetPersonnel($id: ID!) {
+  personnel(id: $id) {
+    id
+    user {
+      id
+      firstName
+      lastName
+      email
+    }
+    role {
+      id
+      name
+    }
+    establishment {
+      id
+      name
+    }
+    matricule
+    jobTitle
+    contractType
+    emailPro
+    phoneNumber
+    address
+    dateHired
+    isActive
+  }
+}

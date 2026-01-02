@@ -21,22 +21,31 @@ export class EstablishmentFormComponent extends BaseFormComponent implements OnC
 
     override form = this.fb.nonNullable.group({
         name: ['', [Validators.required]],
-        // Removed non-existent fields
+        slogan: [''],
+        website: [''],
+        taxId: [''],
         phone: [''],
-        email: [''],
-        address: ['']
+        email: ['', [Validators.email]],
+        address: [''],
+        city: ['', [Validators.required]], // Require city for uniqueness check
+        country: ['']
     });
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['establishment']) {
             if (this.establishment) {
                 // Ensure no nulls are passed to non-nullable form
-                const patch = {
+                const patch: any = {
                     ...this.establishment,
                     name: this.establishment.name || '',
+                    slogan: this.establishment.slogan || '',
+                    website: this.establishment.website || '',
+                    taxId: this.establishment.taxId || '',
                     phone: this.establishment.phone || '',
                     email: this.establishment.email || '',
-                    address: this.establishment.address || ''
+                    address: this.establishment.address || '',
+                    city: this.establishment.city || '',
+                    country: this.establishment.country || ''
                 };
                 this.form.patchValue(patch);
             } else {

@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal } from '@angular/core';
+import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
@@ -15,6 +15,8 @@ import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-
 
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-establishment-list',
@@ -34,7 +36,7 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
     ],
     templateUrl: './establishment-list.component.html'
 })
-export class EstablishmentListComponent extends BaseModalListComponent<EstablishmentType> implements AfterViewInit {
+export class EstablishmentListComponent extends BaseModalListComponent<EstablishmentType> implements AfterViewInit, OnDestroy {
     query = inject(EstablishmentService).getQuery();
     responseKey = 'establishments';
     public service = inject(EstablishmentService);
@@ -42,6 +44,7 @@ export class EstablishmentListComponent extends BaseModalListComponent<Establish
     searchControl = new FormControl('');
     isFiltersOpen = signal(false);
     private cdr = inject(ChangeDetectorRef);
+    private destroy$ = new Subject<void>();
 
     @ViewChild('nameCell') nameCell!: TemplateRef<any>;
     @ViewChild('statusCell') statusCell!: TemplateRef<any>;
@@ -52,6 +55,7 @@ export class EstablishmentListComponent extends BaseModalListComponent<Establish
         setTimeout(() => {
             this.tableColumns = [
                 { header: 'Nom', template: this.nameCell },
+                { header: 'Ville', key: 'city' },
                 { header: 'Email', key: 'email' },
                 { header: 'Téléphone', key: 'phone' },
                 { header: 'Statut', template: this.statusCell },
@@ -60,9 +64,57 @@ export class EstablishmentListComponent extends BaseModalListComponent<Establish
         });
     }
 
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     override ngOnInit(): void {
         this.filterForm = this.initFilterForm();
         super.ngOnInit();
+
+        // Sync Search -> Refresh
+        this.searchControl.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.currentPage.set(1);
+            this.refresh();
+        });
+
+        // Sync Filters -> Refresh
+        this.filterForm.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.currentPage.set(1);
+            this.refresh();
+        });
+    }
+
+
+    protected override getFilterVariables(): any {
+        const values = { ...this.filterForm.value };
+
+        // 1. Global Search (OR condition on multiple fields)
+        // 1. Global Search (OR condition on multiple fields)
+        // Explicitly set search to empty string if null/empty to reset the filter
+        values.search = this.searchControl.value || '';
+
+        // 2. Map checkboxes to isActive boolean
+        if (values.status_active && !values.status_inactive) {
+            values.isActive = true;
+        } else if (!values.status_active && values.status_inactive) {
+            values.isActive = false;
+        }
+
+        // 3. Cleanup temporary UI fields
+        delete values.status_active;
+        delete values.status_inactive;
+
+        return values;
     }
 
     initFilterForm() {
@@ -75,23 +127,7 @@ export class EstablishmentListComponent extends BaseModalListComponent<Establish
         });
     }
 
-    protected override getFilterVariables(): any {
-        const values = { ...this.filterForm.value };
 
-        // Map checkboxes to isActive boolean
-        if (values.status_active && !values.status_inactive) {
-            values.isActive = true;
-        } else if (!values.status_active && values.status_inactive) {
-            values.isActive = false;
-        }
-        // If both or neither, ignore isActive (fetch all)
-
-        // Cleanup temporary fields
-        delete values.status_active;
-        delete values.status_inactive;
-
-        return values;
-    }
 
     dispatchFilters() {
         this.refresh();
@@ -106,62 +142,5 @@ export class EstablishmentListComponent extends BaseModalListComponent<Establish
         this.filterForm.reset();
     }
 
-    onImport() { }
-
-    onExport() {
-        this.isLoading.set(true);
-        this.service.export().subscribe({
-            next: (blob) => {
-                this.downloadFile(blob);
-                this.isLoading.set(false);
-                this.toastService.success('Export réussi');
-            },
-            error: (err) => {
-                console.error('Export error', err);
-                this.isLoading.set(false);
-                this.toastService.error('Erreur lors de l\'export');
-            }
-        });
-    }
-
-    onDownloadTemplate() {
-        this.isLoading.set(true);
-        this.service.downloadTemplate().subscribe({
-            next: (blob) => {
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `template_establishments.xlsx`;
-                link.click();
-                window.URL.revokeObjectURL(url);
-                this.isLoading.set(false);
-                this.toastService.success('Modèle téléchargé avec succès');
-            },
-            error: (err) => {
-                console.error('Template download error', err);
-                this.isLoading.set(false);
-                this.toastService.error('Erreur lors du téléchargement du modèle');
-            }
-        });
-    }
-
-    private downloadFile(blob: Blob) {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `establishments_${new Date().toISOString().split('T')[0]}.xlsx`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    protected override getExportConfig() {
-        return {
-            title: 'Liste des Établissements',
-            columns: [
-                { header: 'Nom', key: 'name' },
-                { header: 'Email', key: 'email' },
-                { header: 'Ville', key: 'city' }
-            ]
-        }
-    }
+    // Import/Export removed as per requirements (Not needed for Establishment structure)
 }

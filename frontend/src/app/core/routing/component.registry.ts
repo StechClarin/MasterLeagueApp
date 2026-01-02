@@ -13,5 +13,7 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/classes': () => import('../../features/structure/components/classroom-list/classroom-list.component').then(m => m.ClassRoomListComponent),
   '/establishments': () => import('../../features/structure/components/establishment-list/establishment-list.component').then(m => m.EstablishmentListComponent),
   '/tree': () => import('../../features/structure/components/structure-tree/structure-tree.component').then(m => m.StructureTreeComponent),
+  '/students': () => import('../../features/students/components/student-list/student-list.component').then(m => m.StudentListComponent),
+  '/personnels': () => import('../../features/hr/components/personnel-list/personnel-list.component').then(m => m.PersonnelListComponent),
   // Ajoute tes futurs modules ici...
 };

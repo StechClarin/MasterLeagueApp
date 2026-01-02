@@ -66,7 +66,16 @@
 
         <app-ui-filter-panel [isOpen]="isFiltersOpen()" [form]="filterForm" (reset)="resetFilters()">
             <div [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                <!-- Placeholders for future filters -->
+                <!-- Filter by Level -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
+                    <select formControlName="levelId"
+                        class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm transition-all"
+                        (change)="dispatchFilters()">
+                        <option value="">Tous les niveaux</option>
+                        <option *ngFor="let level of levels$ | async" [value]="level?.id">{{ level?.name }}</option>
+                    </select>
+                </div>
             </div>
         </app-ui-filter-panel>
     </ng-container>

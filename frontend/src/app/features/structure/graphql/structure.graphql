@@ -11,6 +11,19 @@ fragment EstablishmentFields on EstablishmentType {
   address
   logo
   isActive
+  
+  # Identity & Legal
+  slogan
+  website
+  taxId
+  
+  # Location (Hard-coded to default in Back but good to have)
+  city
+  country
+  
+  # Branding
+  printHeader
+  printFooter
 }
 
 fragment AcademicYearFields on AcademicYearType {
@@ -27,6 +40,10 @@ fragment CycleFields on CycleType {
   name
   order
   isActive
+  establishment {
+    id
+    name
+  }
 }
 
 fragment LevelFields on LevelType {
@@ -38,6 +55,10 @@ fragment LevelFields on LevelType {
   cycle {
     id
     name
+    establishment {
+        id
+        name
+    }
   }
 }
 
@@ -47,12 +68,7 @@ fragment ClassRoomFields on ClassRoomType {
   capacity
   isActive
   level {
-    id
-    name
-    cycle {
-      id
-      name
-    }
+    ...LevelFields
   }
   academicYear {
     id
@@ -104,8 +120,8 @@ fragment StructureResponse on StructureResponseType {
 #Matches backend: academicyears -> [AcademicYearType]
 # ==============================================================================
 
-query GetAllEstablishments($search: String, $page: Int, $pageSize: Int) {
-  establishments(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllEstablishments($search: String, $city: String, $phone: String, $isActive: Boolean, $page: Int, $pageSize: Int) {
+  establishments(search: $search, city: $city, phone: $phone, isActive: $isActive, page: $page, pageSize: $pageSize) {
     items {
       ...EstablishmentFields
     }
@@ -121,8 +137,8 @@ query GetEstablishmentById($id: ID!) {
   }
 }
 
-query GetAllAcademicYears($search: String, $page: Int, $pageSize: Int) {
-  academicyears(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllAcademicYears($search: String, $isActive: Boolean, $isArchived: Boolean, $page: Int, $pageSize: Int) {
+  academicyears(search: $search, isActive: $isActive, isArchived: $isArchived, page: $page, pageSize: $pageSize) {
     items {
       ...AcademicYearFields
     }
@@ -138,8 +154,8 @@ query GetAcademicYearById($id: ID!) {
   }
 }
 
-query GetAllCycles($search: String, $page: Int, $pageSize: Int) {
-  cycles(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllCycles($search: String, $establishmentId: ID, $page: Int, $pageSize: Int) {
+  cycles(search: $search, establishmentId: $establishmentId, page: $page, pageSize: $pageSize) {
     items {
       ...CycleFields
     }
@@ -149,8 +165,8 @@ query GetAllCycles($search: String, $page: Int, $pageSize: Int) {
   }
 }
 
-query GetAllLevels($search: String, $page: Int, $pageSize: Int) {
-  levels(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllLevels($search: String, $cycleId: ID, $establishmentId: ID, $page: Int, $pageSize: Int) {
+  levels(search: $search, cycleId: $cycleId, establishmentId: $establishmentId, page: $page, pageSize: $pageSize) {
     items {
       ...LevelFields
     }
@@ -160,8 +176,8 @@ query GetAllLevels($search: String, $page: Int, $pageSize: Int) {
   }
 }
 
-query GetAllClassRooms($search: String, $page: Int, $pageSize: Int) {
-  classrooms(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllClassRooms($search: String, $levelId: ID, $academicYearId: ID, $page: Int, $pageSize: Int) {
+  classrooms(search: $search, levelId: $levelId, academicYearId: $academicYearId, page: $page, pageSize: $pageSize) {
     items {
       ...ClassRoomFields
     }

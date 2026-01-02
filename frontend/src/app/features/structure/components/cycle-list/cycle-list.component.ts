@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal, Input } from '@angular/core';
+import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal, Input, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
@@ -14,6 +14,8 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-cycle-list',
@@ -33,7 +35,7 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
     ],
     templateUrl: './cycle-list.component.html'
 })
-export class CycleListComponent extends BaseModalListComponent<CycleType> implements AfterViewInit {
+export class CycleListComponent extends BaseModalListComponent<CycleType> implements AfterViewInit, OnDestroy {
     query = inject(CycleService).getQuery();
     responseKey = 'cycles';
     public service = inject(CycleService);
@@ -41,6 +43,7 @@ export class CycleListComponent extends BaseModalListComponent<CycleType> implem
     searchControl = new FormControl('');
     isFiltersOpen = signal(false);
     private cdr = inject(ChangeDetectorRef);
+    private destroy$ = new Subject<void>();
 
     @ViewChild('nameCell') nameCell!: TemplateRef<any>;
 
@@ -58,13 +61,34 @@ export class CycleListComponent extends BaseModalListComponent<CycleType> implem
         });
     }
 
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     override ngOnInit(): void {
         this.filterForm = this.initFilterForm();
         super.ngOnInit();
+
+        // Sync Search -> Refresh
+        this.searchControl.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.currentPage.set(1);
+            this.refresh();
+        });
     }
 
     initFilterForm() {
         return this.fb.group({});
+    }
+
+    protected override getFilterVariables(): any {
+        const values = { ...this.filterForm.value };
+        values.search = this.searchControl.value || '';
+        return values;
     }
 
     dispatchFilters() {
@@ -78,42 +102,5 @@ export class CycleListComponent extends BaseModalListComponent<CycleType> implem
     resetFilters() {
         this.searchControl.setValue('');
         this.filterForm.reset();
-    }
-
-    onImport() { }
-
-    onExport() {
-        this.isLoading.set(true);
-        this.service.export().subscribe({
-            next: (blob) => {
-                this.downloadFile(blob);
-                this.isLoading.set(false);
-                this.toastService.success('Export réussi');
-            },
-            error: (err) => {
-                console.error('Export error', err);
-                this.isLoading.set(false);
-                this.toastService.error('Erreur lors de l\'export');
-            }
-        });
-    }
-
-    private downloadFile(blob: Blob) {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `cycles_${new Date().toISOString().split('T')[0]}.xlsx`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    protected override getExportConfig() {
-        return {
-            title: 'Liste des Cycles',
-            columns: [
-                { header: 'Nom', key: 'name' },
-                { header: 'Ordre', key: 'order' }
-            ]
-        }
     }
 }

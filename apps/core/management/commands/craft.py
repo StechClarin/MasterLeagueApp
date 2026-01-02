@@ -138,6 +138,9 @@ class {model_name}(models.Model):
     name = models.CharField(max_length=150, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Ex: image = models.ImageField(upload_to='apps/core/images/', blank=True, null=True)
+    # Ex: pdf = models.FileField(upload_to='apps/core/documents/', blank=True, null=True)
 
     class Meta:
         verbose_name = "{model_name.lower()}"
@@ -192,12 +195,21 @@ class {model_name}Type(DjangoObjectType):
 
     def _tpl_gql_query(self, model_name: str) -> str:
         return f"""import graphene
+from apps.core.graphql.Types.paginated_type import get_paginated_type
+from apps.core.utils.pagination import paginate_queryset
 from ..Types.{model_name.lower()}_type import {model_name}Type
 from ...models import {model_name}
 
+{model_name}PaginatedType = get_paginated_type({model_name}Type)
+
 class {model_name}Query(graphene.ObjectType):
     {model_name.lower()} = graphene.Field({model_name}Type, id=graphene.ID(required=True))
-    {pluralize(model_name.lower())} = graphene.List({model_name}Type)
+    {pluralize(model_name.lower())} = graphene.Field(
+        {model_name}PaginatedType,
+        search=graphene.String(),
+        page=graphene.Int(default_value=1),
+        page_size=graphene.Int(default_value=10)
+    )
 
     def resolve_{model_name.lower()}(root, info, id):
         try:
@@ -205,8 +217,14 @@ class {model_name}Query(graphene.ObjectType):
         except {model_name}.DoesNotExist:
             return None
 
-    def resolve_{pluralize(model_name.lower())}(root, info, **kwargs):
-        return {model_name}.objects.all()
+    def resolve_{pluralize(model_name.lower())}(root, info, search=None, page=1, page_size=10, **kwargs):
+        queryset = {model_name}.objects.all().order_by('-created_at')
+
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        paginated_data = paginate_queryset(queryset, page, page_size)
+        return {model_name}PaginatedType(**paginated_data)
 """
 
     # ----------------------------

@@ -84,6 +84,36 @@ GROUP_STRUCTURE = [
             {"name": "Supprimer un établissement", "codename": "delete_establishment"},
         ]
     },
+    {
+        "name": "Gestion des Employés",
+        "tag": "personnel",
+        "permissions": [
+            {"name": "Lire les employés", "codename": "view_personnel"},
+            {"name": "Ajouter un employé", "codename": "add_personnel"},
+            {"name": "Modifier un employé", "codename": "change_personnel"},
+            {"name": "Supprimer un employé", "codename": "delete_personnel"},
+        ]
+    },
+    {
+        "name": "Gestion des Enseignants",
+        "tag": "teacher",
+        "permissions": [
+            {"name": "Lire les enseignants", "codename": "view_teacher"},
+            {"name": "Ajouter un enseignant", "codename": "add_teacher"},
+            {"name": "Modifier un enseignant", "codename": "change_teacher"},
+            {"name": "Supprimer un enseignant", "codename": "delete_teacher"},
+        ]
+    },
+    {
+        "name": "Gestion des Affectations",
+        "tag": "teaching_assignment",
+        "permissions": [
+            {"name": "Lire les affectations", "codename": "view_teaching_assignment"},
+            {"name": "Ajouter une affectation", "codename": "add_teaching_assignment"},
+            {"name": "Modifier une affectation", "codename": "change_teaching_assignment"},
+            {"name": "Supprimer une affectation", "codename": "delete_teaching_assignment"},
+        ]
+    },
 ]
 
 class Command(BaseCommand):

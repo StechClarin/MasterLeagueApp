@@ -40,7 +40,7 @@ class Command(BaseCommand):
                     email='ethernanos@gmail.com',
                     password=admin_pass
                 )
-                
+
                 # On ajoute le rôle APRÈS la création (ManyToMany)
                 admin_user.roles.add(admin_role)
                 

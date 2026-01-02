@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
 import { GetAllAcademicYearsGQL } from '@app/graphql/generated';
+import { map } from 'rxjs/operators';
+
 
 @Injectable({
     providedIn: 'root'
@@ -11,5 +13,11 @@ export class AcademicYearService extends BaseService {
 
     getQuery() {
         return this.generatedGQL.document;
+    }
+
+    list() {
+        return this.generatedGQL.fetch().pipe(
+            map(res => res.data.academicyears?.items || [])
+        );
     }
 }

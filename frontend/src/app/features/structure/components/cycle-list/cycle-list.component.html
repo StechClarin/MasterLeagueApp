@@ -1,6 +1,5 @@
 <ng-container *ngIf="!isEmbedded">
-    <app-ui-list-page title="Gestion des Cycles" [isLoading]="isLoading()" (refresh)="refresh()" (add)="openModal()"
-        (export)="onExport()" (import)="onImport()">
+    <app-ui-list-page title="Gestion des Cycles" [isLoading]="isLoading()" (refresh)="refresh()" (add)="openModal()">
 
         <ng-container header-actions>
             <app-ui-toolbar [searchControl]="searchControl" (toggleFilters)="toggleFilters()">

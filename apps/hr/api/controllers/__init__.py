@@ -1,0 +1,3 @@
+from .personnel_controller import PersonnelController
+from .teacher_controller import TeacherController
+from .teaching_assignment_controller import TeachingAssignmentController

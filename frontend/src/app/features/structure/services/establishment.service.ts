@@ -12,4 +12,8 @@ export class EstablishmentService extends BaseService {
     getQuery() {
         return this.generatedGQL.document;
     }
+
+    getAll(search = '', page = 1, pageSize = 100) {
+        return this.generatedGQL.watch({ search, page, pageSize }).valueChanges;
+    }
 }

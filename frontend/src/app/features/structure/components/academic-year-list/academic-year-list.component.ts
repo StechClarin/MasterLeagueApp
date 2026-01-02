@@ -1,9 +1,9 @@
-import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal } from '@angular/core';
+import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { AcademicYearService } from '../../services/academic_year.service';
-import { AcademicYearType } from '@app/graphql/generated'; // Use generated type
+import { AcademicYearType } from '@app/graphql/generated';
 import { AcademicYearFormComponent } from '../academic-year-form/academic-year-form.component';
 
 // Shared UI Imports
@@ -16,6 +16,8 @@ import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-
 
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-academic-year-list',
@@ -35,14 +37,15 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
     ],
     templateUrl: './academic-year-list.component.html'
 })
-export class AcademicYearListComponent extends BaseModalListComponent<AcademicYearType> implements AfterViewInit {
+export class AcademicYearListComponent extends BaseModalListComponent<AcademicYearType> implements AfterViewInit, OnDestroy {
     query = inject(AcademicYearService).getQuery();
-    responseKey = 'academicyears'; // Matches GraphQL query: academicyears
+    responseKey = 'academicyears';
     public service = inject(AcademicYearService);
 
     searchControl = new FormControl('');
     isFiltersOpen = signal(false);
     private cdr = inject(ChangeDetectorRef);
+    private destroy$ = new Subject<void>();
 
     @ViewChild('nameCell') nameCell!: TemplateRef<any>;
     @ViewChild('dateCell') dateCell!: TemplateRef<any>;
@@ -61,9 +64,34 @@ export class AcademicYearListComponent extends BaseModalListComponent<AcademicYe
         });
     }
 
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     override ngOnInit(): void {
         this.filterForm = this.initFilterForm();
         super.ngOnInit();
+
+        // Sync Search -> Refresh
+        this.searchControl.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.currentPage.set(1);
+            this.refresh();
+        });
+
+        // Sync Filters -> Refresh
+        this.filterForm.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.currentPage.set(1);
+            this.refresh();
+        });
     }
 
     // Required abstract implementations
@@ -71,19 +99,24 @@ export class AcademicYearListComponent extends BaseModalListComponent<AcademicYe
         return this.fb.group({
             status_active: [false],
             status_inactive: [false]
+            // Add other filters if needed
         });
     }
 
     protected override getFilterVariables(): any {
         const values = { ...this.filterForm.value };
 
-        // Map checkboxes to isActive boolean
+        // 1. Global Search
+        values.search = this.searchControl.value || '';
+
+        // 2. Map checkboxes to isActive boolean
         if (values.status_active && !values.status_inactive) {
             values.isActive = true;
         } else if (!values.status_active && values.status_inactive) {
             values.isActive = false;
         }
 
+        // 3. Cleanup
         delete values.status_active;
         delete values.status_inactive;
 
@@ -91,7 +124,6 @@ export class AcademicYearListComponent extends BaseModalListComponent<AcademicYe
     }
 
     dispatchFilters() {
-        // Implement store dispatch logic if using NgRx
         this.refresh();
     }
 

@@ -44,7 +44,7 @@ export abstract class BaseService {
 
     /**
      * Generic Upsert (Create or Update)
-     * POST /api/{endpoint}/save/
+     * POST {endpoint}/save/
      */
     save(data: any): Observable<any> {
         let url = `${this.apiUrl}/save/`;

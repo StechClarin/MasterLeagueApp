@@ -10,6 +10,8 @@ class AcademicYearQuery(graphene.ObjectType):
     academicyears = graphene.Field(
         get_paginated_type(AcademicYearType),
         search=graphene.String(),
+        is_active=graphene.Boolean(),
+        is_archived=graphene.Boolean(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -25,5 +27,13 @@ class AcademicYearQuery(graphene.ObjectType):
         
         if search:
             queryset = queryset.filter(name__icontains=search)
+
+        is_active = kwargs.get('is_active')
+        if is_active is not None:
+             queryset = queryset.filter(is_active=is_active)
+
+        is_archived = kwargs.get('is_archived')
+        if is_archived is not None:
+             queryset = queryset.filter(is_archived=is_archived)
             
         return paginate_queryset(queryset, page, page_size)

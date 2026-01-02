@@ -10,6 +10,8 @@ class LevelQuery(graphene.ObjectType):
     levels = graphene.Field(
         get_paginated_type(LevelType),
         search=graphene.String(),
+        cycle_id=graphene.ID(),
+        establishment_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -26,4 +28,12 @@ class LevelQuery(graphene.ObjectType):
         if search:
             queryset = queryset.filter(name__icontains=search)
             
+        cycle_id = kwargs.get('cycle_id')
+        if cycle_id:
+             queryset = queryset.filter(cycle_id=cycle_id)
+
+        establishment_id = kwargs.get('establishment_id')
+        if establishment_id:
+             queryset = queryset.filter(establishment_id=establishment_id)
+
         return paginate_queryset(queryset, page, page_size)

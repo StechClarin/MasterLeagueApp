@@ -1,0 +1,46 @@
+<app-ui-list-page
+  title="Gestion du Personnel"
+  [isLoading]="isLoading()"
+  [isEmpty]="!hasData() && !isLoading()"
+  (refresh)="refresh()"
+  (openAddModal)="openAddModal()"
+  (openExportModal)="openExportModal()" 
+>
+  <ng-container header-actions></ng-container>
+
+  <ng-container table>
+    <app-ui-table
+      [columns]="tableColumns()"
+      [data]="items$ | async"
+      [sortField]="sortField()"
+      [sortDirection]="sortDirection()"
+      (sort)="onSort($event)"
+      (edit)="openEditModal($event)"
+      (delete)="openDeleteModal($event)"
+    ></app-ui-table>
+  </ng-container>
+
+  <ng-container pagination>
+    <!-- Pagination is handled by BaseListComponent/UiListPage interaction (via signals usually, or inputs) -->
+    <!-- Assuming UiListPage handles pagination UI based on BaseListComponent signals -->
+  </ng-container>
+</app-ui-list-page>
+
+<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+  <ng-container [ngSwitch]="modalMode()">
+    <app-ui-confirm-modal
+      *ngSwitchCase="'delete'"
+      title="Supprimer le personnel"
+      [message]="'Êtes-vous sûr de vouloir supprimer ' + ((selectedItem()?.user?.firstName || '') + ' ' + (selectedItem()?.user?.lastName || '')) + ' ?'"
+      (confirm)="confirmDelete()"
+      (cancel)="closeModal()"
+    ></app-ui-confirm-modal>
+
+    <app-personnel-form
+      *ngSwitchDefault
+      [data]="selectedItem()"
+      (cancel)="closeModal()"
+      (success)="onSaveSuccess()"
+    ></app-personnel-form>
+  </ng-container>
+</app-ui-modal>

@@ -83,29 +83,7 @@ export class StructureTreeComponent implements AfterViewInit {
         }
     }
 
-    onExport() {
-        if (this.activeTab() === 'cycles') {
-            this.cycleList?.onExport();
-        } else {
-            this.levelList?.onExport();
-        }
-    }
 
-    onImport() {
-        if (this.activeTab() === 'cycles') {
-            this.cycleList?.onImport();
-        } else {
-            this.levelList?.onImport();
-        }
-    }
-
-    onDownloadTemplate() {
-        if (this.activeTab() === 'cycles') {
-            this.cycleList?.service.downloadTemplate().subscribe(blob => this.handleDownload(blob, 'template_cycles.xlsx'));
-        } else {
-            this.levelList?.service.downloadTemplate().subscribe(blob => this.handleDownload(blob, 'template_levels.xlsx'));
-        }
-    }
 
     onToggleFilters() {
         if (this.activeTab() === 'cycles') {
@@ -125,12 +103,5 @@ export class StructureTreeComponent implements AfterViewInit {
     // Helper for direct service calls if child component method access is tricky
     // But ideally child component should expose these methods (which they do via BaseList inheritance mostly)
 
-    private handleDownload(blob: Blob, filename: string) {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.click();
-        window.URL.revokeObjectURL(url);
-    }
+
 }

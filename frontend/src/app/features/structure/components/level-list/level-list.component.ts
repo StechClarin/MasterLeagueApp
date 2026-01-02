@@ -1,9 +1,10 @@
-import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal, Input } from '@angular/core';
+import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, signal, Input, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { LevelService } from '../../services/level.service';
-import { LevelType } from '@app/graphql/generated';
+import { CycleService } from '../../services/cycle.service';
+import { LevelType, CycleType } from '@app/graphql/generated';
 import { LevelFormComponent } from '../level-form/level-form.component';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
@@ -14,6 +15,8 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil, map } from 'rxjs/operators';
 
 @Component({
     selector: 'app-level-list',
@@ -33,14 +36,21 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
     ],
     templateUrl: './level-list.component.html'
 })
-export class LevelListComponent extends BaseModalListComponent<LevelType> implements AfterViewInit {
+export class LevelListComponent extends BaseModalListComponent<LevelType> implements AfterViewInit, OnDestroy {
     query = inject(LevelService).getQuery();
     responseKey = 'levels';
     public service = inject(LevelService);
+    private cycleService = inject(CycleService);
 
     searchControl = new FormControl('');
     isFiltersOpen = signal(false);
     private cdr = inject(ChangeDetectorRef);
+    private destroy$ = new Subject<void>();
+
+    // Cycles for filter dropdown
+    cycles$ = this.cycleService.getAllCycles().valueChanges.pipe(
+        map(result => result.data?.cycles?.items || [])
+    );
 
     @ViewChild('nameCell') nameCell!: TemplateRef<any>;
     @ViewChild('cycleCell') cycleCell!: TemplateRef<any>;
@@ -53,6 +63,7 @@ export class LevelListComponent extends BaseModalListComponent<LevelType> implem
         setTimeout(() => {
             this.tableColumns = [
                 { header: 'Nom', template: this.nameCell },
+                { header: 'Abréviation', key: 'shortName' }, // Added this which was in export config but not in table
                 { header: 'Ordre', key: 'order' },
                 { header: 'Cycle', template: this.cycleCell },
             ];
@@ -60,13 +71,48 @@ export class LevelListComponent extends BaseModalListComponent<LevelType> implem
         });
     }
 
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     override ngOnInit(): void {
         this.filterForm = this.initFilterForm();
         super.ngOnInit();
+
+        this.searchControl.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.currentPage.set(1);
+            this.refresh();
+        });
+
+        this.filterForm.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.currentPage.set(1);
+            this.refresh();
+        });
     }
 
     initFilterForm() {
-        return this.fb.group({});
+        return this.fb.group({
+            cycleId: ['']
+        });
+    }
+
+    protected override getFilterVariables(): any {
+        const values = { ...this.filterForm.value };
+        values.search = this.searchControl.value || '';
+
+        // Clean up empty filters
+        if (!values.cycleId) delete values.cycleId;
+
+        return values;
     }
 
     dispatchFilters() {
@@ -80,43 +126,5 @@ export class LevelListComponent extends BaseModalListComponent<LevelType> implem
     resetFilters() {
         this.searchControl.setValue('');
         this.filterForm.reset();
-    }
-
-    onImport() { }
-
-    onExport() {
-        this.isLoading.set(true);
-        this.service.export().subscribe({
-            next: (blob) => {
-                this.downloadFile(blob);
-                this.isLoading.set(false);
-                this.toastService.success('Export réussi');
-            },
-            error: (err) => {
-                console.error('Export error', err);
-                this.isLoading.set(false);
-                this.toastService.error('Erreur lors de l\'export');
-            }
-        });
-    }
-
-    private downloadFile(blob: Blob) {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `levels_${new Date().toISOString().split('T')[0]}.xlsx`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    protected override getExportConfig() {
-        return {
-            title: 'Liste des Niveaux',
-            columns: [
-                { header: 'Nom', key: 'name' },
-                { header: 'Abréviation', key: 'shortName' },
-                { header: 'Cycle', key: 'cycle.name' }
-            ]
-        }
     }
 }

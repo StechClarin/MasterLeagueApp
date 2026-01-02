@@ -10,6 +10,8 @@ class ClassRoomQuery(graphene.ObjectType):
     classrooms = graphene.Field(
         get_paginated_type(ClassRoomType),
         search=graphene.String(),
+        level_id=graphene.ID(),
+        academic_year_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -25,5 +27,13 @@ class ClassRoomQuery(graphene.ObjectType):
         
         if search:
             queryset = queryset.filter(name__icontains=search)
+            
+        level_id = kwargs.get('level_id')
+        if level_id:
+            queryset = queryset.filter(level_id=level_id)
+
+        academic_year_id = kwargs.get('academic_year_id')
+        if academic_year_id:
+            queryset = queryset.filter(academic_year_id=academic_year_id)
             
         return paginate_queryset(queryset, page, page_size)

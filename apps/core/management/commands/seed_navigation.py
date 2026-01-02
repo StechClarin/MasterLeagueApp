@@ -50,7 +50,7 @@ MODULE_STRUCTURE = [
     },
     {
         "name": "Admin",
-        "order": 1,
+        "order": 10,
         "display_mod": "card-view",
         "icon": "pascal-icon-dashboard",
         "pages": [
@@ -68,6 +68,38 @@ MODULE_STRUCTURE = [
                 "link": "/roles",
                 "tags": ["role",]
             }
+        ]
+    },
+    {
+        "name": "Scolarité",
+        "order": 1,
+        "display_mod": "card-view",
+        "icon": "student-icon",
+        "pages": [
+            {
+                "title": "Apprenants",
+                "icon": "student-icon",
+                "order": 0,
+                "link": "/students",
+                "tags": ["student"]
+            },
+        ]
+    },
+    {
+        "name": "Ressources Humaines",
+        "order": 2,
+        "display_mod": "card-view",
+        "icon": "hr-icon",
+        "pages": [
+            {
+                "title": "Personnels",
+                "icon": "personnel-icon",
+                "order": 0,
+                "link": "/personnels",
+                "tags": ["personnel"]
+            },
+
+
         ]
     },
     # --- AJOUTE TES AUTRES MODULES ICI ---

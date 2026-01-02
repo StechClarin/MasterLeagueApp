@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'apps.core.apps.CoreConfig',
     'apps.profilmanagement.apps.ProfilmanagementConfig',
     'apps.structure.apps.StructureConfig',   
+    'apps.students.apps.StudentsConfig',
+    'apps.hr.apps.HrConfig',
 
     'rest_framework',
     'rest_framework_simplejwt',
@@ -132,6 +134,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+
+# Media files (User uploaded content)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

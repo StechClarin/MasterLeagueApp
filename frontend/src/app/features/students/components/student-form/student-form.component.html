@@ -1,0 +1,133 @@
+
+<div class="p-6">
+  <div class="mb-6 pb-4 border-b border-gray-100 flex justify-between items-center">
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un élève</h2>
+        <p class="text-sm text-gray-500 mt-1">Remplissez les informations de l'élève ci-dessous.</p>
+    </div>
+    <button (click)="close()" class="text-gray-400 hover:text-gray-500">
+        <span class="sr-only">Fermer</span>
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <strong class="font-bold">Erreur!</strong>
+    <span class="block sm:inline"> {{ errorMessage }}</span>
+  </div>
+
+  <app-ui-tabs [tabs]="tabs" [currentTab]="currentTab()" (tabChange)="currentTab.set($event)">
+  
+<div class="h-96 overflow-y-auto pr-2 custom-scrollbar" [formGroup]="form">
+
+  <!-- TAB 1: IDENTITÉ -->
+  <div *ngIf="currentTab() === 'identity'" class="space-y-4 pt-4">
+    <div class="grid grid-cols-2 gap-4">
+      <app-ui-input label="Nom" formControlName="last_name" placeholder="Nom de famille"></app-ui-input>
+      <app-ui-input label="Prénom" formControlName="first_name" placeholder="Prénom(s)"></app-ui-input>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <app-ui-select label="Sexe" formControlName="gender" [options]="genders"></app-ui-select>
+      <app-ui-input type="date" label="Date de naissance" formControlName="date_of_birth"></app-ui-input>
+    </div>
+
+    <app-ui-input label="Lieu de naissance" formControlName="place_of_birth"></app-ui-input>
+    <app-ui-input label="Adresse" formControlName="address"></app-ui-input>
+    
+    <div class="p-2 bg-yellow-50 text-yellow-700 text-sm rounded border border-yellow-200">
+      <i class="fas fa-info-circle"></i> Le matricule sera généré automatiquement.
+    </div>
+  </div>
+
+  <!-- TAB 2: SCOLARITÉ -->
+  <div *ngIf="currentTab() === 'cursus'" class="space-y-4 pt-4" formGroupName="enrollment_input">
+    <app-ui-select label="Année Académique" formControlName="academic_year_id" [options]="academicYearsOptions()"></app-ui-select>
+    
+    <app-ui-select label="Classe" formControlName="classroom_id" [options]="classroomsOptions()"></app-ui-select>
+
+    <div class="flex items-center space-x-2 mt-4">
+      <input type="checkbox" formControlName="is_repeater" id="repeater" class="rounded text-indigo-600 focus:ring-indigo-500">
+      <label for="repeater" class="text-sm text-gray-700">Cet élève est un redoublant</label>
+    </div>
+  </div>
+
+  <!-- TAB 3: FAMILLE -->
+  <div *ngIf="currentTab() === 'family'" class="space-y-6 pt-4" [formArrayName]="'parents_input'">
+    <div class="flex justify-end space-x-2">
+      <button type="button" (click)="addParent('FATHER')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">+ Père</button>
+      <button type="button" (click)="addParent('MOTHER')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">+ Mère</button>
+      <button type="button" (click)="addParent('TUTOR')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">+ Tuteur</button>
+    </div>
+
+    <div *ngFor="let parent of parentsArray.controls; let i=index" [formGroupName]="i" class="border border-gray-200 rounded p-4 relative bg-gray-50/50">
+      <button type="button" (click)="removeParent(i)" class="absolute top-2 right-2 p-1 text-red-400 hover:text-red-700 hover:bg-red-50 rounded transition-colors" title="Supprimer ce parent">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+      </button>
+      
+      <h4 class="font-medium text-gray-700 mb-3 uppercase text-xs tracking-wider">{{ parent.get('role')?.value }}</h4>
+      
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <app-ui-input label="Prénom" formControlName="first_name" class="bg-white"></app-ui-input>
+        <app-ui-input label="Nom" formControlName="last_name" class="bg-white"></app-ui-input>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <app-ui-input label="Téléphone" formControlName="phone_number" class="bg-white" placeholder="ex: 77 000 00 00"></app-ui-input>
+        <app-ui-input label="Profession" formControlName="profession" class="bg-white"></app-ui-input>
+      </div>
+    </div>
+    
+    <div *ngIf="parentsArray.length === 0" class="text-center py-8 text-gray-400 italic">
+      Aucun parent ajouté. Veuillez en ajouter un.
+    </div>
+  </div>
+
+  <!-- TAB 4: SANTÉ -->
+  <div *ngIf="currentTab() === 'health'" class="space-y-4 pt-4" formGroupName="health_input">
+    <div class="grid grid-cols-2 gap-4">
+      <app-ui-select label="Groupe Sanguin" formControlName="blood_group" [options]="bloodGroups"></app-ui-select>
+    </div>
+    
+    <div class="space-y-1">
+      <label class="block text-sm font-medium text-gray-700">Allergies</label>
+      <textarea formControlName="allergies" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+    </div>
+
+    <div class="space-y-1">
+      <label class="block text-sm font-medium text-gray-700">Conditions Médicales</label>
+      <textarea formControlName="medical_conditions" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+    </div>
+
+    <div class="border-t border-gray-100 pt-4 mt-2">
+      <h4 class="text-sm font-medium text-gray-900 mb-3">Contact d'urgence</h4>
+      <div class="grid grid-cols-2 gap-4">
+        <app-ui-input label="Nom du contact" formControlName="emergency_contact_name"></app-ui-input>
+        <app-ui-input label="Téléphone" formControlName="emergency_contact_phone"></app-ui-input>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</app-ui-tabs>
+
+<div class="mt-8 flex justify-end gap-3 pt-4 border-t border-gray-100">
+  <button type="button" (click)="close()" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    Annuler
+  </button>
+  <button type="button" (click)="submit()" [disabled]="isSubmitting" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+    <span *ngIf="isSubmitting" class="mr-2">
+      <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </span>
+    Enregistrer
+  </button>
+</div>
+</div>

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ElementRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate, query, stagger, group } from '@angular/animations';
 
@@ -32,14 +32,8 @@ import { trigger, transition, style, animate, query, stagger, group } from '@ang
         <ng-content select="[trigger]"></ng-content>
       </div>
 
-      <!-- Backdrop transparent pour fermer au clic en dehors -->
+      <!-- Menu (Backdrop removed) -->
       <div *ngIf="isOpen" 
-           class="fixed inset-0 z-40 cursor-default" 
-           (click)="onClose($event)">
-      </div>
-
-      <!-- Menu -->
-    <div *ngIf="isOpen" 
            [@dropdownAnimation]
            [ngClass]="menuClasses">
         <div [class.py-1]="direction === 'vertical'" role="none" [class.flex]="direction === 'horizontal'" [class.gap-1]="direction === 'horizontal'">
@@ -53,6 +47,8 @@ export class UiDropdownComponent {
   @Input() isOpen = false;
   @Input() direction: 'vertical' | 'horizontal' = 'vertical';
   @Output() isOpenChange = new EventEmitter<boolean>();
+
+  private elementRef = inject(ElementRef);
 
   get menuClasses(): string {
     if (this.direction === 'horizontal') {
@@ -68,9 +64,19 @@ export class UiDropdownComponent {
     this.isOpenChange.emit(this.isOpen);
   }
 
-  onClose(event: Event) {
-    event.stopPropagation();
+  onClose(event?: Event) {
+    if (event) event.stopPropagation();
     this.isOpen = false;
     this.isOpenChange.emit(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.isOpen) return;
+    const clickedInside = this.elementRef.nativeElement.contains(event.target);
+    if (!clickedInside) {
+      this.isOpen = false;
+      this.isOpenChange.emit(false);
+    }
   }
 }

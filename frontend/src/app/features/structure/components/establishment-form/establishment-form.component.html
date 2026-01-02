@@ -3,13 +3,36 @@
     (cancel)="onCancel()">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <app-ui-input label="Nom de l'établissement" [control]="form.controls.name" [required]="true"></app-ui-input>
+        <!-- Identité -->
+        <div class="md:col-span-2 space-y-4">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider border-b pb-2">Identité</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <app-ui-input label="Nom de l'établissement" [control]="form.controls.name" [required]="true"></app-ui-input>
+                <app-ui-input label="Slogan" [control]="form.controls.slogan" placeholder="Devise de l'école"></app-ui-input>
+                <app-ui-input label="NIF / Matricule" [control]="form.controls.taxId"></app-ui-input>
+                <app-ui-input label="Site Web" [control]="form.controls.website" placeholder="https://..."></app-ui-input>
+            </div>
+        </div>
 
-        <app-ui-input label="Email" type="email" [control]="form.controls.email"></app-ui-input>
-        <app-ui-input label="Téléphone" [control]="form.controls.phone"></app-ui-input>
+        <!-- Localisation -->
+        <div class="md:col-span-2 space-y-4">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider border-b pb-2">Localisation</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <app-ui-input label="Ville" [control]="form.controls.city" [required]="true"></app-ui-input>
+                <app-ui-input label="Pays" [control]="form.controls.country"></app-ui-input>
+                <div class="md:col-span-2">
+                    <app-ui-input label="Adresse Complète" [control]="form.controls.address" type="textarea"></app-ui-input>
+                </div>
+            </div>
+        </div>
 
-        <app-ui-input label="Adresse" [control]="form.controls.address"></app-ui-input>
-
-
+        <!-- Contacts -->
+        <div class="md:col-span-2 space-y-4">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider border-b pb-2">Contacts</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <app-ui-input label="Email" type="email" [control]="form.controls.email"></app-ui-input>
+                 <app-ui-input label="Téléphone" [control]="form.controls.phone"></app-ui-input>
+            </div>
+        </div>
     </div>
 </app-ui-form>

@@ -48,6 +48,29 @@ case "$COMMAND" in
         echo "--- Tous les seeders sont terminés ---"
         ;;
 
+    updategql)
+        echo "--- Génération du code Frontend (GraphQL Codegen) ---"
+        
+        # 1. Récupérer le token via le script Python (qui print juste le token)
+        TOKEN=$(./venv/bin/python3 get_codegen_token.py)
+        
+        if [ $? -ne 0 ] || [ -z "$TOKEN" ]; then
+            echo "Erreur : Impossible de récupérer un token valide pour l'utilisateur 'ethernanos'."
+            echo "Vérifiez que cet utilisateur existe (./snake createsuperuser) ou que le script get_codegen_token.py fonctionne."
+            exit 1
+        fi
+
+        echo "Token récupéré avec succès."
+
+        # 2. Lancer Codegen avec le token
+        export JWT_TOKEN="$TOKEN"
+        cd frontend
+        npm run codegen
+        cd ..
+        
+        echo "--- Codegen terminé ---"
+        ;;
+
     # ---------------------------------
     # COMMANDE PAR DÉFAUT
     # ---------------------------------

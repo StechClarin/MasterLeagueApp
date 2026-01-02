@@ -40,14 +40,19 @@ export type Scalars = {
 
 export type AcademicYearType = {
   __typename?: 'AcademicYearType';
+  assignments: Array<TeachingAssignmentType>;
   classrooms: Array<ClassRoomType>;
-  end_date: Scalars['Date']['output'];
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  end_date?: Maybe<Scalars['Date']['output']>;
+  enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
+  /** L'année en cours */
   isActive: Scalars['Boolean']['output'];
   isArchived: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
-  start_date: Scalars['Date']['output'];
+  start_date?: Maybe<Scalars['Date']['output']>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type AcademicYearTypePaginated = {
@@ -62,13 +67,17 @@ export type AcademicYearTypePaginated = {
 export type ClassRoomType = {
   __typename?: 'ClassRoomType';
   academicYear: AcademicYearType;
+  assignments: Array<TeachingAssignmentType>;
   capacity: Scalars['Int']['output'];
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
   level: LevelType;
   mainTeacher?: Maybe<UserType>;
   name: Scalars['String']['output'];
-  isActive: Scalars['Boolean']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type ClassRoomTypePaginated = {
@@ -82,12 +91,14 @@ export type ClassRoomTypePaginated = {
 
 export type CycleType = {
   __typename?: 'CycleType';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
   levels: Array<LevelType>;
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
-  isActive: Scalars['Boolean']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type CycleTypePaginated = {
@@ -99,25 +110,63 @@ export type CycleTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+export type EnrollmentType = {
+  __typename?: 'EnrollmentType';
+  academicYear: AcademicYearType;
+  classroom: ClassRoomType;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  enrollmentDate: Scalars['Date']['output'];
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isRepeater: Scalars['Boolean']['output'];
+  status: StudentsEnrollmentStatusChoices;
+  student: StudentType;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type EnrollmentTypePaginated = {
+  __typename?: 'EnrollmentTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<EnrollmentType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type EstablishmentType = {
   __typename?: 'EstablishmentType';
   academicyearSet: Array<AcademicYearType>;
   address?: Maybe<Scalars['String']['output']>;
+  city?: Maybe<Scalars['String']['output']>;
   classroomSet: Array<ClassRoomType>;
   code?: Maybe<Scalars['String']['output']>;
+  country?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
   cycleSet: Array<CycleType>;
   email?: Maybe<Scalars['String']['output']>;
+  enrollmentSet: Array<EnrollmentType>;
+  guardianSet: Array<GuardianType>;
   id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
   levelSet: Array<LevelType>;
   levelsubjectSet: Array<LevelSubjectType>;
   logo?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  personnelSet: Array<PersonnelType>;
   phone?: Maybe<Scalars['String']['output']>;
+  /** Texte légal en bas de page */
+  printFooter?: Maybe<Scalars['String']['output']>;
+  printHeader?: Maybe<Scalars['String']['output']>;
+  slogan?: Maybe<Scalars['String']['output']>;
+  studentSet: Array<StudentType>;
+  studenthealthSet: Array<StudentHealthType>;
   subjectSet: Array<SubjectType>;
+  taxId?: Maybe<Scalars['String']['output']>;
+  teachingassignmentSet: Array<TeachingAssignmentType>;
   updatedAt: Scalars['DateTime']['output'];
   users: Array<UserType>;
-  isActive: Scalars['Boolean']['output'];
+  website?: Maybe<Scalars['String']['output']>;
 };
 
 export type EstablishmentTypePaginated = {
@@ -129,29 +178,72 @@ export type EstablishmentTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+export type GuardianType = {
+  __typename?: 'GuardianType';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  establishment: EstablishmentType;
+  firstName?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  lastName?: Maybe<Scalars['String']['output']>;
+  phoneNumber: Scalars['String']['output'];
+  profession?: Maybe<Scalars['String']['output']>;
+  students: Array<StudentType>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  user?: Maybe<UserType>;
+};
+
+export type GuardianTypePaginated = {
+  __typename?: 'GuardianTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<GuardianType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+/** An enumeration. */
+export enum HrPersonnelContractTypeChoices {
+  /** CDD */
+  Cdd = 'CDD',
+  /** CDI */
+  Cdi = 'CDI',
+  /** Intérim */
+  Interim = 'INTERIM',
+  /** Stage */
+  Stage = 'STAGE',
+  /** Vacataire */
+  Vacataire = 'VACATAIRE'
+}
+
 export type LevelSubjectType = {
   __typename?: 'LevelSubjectType';
   coefficient: Scalars['Decimal']['output'];
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   /** Volume horaire annuel */
   hourlyQuota: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
   level: LevelType;
   subject: SubjectType;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type LevelType = {
   __typename?: 'LevelType';
   classes?: Maybe<Array<Maybe<ClassRoomType>>>;
   classrooms: Array<ClassRoomType>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
   cycle: CycleType;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
   levelSubjects: Array<LevelSubjectType>;
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
   shortName?: Maybe<Scalars['String']['output']>;
-  isActive: Scalars['Boolean']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 
@@ -203,6 +295,34 @@ export type PermissionType = {
   tag: Scalars['String']['output'];
 };
 
+export type PersonnelType = {
+  __typename?: 'PersonnelType';
+  address?: Maybe<Scalars['String']['output']>;
+  contractType: HrPersonnelContractTypeChoices;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  dateHired?: Maybe<Scalars['Date']['output']>;
+  emailPro?: Maybe<Scalars['String']['output']>;
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  jobTitle: Scalars['String']['output'];
+  matricule: Scalars['String']['output'];
+  phoneNumber?: Maybe<Scalars['String']['output']>;
+  role?: Maybe<RoleType>;
+  teacher?: Maybe<TeacherType>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  user?: Maybe<UserType>;
+};
+
+export type PersonnelTypePaginated = {
+  __typename?: 'PersonnelTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<PersonnelType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   academicyear?: Maybe<AcademicYearType>;
@@ -212,18 +332,30 @@ export type Query = {
   classrooms?: Maybe<ClassRoomTypePaginated>;
   cycle?: Maybe<CycleType>;
   cycles?: Maybe<CycleTypePaginated>;
+  enrollment?: Maybe<EnrollmentType>;
+  enrollments?: Maybe<EnrollmentTypePaginated>;
   establishment?: Maybe<EstablishmentType>;
   establishments?: Maybe<EstablishmentTypePaginated>;
+  guardian?: Maybe<GuardianType>;
+  guardians?: Maybe<GuardianTypePaginated>;
   level?: Maybe<LevelType>;
   levels?: Maybe<LevelTypePaginated>;
   modules?: Maybe<Array<Maybe<ModuleType>>>;
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
+  personnel?: Maybe<PersonnelType>;
+  personnels?: Maybe<PersonnelTypePaginated>;
   role?: Maybe<RoleType>;
-  roles?: Maybe<Array<Maybe<RoleType>>>;
+  roles?: Maybe<RoleTypePaginated>;
+  student?: Maybe<StudentType>;
+  students?: Maybe<StudentTypePaginated>;
   subject?: Maybe<SubjectType>;
   subjects?: Maybe<SubjectTypePaginated>;
+  teacher?: Maybe<TeacherType>;
+  teachers?: Maybe<TeacherTypePaginated>;
+  teachingAssignment?: Maybe<TeachingAssignmentType>;
+  teachingAssignments?: Maybe<TeachingAssignmentTypePaginated>;
   user?: Maybe<UserType>;
-  users?: Maybe<UserPaginatedType>;
+  users?: Maybe<UserTypePaginated>;
 };
 
 
@@ -233,6 +365,8 @@ export type QueryAcademicyearArgs = {
 
 
 export type QueryAcademicyearsArgs = {
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  isArchived?: InputMaybe<Scalars['Boolean']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -245,6 +379,8 @@ export type QueryClassroomArgs = {
 
 
 export type QueryClassroomsArgs = {
+  academicYearId?: InputMaybe<Scalars['ID']['input']>;
+  levelId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -257,6 +393,19 @@ export type QueryCycleArgs = {
 
 
 export type QueryCyclesArgs = {
+  establishmentId?: InputMaybe<Scalars['ID']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryEnrollmentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryEnrollmentsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -269,6 +418,21 @@ export type QueryEstablishmentArgs = {
 
 
 export type QueryEstablishmentsArgs = {
+  city?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  phone?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGuardianArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGuardiansArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -281,6 +445,20 @@ export type QueryLevelArgs = {
 
 
 export type QueryLevelsArgs = {
+  cycleId?: InputMaybe<Scalars['ID']['input']>;
+  establishmentId?: InputMaybe<Scalars['ID']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPersonnelArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPersonnelsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -294,6 +472,22 @@ export type QueryRoleArgs = {
 
 export type QueryRolesArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryStudentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryStudentsArgs = {
+  classroomId?: InputMaybe<Scalars['ID']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  parentPhone?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -306,6 +500,33 @@ export type QuerySubjectsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTeacherArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryTeachersArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTeachingAssignmentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryTeachingAssignmentsArgs = {
+  academicYearId?: InputMaybe<Scalars['Int']['input']>;
+  classroomId?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  teacherId?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -327,7 +548,17 @@ export type RoleType = {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
+  personnel: Array<PersonnelType>;
   users: Array<UserType>;
+};
+
+export type RoleTypePaginated = {
+  __typename?: 'RoleTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<RoleType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 export type StructureResponseType = {
@@ -336,14 +567,106 @@ export type StructureResponseType = {
   cycles?: Maybe<Array<Maybe<CycleType>>>;
 };
 
+export type StudentHealthType = {
+  __typename?: 'StudentHealthType';
+  /** Liste des allergies connues */
+  allergies?: Maybe<Scalars['String']['output']>;
+  bloodGroup?: Maybe<StudentsStudentHealthBloodGroupChoices>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  emergencyContactName?: Maybe<Scalars['String']['output']>;
+  emergencyContactPhone?: Maybe<Scalars['String']['output']>;
+  establishment: EstablishmentType;
+  heightCm?: Maybe<Scalars['Int']['output']>;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  /** Conditions médicales chroniques */
+  medicalConditions?: Maybe<Scalars['String']['output']>;
+  student: StudentType;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  weightKg?: Maybe<Scalars['Int']['output']>;
+};
+
+export type StudentType = {
+  __typename?: 'StudentType';
+  address?: Maybe<Scalars['String']['output']>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  dateOfBirth?: Maybe<Scalars['Date']['output']>;
+  enrollments: Array<EnrollmentType>;
+  establishment: EstablishmentType;
+  firstName: Scalars['String']['output'];
+  gender: StudentsStudentGenderChoices;
+  guardians: Array<GuardianType>;
+  health?: Maybe<StudentHealthType>;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  lastName: Scalars['String']['output'];
+  matricule: Scalars['String']['output'];
+  photo?: Maybe<Scalars['String']['output']>;
+  placeOfBirth?: Maybe<Scalars['String']['output']>;
+  siblings?: Maybe<Array<Maybe<StudentType>>>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  user?: Maybe<UserType>;
+};
+
+export type StudentTypePaginated = {
+  __typename?: 'StudentTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<StudentType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+/** An enumeration. */
+export enum StudentsEnrollmentStatusChoices {
+  /** Renvoyé */
+  Expelled = 'EXPELLED',
+  /** Parti */
+  Left = 'LEFT',
+  /** Inscrit */
+  Registered = 'REGISTERED'
+}
+
+/** An enumeration. */
+export enum StudentsStudentGenderChoices {
+  /** Féminin */
+  F = 'F',
+  /** Masculin */
+  M = 'M'
+}
+
+/** An enumeration. */
+export enum StudentsStudentHealthBloodGroupChoices {
+  /** AB+ */
+  Ab = 'AB_',
+  /** AB- */
+  Ab_5 = 'AB__5',
+  /** A+ */
+  A = 'A_',
+  /** A- */
+  A_1 = 'A__1',
+  /** B+ */
+  B = 'B_',
+  /** B- */
+  B_3 = 'B__3',
+  /** O+ */
+  O = 'O_',
+  /** O- */
+  O_7 = 'O__7'
+}
+
 export type SubjectType = {
   __typename?: 'SubjectType';
+  assignments: Array<TeachingAssignmentType>;
   code: Scalars['String']['output'];
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
   isOptional: Scalars['Boolean']['output'];
   levelSubjects?: Maybe<Array<Maybe<LevelSubjectType>>>;
   name: Scalars['String']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type SubjectTypePaginated = {
@@ -355,10 +678,57 @@ export type SubjectTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
-export type UserPaginatedType = {
-  __typename?: 'UserPaginatedType';
+export type TeacherType = {
+  __typename?: 'TeacherType';
+  address?: Maybe<Scalars['String']['output']>;
+  assignments: Array<TeachingAssignmentType>;
+  contractType: HrPersonnelContractTypeChoices;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  dateHired?: Maybe<Scalars['Date']['output']>;
+  emailPro?: Maybe<Scalars['String']['output']>;
+  establishment: EstablishmentType;
+  hoursPerWeek: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  jobTitle: Scalars['String']['output'];
+  matricule: Scalars['String']['output'];
+  personnelPtr: PersonnelType;
+  phoneNumber?: Maybe<Scalars['String']['output']>;
+  role?: Maybe<RoleType>;
+  specialty?: Maybe<Scalars['String']['output']>;
+  teacher?: Maybe<TeacherType>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  user?: Maybe<UserType>;
+};
+
+export type TeacherTypePaginated = {
+  __typename?: 'TeacherTypePaginated';
   currentPage?: Maybe<Scalars['Int']['output']>;
-  items?: Maybe<Array<Maybe<UserType>>>;
+  items?: Maybe<Array<Maybe<TeacherType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type TeachingAssignmentType = {
+  __typename?: 'TeachingAssignmentType';
+  academicYear: AcademicYearType;
+  classroom: ClassRoomType;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  establishment: EstablishmentType;
+  /** Heures prévues pour ce module */
+  hoursScheduled: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  subject: SubjectType;
+  teacher: TeacherType;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type TeachingAssignmentTypePaginated = {
+  __typename?: 'TeachingAssignmentTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<TeachingAssignmentType>>>;
   numPages?: Maybe<Scalars['Int']['output']>;
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
@@ -368,8 +738,10 @@ export type UserType = {
   __typename?: 'UserType';
   dateJoined: Scalars['DateTime']['output'];
   email: Scalars['String']['output'];
+  employments: Array<PersonnelType>;
   establishment?: Maybe<EstablishmentType>;
   firstName: Scalars['String']['output'];
+  guardianProfile?: Maybe<GuardianType>;
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
   isStaff: Scalars['Boolean']['output'];
@@ -379,8 +751,34 @@ export type UserType = {
   lastName: Scalars['String']['output'];
   mainClassrooms: Array<ClassRoomType>;
   roles: Array<RoleType>;
+  studentProfile?: Maybe<StudentType>;
   username: Scalars['String']['output'];
 };
+
+export type UserTypePaginated = {
+  __typename?: 'UserTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<UserType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type GetAllPersonnelsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, role?: { __typename?: 'RoleType', id: string, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
+
+export type GetPersonnelQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, contractType: HrPersonnelContractTypeChoices, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, role?: { __typename?: 'RoleType', id: string, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null };
 
 export type UserFieldsFragment = { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> };
 
@@ -397,7 +795,7 @@ export type GetAllUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserPaginatedType', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> } | null> | null } | null };
+export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> } | null> | null } | null };
 
 export type GetUserByIdQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -408,10 +806,12 @@ export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'Us
 
 export type GetAllRolesQueryVariables = Exact<{
   name?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllRolesQuery = { __typename?: 'Query', roles?: Array<{ __typename?: 'RoleType', id: string, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string } | null> | null } | null> | null };
+export type GetAllRolesQuery = { __typename?: 'Query', roles?: { __typename?: 'RoleTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'RoleType', id: string, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string } | null> | null } | null> | null } | null };
 
 export type GetRoleByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -425,87 +825,97 @@ export type GetAllPermissionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetAllPermissionsQuery = { __typename?: 'Query', permissions?: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string, tag: string } | null> | null };
 
-export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean };
+export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null };
 
-export type AcademicYearFieldsFragment = { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean };
+export type AcademicYearFieldsFragment = { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean };
 
-export type CycleFieldsFragment = { __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean };
+export type CycleFieldsFragment = { __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean, establishment: { __typename?: 'EstablishmentType', id: string, name: string } };
 
-export type LevelFieldsFragment = { __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string } };
+export type LevelFieldsFragment = { __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } };
 
-export type ClassRoomFieldsFragment = { __typename?: 'ClassRoomType', id: string, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: string, name: string, cycle: { __typename?: 'CycleType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } };
+export type ClassRoomFieldsFragment = { __typename?: 'ClassRoomType', id: string, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } };
 
 export type LevelSubjectFieldsFragment = { __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } };
 
 export type SubjectFieldsFragment = { __typename?: 'SubjectType', id: string, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } } | null> | null };
 
-export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, levels: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, cycle: { __typename?: 'CycleType', id: string, name: string } }> } | null> | null };
+export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean, levels: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null };
 
 export type GetAllEstablishmentsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
+  city?: InputMaybe<Scalars['String']['input']>;
+  phone?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllEstablishmentsQuery = { __typename?: 'Query', establishments?: { __typename?: 'EstablishmentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null } | null> | null } | null };
+export type GetAllEstablishmentsQuery = { __typename?: 'Query', establishments?: { __typename?: 'EstablishmentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null } | null> | null } | null };
 
 export type GetEstablishmentByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetEstablishmentByIdQuery = { __typename?: 'Query', establishment?: { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null } | null };
+export type GetEstablishmentByIdQuery = { __typename?: 'Query', establishment?: { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null } | null };
 
 export type GetAllAcademicYearsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  isArchived?: InputMaybe<Scalars['Boolean']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllAcademicYearsQuery = { __typename?: 'Query', academicyears?: { __typename?: 'AcademicYearTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null> | null } | null };
+export type GetAllAcademicYearsQuery = { __typename?: 'Query', academicyears?: { __typename?: 'AcademicYearTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null> | null } | null };
 
 export type GetAcademicYearByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetAcademicYearByIdQuery = { __typename?: 'Query', academicyear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null };
+export type GetAcademicYearByIdQuery = { __typename?: 'Query', academicyear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null };
 
 export type GetAllCyclesQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
+  establishmentId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllCyclesQuery = { __typename?: 'Query', cycles?: { __typename?: 'CycleTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number } | null> | null } | null };
+export type GetAllCyclesQuery = { __typename?: 'Query', cycles?: { __typename?: 'CycleTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
 
 export type GetAllLevelsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
+  cycleId?: InputMaybe<Scalars['ID']['input']>;
+  establishmentId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllLevelsQuery = { __typename?: 'Query', levels?: { __typename?: 'LevelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, cycle: { __typename?: 'CycleType', id: string, name: string } } | null> | null } | null };
+export type GetAllLevelsQuery = { __typename?: 'Query', levels?: { __typename?: 'LevelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } } | null> | null } | null };
 
 export type GetAllClassRoomsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
+  levelId?: InputMaybe<Scalars['ID']['input']>;
+  academicYearId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllClassRoomsQuery = { __typename?: 'Query', classrooms?: { __typename?: 'ClassRoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'ClassRoomType', id: string, name: string, capacity: number, level: { __typename?: 'LevelType', id: string, name: string, cycle: { __typename?: 'CycleType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null> | null } | null };
+export type GetAllClassRoomsQuery = { __typename?: 'Query', classrooms?: { __typename?: 'ClassRoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'ClassRoomType', id: string, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null> | null } | null };
 
 export type GetClassRoomByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetClassRoomByIdQuery = { __typename?: 'Query', classroom?: { __typename?: 'ClassRoomType', id: string, name: string, capacity: number, level: { __typename?: 'LevelType', id: string, name: string, cycle: { __typename?: 'CycleType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null };
+export type GetClassRoomByIdQuery = { __typename?: 'Query', classroom?: { __typename?: 'ClassRoomType', id: string, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null };
 
 export type GetAllSubjectsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
@@ -514,12 +924,30 @@ export type GetAllSubjectsQueryVariables = Exact<{
 }>;
 
 
-export type GetAllSubjectsQuery = { __typename?: 'Query', subjects?: { __typename?: 'SubjectTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'SubjectType', id: string, name: string, code: string, isOptional: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } } | null> | null } | null> | null } | null };
+export type GetAllSubjectsQuery = { __typename?: 'Query', subjects?: { __typename?: 'SubjectTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'SubjectType', id: string, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } } | null> | null } | null> | null } | null };
 
 export type GetActiveStructureQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetActiveStructureQuery = { __typename?: 'Query', activeStructure?: { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date: any, end_date: any, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, levels: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, cycle: { __typename?: 'CycleType', id: string, name: string } }> } | null> | null } | null };
+export type GetActiveStructureQuery = { __typename?: 'Query', activeStructure?: { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean, levels: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
+
+export type GetAllStudentsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  classroomId?: InputMaybe<Scalars['ID']['input']>;
+  parentPhone?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllStudentsQuery = { __typename?: 'Query', students?: { __typename?: 'StudentTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'StudentType', id: string, matricule: string, firstName: string, lastName: string, gender: StudentsStudentGenderChoices, photo?: string | null, dateOfBirth?: any | null, placeOfBirth?: string | null, address?: string | null, enrollments: Array<{ __typename?: 'EnrollmentType', id: string, status: StudentsEnrollmentStatusChoices, isRepeater: boolean, classroom: { __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } }>, health?: { __typename?: 'StudentHealthType', id: string, bloodGroup?: StudentsStudentHealthBloodGroupChoices | null, allergies?: string | null, medicalConditions?: string | null, emergencyContactName?: string | null, emergencyContactPhone?: string | null } | null, guardians: Array<{ __typename?: 'GuardianType', id: string, firstName?: string | null, lastName?: string | null, phoneNumber: string, profession?: string | null, user?: { __typename?: 'UserType', firstName: string, lastName: string, email: string } | null }> } | null> | null } | null };
+
+export type GetStudentQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetStudentQuery = { __typename?: 'Query', student?: { __typename?: 'StudentType', id: string, matricule: string, firstName: string, lastName: string, gender: StudentsStudentGenderChoices, photo?: string | null, dateOfBirth?: any | null, placeOfBirth?: string | null, address?: string | null, health?: { __typename?: 'StudentHealthType', id: string, bloodGroup?: StudentsStudentHealthBloodGroupChoices | null, allergies?: string | null, medicalConditions?: string | null, emergencyContactName?: string | null, emergencyContactPhone?: string | null } | null, enrollments: Array<{ __typename?: 'EnrollmentType', id: string, status: StudentsEnrollmentStatusChoices, classroom: { __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } }>, guardians: Array<{ __typename?: 'GuardianType', id: string, phoneNumber: string, profession?: string | null, user?: { __typename?: 'UserType', firstName: string, lastName: string, email: string } | null }>, siblings?: Array<{ __typename?: 'StudentType', id: string, matricule: string, firstName: string, lastName: string, gender: StudentsStudentGenderChoices, photo?: string | null, dateOfBirth?: any | null } | null> | null } | null };
 
 export const UserFieldsFragmentDoc = gql`
     fragment UserFields on UserType {
@@ -564,6 +992,13 @@ export const EstablishmentFieldsFragmentDoc = gql`
   address
   logo
   isActive
+  slogan
+  website
+  taxId
+  city
+  country
+  printHeader
+  printFooter
 }
     `;
 export const AcademicYearFieldsFragmentDoc = gql`
@@ -576,6 +1011,23 @@ export const AcademicYearFieldsFragmentDoc = gql`
   isArchived
 }
     `;
+export const LevelFieldsFragmentDoc = gql`
+    fragment LevelFields on LevelType {
+  id
+  name
+  shortName
+  order
+  isActive
+  cycle {
+    id
+    name
+    establishment {
+      id
+      name
+    }
+  }
+}
+    `;
 export const ClassRoomFieldsFragmentDoc = gql`
     fragment ClassRoomFields on ClassRoomType {
   id
@@ -583,19 +1035,14 @@ export const ClassRoomFieldsFragmentDoc = gql`
   capacity
   isActive
   level {
-    id
-    name
-    cycle {
-      id
-      name
-    }
+    ...LevelFields
   }
   academicYear {
     id
     name
   }
 }
-    `;
+    ${LevelFieldsFragmentDoc}`;
 export const LevelSubjectFieldsFragmentDoc = gql`
     fragment LevelSubjectFields on LevelSubjectType {
   id
@@ -625,16 +1072,7 @@ export const CycleFieldsFragmentDoc = gql`
   name
   order
   isActive
-}
-    `;
-export const LevelFieldsFragmentDoc = gql`
-    fragment LevelFields on LevelType {
-  id
-  name
-  shortName
-  order
-  isActive
-  cycle {
+  establishment {
     id
     name
   }
@@ -659,6 +1097,88 @@ export const StructureResponseFragmentDoc = gql`
 }
     ${CycleFieldsFragmentDoc}
 ${LevelFieldsFragmentDoc}`;
+export const GetAllPersonnelsDocument = gql`
+    query GetAllPersonnels($search: String, $page: Int, $pageSize: Int) {
+  personnels(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      user {
+        id
+        firstName
+        lastName
+        email
+      }
+      role {
+        id
+        name
+      }
+      matricule
+      jobTitle
+      emailPro
+      phoneNumber
+      isActive
+      establishment {
+        id
+        name
+      }
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllPersonnelsGQL extends Apollo.Query<GetAllPersonnelsQuery, GetAllPersonnelsQueryVariables> {
+    document = GetAllPersonnelsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetPersonnelDocument = gql`
+    query GetPersonnel($id: ID!) {
+  personnel(id: $id) {
+    id
+    user {
+      id
+      firstName
+      lastName
+      email
+    }
+    role {
+      id
+      name
+    }
+    establishment {
+      id
+      name
+    }
+    matricule
+    jobTitle
+    contractType
+    emailPro
+    phoneNumber
+    address
+    dateHired
+    isActive
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetPersonnelGQL extends Apollo.Query<GetPersonnelQuery, GetPersonnelQueryVariables> {
+    document = GetPersonnelDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const GetAllUsersDocument = gql`
     query GetAllUsers($username: String, $email: String, $role: String, $page: Int, $pageSize: Int) {
   users(
@@ -678,16 +1198,16 @@ export const GetAllUsersDocument = gql`
 }
     ${UserFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllUsersGQL extends Apollo.Query<GetAllUsersQuery, GetAllUsersQueryVariables> {
-  document = GetAllUsersDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllUsersGQL extends Apollo.Query<GetAllUsersQuery, GetAllUsersQueryVariables> {
+    document = GetAllUsersDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetUserByIdDocument = gql`
     query GetUserById($id: Int!) {
   user(id: $id) {
@@ -696,34 +1216,39 @@ export const GetUserByIdDocument = gql`
 }
     ${UserFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetUserByIdGQL extends Apollo.Query<GetUserByIdQuery, GetUserByIdQueryVariables> {
-  document = GetUserByIdDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetUserByIdGQL extends Apollo.Query<GetUserByIdQuery, GetUserByIdQueryVariables> {
+    document = GetUserByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllRolesDocument = gql`
-    query GetAllRoles($name: String) {
-  roles(name: $name) {
-    ...RoleFields
+    query GetAllRoles($name: String, $page: Int, $pageSize: Int) {
+  roles(name: $name, page: $page, pageSize: $pageSize) {
+    items {
+      ...RoleFields
+    }
+    totalCount
+    numPages
+    currentPage
   }
 }
     ${RoleFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllRolesGQL extends Apollo.Query<GetAllRolesQuery, GetAllRolesQueryVariables> {
-  document = GetAllRolesDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllRolesGQL extends Apollo.Query<GetAllRolesQuery, GetAllRolesQueryVariables> {
+    document = GetAllRolesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetRoleByIdDocument = gql`
     query GetRoleById($id: ID!) {
   role(id: $id) {
@@ -732,16 +1257,16 @@ export const GetRoleByIdDocument = gql`
 }
     ${RoleFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetRoleByIdGQL extends Apollo.Query<GetRoleByIdQuery, GetRoleByIdQueryVariables> {
-  document = GetRoleByIdDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetRoleByIdGQL extends Apollo.Query<GetRoleByIdQuery, GetRoleByIdQueryVariables> {
+    document = GetRoleByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllPermissionsDocument = gql`
     query GetAllPermissions {
   permissions {
@@ -750,19 +1275,26 @@ export const GetAllPermissionsDocument = gql`
 }
     ${PermissionFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllPermissionsGQL extends Apollo.Query<GetAllPermissionsQuery, GetAllPermissionsQueryVariables> {
-  document = GetAllPermissionsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllPermissionsGQL extends Apollo.Query<GetAllPermissionsQuery, GetAllPermissionsQueryVariables> {
+    document = GetAllPermissionsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllEstablishmentsDocument = gql`
-    query GetAllEstablishments($search: String, $page: Int, $pageSize: Int) {
-  establishments(search: $search, page: $page, pageSize: $pageSize) {
+    query GetAllEstablishments($search: String, $city: String, $phone: String, $isActive: Boolean, $page: Int, $pageSize: Int) {
+  establishments(
+    search: $search
+    city: $city
+    phone: $phone
+    isActive: $isActive
+    page: $page
+    pageSize: $pageSize
+  ) {
     items {
       ...EstablishmentFields
     }
@@ -773,16 +1305,16 @@ export const GetAllEstablishmentsDocument = gql`
 }
     ${EstablishmentFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllEstablishmentsGQL extends Apollo.Query<GetAllEstablishmentsQuery, GetAllEstablishmentsQueryVariables> {
-  document = GetAllEstablishmentsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllEstablishmentsGQL extends Apollo.Query<GetAllEstablishmentsQuery, GetAllEstablishmentsQueryVariables> {
+    document = GetAllEstablishmentsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetEstablishmentByIdDocument = gql`
     query GetEstablishmentById($id: ID!) {
   establishment(id: $id) {
@@ -791,19 +1323,25 @@ export const GetEstablishmentByIdDocument = gql`
 }
     ${EstablishmentFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetEstablishmentByIdGQL extends Apollo.Query<GetEstablishmentByIdQuery, GetEstablishmentByIdQueryVariables> {
-  document = GetEstablishmentByIdDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetEstablishmentByIdGQL extends Apollo.Query<GetEstablishmentByIdQuery, GetEstablishmentByIdQueryVariables> {
+    document = GetEstablishmentByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllAcademicYearsDocument = gql`
-    query GetAllAcademicYears($search: String, $page: Int, $pageSize: Int) {
-  academicyears(search: $search, page: $page, pageSize: $pageSize) {
+    query GetAllAcademicYears($search: String, $isActive: Boolean, $isArchived: Boolean, $page: Int, $pageSize: Int) {
+  academicyears(
+    search: $search
+    isActive: $isActive
+    isArchived: $isArchived
+    page: $page
+    pageSize: $pageSize
+  ) {
     items {
       ...AcademicYearFields
     }
@@ -814,16 +1352,16 @@ export const GetAllAcademicYearsDocument = gql`
 }
     ${AcademicYearFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllAcademicYearsGQL extends Apollo.Query<GetAllAcademicYearsQuery, GetAllAcademicYearsQueryVariables> {
-  document = GetAllAcademicYearsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllAcademicYearsGQL extends Apollo.Query<GetAllAcademicYearsQuery, GetAllAcademicYearsQueryVariables> {
+    document = GetAllAcademicYearsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAcademicYearByIdDocument = gql`
     query GetAcademicYearById($id: ID!) {
   academicyear(id: $id) {
@@ -832,19 +1370,24 @@ export const GetAcademicYearByIdDocument = gql`
 }
     ${AcademicYearFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAcademicYearByIdGQL extends Apollo.Query<GetAcademicYearByIdQuery, GetAcademicYearByIdQueryVariables> {
-  document = GetAcademicYearByIdDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAcademicYearByIdGQL extends Apollo.Query<GetAcademicYearByIdQuery, GetAcademicYearByIdQueryVariables> {
+    document = GetAcademicYearByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllCyclesDocument = gql`
-    query GetAllCycles($search: String, $page: Int, $pageSize: Int) {
-  cycles(search: $search, page: $page, pageSize: $pageSize) {
+    query GetAllCycles($search: String, $establishmentId: ID, $page: Int, $pageSize: Int) {
+  cycles(
+    search: $search
+    establishmentId: $establishmentId
+    page: $page
+    pageSize: $pageSize
+  ) {
     items {
       ...CycleFields
     }
@@ -855,19 +1398,25 @@ export const GetAllCyclesDocument = gql`
 }
     ${CycleFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllCyclesGQL extends Apollo.Query<GetAllCyclesQuery, GetAllCyclesQueryVariables> {
-  document = GetAllCyclesDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllCyclesGQL extends Apollo.Query<GetAllCyclesQuery, GetAllCyclesQueryVariables> {
+    document = GetAllCyclesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllLevelsDocument = gql`
-    query GetAllLevels($search: String, $page: Int, $pageSize: Int) {
-  levels(search: $search, page: $page, pageSize: $pageSize) {
+    query GetAllLevels($search: String, $cycleId: ID, $establishmentId: ID, $page: Int, $pageSize: Int) {
+  levels(
+    search: $search
+    cycleId: $cycleId
+    establishmentId: $establishmentId
+    page: $page
+    pageSize: $pageSize
+  ) {
     items {
       ...LevelFields
     }
@@ -878,19 +1427,25 @@ export const GetAllLevelsDocument = gql`
 }
     ${LevelFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllLevelsGQL extends Apollo.Query<GetAllLevelsQuery, GetAllLevelsQueryVariables> {
-  document = GetAllLevelsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllLevelsGQL extends Apollo.Query<GetAllLevelsQuery, GetAllLevelsQueryVariables> {
+    document = GetAllLevelsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllClassRoomsDocument = gql`
-    query GetAllClassRooms($search: String, $page: Int, $pageSize: Int) {
-  classrooms(search: $search, page: $page, pageSize: $pageSize) {
+    query GetAllClassRooms($search: String, $levelId: ID, $academicYearId: ID, $page: Int, $pageSize: Int) {
+  classrooms(
+    search: $search
+    levelId: $levelId
+    academicYearId: $academicYearId
+    page: $page
+    pageSize: $pageSize
+  ) {
     items {
       ...ClassRoomFields
     }
@@ -901,16 +1456,16 @@ export const GetAllClassRoomsDocument = gql`
 }
     ${ClassRoomFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllClassRoomsGQL extends Apollo.Query<GetAllClassRoomsQuery, GetAllClassRoomsQueryVariables> {
-  document = GetAllClassRoomsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllClassRoomsGQL extends Apollo.Query<GetAllClassRoomsQuery, GetAllClassRoomsQueryVariables> {
+    document = GetAllClassRoomsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetClassRoomByIdDocument = gql`
     query GetClassRoomById($id: ID!) {
   classroom(id: $id) {
@@ -919,16 +1474,16 @@ export const GetClassRoomByIdDocument = gql`
 }
     ${ClassRoomFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetClassRoomByIdGQL extends Apollo.Query<GetClassRoomByIdQuery, GetClassRoomByIdQueryVariables> {
-  document = GetClassRoomByIdDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetClassRoomByIdGQL extends Apollo.Query<GetClassRoomByIdQuery, GetClassRoomByIdQueryVariables> {
+    document = GetClassRoomByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetAllSubjectsDocument = gql`
     query GetAllSubjects($search: String, $page: Int, $pageSize: Int) {
   subjects(search: $search, page: $page, pageSize: $pageSize) {
@@ -942,16 +1497,16 @@ export const GetAllSubjectsDocument = gql`
 }
     ${SubjectFieldsFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetAllSubjectsGQL extends Apollo.Query<GetAllSubjectsQuery, GetAllSubjectsQueryVariables> {
-  document = GetAllSubjectsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllSubjectsGQL extends Apollo.Query<GetAllSubjectsQuery, GetAllSubjectsQueryVariables> {
+    document = GetAllSubjectsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-}
 export const GetActiveStructureDocument = gql`
     query GetActiveStructure {
   activeStructure {
@@ -960,13 +1515,155 @@ export const GetActiveStructureDocument = gql`
 }
     ${StructureResponseFragmentDoc}`;
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GetActiveStructureGQL extends Apollo.Query<GetActiveStructureQuery, GetActiveStructureQueryVariables> {
-  document = GetActiveStructureDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetActiveStructureGQL extends Apollo.Query<GetActiveStructureQuery, GetActiveStructureQueryVariables> {
+    document = GetActiveStructureDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllStudentsDocument = gql`
+    query GetAllStudents($search: String, $classroomId: ID, $parentPhone: String, $page: Int, $pageSize: Int) {
+  students(
+    search: $search
+    classroomId: $classroomId
+    parentPhone: $parentPhone
+    page: $page
+    pageSize: $pageSize
+  ) {
+    totalCount
+    numPages
+    items {
+      id
+      matricule
+      firstName
+      lastName
+      gender
+      photo
+      dateOfBirth
+      placeOfBirth
+      address
+      enrollments {
+        id
+        status
+        isRepeater
+        classroom {
+          id
+          name
+          level {
+            id
+            name
+          }
+        }
+        academicYear {
+          id
+          name
+        }
+      }
+      health {
+        id
+        bloodGroup
+        allergies
+        medicalConditions
+        emergencyContactName
+        emergencyContactPhone
+      }
+      guardians {
+        id
+        firstName
+        lastName
+        phoneNumber
+        profession
+        user {
+          firstName
+          lastName
+          email
+        }
+      }
+    }
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllStudentsGQL extends Apollo.Query<GetAllStudentsQuery, GetAllStudentsQueryVariables> {
+    document = GetAllStudentsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetStudentDocument = gql`
+    query GetStudent($id: ID!) {
+  student(id: $id) {
+    id
+    matricule
+    firstName
+    lastName
+    gender
+    photo
+    dateOfBirth
+    placeOfBirth
+    address
+    health {
+      id
+      bloodGroup
+      allergies
+      medicalConditions
+      emergencyContactName
+      emergencyContactPhone
+    }
+    enrollments {
+      id
+      status
+      classroom {
+        id
+        name
+        level {
+          id
+          name
+        }
+      }
+      academicYear {
+        id
+        name
+      }
+    }
+    guardians {
+      id
+      phoneNumber
+      profession
+      user {
+        firstName
+        lastName
+        email
+      }
+    }
+    siblings {
+      id
+      matricule
+      firstName
+      lastName
+      gender
+      photo
+      dateOfBirth
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetStudentGQL extends Apollo.Query<GetStudentQuery, GetStudentQueryVariables> {
+    document = GetStudentDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }

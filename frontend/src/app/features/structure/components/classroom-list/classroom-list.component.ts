@@ -5,6 +5,8 @@ import { BaseModalListComponent } from '@core/abstracts/base-modal-list.componen
 import { ClassRoomService } from '../../services/classroom.service';
 import { ClassRoomType } from '@app/graphql/generated';
 import { ClassRoomFormComponent } from '../classroom-form/classroom-form.component';
+import { LevelService } from '../../services/level.service';
+import { map } from 'rxjs/operators';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
@@ -65,8 +67,14 @@ export class ClassRoomListComponent extends BaseModalListComponent<ClassRoomType
         super.ngOnInit();
     }
 
+    levelService = inject(LevelService);
+    levels$ = this.levelService.getAll().pipe(map((res: any) => res.data?.levels?.items || []));
+
     initFilterForm() {
-        return this.fb.group({});
+        return this.fb.group({
+            levelId: [''],
+            search: ['']
+        });
     }
 
     dispatchFilters() {

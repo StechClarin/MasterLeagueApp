@@ -12,10 +12,24 @@ class Establishment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # --- Identité & Légal ---
+    slogan = models.CharField(max_length=255, null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
+    tax_id = models.CharField(max_length=100, null=True, blank=True, verbose_name="NIF / Matricule")
+    
+    # --- Localisation ---
+    city = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True, default="Cameroun")
+
+    # --- Branding (Impression) ---
+    print_header = models.ImageField(upload_to='establishments/headers/', null=True, blank=True)
+    print_footer = models.TextField(null=True, blank=True, help_text="Texte légal en bas de page")
+
     class Meta:
         verbose_name = "Etablissement"
         verbose_name_plural = "Etablissements"
         ordering = ['name']
+        unique_together = ['name', 'city']
 
     def __str__(self):
         return self.name

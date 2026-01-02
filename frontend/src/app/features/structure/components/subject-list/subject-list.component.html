@@ -97,7 +97,7 @@
             </app-ui-confirm-modal>
 
             <app-subject-form *ngSwitchDefault [subject]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
-                (save)="onSave()" (cancel)="closeModal()">
+                (success)="onSave()" (cancel)="closeModal()">
             </app-subject-form>
 
         </ng-container>

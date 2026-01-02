@@ -10,6 +10,7 @@ class CycleQuery(graphene.ObjectType):
     cycles = graphene.Field(
         get_paginated_type(CycleType),
         search=graphene.String(),
+        establishment_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -20,10 +21,13 @@ class CycleQuery(graphene.ObjectType):
         except Cycle.DoesNotExist:
             return None
 
-    def resolve_cycles(root, info, search=None, page=1, page_size=10, **kwargs):
+    def resolve_cycles(root, info, search=None, establishment_id=None, page=1, page_size=10, **kwargs):
         queryset = get_context_filtered_queryset(Cycle, info, order_by='order')
         
         if search:
             queryset = queryset.filter(name__icontains=search)
+            
+        if establishment_id:
+            queryset = queryset.filter(establishment_id=establishment_id)
             
         return paginate_queryset(queryset, page, page_size)
