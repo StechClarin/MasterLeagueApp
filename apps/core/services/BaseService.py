@@ -117,18 +117,45 @@ class BaseService:
     def save_process(self, data, instance=None):
         """
         Effectue l'écriture réelle en base de données.
-        Peut être surchargé pour des cas complexes (ex: User et mot de passe).
-        Retourne (instance, boolean_created).
+        Gère automatiquement les champs ManyToMany (M2M) qui ne peuvent pas être assignés directement.
         """
+        m2m_data = {}
+        simple_data = {}
+        
+        # Identification des champs M2M du modèle
+        # On regarde uniquement les champs directs (pas les relations inverses auto-créées)
+        model_m2m_fields = [
+            f.name for f in self.model._meta.get_fields() 
+            if f.many_to_many and not f.auto_created
+        ]
+        
+        for key, value in data.items():
+            if key in model_m2m_fields:
+                m2m_data[key] = value
+            else:
+                simple_data[key] = value
+
         if instance:
             # Mode Update
-            for attr, value in data.items():
+            for attr, value in simple_data.items():
                 setattr(instance, attr, value)
             instance.save()
-            return instance, False # False = Mis à jour
+            
+            # Mise à jour des M2M (après save)
+            for attr, value in m2m_data.items():
+                getattr(instance, attr).set(value)
+                
+            return instance, False
         else:
             # Mode Create
-            return self.model.objects.create(**data), True # True = Créé
+            # 1. Création avec les champs simples uniquement
+            obj = self.model.objects.create(**simple_data)
+            
+            # 2. Assignation des M2M
+            for attr, value in m2m_data.items():
+                getattr(obj, attr).set(value)
+                
+            return obj, True
 
     def after_save(self, instance, created):
         """

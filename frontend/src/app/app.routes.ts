@@ -39,6 +39,12 @@ export const routes: Routes = [
         loadChildren: () => import('@features/structure/structure.routes').then(m => m.STRUCTURE_ROUTES)
       },
 
+      // 4. Module RH (Personnels, Contrats, Emploi du temps...)
+      {
+        path: 'hr',
+        loadChildren: () => import('@features/hr/hr.routes').then(m => m.HR_ROUTES)
+      },
+
     ]
   },
 

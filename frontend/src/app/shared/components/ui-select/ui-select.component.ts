@@ -22,9 +22,9 @@ export interface SelectOption {
         (blur)="onBlur()"
         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white"
       >
-        <option value="" disabled>{{ placeholder }}</option>
-        <option *ngFor="let option of options" [value]="option.value">
-          {{ option.label }}
+        <option [ngValue]="null" disabled>{{ placeholder }}</option>
+        <option *ngFor="let option of options" [ngValue]="option[bindValue]">
+          {{ option[bindLabel] }}
         </option>
       </select>
       <p *ngIf="hint" class="mt-1 text-sm text-gray-500">{{ hint }}</p>
@@ -37,7 +37,9 @@ export interface SelectOption {
 export class UiSelectComponent implements ControlValueAccessor, OnInit {
   @Input() label: string = '';
   @Input() placeholder: string = 'Sélectionner...';
-  @Input() options: SelectOption[] = [];
+  @Input() options: any[] = [];
+  @Input() bindLabel: string = 'label';
+  @Input() bindValue: string = 'value';
   @Input() control: FormControl = new FormControl();
   @Input() required: boolean = false;
   @Input() hint: string = '';

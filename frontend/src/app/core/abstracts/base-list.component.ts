@@ -44,7 +44,7 @@ export abstract class BaseListComponent<T> implements OnInit {
         console.log(`[${this.constructor.name}] Context switched to ${_estId || 'All'}, refreshing...`);
         this.refresh();
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void {
@@ -84,13 +84,19 @@ export abstract class BaseListComponent<T> implements OnInit {
         const numPages = data?.numPages ?? data?.num_pages;
 
         // Auto-update pagination metadata if available
+        // Auto-update pagination metadata if available
         if (totalCount !== undefined) {
           this.totalCount.set(totalCount);
           this.numPages.set(numPages ?? 0);
-          // If the response has 'items', return that, otherwise return the data itself
-          return data.items || data;
+          // If the response has 'items', return that, otherwise return empty array
+          return data.items || [];
+        } else if (data && Array.isArray(data.items)) {
+          // Fallback for lists wrapped in { items: [...] } but without totalCount
+          return data.items;
+        } else if (Array.isArray(data)) {
+          return data;
         }
-        return data;
+        return [];
       })
     );
   }

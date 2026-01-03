@@ -8,14 +8,21 @@ query GetAllPersonnels($search: String, $page: Int, $pageSize: Int) {
         lastName
         email
       }
-      role {
+      roles {
         id
         name
       }
       matricule
       jobTitle
+      contractType {
+        id
+        designation
+        code
+      }
       emailPro
       phoneNumber
+      address
+      dateHired
       isActive
       establishment {
         id
@@ -37,7 +44,7 @@ query GetPersonnel($id: ID!) {
       lastName
       email
     }
-    role {
+    roles {
       id
       name
     }
@@ -47,11 +54,35 @@ query GetPersonnel($id: ID!) {
     }
     matricule
     jobTitle
-    contractType
+    contractType {
+      id
+      designation
+      code
+    }
     emailPro
     phoneNumber
     address
     dateHired
     isActive
+  }
+}
+
+query GetAllContractTypes {
+  contractTypes {
+    items {
+      id
+      designation
+      code
+      description
+    }
+  }
+}
+
+query GetContractType($id: ID!) {
+  contractType(id: $id) {
+    id
+    designation
+    code
+    description
   }
 }

@@ -114,6 +114,16 @@ GROUP_STRUCTURE = [
             {"name": "Supprimer une affectation", "codename": "delete_teaching_assignment"},
         ]
     },
+    {
+        "name": "Gestion des Type de contrat",
+        "tag": "contract_type",
+        "permissions": [
+            {"name": "Lire les type de contrat", "codename": "view_contract_type"},
+            {"name": "Ajouter un type de contrat", "codename": "add_contract_type"},
+            {"name": "Modifier un type de contrat", "codename": "change_contract_type"},
+            {"name": "Supprimer un type de contrat", "codename": "delete_contract_type"},
+        ]
+    },
 ]
 
 class Command(BaseCommand):

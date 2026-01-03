@@ -98,6 +98,13 @@ MODULE_STRUCTURE = [
                 "link": "/personnels",
                 "tags": ["personnel"]
             },
+            {
+                "title": "Type de contrat",
+                "icon": "contract-icon",
+                "order": 1,
+                "link": "/contract-types",
+                "tags": ["contract_type"]
+            },
 
 
         ]

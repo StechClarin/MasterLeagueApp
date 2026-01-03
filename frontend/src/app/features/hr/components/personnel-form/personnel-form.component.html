@@ -1,54 +1,105 @@
-<div class="p-4">
-    <h2 class="text-xl font-bold mb-4">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un personnel</h2>
-
-    <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
-        
-        <!-- Section Utilisateur -->
-        <h3 class="text-lg font-semibold border-b pb-1">Informations Personnelles</h3>
-        <div formGroupName="user" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <app-ui-input label="Prénom" formControlName="first_name" placeholder="Prénom"></app-ui-input>
-            <app-ui-input label="Nom" formControlName="last_name" placeholder="Nom"></app-ui-input>
-            <app-ui-input label="Email" formControlName="email" type="email" placeholder="Email personnel"></app-ui-input>
+<div class="p-6 h-full flex flex-col">
+    <!-- Header -->
+    <div class="mb-6 pb-4 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un personnel</h2>
+            <p class="text-sm text-gray-500 mt-1">Renseignez les informations personnelles et professionnelles.</p>
         </div>
+        <button (click)="cancel.emit()" class="text-gray-400 hover:text-gray-500 transition-colors">
+            <span class="sr-only">Fermer</span>
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
 
-        <!-- Section Professionnelle -->
-        <h3 class="text-lg font-semibold border-b pb-1 mt-2">Détails Professionnels</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <app-ui-input label="Matricule" formControlName="matricule" placeholder="Matricule RH"></app-ui-input>
-            <app-ui-input label="Poste" formControlName="job_title" placeholder="Intitulé du poste"></app-ui-input>
-            <app-ui-input label="Email Pro" formControlName="email_pro" type="email" placeholder="Email professionnel"></app-ui-input>
-            <app-ui-input label="Téléphone" formControlName="phone_number" placeholder="Téléphone"></app-ui-input>
+    <!-- Tabs & Content -->
+    <div class="flex-1 overflow-hidden flex flex-col">
+        <app-ui-tabs [tabs]="tabs" [currentTab]="currentTab()" (tabChange)="currentTab.set($event)">
             
-            <app-ui-select 
-                label="Rôle" 
-                formControlName="role" 
-                [options]="roles$ | async" 
-                bindLabel="name" 
-                bindValue="id"
-                placeholder="Sélectionner un rôle">
-            </app-ui-select>
+            <form [formGroup]="form" (ngSubmit)="submit()" class="h-[450px] overflow-y-auto pr-2 custom-scrollbar pt-4">
+                
+                <!-- TAB 1: IDENTITÉ -->
+                <div *ngIf="currentTab() === 'identity'" class="space-y-6">
+                    <!-- User Info Group -->
+                    <div formGroupName="user" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <app-ui-input label="Prénom" formControlName="first_name" placeholder="ex: Jean"></app-ui-input>
+                            <app-ui-input label="Nom" formControlName="last_name" placeholder="ex: Dupont"></app-ui-input>
+                        </div>
+                        
+                        <app-ui-input label="Email Personnel" formControlName="email" type="email" placeholder="jean.dupont@email.com" 
+                            [helper]="'Utilisé pour la création du compte utilisateur'"></app-ui-input>
+                    </div>
 
-            <app-ui-select 
-                label="Établissement" 
-                formControlName="establishment" 
-                [options]="establishments$ | async" 
-                bindLabel="name" 
-                bindValue="id"
-                placeholder="Sélectionner un établissement">
-            </app-ui-select>
-        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                        <app-ui-input label="Téléphone" formControlName="phone_number" placeholder="ex: 77 000 00 00"></app-ui-input>
+                        <app-ui-input label="Adresse" formControlName="address" placeholder="ex: Dakar, Sénégal"></app-ui-input>
+                    </div>
+                </div>
 
-        <div class="flex justify-end gap-2 mt-4">
-            <button type="button" (click)="cancel.emit()" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Annuler</button>
-            <button type="submit" [disabled]="isSubmitting" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
-                <span *ngIf="isSubmitting" class="mr-2">
-                  <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </span>
-                Enregistrer
-            </button>
-        </div>
-    </form>
+                <!-- TAB 2: PROFESSIONNEL -->
+                <div *ngIf="currentTab() === 'professional'" class="space-y-6">
+                    
+                    <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <app-ui-input label="Matricule" formControlName="matricule" placeholder="Généré automatiquement" [readonly]="true"></app-ui-input>
+                            <app-ui-input label="Email Professionnel" formControlName="email_pro" type="email" placeholder="prenom.nom@ecole.com"></app-ui-input>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <app-ui-input label="Intitulé du Poste" formControlName="job_title" placeholder="ex: Professeur de Mathématiques"></app-ui-input>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <app-ui-select 
+                                label="Type de Contrat" 
+                                formControlName="contract_type" 
+                                [options]="contractTypes$ | async" 
+                                bindLabel="designation" 
+                                bindValue="id"
+                                placeholder="Sélectionner un type">
+                            </app-ui-select>
+
+                            <app-ui-multi-select 
+                                label="Rôles Système" 
+                                formControlName="roles" 
+                                [options]="roles$ | async" 
+                                bindLabel="name" 
+                                bindValue="id"
+                                placeholder="Ajouter des rôles">
+                            </app-ui-multi-select>
+                        </div>
+
+                        <app-ui-select 
+                            label="Établissement de rattachement" 
+                            formControlName="establishment" 
+                            [options]="establishments$ | async" 
+                            bindLabel="name" 
+                            bindValue="id"
+                            placeholder="Sélectionner l'établissement">
+                        </app-ui-select>
+                    </div>
+                </div>
+
+            </form>
+
+        </app-ui-tabs>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="mt-auto pt-6 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0">
+        <button type="button" (click)="cancel.emit()" 
+            class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 hover:text-gray-900 transition-colors focus:ring-4 focus:ring-gray-100">
+            Annuler
+        </button>
+        <button type="button" (click)="submit()" [disabled]="isSubmitting || form.invalid" 
+            class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg shadow-indigo-500/20 focus:ring-4 focus:ring-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg *ngIf="isSubmitting" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}</span>
+        </button>
+    </div>
 </div>

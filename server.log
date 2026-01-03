@@ -1,0 +1,74 @@
+Watching for file changes with StatReloader
+/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/graphene_django/types.py:104: UserWarning: Excluding the custom field "start_date" on DjangoObjectType "AcademicYearType" has no effect. Either remove the custom field or remove the field from the "exclude" list.
+  warnings.warn(
+/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/graphene_django/types.py:104: UserWarning: Excluding the custom field "end_date" on DjangoObjectType "AcademicYearType" has no effect. Either remove the custom field or remove the field from the "exclude" list.
+  warnings.warn(
+Unauthorized: /graphql/
+[02/Jan/2026 14:42:46] "HEAD /graphql/ HTTP/1.1" 401 0
+[02/Jan/2026 14:43:01] "POST /graphql/ HTTP/1.1" 200 97897
+[02/Jan/2026 14:43:05] "POST /graphql/modules HTTP/1.1" 200 863
+[02/Jan/2026 14:43:06] "POST /graphql/GetAllPersonnels HTTP/1.1" 200 118
+/home/stechclarin/Documents/projet_init/apps/core/utils/pagination.py:7: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'apps.profilmanagement.models.role.Role'> QuerySet.
+  paginator = Paginator(queryset, page_size)
+[02/Jan/2026 14:43:06] "POST /graphql/GetAllRoles HTTP/1.1" 200 1095
+[02/Jan/2026 14:43:06] "POST /graphql/GetAllEstablishments HTTP/1.1" 200 642
+[02/Jan/2026 14:43:06] "POST /graphql HTTP/1.1" 200 1289
+[02/Jan/2026 14:43:06] "POST /graphql/GetAllEstablishments HTTP/1.1" 200 642
+[02/Jan/2026 14:43:39] "POST /graphql/modules HTTP/1.1" 200 863
+[02/Jan/2026 14:43:40] "POST /graphql/GetAllPersonnels HTTP/1.1" 200 118
+[02/Jan/2026 14:43:40] "POST /graphql/GetAllEstablishments HTTP/1.1" 200 642
+[02/Jan/2026 14:43:40] "POST /graphql/GetAllRoles HTTP/1.1" 200 1095
+[02/Jan/2026 14:43:40] "POST /graphql HTTP/1.1" 200 1289
+[02/Jan/2026 14:43:40] "POST /graphql/GetAllEstablishments HTTP/1.1" 200 642
+/home/stechclarin/Documents/projet_init/apps/hr/models/__init__.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 02, 2026 - 14:42:35
+Django version 5.2.7, using settings 'config.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Exception in thread django-main-thread:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.12/threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/utils/autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/core/management/commands/runserver.py", line 124, in inner_run
+    autoreload.raise_last_exception()
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/utils/autoreload.py", line 86, in raise_last_exception
+    raise _exception[1]
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 394, in execute
+    autoreload.check_errors(django.setup)()
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/utils/autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/apps/registry.py", line 116, in populate
+    app_config.import_models()
+  File "/home/stechclarin/Documents/projet_init/venv/lib/python3.12/site-packages/django/apps/config.py", line 269, in import_models
+    self.models_module = import_module(models_module_name)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/stechclarin/Documents/projet_init/apps/hr/models/__init__.py", line 2, in <module>
+    from .personnel import Personnel
+  File "/home/stechclarin/Documents/projet_init/apps/hr/models/personnel.py", line 7, in <module>
+    from .contracttype import ContractType
+ModuleNotFoundError: No module named 'apps.hr.models.contracttype'
+/home/stechclarin/Documents/projet_init/apps/hr/models/personnel.py changed, reloading.
+Watching for file changes with StatReloader
+Error: That port is already in use.

@@ -1,15 +1,18 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { BaseModalFormComponent } from '@core/abstracts/base-modal-form.component';
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
+import { UiMultiSelectComponent } from '@shared/components/ui-multi-select/ui-multi-select.component';
+import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
 import { PersonnelService } from '../../services/personnel.service';
 import { RoleService } from '../../../profilmanagement/services/role.service';
 import { map } from 'rxjs/operators';
 import { EstablishmentService } from '../../../structure/services/establishment.service';
 import { Observable } from 'rxjs';
+import { GetAllContractTypesGQL } from '@app/graphql/generated';
 
 @Component({
     selector: 'app-personnel-form',
@@ -19,7 +22,9 @@ import { Observable } from 'rxjs';
         ReactiveFormsModule,
         UiModalComponent,
         UiInputComponent,
-        UiSelectComponent
+        UiSelectComponent,
+        UiMultiSelectComponent,
+        UiTabsComponent
     ],
     templateUrl: './personnel-form.component.html'
 })
@@ -31,6 +36,14 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
 
     roles$ = this.roleService.getAll().pipe(map((res: any) => res.data?.roles?.items || []));
     establishments$ = this.establishmentService.getAll().pipe(map((res: any) => res.data?.establishments?.items || []));
+    contractTypes$ = inject(GetAllContractTypesGQL).watch().valueChanges.pipe(map((res: any) => res.data?.contractTypes?.items || []));
+
+    // Tabs Configuration
+    tabs: Tab[] = [
+        { id: 'identity', label: 'Identité' },
+        { id: 'professional', label: 'Infos Professionnelles' }
+    ];
+    currentTab = signal('identity');
 
     constructor() {
         super();
@@ -42,13 +55,12 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
 
     initForm(): FormGroup {
         return this.fb.group({
-            matricule: ['', Validators.required],
+            matricule: [''], // Auto-generated
             job_title: ['', Validators.required],
-            // roles: [[], Validators.required], // Removed as sticking to single role based on logic, or kept if multi-role?
-            // "role" field is usually single in Personnel model (FK). 
-            // The logic earlier had 'roles' and 'role'. I'll stick to 'role' (single) as per model.
-            role: [null, Validators.required],
+            roles: [[], Validators.required],
+            contract_type: [null], // Optional or required? Model allows null, but UI might want it.
             establishment: [null, Validators.required],
+            address: [''], // Moved to root (Personnel has address, User does not)
             user: this.fb.group({
                 first_name: ['', Validators.required],
                 last_name: ['', Validators.required],
@@ -74,8 +86,13 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
 
         const formData = {
             ...data,
-            role: data.role?.id,
+            job_title: data.jobTitle,
+            email_pro: data.emailPro,
+            phone_number: data.phoneNumber,
+            roles: data.roles?.map((r: any) => r.id) || [],
             establishment: data.establishment?.id,
+            contract_type: data.contractType?.id,
+            address: data.address, // Address is on Personnel
             user: {
                 first_name: data.user?.firstName,
                 last_name: data.user?.lastName,

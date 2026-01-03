@@ -1,14 +1,13 @@
 import { Component, inject, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Apollo } from 'apollo-angular';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UserService } from '../../services/user.service';
-import { GET_ALL_ROLES } from '../../graphql/role.queries';
+import { RoleService } from '../../services/role.service';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { User } from '../../models/user.model';
 import { CustomValidators } from '@core/validators/custom-validators';
@@ -96,7 +95,7 @@ import { CustomValidators } from '@core/validators/custom-validators';
 export class UserFormComponent extends BaseFormComponent implements OnInit, OnChanges {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
-  private apollo = inject(Apollo);
+  private roleService = inject(RoleService);
 
   @Input() user: User | null = null;
 
@@ -115,12 +114,10 @@ export class UserFormComponent extends BaseFormComponent implements OnInit, OnCh
 
   override ngOnInit() {
     super.ngOnInit();
-    // Chargement des rôles via GraphQL
-    this.roles$ = this.apollo
-      .watchQuery({ query: GET_ALL_ROLES })
-      .valueChanges.pipe(
-        map((result: any) => result.data.roles)
-      );
+    // Chargement des rôles via RoleService
+    this.roles$ = this.roleService.getAll().pipe(
+      map((result: any) => result.data?.roles?.items || [])
+    );
   }
 
   ngOnChanges(changes: SimpleChanges) {

@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, OnInit, SimpleChanges, signal, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit, SimpleChanges, signal, effect, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
@@ -24,6 +24,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     private levelService = inject(LevelService);
     private structureState = inject(StructureStateService);
     private cdr = inject(ChangeDetectorRef);
+    private destroyRef = inject(DestroyRef);
 
     @Input() subject: SubjectType | null = null;
     @Input() isReadOnly = false;
@@ -105,7 +106,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
 
             // Enable/Disable inputs based on selection
             group.get('isSelected')?.valueChanges
-                .pipe(takeUntilDestroyed()) // Ensure cleanup of these subscriptions too!
+                .pipe(takeUntilDestroyed(this.destroyRef)) // Ensure cleanup of these subscriptions too!
                 .subscribe(checked => {
                     const coeff = group.get('coefficient');
                     const quota = group.get('hourlyQuota');

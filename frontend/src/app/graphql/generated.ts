@@ -89,6 +89,26 @@ export type ClassRoomTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+export type ContractTypeType = {
+  __typename?: 'ContractTypeType';
+  code: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  designation: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  personnels: Array<PersonnelType>;
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type ContractTypeTypePaginated = {
+  __typename?: 'ContractTypeTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<ContractTypeType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type CycleType = {
   __typename?: 'CycleType';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
@@ -202,20 +222,6 @@ export type GuardianTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
-/** An enumeration. */
-export enum HrPersonnelContractTypeChoices {
-  /** CDD */
-  Cdd = 'CDD',
-  /** CDI */
-  Cdi = 'CDI',
-  /** Intérim */
-  Interim = 'INTERIM',
-  /** Stage */
-  Stage = 'STAGE',
-  /** Vacataire */
-  Vacataire = 'VACATAIRE'
-}
-
 export type LevelSubjectType = {
   __typename?: 'LevelSubjectType';
   coefficient: Scalars['Decimal']['output'];
@@ -298,7 +304,7 @@ export type PermissionType = {
 export type PersonnelType = {
   __typename?: 'PersonnelType';
   address?: Maybe<Scalars['String']['output']>;
-  contractType: HrPersonnelContractTypeChoices;
+  contractType?: Maybe<ContractTypeType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   dateHired?: Maybe<Scalars['Date']['output']>;
   emailPro?: Maybe<Scalars['String']['output']>;
@@ -308,7 +314,7 @@ export type PersonnelType = {
   jobTitle: Scalars['String']['output'];
   matricule: Scalars['String']['output'];
   phoneNumber?: Maybe<Scalars['String']['output']>;
-  role?: Maybe<RoleType>;
+  roles: Array<RoleType>;
   teacher?: Maybe<TeacherType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<UserType>;
@@ -330,6 +336,8 @@ export type Query = {
   activeStructure?: Maybe<StructureResponseType>;
   classroom?: Maybe<ClassRoomType>;
   classrooms?: Maybe<ClassRoomTypePaginated>;
+  contractType?: Maybe<ContractTypeType>;
+  contractTypes?: Maybe<ContractTypeTypePaginated>;
   cycle?: Maybe<CycleType>;
   cycles?: Maybe<CycleTypePaginated>;
   enrollment?: Maybe<EnrollmentType>;
@@ -381,6 +389,18 @@ export type QueryClassroomArgs = {
 export type QueryClassroomsArgs = {
   academicYearId?: InputMaybe<Scalars['ID']['input']>;
   levelId?: InputMaybe<Scalars['ID']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryContractTypeArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryContractTypesArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -548,7 +568,7 @@ export type RoleType = {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
-  personnel: Array<PersonnelType>;
+  personnels: Array<PersonnelType>;
   users: Array<UserType>;
 };
 
@@ -682,7 +702,7 @@ export type TeacherType = {
   __typename?: 'TeacherType';
   address?: Maybe<Scalars['String']['output']>;
   assignments: Array<TeachingAssignmentType>;
-  contractType: HrPersonnelContractTypeChoices;
+  contractType?: Maybe<ContractTypeType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   dateHired?: Maybe<Scalars['Date']['output']>;
   emailPro?: Maybe<Scalars['String']['output']>;
@@ -694,7 +714,7 @@ export type TeacherType = {
   matricule: Scalars['String']['output'];
   personnelPtr: PersonnelType;
   phoneNumber?: Maybe<Scalars['String']['output']>;
-  role?: Maybe<RoleType>;
+  roles: Array<RoleType>;
   specialty?: Maybe<Scalars['String']['output']>;
   teacher?: Maybe<TeacherType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -771,14 +791,26 @@ export type GetAllPersonnelsQueryVariables = Exact<{
 }>;
 
 
-export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, role?: { __typename?: 'RoleType', id: string, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
+export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
 
 export type GetPersonnelQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, contractType: HrPersonnelContractTypeChoices, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, role?: { __typename?: 'RoleType', id: string, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null };
+export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, establishment: { __typename?: 'EstablishmentType', id: string, name: string }, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null } | null };
+
+export type GetAllContractTypesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllContractTypesQuery = { __typename?: 'Query', contractTypes?: { __typename?: 'ContractTypeTypePaginated', items?: Array<{ __typename?: 'ContractTypeType', id: string, designation: string, code: string, description?: string | null } | null> | null } | null };
+
+export type GetContractTypeQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetContractTypeQuery = { __typename?: 'Query', contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string, description?: string | null } | null };
 
 export type UserFieldsFragment = { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> };
 
@@ -1108,14 +1140,21 @@ export const GetAllPersonnelsDocument = gql`
         lastName
         email
       }
-      role {
+      roles {
         id
         name
       }
       matricule
       jobTitle
+      contractType {
+        id
+        designation
+        code
+      }
       emailPro
       phoneNumber
+      address
+      dateHired
       isActive
       establishment {
         id
@@ -1149,7 +1188,7 @@ export const GetPersonnelDocument = gql`
       lastName
       email
     }
-    role {
+    roles {
       id
       name
     }
@@ -1159,7 +1198,11 @@ export const GetPersonnelDocument = gql`
     }
     matricule
     jobTitle
-    contractType
+    contractType {
+      id
+      designation
+      code
+    }
     emailPro
     phoneNumber
     address
@@ -1174,6 +1217,50 @@ export const GetPersonnelDocument = gql`
   })
   export class GetPersonnelGQL extends Apollo.Query<GetPersonnelQuery, GetPersonnelQueryVariables> {
     document = GetPersonnelDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllContractTypesDocument = gql`
+    query GetAllContractTypes {
+  contractTypes {
+    items {
+      id
+      designation
+      code
+      description
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllContractTypesGQL extends Apollo.Query<GetAllContractTypesQuery, GetAllContractTypesQueryVariables> {
+    document = GetAllContractTypesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetContractTypeDocument = gql`
+    query GetContractType($id: ID!) {
+  contractType(id: $id) {
+    id
+    designation
+    code
+    description
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetContractTypeGQL extends Apollo.Query<GetContractTypeQuery, GetContractTypeQueryVariables> {
+    document = GetContractTypeDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
