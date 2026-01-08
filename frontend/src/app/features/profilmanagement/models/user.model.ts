@@ -6,6 +6,8 @@ export interface User {
   lastName?: string;
   isActive: boolean;
   dateJoined: string;
+  photo?: string;
+  phone?: string;
   roles?: {
     id?: string;
     name: string;

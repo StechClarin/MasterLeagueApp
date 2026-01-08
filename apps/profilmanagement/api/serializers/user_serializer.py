@@ -23,7 +23,7 @@ class UserSerializer(BaseSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 
             'password', 'password2', # Disponibles en écriture
-            'roles', 
+            'roles', 'photo',
             'is_active', 'date_joined'
         ]
         read_only_fields = ['id', 'date_joined']

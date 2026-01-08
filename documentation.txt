@@ -12,6 +12,48 @@ PRÉ-REQUIS
 - Outils : Script `./snake` (Wrapper manage.py)
 
 ==============================================================================
+0. ARBORESCENCE & GUIDAGE RAPIDE (LA CARTE)
+==============================================================================
+
+Pour vous repérer rapidement : L'architecture est symétrique (Backend <-> Frontend).
+
+.
+├── apps/                     # BACKEND : Modules Métier (Django)
+│   ├── core/                 # FRAMEWORK INTERNE (Ne pas toucher sauf expert)
+│   │   ├── api/controllers/  # RouterController, BaseController
+│   │   ├── services/         # BaseService (Logique CRUD universelle)
+│   │   └── management/       # Scripts Seeds & Scaffolding
+│   └── <module>/             # VOS FONCTIONNALITÉS (Students, HR...)
+│       ├── models/           # Structure de données
+│       ├── services/         # Surcharge de la logique (before_save...)
+│       └── graphql/          # API de Lecture (Queries)
+│
+├── frontend/                 # FRONTEND : Application Angular
+│   ├── src/app/core/         # FRAMEWORK FRONT
+│   │   ├── abstracts/        # BaseListComponent, BaseFormComponent
+│   │   └── routing/          # DynamicRouter, Routes Enum
+│   ├── src/app/shared/       # UI KIT (Table, Modal, Input, Skeleton...)
+│   └── src/app/features/     # ÉCRANS MÉTIER (Miroir de apps/)
+│
+└── snake                     # CHEF D'ORCHESTRE (Lance tout le reste)
+
+GUIDE DE SURVIE (TROUBLESHOOTING)
+---------------------------------
+1. "Page Blanche / Spinner infini" ?
+   -> Vérifiez si le Backend tourne (`./snake run`).
+   -> Regardez la console Navigateur (F12) : Erreur 0 ou Connection Refused confirme que le back est éteint.
+
+2. "Erreur CORS / Status 0" ?
+   -> Le Backend est éteint. Ce n'est pas une vraie erreur CORS.
+
+3. "Je ne vois pas ma nouvelle page" ?
+   -> Avez-vous lancé `./snake seed:navigation` ?
+   -> Avez-vous ajouté la route dans `component.registry.ts` ?
+
+4. "Mon champ ne s'enregistre pas" ?
+   -> Vérifiez le `Serializer` (Backend) ou le `FormGroup` (Frontend).
+
+==============================================================================
 WORKFLOW DE DÉVELOPPEMENT (ÉTAPE PAR ÉTAPE)
 ==============================================================================
 
@@ -90,6 +132,7 @@ b) Générer le code TypeScript
    2. Lancer la génération :
       export JWT_TOKEN="<votre_token>" && npm run codegen
    
+   (vous pouvez utiliser la commande ./snake updategql)
    Résultat : De nouveaux services sont créés dans `frontend/src/app/graphql/generated.ts`.
 
 ------------------------------------------------------------------------------
@@ -143,7 +186,7 @@ python3 manage.py seed_navigation       # Mettre à jour le menu
 
 # Frontend
 npm start                               # Lancer le serveur de dev
-npm run codegen                         # Générer les types GQL (nécessite JWT_TOKEN)
+.snake updategql                         # Générer les types GQL (nécessite JWT_TOKEN)
 
 ==============================================================================
 CONVENTIONS
@@ -251,6 +294,125 @@ b) Backend : Nested Writes (Écritures Imbriquées)
    ------------------------------------------------------------
    
    Note : Le `BaseSerializer` détecte automatiquement les champs relationnels et gère le `create` et `update` des enfants (via `saved_id` du parent).
+
+==============================================================================
+
+7. INFRASTRUCTURE AS CODE & COMMANDES DE MANAGEMENT (APPS/CORE/MANAGEMENT)
+==============================================================================
+Le projet suit une philosophie "Infrastructure as Code" pour la donnée de configuration.
+Le dossier `apps/core/management/commands` contient les scripts qui définissent l'état du système.
+
+a) Scaffolding (craft.py)
+   ----------------------
+   Générateur de code pour accélérer le développement.
+   Commande : `./snake craft scaffold <Modele> <App>`
+   - Crée le Model, Service, Serializer, Controller, Type, Query, Mutation.
+   - Met à jour `schema.py` et `apps.py`.
+
+b) Navigation & Menu (seed_navigation.py)
+   --------------------------------------
+   Définit la structure du menu (Modules > Pages) et les liens.
+   - Éditez `MODULE_STRUCTURE` dans ce fichier.
+   - Appliquez : `./snake seed:navigation` ou `python3 manage.py seed_navigation`.
+   - C'est la source de vérité pour le Frontend (DynamicRouter) et la génération de routes.
+
+c) Permissions & Accès (seed_access.py)
+   ------------------------------------
+   Définit toutes les permissions du système.
+   - Liste les "Resources" (ex: "student", "user") et les "Actions" (create, read, update, delete).
+   - Appliquez : `./snake seed:access`.
+   - Génère les entrées dans la table `Access` utilisées par le système de Rôle.
+
+d) Rôles par Défaut (seed_roles.py)
+   --------------------------------
+   Configure les rôles initiaux (Admin, Manager, etc.) et leur associe les permissions définies dans `seed_access`.
+   - Appliquez : `./snake seed:roles`.
+   
+e) Génération Frontend (start_generate_routes.py)
+   ----------------------------------------------
+   Lit la configuration de `seed_navigation.py` et génère le fichier TypeScript `routes.enum.ts`.
+   - Appliquez : `./snake updategql` (qui lance cette commande en interne).
+
+f) Données de Démonstration (seed_data.py)
+   ---------------------------------------
+   Peuple la base avec des données fictives pour le dev (Etablissement, Users).
+
+> BUNDLE : La commande `./snake config-server` ou `seed:all` lance ces seeds dans le bon ordre.
+
+==============================================================================
+
+
+8. FONCTIONNALITÉS AVANCÉES DU FRONTEND
+==============================================================================
+L'architecture Frontend est le miroir du Backend, conçue pour l'extensibilité.
+
+a) Routing Dynamique (Database Driven Menu)
+   ----------------------------------------
+   Le fichier `app.routes.ts` ne contient que les routes statiques (Login, 404).
+   Les modules métiers sont chargés dynamiquement depuis la base de données.
+   
+   1. Backend : `seed_navigation.py` définit la structure (Module -> Pages -> Lien).
+   2. Frontend : `DynamicRouterService` (APP_INITIALIZER) :
+      - Appelle l'API GraphQL `GetAllPages`.
+      - Mappe chaque lien (ex: `/students`) vers un composant via `COMPONENT_REGISTRY`.
+      - Injecte les routes dans Angular au démarrage.
+   
+   > Pour ajouter une page : Ajoutez l'entrée dans `seed_navigation.py` (Backend) ET dans `component.registry.ts` (Frontend).
+
+   PRO-TIP : Sécurité & Typage
+   ---------------------------
+   - ROUTING TYPÉ : Ne jamais utiliser de chaînes (ex: '/users'). Utilisez l'Enum généré `AppRoutes.USER`.
+     Commande : `./snake updategql` génère `routes.enum.ts` automatiquement.
+   
+   - SAFE MODE : Si le Backend (Menu API) échoue, `DynamicRouterService` charge automatiquement des routes de secours (définies dans `FALLBACK_ROUTES`) pour ne pas bloquer l'application.
+
+b) Réactivité Globale (StructureStateService)
+   ------------------------------------------
+   L'application est Multi-Etablissement native.
+   - `StructureStateService` utilise un SIGNAL Angular (`currentEstablishmentId`).
+   - `BaseListComponent` écoute ce signal via un `effect()`.
+   - Résultat : Changer d'établissement dans la Navbar recharge AUTOMATIQUEMENT toutes les listes ouvertes sans rechargement de page.
+
+c) BaseListComponent : L'Usine à Listes
+   ------------------------------------
+   Ne réinventez pas la roue pour chaque liste. Héritez de `BaseListComponent`.
+   Elle fournit gratuitement :
+   - Pagination (synchro avec Backend).
+   - Filtrage (via `initFilterForm`).
+   - Export Excel & PDF (Bouton natif qui exporte TOUTE la liste filtrée, pas juste la page courante).
+   - Gestion du chargement (`isLoading`) et des états vides.
+
+==============================================================================
+
+9. GESTION DES FICHIERS (GED CENTRALISÉE)
+==============================================================================
+Le projet utilise un module `apps/documents` qui agit comme une GED transverse.
+Au lieu de champs `FileField` éparpillés sur chaque modèle, nous utilisons une relation polymorphique.
+
+a) Architecture (Back)
+   -------------------
+   - Modèle Unique : `apps.documents.models.Document`.
+   - Polymorphisme : Utilise `GenericForeignKey` pour s'attacher à n'importe quelle entité (Student, Employee...).
+   - Stockage : Dossier `/media/` (Non versionné). Organisé par app/model/id (ex: `media/documents/students/student/12/photo.jpg`).
+
+b) Upload (Front & Back)
+   ---------------------
+   Le `DocumentService` simplifie l'upload en résolvant le ContentType automatiquement.
+   
+   Endpoint : `/api/document/create/` (POST Multipart)
+   Payload : 
+   - `file`: (Le binaire)
+   - `content_type_app`: "students" (Nom de l'app Django)
+   - `content_type_model`: "student" (Nom du modèle en minuscule)
+   - `object_id`: "123" (ID de l'entité parente)
+   - `document_type`: "PHOTO" | "CV" | "AUTRE"...
+
+   > Note : C'est géré automatiquement si vous utilisez le pattern `FormData` standardisé dans les formulaires complexes.
+
+c) Sécurité & .gitignore
+   ---------------------
+   Le dossier `media/` contient les données utilisateurs. Il est EXCLU du Git via `.gitignore`.
+   Ne jamais commiter de fichiers dans ce dossier.
 
 ==============================================================================
 

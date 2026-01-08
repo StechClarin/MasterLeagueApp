@@ -111,7 +111,7 @@
 
     <!-- Modals -->
     <ng-container modals>
-        <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+        <app-ui-modal [isOpen]="isModalOpen()" [maxWidth]="'sm:max-w-4xl'" (close)="closeModal()">
             <ng-container [ngSwitch]="modalMode()">
 
                 <!-- Mode Détail -->
@@ -148,8 +148,10 @@
                 </app-ui-confirm-modal>
 
                 <!-- Mode Création / Édition -->
-                <app-role-form *ngSwitchDefault [role]="selectedItem()" (cancel)="closeModal()" (success)="onSave()">
-                </app-role-form>
+                <div *ngSwitchDefault class="h-[80vh]">
+                     <app-role-form [role]="selectedItem()" (cancel)="closeModal()" (success)="onSave()" class="h-full block">
+                    </app-role-form>
+                </div>
 
             </ng-container>
         </app-ui-modal>

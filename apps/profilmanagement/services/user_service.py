@@ -16,8 +16,10 @@ class UserService(BaseService):
         """
         Hook avant validation.
         """
-        if not data.get('password'):
-            data['password'] = 'DefaultPass123!'
+        if not instance and not data.get('password'):
+            default_pass = 'DefaultPass123!'
+            data['password'] = default_pass
+            data['password2'] = default_pass
         return data
     
     def before_save(self, data, instance=None):
@@ -72,8 +74,41 @@ class UserService(BaseService):
     def after_save(self, instance, created):
         """
         C'est ici qu'on sauvegarde le ManyToMany (après que l'ID User existe)
+        Et qu'on synchronise la photo avec les Documents.
         """
         if hasattr(self, '_roles_to_add') and self._roles_to_add:
             # On remplace les anciens rôles ou on ajoute ? 
             # Ici on set() pour remplacer (plus propre pour un save complet)
             instance.roles.set(self._roles_to_add)
+
+        # Synchronisation Photo -> Document
+        if instance.photo:
+            from django.contrib.contenttypes.models import ContentType
+            from apps.documents.models.document import Document
+            
+            ct = ContentType.objects.get_for_model(instance)
+            
+            doc = Document.objects.filter(
+                content_type=ct, 
+                object_id=instance.id, 
+                document_type='PHOTO'
+            ).first()
+
+            if not doc:
+                # On crée l'objet Document manuellement pour éviter que Django ne duplique le fichier
+                # en utilisant doc.file = instance.photo (qui déclencherait le storage backend).
+                doc = Document(
+                    content_type=ct,
+                    object_id=instance.id,
+                    document_type='PHOTO',
+                    title=f"Photo de profil - {instance.username}"
+                )
+                # On force le chemin du fichier vers celui de l'avatar existant
+                doc.file.name = instance.photo.name
+                doc.save()
+            else:
+                # Mise à jour si le fichier diffère
+                if doc.file.name != instance.photo.name:
+                    doc.file.name = instance.photo.name
+                    doc.title = f"Photo de profil - {instance.username}"
+                    doc.save()

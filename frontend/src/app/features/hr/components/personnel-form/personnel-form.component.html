@@ -1,9 +1,14 @@
 <div class="p-6 h-full flex flex-col">
     <!-- Header -->
     <div class="mb-6 pb-4 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un personnel</h2>
-            <p class="text-sm text-gray-500 mt-1">Renseignez les informations personnelles et professionnelles.</p>
+        <div class="flex items-center gap-4">
+            <div *ngIf="isEditMode && data?.user?.photo" class="h-12 w-12 rounded-full overflow-hidden border-2 border-indigo-100 shadow-sm">
+               <img [src]="getPhotoUrl(data.user.photo)" class="w-full h-full object-cover" alt="Avatar">
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un personnel</h2>
+                <p class="text-sm text-gray-500 mt-1">Renseignez les informations personnelles et professionnelles.</p>
+            </div>
         </div>
         <button (click)="cancel.emit()" class="text-gray-400 hover:text-gray-500 transition-colors">
             <span class="sr-only">Fermer</span>
@@ -16,19 +21,61 @@
     <!-- Tabs & Content -->
     <div class="flex-1 overflow-hidden flex flex-col">
         <app-ui-tabs [tabs]="tabs" [currentTab]="currentTab()" (tabChange)="currentTab.set($event)">
-            
+
             <form [formGroup]="form" (ngSubmit)="submit()" class="h-[450px] overflow-y-auto pr-2 custom-scrollbar pt-4">
-                
+
                 <!-- TAB 1: IDENTITÉ -->
                 <div *ngIf="currentTab() === 'identity'" class="space-y-6">
+
+                    <div *ngIf="!isEditMode" class="bg-blue-50 p-4 rounded-xl border border-blue-100 relative mb-6">
+                        <label class="block text-sm font-medium text-blue-900 mb-2">Rechercher un utilisateur existant</label>
+                        <div class="relative">
+                            <input type="text"
+                                [formControl]="userSearchControl"
+                                placeholder="Rechercher par nom d'utilisateur (min. 3 caractères)..."
+                                class="block w-full px-4 py-2.5 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+
+                            <div *ngIf="(foundUsers$ | async) as users"
+                                class="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 max-h-60 overflow-y-auto"
+                                [class.hidden]="!users || users.length === 0">
+                                <ul class="py-1">
+                                    <li *ngFor="let user of users"
+                                        (click)="selectUser(user)"
+                                        class="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors">
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                                            {{ getInitials(user) }}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">
+                                                <span>{{ user.firstName }}</span> <span class="ml-1">{{ user.lastName }}</span>
+                                            </p>
+                                            <p class="text-xs text-gray-500 flex items-center gap-1">
+                                                <span>{{ user.email }}</span>
+                                                <span class="mx-1">-</span>
+                                                <span>&#64;{{ user.username }}</span>
+                                            </p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="text-xs text-blue-600 mt-2">Sélectionnez un utilisateur pour pré-remplir le formulaire.</p>
+                    </div>
+
                     <!-- User Info Group -->
                     <div formGroupName="user" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <app-ui-input label="Prénom" formControlName="first_name" placeholder="ex: Jean"></app-ui-input>
                             <app-ui-input label="Nom" formControlName="last_name" placeholder="ex: Dupont"></app-ui-input>
                         </div>
-                        
-                        <app-ui-input label="Email Personnel" formControlName="email" type="email" placeholder="jean.dupont@email.com" 
+
+                        <app-ui-input label="Email Personnel" formControlName="email" type="email" placeholder="jean.dupont@email.com"
                             [helper]="'Utilisé pour la création du compte utilisateur'"></app-ui-input>
                     </div>
 
@@ -40,7 +87,7 @@
 
                 <!-- TAB 2: PROFESSIONNEL -->
                 <div *ngIf="currentTab() === 'professional'" class="space-y-6">
-                    
+
                     <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <app-ui-input label="Matricule" formControlName="matricule" placeholder="Généré automatiquement" [readonly]="true"></app-ui-input>
@@ -49,33 +96,36 @@
                     </div>
 
                     <div class="space-y-4">
-                        <app-ui-input label="Intitulé du Poste" formControlName="job_title" placeholder="ex: Professeur de Mathématiques"></app-ui-input>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <app-ui-input label="Intitulé du Poste" formControlName="job_title" placeholder="ex: Professeur de Mathématiques"></app-ui-input>
+                            <app-ui-input label="Date de recrutement" formControlName="date_hired" type="date"></app-ui-input>
+                        </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <app-ui-select 
-                                label="Type de Contrat" 
-                                formControlName="contract_type" 
-                                [options]="contractTypes$ | async" 
-                                bindLabel="designation" 
+                            <app-ui-select
+                                label="Type de Contrat"
+                                formControlName="contract_type"
+                                [options]="contractTypes$ | async"
+                                bindLabel="designation"
                                 bindValue="id"
                                 placeholder="Sélectionner un type">
                             </app-ui-select>
 
-                            <app-ui-multi-select 
-                                label="Rôles Système" 
-                                formControlName="roles" 
-                                [options]="roles$ | async" 
-                                bindLabel="name" 
+                            <app-ui-multi-select
+                                label="Rôles Système"
+                                formControlName="roles"
+                                [options]="roles$ | async"
+                                bindLabel="name"
                                 bindValue="id"
                                 placeholder="Ajouter des rôles">
                             </app-ui-multi-select>
                         </div>
 
-                        <app-ui-select 
-                            label="Établissement de rattachement" 
-                            formControlName="establishment" 
-                            [options]="establishments$ | async" 
-                            bindLabel="name" 
+                        <app-ui-select
+                            label="Établissement de rattachement"
+                            formControlName="establishment"
+                            [options]="establishments$ | async"
+                            bindLabel="name"
                             bindValue="id"
                             placeholder="Sélectionner l'établissement">
                         </app-ui-select>
@@ -84,16 +134,17 @@
 
             </form>
 
-        </app-ui-tabs>
+
+    </app-ui-tabs>
     </div>
 
     <!-- Footer Actions -->
     <div class="mt-auto pt-6 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0">
-        <button type="button" (click)="cancel.emit()" 
+        <button type="button" (click)="cancel.emit()"
             class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 hover:text-gray-900 transition-colors focus:ring-4 focus:ring-gray-100">
             Annuler
         </button>
-        <button type="button" (click)="submit()" [disabled]="isSubmitting || form.invalid" 
+        <button type="button" (click)="submit()" [disabled]="isSubmitting || form.invalid"
             class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg shadow-indigo-500/20 focus:ring-4 focus:ring-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <svg *ngIf="isSubmitting" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

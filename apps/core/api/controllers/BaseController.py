@@ -84,10 +84,16 @@ class BaseController(APIView):
     def save(self, request, pk=None, *args, **kwargs):
         """
         Logique unifiée pour Création (POST /) et Modification (POST /id/).
+        Supporte l'ID dans l'URL (pk) ou dans le corps de la requête (id).
         """
         instance = None
-        if pk:
-            instance = self.service.get_by_id(pk)
+        
+        # 1. Tentative de récupération de l'ID (URL ou Body)
+        # Attention: request.data peut être un QueryDict (FormData) ou un dict (JSON)
+        object_id = pk or request.data.get('id')
+        
+        if object_id:
+            instance = self.service.get_by_id(object_id)
         
         # 1. PRÉPARATION (Service)
         # On laisse le service nettoyer les données brutes (ex: trim, upper, formatage)

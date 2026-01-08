@@ -6,10 +6,14 @@ import { StudentService } from '../../services/student.service';
 import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
+import { UiMediaInputComponent } from '@shared/components/ui-media-input/ui-media-input.component';
 import { LevelService } from '@features/structure/services/level.service';
 import { ClassRoomService } from '@features/structure/services/classroom.service';
 import { AcademicYearService } from '@features/structure/services/academic_year.service';
 import { StructureStateService } from '@core/services/structure-state.service';
+
+import { DocumentUploadComponent } from '@features/documents/components/document-upload/document-upload.component';
+import { environment } from 'src/environments/environment';
 
 
 @Component({
@@ -17,7 +21,8 @@ import { StructureStateService } from '@core/services/structure-state.service';
     standalone: true,
     imports: [
         CommonModule, ReactiveFormsModule,
-        UiTabsComponent, UiInputComponent, UiSelectComponent
+        UiTabsComponent, UiInputComponent, UiSelectComponent, UiMediaInputComponent,
+        DocumentUploadComponent
     ],
     templateUrl: './student-form.component.html'
 })
@@ -31,7 +36,6 @@ export class StudentFormComponent extends BaseModalFormComponent {
     }
 
     loadDropdowns() {
-        // Load Academic Years
         this.yearService.list().subscribe((items: any[]) => {
             this.academicYearsOptions.set(items.map((y: any) => ({
                 value: y.id,
@@ -39,7 +43,6 @@ export class StudentFormComponent extends BaseModalFormComponent {
             })));
         });
 
-        // Load Classrooms
         this.classService.list().subscribe((items: any[]) => {
             this.classroomsOptions.set(items.map((c: any) => ({
                 value: c.id,
@@ -52,16 +55,13 @@ export class StudentFormComponent extends BaseModalFormComponent {
         return !!this.data;
     }
 
-    structureState = inject(StructureStateService); // For establishment context if needed globally
-    // levelService = inject(LevelService); // Not needed yet
+    structureState = inject(StructureStateService);
     classService = inject(ClassRoomService);
     yearService = inject(AcademicYearService);
 
-    // Signals for dropdown options
     academicYearsOptions = signal<{ value: any, label: string }[]>([]);
     classroomsOptions = signal<{ value: any, label: string }[]>([]);
 
-    // Tabs Configuration
     tabs: Tab[] = [
         { id: 'identity', label: 'Identité' },
         { id: 'cursus', label: 'Scolarité' },
@@ -70,7 +70,6 @@ export class StudentFormComponent extends BaseModalFormComponent {
     ];
     currentTab = signal('identity');
 
-    // Dropdown Sources (TODO: Load these dynamically)
     genders = [
         { value: 'M', label: 'Masculin' },
         { value: 'F', label: 'Féminin' }
@@ -87,7 +86,6 @@ export class StudentFormComponent extends BaseModalFormComponent {
         { value: 'TUTOR', label: 'Tuteur' }
     ];
 
-    // Form Groups Types
     get healthGroup(): FormGroup { return this.form.get('health_input') as FormGroup; }
     get enrollmentGroup(): FormGroup { return this.form.get('enrollment_input') as FormGroup; }
     get parentsArray(): FormArray { return this.form.get('parents_input') as FormArray; }
@@ -97,12 +95,12 @@ export class StudentFormComponent extends BaseModalFormComponent {
             // 1. Identity
             first_name: ['', Validators.required],
             last_name: ['', Validators.required],
-            matricule: [{ value: '', disabled: true }], // Read-only, auto-generated
+            matricule: [{ value: '', disabled: true }],
             gender: ['M', Validators.required],
             date_of_birth: [null],
             place_of_birth: [''],
             address: [''],
-            // photo: [null], // Todo: File handling
+            photo: [null],
 
             // 2. Health (Nested)
             health_input: this.fb.group({
@@ -116,7 +114,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
             // 3. Enrollment (Nested)
             enrollment_input: this.fb.group({
                 classroom_id: [null, Validators.required],
-                academic_year_id: [1, Validators.required], // TODO: Get current active year
+                academic_year_id: [1, Validators.required],
                 is_repeater: [false]
             }),
 
@@ -124,7 +122,6 @@ export class StudentFormComponent extends BaseModalFormComponent {
             parents_input: this.fb.array([])
         });
 
-        // Default: Add one parent form
         this.addParent('FATHER');
         return this.form;
     }
@@ -146,39 +143,22 @@ export class StudentFormComponent extends BaseModalFormComponent {
         this.parentsArray.removeAt(index);
     }
 
+    override fieldLabels = {
+        first_name: 'Prénom',
+        last_name: 'Nom',
+        gender: 'Sexe',
+        date_of_birth: 'Date de naissance',
+        academic_year_id: 'Année Académique',
+        classroom_id: 'Classe',
+        phone_number: 'Téléphone',
+        role: 'Rôle',
+        blood_group: 'Groupe Sanguin'
+    };
+
     override submit() {
-        console.log('--- SUBMIT TRIGGERED ---');
-        console.log('Form Valid?', this.form.valid);
+        super.submit();
 
         if (this.form.invalid) {
-            console.warn('Form is INVALID. Debugging errors:');
-            // Log main errors
-            Object.keys(this.form.controls).forEach(key => {
-                const control = this.form.get(key);
-                if (control?.errors) {
-                    console.error(`Field '${key}' Error:`, control.errors);
-                }
-            });
-
-            // Log Enrollment errors
-            if (this.enrollmentGroup.invalid) {
-                console.error('Enrollment Group Invalid:', this.enrollmentGroup.errors);
-                Object.keys(this.enrollmentGroup.controls).forEach(k => {
-                    if (this.enrollmentGroup.get(k)?.invalid) console.error(`Enrollment Field '${k}' custom error:`, this.enrollmentGroup.get(k)?.errors);
-                });
-            }
-
-            // Log Parents errors
-            if (this.parentsArray.invalid) {
-                console.error('Parents Array Invalid');
-                this.parentsArray.controls.forEach((c, index) => {
-                    if (c.invalid) console.error(`Parent ${index} invalid`, c.errors);
-                });
-            }
-
-            this.form.markAllAsTouched();
-
-            // Auto-switch to invalid tab
             if (this.form.get('first_name')?.invalid || this.form.get('last_name')?.invalid || this.form.get('gender')?.invalid) {
                 this.currentTab.set('identity');
             } else if (this.enrollmentGroup.invalid) {
@@ -188,10 +168,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
             } else if (this.healthGroup.invalid) {
                 this.currentTab.set('health');
             }
-            return;
         }
-        console.log('Form VALID. Calling super.submit()...');
-        super.submit();
     }
 
     override patchValue(data: any): void {
@@ -206,13 +183,12 @@ export class StudentFormComponent extends BaseModalFormComponent {
             gender: data.gender,
             date_of_birth: data.dateOfBirth,
             place_of_birth: data.placeOfBirth,
-            address: data.address
+            address: data.address,
+            photo: this.getPhotoUrl(data.photo) // Bind Photo URL
         });
 
         // 2. Health
         if (data.health) {
-            // Mapping GraphQL Enum (Sanitized) -> Display Value (Standard)
-            // Graphene sanitizes 'A+' to 'A_', 'A-' to 'A__1', etc.
             const bloodMap: { [key: string]: string } = {
                 'AB_': 'AB+', 'AB__5': 'AB-',
                 'A_': 'A+', 'A__1': 'A-',
@@ -249,7 +225,6 @@ export class StudentFormComponent extends BaseModalFormComponent {
                 const group = this.fb.group({
                     id: [g.id],
                     role: [g.role || 'TUTOR', Validators.required],
-                    // Fallback to raw fields if User is not linked
                     first_name: [g.firstName || g.user?.firstName || '', Validators.required],
                     last_name: [g.lastName || g.user?.lastName || '', Validators.required],
                     phone_number: [g.phoneNumber || '', Validators.required],
@@ -267,16 +242,40 @@ export class StudentFormComponent extends BaseModalFormComponent {
     }
 
     save() {
-        // Validation is handled in submit()
         const payload = { ...this.form.getRawValue() };
         if (this.isEditMode) {
             payload.id = this.data.id;
         }
 
-        return this.service.save(payload);
+        const formData = new FormData();
+
+        Object.keys(payload).forEach(key => {
+            const value = payload[key];
+            if (value !== null && value !== undefined && key !== 'photo') { // Exclude photo from loop
+                if (typeof value === 'object' && !(value instanceof Date) && key !== 'date_of_birth') {
+                    formData.append(key, JSON.stringify(value));
+                } else {
+                    formData.append(key, value);
+                }
+            }
+        });
+
+        // Gestion Photo via FormControl
+        const photoProp = this.form.get('photo')?.value as any;
+        if (photoProp instanceof File) {
+            formData.append('photo', photoProp);
+        }
+
+        return this.service.save(formData);
     }
 
     close() {
         this.onCancel();
     }
+
+    getInitials(name: string): string {
+        return name ? name.substring(0, 2).toUpperCase() : '??';
+    }
+
+
 }

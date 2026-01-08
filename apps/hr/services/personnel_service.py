@@ -104,6 +104,17 @@ class PersonnelService(BaseService):
                 user = User.objects.create_user(username=username, email=email_pro, password="ChangeMe123!")
             
         # Update link if we found/created a user
-        if user and instance.user != user:
-            instance.user = user
-            instance.save()
+        if user:
+            if instance.user != user:
+                instance.user = user
+                instance.save()
+            
+            # Sync Roles from Personnel to User
+            if instance.pk:
+                for role in instance.roles.all():
+                    user.roles.add(role)
+            
+            # Sync Phone
+            if instance.phone_number and instance.phone_number != user.phone:
+                user.phone = instance.phone_number
+                user.save(update_fields=['phone'])

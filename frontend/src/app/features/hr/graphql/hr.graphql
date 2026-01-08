@@ -1,12 +1,14 @@
-query GetAllPersonnels($search: String, $page: Int, $pageSize: Int) {
-  personnels(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllPersonnels($search: String, $establishment: ID, $contractType: ID, $role: ID, $jobTitle: String, $page: Int, $pageSize: Int) {
+  personnels(search: $search, establishment: $establishment, contractType: $contractType, role: $role, jobTitle: $jobTitle, page: $page, pageSize: $pageSize) {
     items {
       id
       user {
         id
+        username
         firstName
         lastName
         email
+        photo
       }
       roles {
         id
@@ -43,6 +45,7 @@ query GetPersonnel($id: ID!) {
       firstName
       lastName
       email
+      photo
     }
     roles {
       id

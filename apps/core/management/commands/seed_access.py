@@ -106,12 +106,12 @@ GROUP_STRUCTURE = [
     },
     {
         "name": "Gestion des Affectations",
-        "tag": "teaching_assignment",
+        "tag": "teachingassignment",
         "permissions": [
-            {"name": "Lire les affectations", "codename": "view_teaching_assignment"},
-            {"name": "Ajouter une affectation", "codename": "add_teaching_assignment"},
-            {"name": "Modifier une affectation", "codename": "change_teaching_assignment"},
-            {"name": "Supprimer une affectation", "codename": "delete_teaching_assignment"},
+            {"name": "Lire les affectations", "codename": "view_teachingassignment"},
+            {"name": "Ajouter une affectation", "codename": "add_teachingassignment"},
+            {"name": "Modifier une affectation", "codename": "change_teachingassignment"},
+            {"name": "Supprimer une affectation", "codename": "delete_teachingassignment"},
         ]
     },
     {
@@ -122,6 +122,36 @@ GROUP_STRUCTURE = [
             {"name": "Ajouter un type de contrat", "codename": "add_contract_type"},
             {"name": "Modifier un type de contrat", "codename": "change_contract_type"},
             {"name": "Supprimer un type de contrat", "codename": "delete_contract_type"},
+        ]
+    },
+    {
+        "name": "Gestion des Apprenants",
+        "tag": "student",
+        "permissions": [
+            {"name": "Lire les apprenants", "codename": "view_student"},
+            {"name": "Ajouter un apprenant", "codename": "add_student"},
+            {"name": "Modifier un apprenant", "codename": "change_student"},
+            {"name": "Supprimer un apprenant", "codename": "delete_student"},
+        ]
+    },
+    {
+        "name": "Gestion des Tuteurs",
+        "tag": "guardian",
+        "permissions": [
+            {"name": "Lire les tuteurs", "codename": "view_guardian"},
+            {"name": "Ajouter un tuteur", "codename": "add_guardian"},
+            {"name": "Modifier un tuteur", "codename": "change_guardian"},
+            {"name": "Supprimer un tuteur", "codename": "delete_guardian"},
+        ]
+    },
+    {
+        "name": "Gestion des Inscriptions",
+        "tag": "enrollment",
+        "permissions": [
+            {"name": "Lire les inscriptions", "codename": "view_enrollment"},
+            {"name": "Ajouter une inscription", "codename": "add_enrollment"},
+            {"name": "Modifier une inscription", "codename": "change_enrollment"},
+            {"name": "Supprimer une inscription", "codename": "delete_enrollment"},
         ]
     },
 ]

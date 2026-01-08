@@ -16,5 +16,6 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/students': () => import('../../features/students/components/student-list/student-list.component').then(m => m.StudentListComponent),
   '/personnels': () => import('../../features/hr/components/personnel-list/personnel-list.component').then(m => m.PersonnelListComponent),
   '/contract-types': () => import('../../features/hr/components/contract-type-list/contract-type-list.component').then(m => m.ContractTypeListComponent),
+  '/assignments': () => import('../../features/pedagogy/components/teaching-assignment-list/teaching-assignment-list.component').then(m => m.TeachingAssignmentListComponent),
   // Ajoute tes futurs modules ici...
 };

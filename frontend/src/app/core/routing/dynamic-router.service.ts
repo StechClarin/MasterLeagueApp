@@ -6,6 +6,14 @@ import { map, tap } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { COMPONENT_REGISTRY } from './component.registry';
 
+// Routes de secours si le Backend ne répond pas
+const FALLBACK_ROUTES = [
+  { link: '/students' },
+  { link: '/users' },
+  { link: '/roles' },
+  { link: '/establishments' } // Minimum vital
+];
+
 // La Query pour récupérer juste les liens
 const GET_ALL_PAGES = gql`
   query modules {
@@ -79,9 +87,32 @@ export class DynamicRouterService {
         console.log('✅ Routes dynamiques chargées :', dynamicRoutes.map(r => r.path));
       }
 
+
+
     } catch (error) {
       console.error('❌ Erreur chargement routes dynamiques', error);
-      // On ne bloque pas l'app, on continue avec les routes statiques
+      console.warn('⚠️ Activation du SAFE MODE : Chargement des routes de secours.');
+
+      // FALLBACK SAFE MODE
+      const dynamicRoutes: Routes = [];
+      FALLBACK_ROUTES.forEach(page => {
+        const link = page.link;
+        if (COMPONENT_REGISTRY[link]) {
+          const path = link.startsWith('/') ? link.substring(1) : link;
+          dynamicRoutes.push({
+            path: path,
+            loadComponent: COMPONENT_REGISTRY[link]
+          });
+        }
+      });
+
+      const currentConfig = this.router.config;
+      const layoutRoute = currentConfig.find(r => r.path === '' && r.children);
+      if (layoutRoute && layoutRoute.children) {
+        layoutRoute.children.push(...dynamicRoutes);
+        this.router.resetConfig(currentConfig);
+        console.log('✅ SAFE MODE : Routes de secours chargées.');
+      }
     }
   }
 }

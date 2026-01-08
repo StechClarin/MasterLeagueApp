@@ -10,6 +10,8 @@ fragment UserFields on UserType {
   lastName
   isActive
   dateJoined
+  photo
+  phone
   roles {
     id
     name

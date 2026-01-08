@@ -11,6 +11,10 @@ class PersonnelQuery(graphene.ObjectType):
     personnels = graphene.Field(
         PersonnelPaginatedType,
         search=graphene.String(),
+        establishment=graphene.ID(),
+        contract_type=graphene.ID(),
+        role=graphene.ID(),
+        job_title=graphene.String(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -21,16 +25,30 @@ class PersonnelQuery(graphene.ObjectType):
         except Personnel.DoesNotExist:
             return None
 
-    def resolve_personnels(root, info, search=None, page=1, page_size=10, **kwargs):
-        queryset = Personnel.objects.all().order_by('-created_at')
+    def resolve_personnels(root, info, search=None, establishment=None, contract_type=None, role=None, job_title=None, page=1, page_size=10, **kwargs):
+        queryset = Personnel.objects.all().select_related('user', 'contract_type', 'establishment').prefetch_related('roles').order_by('-created_at')
+
+        if establishment:
+            queryset = queryset.filter(establishment_id=establishment)
+
+        if contract_type:
+            queryset = queryset.filter(contract_type_id=contract_type)
+
+        if role:
+            queryset = queryset.filter(roles__id=role)
+
+        if job_title:
+            queryset = queryset.filter(job_title__icontains=job_title)
 
         if search:
             from django.db.models import Q
             queryset = queryset.filter(
                 Q(user__first_name__icontains=search) | 
                 Q(user__last_name__icontains=search) | 
-                Q(matricule__icontains=search)
-            )
+                Q(matricule__icontains=search) |
+                Q(phone_number__icontains=search) |
+                Q(job_title__icontains=search)
+            ).distinct()
 
         paginated_data = paginate_queryset(queryset, page, page_size)
         return PersonnelPaginatedType(**paginated_data)

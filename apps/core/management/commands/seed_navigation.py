@@ -109,6 +109,21 @@ MODULE_STRUCTURE = [
 
         ]
     },
+    {
+        "name": "Pédagogie",
+        "order": 15,
+        "display_mod": "card-view",
+        "icon": "pedagogy-icon",
+        "pages": [
+            {
+                "title": "Affectations",
+                "icon": "assignment-icon",
+                "order": 0,
+                "link": "/assignments",
+                "tags": ["teachingassignment"]
+            },
+        ]
+    },
     # --- AJOUTE TES AUTRES MODULES ICI ---
 ]
 

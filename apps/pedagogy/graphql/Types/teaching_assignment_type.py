@@ -1,6 +1,5 @@
-import graphene
 from graphene_django.types import DjangoObjectType
-from ...models.teaching_assignment import TeachingAssignment
+from ...models import TeachingAssignment
 
 class TeachingAssignmentType(DjangoObjectType):
     class Meta:

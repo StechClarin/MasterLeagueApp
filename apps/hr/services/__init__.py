@@ -1,3 +1,2 @@
 from .personnel_service import PersonnelService
 from .teacher_service import TeacherService
-from .teaching_assignment_service import TeachingAssignmentService

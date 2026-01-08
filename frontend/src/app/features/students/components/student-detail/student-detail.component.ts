@@ -1,11 +1,13 @@
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
+import { UiAvatarComponent } from '@shared/components/ui-avatar/ui-avatar.component';
+import { environment } from 'src/environments/environment';
 
 @Component({
     selector: 'app-student-detail',
     standalone: true,
-    imports: [CommonModule, UiTabsComponent],
+    imports: [CommonModule, UiTabsComponent, UiAvatarComponent],
     templateUrl: './student-detail.component.html'
 })
 export class StudentDetailComponent {
@@ -39,5 +41,13 @@ export class StudentDetailComponent {
             'O_': 'O+', 'O__7': 'O-'
         };
         return map[value] || value;
+    }
+
+    getPhotoUrl(path: string): string {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('data:')) return path;
+        const baseUrl = environment.apiUrl.replace('/api', '');
+        const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+        return `${baseUrl}/media/${cleanPath}`;
     }
 }

@@ -24,7 +24,9 @@
 <ng-container *ngIf="isEmbedded">
     <div class="space-y-4">
         <ng-container *ngTemplateOutlet="tableContent"></ng-container>
-        <ng-container *ngTemplateOutlet="paginationContent"></ng-container>
+        <ng-container *ngIf="showPagination">
+            <ng-container *ngTemplateOutlet="paginationContent"></ng-container>
+        </ng-container>
         <ng-container *ngTemplateOutlet="modalContent"></ng-container>
     </div>
 </ng-container>

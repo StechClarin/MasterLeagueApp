@@ -1,18 +1,23 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Observable } from 'rxjs'; // Import Observable
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { UiListPageComponent } from '@shared/components/ui-list-page/ui-list-page.component';
-import { UiTableComponent } from '@shared/components/ui-table/ui-table.component';
+import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
-import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component'; // Import
+import { ContractTypeService } from '../../services/contract-type.service';
+import { RoleService } from '@features/profilmanagement/services/role.service';
+import { map } from 'rxjs/operators';
+import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { PersonnelService } from '../../services/personnel.service';
 import { PersonnelFormComponent } from '../personnel-form/personnel-form.component';
+import { PersonnelDetailComponent } from '../personnel-detail/personnel-detail.component';
+import { UiAvatarComponent } from '@shared/components/ui-avatar/ui-avatar.component';
 
 @Component({
     selector: 'app-personnel-list',
@@ -26,18 +31,27 @@ import { PersonnelFormComponent } from '../personnel-form/personnel-form.compone
         UiConfirmModalComponent,
         UiToolbarComponent,
         UiFilterPanelComponent,
-        UiDropdownComponent, // Add to imports
+        UiDropdownComponent,
         UiExportModalComponent,
-        PersonnelFormComponent
+        PersonnelFormComponent,
+        PersonnelDetailComponent,
+        UiAvatarComponent
     ],
     templateUrl: './personnel-list.component.html'
 })
-export class PersonnelListComponent extends BaseModalListComponent<any> {
+export class PersonnelListComponent extends BaseModalListComponent<any> implements AfterViewInit {
     service = inject(PersonnelService);
-    // Explicitly cast to any or DocumentNode if needed, but BaseListComponent expects DocumentNode.
-    // Since we return null in service momentarily, we might need to be careful.
+    private contractTypeService = inject(ContractTypeService);
+    private roleService = inject(RoleService);
+    private cdr = inject(ChangeDetectorRef);
+
+    @ViewChild('userCell') userCell!: TemplateRef<any>;
+
     query = this.service.getQuery()!;
     responseKey = 'personnels';
+
+    contractTypes$ = this.contractTypeService.list().pipe(map((res: any) => res.data.contractTypes.items));
+    roles$ = this.roleService.getAll().pipe(map((res: any) => res.data.roles.items));
 
     isFiltersOpen = signal(false);
 
@@ -45,20 +59,37 @@ export class PersonnelListComponent extends BaseModalListComponent<any> {
         return this.filterForm.get('search') as FormControl;
     }
 
-    tableColumns = computed(() => [
-        { header: 'Utilisateur', key: 'user', sortable: true, format: (row: any) => `${row.user?.firstName || ''} ${row.user?.lastName || ''}` },
-        { header: 'Matricule', key: 'matricule', sortable: true },
-        { header: 'Poste', key: 'jobTitle', sortable: true },
-        { header: 'Contrat', key: 'contractType', format: (row: any) => row.contractType?.code || '-' },
-        { header: 'Email Pro', key: 'emailPro' },
-        { header: 'Rôles', key: 'roles', format: (row: any) => row.roles?.map((r: any) => r.name).join(', ') || '-' }
-    ]);
+    tableColumns: UiTableColumn[] = [];
+
+    ngAfterViewInit() {
+        setTimeout(() => {
+            this.tableColumns = [
+                { header: 'Utilisateur', template: this.userCell, key: 'user', sortable: true },
+                { header: 'Matricule', key: 'matricule', sortable: true },
+                { header: 'Poste', key: 'jobTitle', sortable: true },
+                { header: 'Contrat', key: 'contractType', format: (row: any) => row.contractType?.code || '-' },
+                { header: 'Email Pro', key: 'emailPro' },
+                { header: 'Rôles', key: 'roles', format: (row: any) => row.roles?.map((r: any) => r.name).join(', ') || '-' }
+            ];
+            this.cdr.detectChanges();
+        });
+    }
 
     override initFilterForm(): FormGroup {
         this.filterForm = this.fb.group({
-            search: ['']
+            search: [''],
+            contractType: [null],
+            role: [null],
+            jobTitle: ['']
         });
         return this.filterForm;
+    }
+
+    override getFilterVariables(): any {
+        return {
+            ...this.filterForm.value,
+            establishment: this.structureState.currentEstablishmentId()
+        };
     }
 
     openAddModal() {
@@ -67,6 +98,10 @@ export class PersonnelListComponent extends BaseModalListComponent<any> {
 
     openEditModal(item: any) {
         this.onEdit(item);
+    }
+
+    openViewModal(item: any) {
+        this.openModal(item, 'view' as any);
     }
 
     openDeleteModal(item: any) {
@@ -81,17 +116,10 @@ export class PersonnelListComponent extends BaseModalListComponent<any> {
         this.onSave();
     }
 
-    // sorting methods wrappers if needed for UiTable input binding, e.g. sortField(), sortDirection(), onSort()
-    // BaseListComponent doesn't seem to have sortField/sortDirection signals defined in the file I read.
-    // If UiTable expects them, I might need to implement them or check if BaseListComponent has them in a newer version I didn't see or if I missed them.
-    // I read BaseListComponent in step 3430. It has pagination and export. No sort state.
-    // I will add sort signals here to satisfy template.
-
     sortField = computed(() => '');
     sortDirection = computed(() => 'asc');
 
     onSort(event: any) {
-        // Implement sort logic or just log for now
         console.log('Sort:', event);
     }
 
@@ -101,7 +129,12 @@ export class PersonnelListComponent extends BaseModalListComponent<any> {
 
     resetFilters() {
         this.searchControl.setValue('');
-        this.filterForm.reset({ search: '' });
+        this.filterForm.reset({
+            search: '',
+            contractType: null,
+            role: null,
+            jobTitle: ''
+        });
     }
 
     /**

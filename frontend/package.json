@@ -26,6 +26,7 @@
     "graphql": "^16.8.1",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
+    "ngx-skeleton-loader": "^11.3.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "xlsx": "^0.18.5",

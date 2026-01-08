@@ -1,0 +1,61 @@
+query GetAllTeachingAssignments($search: String, $page: Int, $pageSize: Int) {
+  teachingAssignments(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      startDate
+      endDate
+      hoursScheduled
+      teacher {
+        id
+        user {
+          firstName
+          lastName
+        }
+      }
+      classroom {
+        id
+        name
+      }
+      subject {
+        id
+        name
+        # Add code/helpers if needed
+      }
+      academicYear {
+        id
+        name
+      }
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetTeachingAssignment($id: ID!) {
+  teachingAssignment(id: $id) {
+    id
+    startDate
+    endDate
+    hoursScheduled
+    teacher {
+      id
+      user {
+        firstName
+        lastName
+      }
+    }
+    classroom {
+      id
+      name
+    }
+    subject {
+      id
+      name
+    }
+    academicYear {
+      id
+      name
+    }
+  }
+}

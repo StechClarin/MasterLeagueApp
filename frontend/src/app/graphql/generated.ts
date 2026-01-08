@@ -40,7 +40,6 @@ export type Scalars = {
 
 export type AcademicYearType = {
   __typename?: 'AcademicYearType';
-  assignments: Array<TeachingAssignmentType>;
   classrooms: Array<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   end_date?: Maybe<Scalars['Date']['output']>;
@@ -51,6 +50,7 @@ export type AcademicYearType = {
   isActive: Scalars['Boolean']['output'];
   isArchived: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  pedagogyAssignments: Array<TeachingAssignmentType>;
   start_date?: Maybe<Scalars['Date']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
@@ -67,7 +67,6 @@ export type AcademicYearTypePaginated = {
 export type ClassRoomType = {
   __typename?: 'ClassRoomType';
   academicYear: AcademicYearType;
-  assignments: Array<TeachingAssignmentType>;
   capacity: Scalars['Int']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   enrollments: Array<EnrollmentType>;
@@ -77,6 +76,7 @@ export type ClassRoomType = {
   level: LevelType;
   mainTeacher?: Maybe<UserType>;
   name: Scalars['String']['output'];
+  pedagogyAssignments: Array<TeachingAssignmentType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
@@ -129,6 +129,34 @@ export type CycleTypePaginated = {
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
+
+export type DocumentType = {
+  __typename?: 'DocumentType';
+  documentType: DocumentsDocumentDocumentTypeChoices;
+  file: Scalars['String']['output'];
+  fileUrl?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  objectId: Scalars['Int']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  uploadedAt: Scalars['DateTime']['output'];
+};
+
+/** An enumeration. */
+export enum DocumentsDocumentDocumentTypeChoices {
+  /** Autre */
+  Autre = 'AUTRE',
+  /** Contrat de Travail */
+  Contrat = 'CONTRAT',
+  /** CV */
+  Cv = 'CV',
+  /** Diplôme */
+  Diplome = 'DIPLOME',
+  /** Justificatif */
+  Justificatif = 'JUSTIFICATIF',
+  /** Photo d'identité */
+  Photo = 'PHOTO'
+}
 
 export type EnrollmentType = {
   __typename?: 'EnrollmentType';
@@ -340,6 +368,7 @@ export type Query = {
   contractTypes?: Maybe<ContractTypeTypePaginated>;
   cycle?: Maybe<CycleType>;
   cycles?: Maybe<CycleTypePaginated>;
+  documentsByEntity?: Maybe<Array<Maybe<DocumentType>>>;
   enrollment?: Maybe<EnrollmentType>;
   enrollments?: Maybe<EnrollmentTypePaginated>;
   establishment?: Maybe<EstablishmentType>;
@@ -420,6 +449,13 @@ export type QueryCyclesArgs = {
 };
 
 
+export type QueryDocumentsByEntityArgs = {
+  appLabel: Scalars['String']['input'];
+  modelName: Scalars['String']['input'];
+  objectId: Scalars['ID']['input'];
+};
+
+
 export type QueryEnrollmentArgs = {
   id: Scalars['ID']['input'];
 };
@@ -479,8 +515,12 @@ export type QueryPersonnelArgs = {
 
 
 export type QueryPersonnelsArgs = {
+  contractType?: InputMaybe<Scalars['ID']['input']>;
+  establishment?: InputMaybe<Scalars['ID']['input']>;
+  jobTitle?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
+  role?: InputMaybe<Scalars['ID']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -541,12 +581,9 @@ export type QueryTeachingAssignmentArgs = {
 
 
 export type QueryTeachingAssignmentsArgs = {
-  academicYearId?: InputMaybe<Scalars['Int']['input']>;
-  classroomId?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-  teacherId?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -677,7 +714,6 @@ export enum StudentsStudentHealthBloodGroupChoices {
 
 export type SubjectType = {
   __typename?: 'SubjectType';
-  assignments: Array<TeachingAssignmentType>;
   code: Scalars['String']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
@@ -686,6 +722,7 @@ export type SubjectType = {
   isOptional: Scalars['Boolean']['output'];
   levelSubjects?: Maybe<Array<Maybe<LevelSubjectType>>>;
   name: Scalars['String']['output'];
+  pedagogyAssignments: Array<TeachingAssignmentType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
@@ -701,7 +738,6 @@ export type SubjectTypePaginated = {
 export type TeacherType = {
   __typename?: 'TeacherType';
   address?: Maybe<Scalars['String']['output']>;
-  assignments: Array<TeachingAssignmentType>;
   contractType?: Maybe<ContractTypeType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   dateHired?: Maybe<Scalars['Date']['output']>;
@@ -712,6 +748,7 @@ export type TeacherType = {
   isActive: Scalars['Boolean']['output'];
   jobTitle: Scalars['String']['output'];
   matricule: Scalars['String']['output'];
+  pedagogyAssignments: Array<TeachingAssignmentType>;
   personnelPtr: PersonnelType;
   phoneNumber?: Maybe<Scalars['String']['output']>;
   roles: Array<RoleType>;
@@ -735,11 +772,15 @@ export type TeachingAssignmentType = {
   academicYear: AcademicYearType;
   classroom: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  /** Date de fin d'intervention. Si vide, correspond à la fin de l'année scolaire. */
+  endDate?: Maybe<Scalars['Date']['output']>;
   establishment: EstablishmentType;
   /** Heures prévues pour ce module */
   hoursScheduled: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
+  /** Date de début d'intervention. Si vide, correspond au début de l'année scolaire. */
+  startDate?: Maybe<Scalars['Date']['output']>;
   subject: SubjectType;
   teacher: TeacherType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -770,6 +811,8 @@ export type UserType = {
   lastLogin?: Maybe<Scalars['DateTime']['output']>;
   lastName: Scalars['String']['output'];
   mainClassrooms: Array<ClassRoomType>;
+  phone?: Maybe<Scalars['String']['output']>;
+  photo?: Maybe<Scalars['String']['output']>;
   roles: Array<RoleType>;
   studentProfile?: Maybe<StudentType>;
   username: Scalars['String']['output'];
@@ -784,21 +827,34 @@ export type UserTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+export type GetDocumentsByEntityQueryVariables = Exact<{
+  appLabel: Scalars['String']['input'];
+  modelName: Scalars['String']['input'];
+  objectId: Scalars['ID']['input'];
+}>;
+
+
+export type GetDocumentsByEntityQuery = { __typename?: 'Query', documentsByEntity?: Array<{ __typename?: 'DocumentType', id: string, title: string, fileUrl?: string | null, documentType: DocumentsDocumentDocumentTypeChoices, uploadedAt: any } | null> | null };
+
 export type GetAllPersonnelsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
+  establishment?: InputMaybe<Scalars['ID']['input']>;
+  contractType?: InputMaybe<Scalars['ID']['input']>;
+  role?: InputMaybe<Scalars['ID']['input']>;
+  jobTitle?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
+export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, username: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
 
 export type GetPersonnelQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, establishment: { __typename?: 'EstablishmentType', id: string, name: string }, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null } | null };
+export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, establishment: { __typename?: 'EstablishmentType', id: string, name: string }, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null } | null };
 
 export type GetAllContractTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -812,7 +868,32 @@ export type GetContractTypeQueryVariables = Exact<{
 
 export type GetContractTypeQuery = { __typename?: 'Query', contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string, description?: string | null } | null };
 
-export type UserFieldsFragment = { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> };
+export type GetAllTeachersQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllTeachersQuery = { __typename?: 'Query', teachers?: { __typename?: 'TeacherTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'TeacherType', id: string, specialty?: string | null, hoursPerWeek: number, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null } | null> | null } | null };
+
+export type GetAllTeachingAssignmentsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllTeachingAssignmentsQuery = { __typename?: 'Query', teachingAssignments?: { __typename?: 'TeachingAssignmentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'TeachingAssignmentType', id: string, startDate?: any | null, endDate?: any | null, hoursScheduled: number, teacher: { __typename?: 'TeacherType', id: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classroom: { __typename?: 'ClassRoomType', id: string, name: string }, subject: { __typename?: 'SubjectType', id: string, name: string }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null> | null } | null };
+
+export type GetTeachingAssignmentQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetTeachingAssignmentQuery = { __typename?: 'Query', teachingAssignment?: { __typename?: 'TeachingAssignmentType', id: string, startDate?: any | null, endDate?: any | null, hoursScheduled: number, teacher: { __typename?: 'TeacherType', id: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classroom: { __typename?: 'ClassRoomType', id: string, name: string }, subject: { __typename?: 'SubjectType', id: string, name: string }, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null };
+
+export type UserFieldsFragment = { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> };
 
 export type RoleFieldsFragment = { __typename?: 'RoleType', id: string, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string } | null> | null };
 
@@ -827,14 +908,14 @@ export type GetAllUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> } | null> | null } | null };
+export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> } | null> | null } | null };
 
 export type GetUserByIdQueryVariables = Exact<{
   id: Scalars['Int']['input'];
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> } | null };
+export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }> } | null };
 
 export type GetAllRolesQueryVariables = Exact<{
   name?: InputMaybe<Scalars['String']['input']>;
@@ -990,6 +1071,8 @@ export const UserFieldsFragmentDoc = gql`
   lastName
   isActive
   dateJoined
+  photo
+  phone
   roles {
     id
     name
@@ -1129,16 +1212,52 @@ export const StructureResponseFragmentDoc = gql`
 }
     ${CycleFieldsFragmentDoc}
 ${LevelFieldsFragmentDoc}`;
+export const GetDocumentsByEntityDocument = gql`
+    query GetDocumentsByEntity($appLabel: String!, $modelName: String!, $objectId: ID!) {
+  documentsByEntity(
+    appLabel: $appLabel
+    modelName: $modelName
+    objectId: $objectId
+  ) {
+    id
+    title
+    fileUrl
+    documentType
+    uploadedAt
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetDocumentsByEntityGQL extends Apollo.Query<GetDocumentsByEntityQuery, GetDocumentsByEntityQueryVariables> {
+    document = GetDocumentsByEntityDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const GetAllPersonnelsDocument = gql`
-    query GetAllPersonnels($search: String, $page: Int, $pageSize: Int) {
-  personnels(search: $search, page: $page, pageSize: $pageSize) {
+    query GetAllPersonnels($search: String, $establishment: ID, $contractType: ID, $role: ID, $jobTitle: String, $page: Int, $pageSize: Int) {
+  personnels(
+    search: $search
+    establishment: $establishment
+    contractType: $contractType
+    role: $role
+    jobTitle: $jobTitle
+    page: $page
+    pageSize: $pageSize
+  ) {
     items {
       id
       user {
         id
+        username
         firstName
         lastName
         email
+        photo
       }
       roles {
         id
@@ -1187,6 +1306,7 @@ export const GetPersonnelDocument = gql`
       firstName
       lastName
       email
+      photo
     }
     roles {
       id
@@ -1261,6 +1381,121 @@ export const GetContractTypeDocument = gql`
   })
   export class GetContractTypeGQL extends Apollo.Query<GetContractTypeQuery, GetContractTypeQueryVariables> {
     document = GetContractTypeDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllTeachersDocument = gql`
+    query GetAllTeachers($search: String, $page: Int, $pageSize: Int) {
+  teachers(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      specialty
+      hoursPerWeek
+      user {
+        firstName
+        lastName
+      }
+      matricule
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllTeachersGQL extends Apollo.Query<GetAllTeachersQuery, GetAllTeachersQueryVariables> {
+    document = GetAllTeachersDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllTeachingAssignmentsDocument = gql`
+    query GetAllTeachingAssignments($search: String, $page: Int, $pageSize: Int) {
+  teachingAssignments(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      startDate
+      endDate
+      hoursScheduled
+      teacher {
+        id
+        user {
+          firstName
+          lastName
+        }
+      }
+      classroom {
+        id
+        name
+      }
+      subject {
+        id
+        name
+      }
+      academicYear {
+        id
+        name
+      }
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllTeachingAssignmentsGQL extends Apollo.Query<GetAllTeachingAssignmentsQuery, GetAllTeachingAssignmentsQueryVariables> {
+    document = GetAllTeachingAssignmentsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetTeachingAssignmentDocument = gql`
+    query GetTeachingAssignment($id: ID!) {
+  teachingAssignment(id: $id) {
+    id
+    startDate
+    endDate
+    hoursScheduled
+    teacher {
+      id
+      user {
+        firstName
+        lastName
+      }
+    }
+    classroom {
+      id
+      name
+    }
+    subject {
+      id
+      name
+    }
+    academicYear {
+      id
+      name
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetTeachingAssignmentGQL extends Apollo.Query<GetTeachingAssignmentQuery, GetTeachingAssignmentQueryVariables> {
+    document = GetTeachingAssignmentDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

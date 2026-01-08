@@ -1,0 +1,17 @@
+query GetAllTeachers($search: String, $page: Int, $pageSize: Int) {
+  teachers(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      specialty
+      hoursPerWeek
+      user {
+        firstName
+        lastName
+      }
+      matricule
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}

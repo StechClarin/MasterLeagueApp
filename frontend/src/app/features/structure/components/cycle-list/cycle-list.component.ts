@@ -41,6 +41,7 @@ export class CycleListComponent extends BaseModalListComponent<CycleType> implem
     public service = inject(CycleService);
 
     searchControl = new FormControl('');
+    @Input() showPagination = true;
     isFiltersOpen = signal(false);
     private cdr = inject(ChangeDetectorRef);
     private destroy$ = new Subject<void>();

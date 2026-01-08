@@ -2,6 +2,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from .role import Role
+from apps.documents.utils import document_upload_path
 from .user_manager import UserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -13,6 +14,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+    phone = models.CharField(max_length=50, blank=True, null=True, verbose_name="Téléphone")
+
+    photo = models.ImageField(upload_to=document_upload_path, blank=True, null=True)
 
     # --- CHANGEMENT ICI ---
     # On passe en ManyToMany. Plus de on_delete, car c'est une table de liaison.

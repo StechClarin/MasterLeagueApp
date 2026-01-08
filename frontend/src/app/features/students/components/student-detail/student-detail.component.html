@@ -3,9 +3,7 @@
   <!-- Header -->
   <div class="mb-6 pb-4 border-b border-gray-100 flex justify-between items-center">
     <div class="flex items-center gap-4">
-       <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
-           {{ data?.firstName?.[0] }}{{ data?.lastName?.[0] }}
-       </div>
+       <app-ui-avatar [name]="data?.firstName + ' ' + data?.lastName" [photoUrl]="data?.photo" size="xl"></app-ui-avatar>
        <div>
          <h2 class="text-xl font-bold text-gray-900">{{ data?.firstName }} {{ data?.lastName }}</h2>
          <p class="text-sm text-gray-500">{{ data?.matricule }}</p>

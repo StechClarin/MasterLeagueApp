@@ -18,6 +18,8 @@ export abstract class BaseFormComponent implements OnInit {
     protected logger = inject(LoggingService);
     protected componentName = this.constructor.name;
 
+    protected fieldLabels: { [key: string]: string } = {};
+
     abstract save(): Observable<any>;
 
     ngOnInit() {
@@ -53,6 +55,43 @@ export abstract class BaseFormComponent implements OnInit {
         } else {
             this.logger.logAction(this.componentName, 'Form Invalid', this.form.errors);
             this.form.markAllAsTouched();
+
+            // Generic Error Message Generation
+            const invalidFields: string[] = [];
+
+            const findInvalidControls = (control: any, prefix = '') => {
+                if (control.controls) {
+                    if (Array.isArray(control.controls)) {
+                        control.controls.forEach((child: any, index: number) => {
+                            if (child.invalid) {
+                                findInvalidControls(child, prefix ? `${prefix}[${index}]` : `[${index}]`);
+                            }
+                        });
+                    } else {
+                        Object.keys(control.controls).forEach(key => {
+                            const child = control.get(key);
+                            if (child && child.invalid) {
+                                if (child.controls) {
+                                    findInvalidControls(child, prefix ? `${prefix}.${key}` : key);
+                                } else {
+                                    const fieldKey = prefix ? `${prefix}.${key}` : key;
+                                    const label = this.fieldLabels[fieldKey] || this.fieldLabels[key] || key;
+                                    invalidFields.push(label);
+                                }
+                            }
+                        });
+                    }
+                }
+            };
+
+            findInvalidControls(this.form);
+
+            if (invalidFields.length > 0) {
+                const uniqueFields = [...new Set(invalidFields)];
+                this.errorMessage = `Veuillez remplir les champs obligatoires : ${uniqueFields.join(', ')}.`;
+            } else {
+                this.errorMessage = "Le formulaire contient des erreurs. Veuillez vérifier les champs.";
+            }
         }
     }
 

@@ -21,17 +21,19 @@ class GraphQLController(GraphQLView):
         if request.method == "GET" and self.graphiql:
             return super().dispatch(request, *args, **kwargs)
 
-        # 2. SÉCURITÉ (Le Garde du Corps)
-        # Pour toute requête de données (POST), l'utilisateur DOIT être identifié.
-        # (Notre JWTMiddleware a déjà rempli request.user si le token était bon)
+
         authentication_classes = [JWTAuthentication]
         permission_classes = [IsAuthenticated]
-        if not request.user.is_authenticated:
-            return JsonResponse(
-                {"errors": [{"message": "Authentification requise (Token invalide ou absent)."}]}, 
-                status=401
-            )
-
+        # if not request.user.is_authenticated:
+        #     return JsonResponse(
+        #         {"errors": [{"message": "Authentification requise (Token invalide ou absent)."}]}, 
+        #         status=401
+        #     )
+        # 2. SÉCURITÉ
+        # On laisse passer tout le monde ici.
+        # L'utilisateur est identifié via le Middleware JWT si le header est présent.
+        # L'autorisation fine (can user see X?) se fera dans les Resolvers.   
         # 3. SUCCÈS
         # On laisse Graphene faire son travail magique
         return super().dispatch(request, *args, **kwargs)
+    

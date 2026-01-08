@@ -1,11 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
-    selector: 'app-ui-list-page',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-ui-list-page',
+  standalone: true,
+  imports: [CommonModule, NgxSkeletonLoaderModule],
+  template: `
     <div class="p-6 w-full max-w-[90%] mx-auto min-h-screen bg-gray-50/50 space-y-8">
       
       <!-- Header Section -->
@@ -32,14 +33,29 @@ import { CommonModule } from '@angular/common';
         </div>
       </ng-container>
 
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4 animate-pulse">
+      <!-- Loading State (Skeleton) -->
+      <div *ngIf="isLoading" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
+          <!-- Header Skeleton -->
           <div class="flex justify-between mb-6">
-            <div class="h-6 bg-gray-200 rounded w-1/4"></div>
-            <div class="h-6 bg-gray-200 rounded w-1/6"></div>
+             <ngx-skeleton-loader 
+                count="1" 
+                appearance="line" 
+                [theme]="{ height: '30px', width: '250px', 'background-color': '#f3f4f6' }"
+             ></ngx-skeleton-loader>
+             <ngx-skeleton-loader 
+                count="1" 
+                appearance="line" 
+                [theme]="{ height: '35px', width: '150px', 'border-radius': '8px', 'background-color': '#f3f4f6' }"
+             ></ngx-skeleton-loader>
           </div>
-          <div class="space-y-3">
-            <div class="h-12 bg-gray-100 rounded-lg w-full" *ngFor="let i of [1,2,3,4,5]"></div>
+          
+          <!-- Rows Skeleton -->
+          <div class="space-y-4">
+              <ngx-skeleton-loader 
+                  count="6" 
+                  appearance="line" 
+                  [theme]="{ height: '50px', 'margin-bottom': '10px', 'border-radius': '8px', 'background-color': '#f9fafb' }"
+              ></ngx-skeleton-loader>
           </div>
       </div>
 
@@ -70,11 +86,11 @@ import { CommonModule } from '@angular/common';
       <ng-content select="[modals]"></ng-content>
 
     </div>
-  `
+    `
 })
 export class UiListPageComponent {
-    @Input() title: string = '';
-    @Input() description: string = '';
-    @Input() isLoading: boolean = false;
-    @Input() isEmpty: boolean = false;
+  @Input() title: string = '';
+  @Input() description: string = '';
+  @Input() isLoading: boolean = false;
+  @Input() isEmpty: boolean = false;
 }

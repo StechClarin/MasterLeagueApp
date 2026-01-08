@@ -21,6 +21,14 @@ class Command(BaseCommand):
         admin_role.groups.set(all_groups)
         
         self.stdout.write(f"  ✔ Rôle 'Admin' synchronisé avec {all_groups.count()} groupes.")
+
+        # 1.5. Gestion du Rôle "Enseignant"
+        self.stdout.write(self.style.NOTICE("--- Configuration du Rôle Enseignant ---"))
+        teacher_role, created = Role.objects.get_or_create(name="Enseignant")
+        if created:
+             self.stdout.write(f"  ✔ Rôle 'Enseignant' créé.")
+        else:
+             self.stdout.write(f"  ✔ Rôle 'Enseignant' existe déjà.")
         
         # 2. CRÉATION DE TON SUPER-UTILISATEUR "ethernanos"
         self.stdout.write(self.style.NOTICE("--- Création du Super-Admin 'ethernanos' ---"))

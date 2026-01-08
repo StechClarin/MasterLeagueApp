@@ -4,6 +4,27 @@ from ..models import Student, StudentHealth, Guardian, Enrollment
 class StudentService(BaseService):
     model = Student
 
+    def before_validate(self, data, instance=None):
+        import json
+        # Handle JSON strings from FormData (Angular Refactor)
+        json_fields = ['health_input', 'parents_input', 'enrollment_input']
+        
+        # Determine if data supports item assignment (dict or mutable)
+        # request.data from DRF might be immutable QueryDict
+        if hasattr(data, 'dict'):
+             data = data.dict() # Convert to standard dict for mutation
+        elif hasattr(data, 'copy'):
+             data = data.copy()
+
+        for field in json_fields:
+            if field in data and isinstance(data[field], str):
+                try:
+                    data[field] = json.loads(data[field])
+                except json.JSONDecodeError:
+                    pass # Leave as is if not valid JSON (or empty string)
+        
+        return super().before_validate(data, instance)
+
     def save_process(self, data, instance=None):
         # Extract nested data to temporary storage for after_save
         self._temp_related_data = {
@@ -80,5 +101,33 @@ class StudentService(BaseService):
                 if guardian not in current_guardians:
                     student.guardians.add(guardian)
         
+        # 4. Sync Photo to Document
+        if instance.photo:
+            from django.contrib.contenttypes.models import ContentType
+            from apps.documents.models.document import Document
+            
+            ct = ContentType.objects.get_for_model(instance)
+            
+            doc = Document.objects.filter(
+                content_type=ct, 
+                object_id=instance.id, 
+                document_type='PHOTO'
+            ).first()
+
+            if not doc:
+                doc = Document(
+                    content_type=ct,
+                    object_id=instance.id,
+                    document_type='PHOTO',
+                    title=f"Photo de profil - {instance.first_name} {instance.last_name}"
+                )
+                doc.file.name = instance.photo.name
+                doc.save()
+            else:
+                if doc.file.name != instance.photo.name:
+                    doc.file.name = instance.photo.name
+                    doc.title = f"Photo de profil - {instance.first_name} {instance.last_name}"
+                    doc.save()
+
         # Cleanup
         self._temp_related_data = {}

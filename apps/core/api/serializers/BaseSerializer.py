@@ -24,3 +24,30 @@ class BaseSerializer(serializers.ModelSerializer):
     """
     class Meta:
         abstract = True
+
+    def create_nested(self, parent_instance, relation_name, data_list, parent_field_name=None):
+        """
+        Helper pour créer des objets enfants liés.
+        Args:
+            parent_instance: L'objet parent créé.
+            relation_name: Nom du champ relation (ex: 'contacts').
+            data_list: Liste de données pour les enfants.
+            parent_field_name: Nom du champ FK dans l'enfant vers le parent. 
+                               Si None, tente de deviner (nom du modèle parent en minuscules).
+        """
+        if not data_list: return
+
+        related_manager = getattr(parent_instance, relation_name)
+        model = related_manager.model
+        
+        # Deviner le champ FK
+        if not parent_field_name:
+            parent_field_name = parent_instance._meta.model_name
+            
+        created_objects = []
+        for item_data in data_list:
+            # Injection de la FK
+            item_data[parent_field_name] = parent_instance
+            created_objects.append(model(**item_data))
+            
+        model.objects.bulk_create(created_objects)

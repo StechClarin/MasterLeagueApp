@@ -1,0 +1,9 @@
+query GetDocumentsByEntity($appLabel: String!, $modelName: String!, $objectId: ID!) {
+  documentsByEntity(appLabel: $appLabel, modelName: $modelName, objectId: $objectId) {
+    id
+    title
+    fileUrl
+    documentType
+    uploadedAt
+  }
+}

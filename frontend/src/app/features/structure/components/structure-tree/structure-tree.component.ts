@@ -11,6 +11,7 @@ import { LevelFormComponent } from '../level-form/level-form.component';
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
+import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
 
 @Component({
     selector: 'app-structure-tree',
@@ -27,7 +28,8 @@ import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-fi
         LevelFormComponent,
         UiModalComponent,
         UiConfirmModalComponent,
-        UiFilterPanelComponent
+        UiFilterPanelComponent,
+        UiPaginationComponent
     ],
     templateUrl: './structure-tree.component.html'
 })
@@ -60,8 +62,16 @@ export class StructureTreeComponent implements AfterViewInit {
 
     ngAfterViewInit() {
         // Fix for NG0100: ExpressionChangedAfterItHasBeenCheckedError
-        // Force check because we rely on ViewChildren (cycleList/levelList) for the template's filter bindings
         this.cdr.detectChanges();
+
+        // Sync Global Search to Child Components
+        this.searchControl.valueChanges.subscribe(val => {
+            if (this.activeTab() === 'cycles') {
+                this.cycleList?.searchControl.setValue(val);
+            } else {
+                this.levelList?.searchControl.setValue(val);
+            }
+        });
     }
 
     // --- Action Delegation ---
@@ -98,6 +108,31 @@ export class StructureTreeComponent implements AfterViewInit {
             ? this.cycleList?.isFiltersOpen()
             : this.levelList?.isFiltersOpen();
         return isOpen ?? false;
+    }
+
+    // --- Pagination Delegation ---
+    onPrevPage() {
+        if (this.activeTab() === 'cycles') {
+            this.cycleList?.prevPage();
+        } else {
+            this.levelList?.prevPage();
+        }
+    }
+
+    onNextPage() {
+        if (this.activeTab() === 'cycles') {
+            this.cycleList?.nextPage();
+        } else {
+            this.levelList?.nextPage();
+        }
+    }
+
+    onGoToPage(page: number) {
+        if (this.activeTab() === 'cycles') {
+            this.cycleList?.goToPage(page);
+        } else {
+            this.levelList?.goToPage(page);
+        }
     }
 
     // Helper for direct service calls if child component method access is tricky

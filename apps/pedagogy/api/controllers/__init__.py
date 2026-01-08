@@ -1,0 +1,1 @@
+from .teaching_assignment_controller import TeachingAssignmentController

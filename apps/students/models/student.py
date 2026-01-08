@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from datetime import date
 from apps.core.models.establishment_aware_model import EstablishmentAwareModel
+from apps.documents.utils import document_upload_path
 
 class Student(EstablishmentAwareModel):
     GENDER_CHOICES = [
@@ -17,8 +18,8 @@ class Student(EstablishmentAwareModel):
     date_of_birth = models.DateField(null=True, blank=True)
     place_of_birth = models.CharField(max_length=150, blank=True, null=True)
     
-    # Photo with dynamic upload path (apps/students because it's the app name, logically)
-    photo = models.ImageField(upload_to='students/photos/', blank=True, null=True)
+    # Photo with dynamic upload path
+    photo = models.ImageField(upload_to=document_upload_path, blank=True, null=True)
     
     address = models.TextField(blank=True, null=True)
     

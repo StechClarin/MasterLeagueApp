@@ -43,6 +43,7 @@ export class LevelListComponent extends BaseModalListComponent<LevelType> implem
     private cycleService = inject(CycleService);
 
     searchControl = new FormControl('');
+    @Input() showPagination = true;
     isFiltersOpen = signal(false);
     private cdr = inject(ChangeDetectorRef);
     private destroy$ = new Subject<void>();

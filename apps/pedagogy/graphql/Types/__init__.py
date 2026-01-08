@@ -1,0 +1,2 @@
+
+from .teaching_assignment_type import TeachingAssignmentType
