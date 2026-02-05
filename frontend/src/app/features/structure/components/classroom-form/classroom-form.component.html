@@ -1,6 +1,6 @@
 <app-ui-form [title]="classroom ? 'Modifier la Classe' : 'Nouvelle Classe'" [formGroup]="form"
     [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="classroom ? 'Modifier' : 'Créer'"
-    (submitForm)="submit()" (cancel)="onCancel()">
+    description="Gérez les classes et leur capacité d'accueil." (submitForm)="submit()" (cancel)="onCancel()">
 
     <div class="grid grid-cols-1 gap-6 mb-6">
         <app-ui-select label="Niveau" [control]="form.controls.levelId" [options]="levels" [required]="true"

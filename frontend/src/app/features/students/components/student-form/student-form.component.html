@@ -1,28 +1,21 @@
-<div class="h-full flex flex-col p-6 overflow-hidden">
+<div class="h-full flex flex-col bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
   <!-- Header -->
-  <div class="mb-6 pb-4 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un élève</h2>
-        <p class="text-sm text-gray-500 mt-1">Remplissez les informations de l'élève ci-dessous.</p>
-    </div>
-    <button (click)="close()" class="text-gray-400 hover:text-gray-500">
-        <span class="sr-only">Fermer</span>
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    </button>
-  </div>
+  <app-ui-form-header
+    [title]="(isEditMode ? 'Modifier' : 'Ajouter') + ' un élève'"
+    description="Gérez les inscriptions et données élèves."
+    (close)="close()">
+  </app-ui-form-header>
 
-  <div *ngIf="errorMessage" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative flex-shrink-0" role="alert">
+  <div *ngIf="errorMessage" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative flex-shrink-0 mx-6 mt-4" role="alert">
     <strong class="font-bold">Erreur!</strong>
     <span class="block sm:inline"> {{ errorMessage }}</span>
   </div>
 
   <!-- Content -->
-  <div class="flex-1 overflow-hidden min-h-0 flex flex-col">
+  <div class="flex-1 overflow-hidden min-h-0 flex flex-col relative bg-white">
     <app-ui-tabs [tabs]="tabs" [currentTab]="currentTab()" (tabChange)="currentTab.set($event)" class="flex flex-col h-full">
     
-        <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 pt-2" [formGroup]="form">
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 h-[550px] min-h-[550px]" [formGroup]="form">
 
         <!-- TAB 1: IDENTITÉ -->
         <div *ngIf="currentTab() === 'identity'" class="space-y-4 pt-2">
@@ -135,18 +128,12 @@
   </div>
 
   <!-- Footer -->
-  <div class="mt-auto pt-6 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0">
-    <button type="button" (click)="close()" class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 hover:text-gray-900 transition-colors focus:ring-4 focus:ring-gray-100">
-      Annuler
-    </button>
-    <button type="button" (click)="submit()" [disabled]="isSubmitting" class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg shadow-indigo-500/20 focus:ring-4 focus:ring-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-      <span *ngIf="isSubmitting" class="mr-2">
-        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      </span>
-      <span>Enregistrer</span>
-    </button>
-  </div>
+  <app-ui-form-actions
+      [isSubmitting]="isSubmitting"
+      [disabled]="isSubmitting"
+      submitLabel="Enregistrer"
+      cancelLabel="Annuler"
+      (submit)="submit()"
+      (cancel)="close()">
+  </app-ui-form-actions>
 </div>

@@ -14,3 +14,4 @@ __all__ = [
     'SubjectSerializer',
     'LevelSubjectSerializer'
 ]
+from .room_serializer import RoomSerializer

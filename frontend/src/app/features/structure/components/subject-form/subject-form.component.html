@@ -1,6 +1,6 @@
 <app-ui-form [title]="subject ? 'Modifier la Matière' : 'Nouvelle Matière'" [formGroup]="form"
     [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="subject ? 'Modifier' : 'Créer'"
-    (submitForm)="submit()" (cancel)="onCancel()">
+    description="Maintenez le catalogue des matières enseignées." (submitForm)="submit()" (cancel)="onCancel()">
 
     <app-ui-tabs [tabs]="tabs" [currentTab]="activeTab()" (tabChange)="activeTab.set($event)"></app-ui-tabs>
 

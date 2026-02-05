@@ -1,4 +1,4 @@
-<app-ui-list-page title="Affectations Pédagogiques" [isLoading]="isLoading()">
+<app-ui-list-page title="Affectations Pédagogiques" [isLoading]="isLoading()" [isEmpty]="!hasData() && !isLoading()">
 
     <!-- Header Actions -->
     <ng-container header-actions>
@@ -28,11 +28,15 @@
 
     <!-- Pagination -->
     <ng-container pagination>
-        <div class="mt-2">
-            <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
-                [numPages]="numPages()" (prev)="prevPage()" (next)="nextPage()" (goTo)="goToPage($event)">
-            </app-ui-pagination>
-        </div>
+        <app-ui-pagination 
+            [currentPage]="currentPage()" 
+            [pageSize]="pageSize()" 
+            [totalCount]="totalCount()"
+            [numPages]="numPages()" 
+            (prev)="prevPage()" 
+            (next)="nextPage()"
+            (goTo)="goToPage($event)">
+        </app-ui-pagination>
     </ng-container>
 
 </app-ui-list-page>

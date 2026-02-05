@@ -1,1 +1,3 @@
 from .teaching_assignment_service import TeachingAssignmentService
+from .planning_service import PlanningService
+from .planning_detail_service import PlanningDetailService

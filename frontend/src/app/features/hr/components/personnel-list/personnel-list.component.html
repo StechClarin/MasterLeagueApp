@@ -173,12 +173,18 @@
   </ng-container>
 
   <ng-container pagination>
-    <!-- Pagination is handled by BaseListComponent/UiListPage interaction (via signals usually, or inputs) -->
-    <!-- Assuming UiListPage handles pagination UI based on BaseListComponent signals -->
+    <app-ui-pagination
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      [totalCount]="totalCount()"
+      [numPages]="numPages()"
+      (prev)="prevPage()"
+      (next)="nextPage()"
+    ></app-ui-pagination>
   </ng-container>
 </app-ui-list-page>
 
-<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-3xl">
   <ng-container [ngSwitch]="modalMode()">
     <app-ui-confirm-modal
       *ngSwitchCase="'delete'"

@@ -15,19 +15,7 @@ const FALLBACK_ROUTES = [
 ];
 
 // La Query pour récupérer juste les liens
-const GET_ALL_PAGES = gql`
-  query modules {
-    
-    modules {
-      name
-      pages {
-        title
-        
-        link
-      }
-    }
-  }
-`;
+import { GET_SIDEBAR_MODULES } from '../../layout/components/sidebar/sidebar.queries';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicRouterService {
@@ -41,7 +29,7 @@ export class DynamicRouterService {
       // 1. On récupère la structure depuis Django
       console.log('Fetching modules from GraphQL...');
       const result: any = await firstValueFrom(
-        this.apollo.query({ query: GET_ALL_PAGES })
+        this.apollo.query({ query: GET_SIDEBAR_MODULES })
       );
       console.log('Modules fetched:', result);
 

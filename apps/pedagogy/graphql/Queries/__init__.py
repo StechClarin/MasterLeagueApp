@@ -1,2 +1,3 @@
-
 from .teaching_assignment_query import TeachingAssignmentQuery
+from .planning_query import PlanningQuery
+from .planning_detail_query import PlanningDetailQuery

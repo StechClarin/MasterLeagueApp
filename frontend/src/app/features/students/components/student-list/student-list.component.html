@@ -181,7 +181,7 @@
 
   <!-- Modals -->
   <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-3xl">
+    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-4xl">
       <ng-container [ngSwitch]="modalMode()">
         <app-ui-confirm-modal *ngSwitchCase="'delete'" 
            title="Supprimer l'élève ?" 

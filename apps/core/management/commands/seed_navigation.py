@@ -122,6 +122,13 @@ MODULE_STRUCTURE = [
                 "link": "/assignments",
                 "tags": ["teachingassignment"]
             },
+            {
+                "title": "Plannings",
+                "icon": "pedagogy-icon",
+                "order": 1,
+                "link": "/plannings",
+                "tags": ["planning"]
+            },
         ]
     },
     # --- AJOUTE TES AUTRES MODULES ICI ---

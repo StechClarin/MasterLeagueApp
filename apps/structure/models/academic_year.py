@@ -5,7 +5,6 @@ class AcademicYear(EstablishmentAwareModel):
     name = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
-    end_date = models.DateField()
     is_archived = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False, help_text="L'année en cours")
 

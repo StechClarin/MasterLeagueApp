@@ -13,3 +13,4 @@ __all__ = [
     'SubjectQuery', 
     'StructureQuery'
 ]
+from .room_query import RoomQuery

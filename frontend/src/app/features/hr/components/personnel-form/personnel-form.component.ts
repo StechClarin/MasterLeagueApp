@@ -16,6 +16,8 @@ import { Observable, of } from 'rxjs';
 import { GetAllContractTypesGQL, GetAllPersonnelsGQL } from '@app/graphql/generated';
 
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
+import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
+import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
 
 @Component({
     selector: 'app-personnel-form',
@@ -25,6 +27,8 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
         ReactiveFormsModule,
         UiModalComponent,
         UiConfirmModalComponent,
+        UiFormHeaderComponent,
+        UiFormActionsComponent,
         UiInputComponent,
         UiSelectComponent,
         UiMultiSelectComponent,

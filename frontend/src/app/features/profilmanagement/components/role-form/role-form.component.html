@@ -2,6 +2,7 @@
     [title]="isEditMode ? 'Modifier le Rôle' : 'Créer un Rôle'"
     [formGroup]="form"
     [submitLabel]="isEditMode ? 'Modifier' : 'Créer'"
+    description="Configurez les accès et permissions système."
     (submitForm)="save()"
     (cancel)="cancel.emit()">
 

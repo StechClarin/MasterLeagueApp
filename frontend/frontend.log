@@ -1,0 +1,786 @@
+
+> frontend@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Application bundle generation failed. [14.043 seconds]
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG1: Property 'onSubmit' does not exist on type 'PlanningFormComponent'. Did you mean 'submit'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:1:37:
+[37m      1 │ ...rmGroup]="form" (ngSubmit)="[32monSubmit[37m()" class="flex flex-col gap...
+        ╵                                [32m~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '{ label: string; value: string; }[]' is not assignable to type 'Tab[]'.
+  Property 'id' is missing in type '{ label: string; value: string; }' but required in type 'Tab'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:22:
+[37m      12 │         <app-ui-tabs [[32mtabs[37m]="tabs()" [(activeTab)]="activeTab"></a...
+         ╵                       [32m~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'activeTab' since it isn't a known property of 'app-ui-tabs'.
+1. If 'app-ui-tabs' is an Angular component and it has 'activeTab' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-ui-tabs' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:37:
+[37m      12 │ ...p-ui-tabs [tabs]="tabs()" [32m[(activeTab)]="activeTab"[37m></app-ui-tabs>
+         ╵                              [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'isEmpty' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:19:17:
+[37m      19 │       [isEmpty]="[32misEmpty[37m()"
+         ╵                  [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'openCreate' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:20:16:
+[37m      20 │       (create)="[32mopenCreate[37m()"
+         ╵                 [32m~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '({ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; })[]' is not assignable to type 'UiTableColumn[]'.
+  Type '{ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; }' is not assignable to type 'UiTableColumn'.
+    Property 'header' is missing in type '{ key: string; label: string; type?: undefined; }' but required in type 'UiTableColumn'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:25:11:
+[37m      25 │           [[32mcolumns[37m]="columns"
+         ╵            [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'data' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:26:18:
+[37m      26 │           [data]="[32mdata[37m()"
+         ╵                   [32m~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG1: Property 'openEdit' does not exist on type 'PlanningListComponent'. Did you mean 'onEdit'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:27:18:
+[37m      27 │           (edit)="[32mopenEdit[37m($event)"
+         ╵                   [32m~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG1: Property 'openDelete' does not exist on type 'PlanningListComponent'. Did you mean 'onDelete'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:28:20:
+[37m      28 │           (delete)="[32mopenDelete[37m($event)"
+         ╵                     [32m~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'onModalSuccess' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:50:24:
+[37m      50 │              (success)="[32monModalSuccess[37m()"
+         ╵                         [32m~~~~~~~~~~~~~~[0m
+
+
+Watch mode enabled. Watching for file changes...
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [6.602 seconds]
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '{ label: string; value: string; }[]' is not assignable to type 'Tab[]'.
+  Property 'id' is missing in type '{ label: string; value: string; }' but required in type 'Tab'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:22:
+[37m      12 │         <app-ui-tabs [[32mtabs[37m]="tabs()" [(activeTab)]="activeTab"></a...
+         ╵                       [32m~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'activeTab' since it isn't a known property of 'app-ui-tabs'.
+1. If 'app-ui-tabs' is an Angular component and it has 'activeTab' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-ui-tabs' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:37:
+[37m      12 │ ...p-ui-tabs [tabs]="tabs()" [32m[(activeTab)]="activeTab"[37m></app-ui-tabs>
+         ╵                              [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'isEmpty' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:19:17:
+[37m      19 │       [isEmpty]="[32misEmpty[37m()"
+         ╵                  [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'openCreate' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:20:16:
+[37m      20 │       (create)="[32mopenCreate[37m()"
+         ╵                 [32m~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '({ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; })[]' is not assignable to type 'UiTableColumn[]'.
+  Type '{ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; }' is not assignable to type 'UiTableColumn'.
+    Property 'header' is missing in type '{ key: string; label: string; type?: undefined; }' but required in type 'UiTableColumn'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:25:11:
+[37m      25 │           [[32mcolumns[37m]="columns"
+         ╵            [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'data' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:26:18:
+[37m      26 │           [data]="[32mdata[37m()"
+         ╵                   [32m~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG1: Property 'openEdit' does not exist on type 'PlanningListComponent'. Did you mean 'onEdit'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:27:18:
+[37m      27 │           (edit)="[32mopenEdit[37m($event)"
+         ╵                   [32m~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG1: Property 'openDelete' does not exist on type 'PlanningListComponent'. Did you mean 'onDelete'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:28:20:
+[37m      28 │           (delete)="[32mopenDelete[37m($event)"
+         ╵                     [32m~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'onModalSuccess' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:50:24:
+[37m      50 │              (success)="[32monModalSuccess[37m()"
+         ╵                         [32m~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.828 seconds]
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '{ label: string; value: string; }[]' is not assignable to type 'Tab[]'.
+  Property 'id' is missing in type '{ label: string; value: string; }' but required in type 'Tab'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:22:
+[37m      12 │         <app-ui-tabs [[32mtabs[37m]="tabs()" [(activeTab)]="activeTab"></a...
+         ╵                       [32m~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'activeTab' since it isn't a known property of 'app-ui-tabs'.
+1. If 'app-ui-tabs' is an Angular component and it has 'activeTab' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-ui-tabs' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:37:
+[37m      12 │ ...p-ui-tabs [tabs]="tabs()" [32m[(activeTab)]="activeTab"[37m></app-ui-tabs>
+         ╵                              [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'isEmpty' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:19:17:
+[37m      19 │       [isEmpty]="[32misEmpty[37m()"
+         ╵                  [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '({ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; })[]' is not assignable to type 'UiTableColumn[]'.
+  Type '{ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; }' is not assignable to type 'UiTableColumn'.
+    Property 'header' is missing in type '{ key: string; label: string; type?: undefined; }' but required in type 'UiTableColumn'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:25:11:
+[37m      25 │           [[32mcolumns[37m]="columns"
+         ╵            [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'data' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:26:18:
+[37m      26 │           [data]="[32mdata[37m()"
+         ╵                   [32m~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'onModalSuccess' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:50:24:
+[37m      50 │              (success)="[32monModalSuccess[37m()"
+         ╵                         [32m~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [1.709 seconds]
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'activeTab' since it isn't a known property of 'app-ui-tabs'.
+1. If 'app-ui-tabs' is an Angular component and it has 'activeTab' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-ui-tabs' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:37:
+[37m      12 │ ...p-ui-tabs [tabs]="tabs()" [32m[(activeTab)]="activeTab"[37m></app-ui-tabs>
+         ╵                              [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:17:17:
+[37m      17 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'Tab'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:8:26:
+[37m      8 │ import { UiTabsComponent, [32mTab[37m } from '@shared/components/ui-tabs/ui...
+        ╵                           [32m~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'Tab'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:11:9:
+[37m      11 │ import { [32mTab[37m } from '@shared/components/ui-tabs/ui-tabs.component'...
+         ╵          [32m~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'isEmpty' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:19:17:
+[37m      19 │       [isEmpty]="[32misEmpty[37m()"
+         ╵                  [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '({ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; })[]' is not assignable to type 'UiTableColumn[]'.
+  Type '{ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; }' is not assignable to type 'UiTableColumn'.
+    Property 'header' is missing in type '{ key: string; label: string; type?: undefined; }' but required in type 'UiTableColumn'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:25:11:
+[37m      25 │           [[32mcolumns[37m]="columns"
+         ╵            [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'data' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:26:18:
+[37m      26 │           [data]="[32mdata[37m()"
+         ╵                   [32m~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'onModalSuccess' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:50:24:
+[37m      50 │              (success)="[32monModalSuccess[37m()"
+         ╵                         [32m~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [1.022 seconds]
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'activeTab' since it isn't a known property of 'app-ui-tabs'.
+1. If 'app-ui-tabs' is an Angular component and it has 'activeTab' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-ui-tabs' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:12:37:
+[37m      12 │ ...p-ui-tabs [tabs]="tabs()" [32m[(activeTab)]="activeTab"[37m></app-ui-tabs>
+         ╵                              [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:16:17:
+[37m      16 │     templateUrl: [32m'./planning-form.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'isEmpty' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:19:17:
+[37m      19 │       [isEmpty]="[32misEmpty[37m()"
+         ╵                  [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '({ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; })[]' is not assignable to type 'UiTableColumn[]'.
+  Type '{ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; }' is not assignable to type 'UiTableColumn'.
+    Property 'header' is missing in type '{ key: string; label: string; type?: undefined; }' but required in type 'UiTableColumn'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:25:11:
+[37m      25 │           [[32mcolumns[37m]="columns"
+         ╵            [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'data' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:26:18:
+[37m      26 │           [data]="[32mdata[37m()"
+         ╵                   [32m~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'onModalSuccess' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:50:24:
+[37m      50 │              (success)="[32monModalSuccess[37m()"
+         ╵                         [32m~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [0.754 seconds]
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'isEmpty' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:19:17:
+[37m      19 │       [isEmpty]="[32misEmpty[37m()"
+         ╵                  [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG2: Type '({ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; })[]' is not assignable to type 'UiTableColumn[]'.
+  Type '{ key: string; label: string; type?: undefined; } | { key: string; label: string; type: string; }' is not assignable to type 'UiTableColumn'.
+    Property 'header' is missing in type '{ key: string; label: string; type?: undefined; }' but required in type 'UiTableColumn'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:25:11:
+[37m      25 │           [[32mcolumns[37m]="columns"
+         ╵            [32m~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'data' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:26:18:
+[37m      26 │           [data]="[32mdata[37m()"
+         ╵                   [32m~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG9: Property 'onModalSuccess' does not exist on type 'PlanningListComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:50:24:
+[37m      50 │              (success)="[32monModalSuccess[37m()"
+         ╵                         [32m~~~~~~~~~~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                              |  Raw size
+polyfills.js        | polyfills                          |  90.20 kB | 
+main.js             | main                               |  75.48 kB | 
+styles.css          | styles                             |  66.75 kB | 
+chunk-PUSOQ6P7.js   | -                                  |  33.67 kB | 
+chunk-6INBKNMI.js   | -                                  |  13.26 kB | 
+chunk-Y5RQAIA6.js   | -                                  |   1.50 kB | 
+chunk-PVWP66PV.js   | -                                  |   1.46 kB | 
+
+                    | Initial total                      | 282.32 kB
+
+Lazy chunk files    | Names                              |  Raw size
+chunk-IFYDQFDE.js   | student-list-component             |  92.91 kB | 
+chunk-M4ZJQNMU.js   | personnel-list-component           |  72.55 kB | 
+chunk-ZQYQFN6N.js   | structure-tree-component           |  69.83 kB | 
+chunk-2JWXLOO2.js   | user-list-component                |  67.58 kB | 
+chunk-HDJP2PSO.js   | -                                  |  42.04 kB | 
+chunk-RNIQKCIT.js   | subject-list-component             |  41.30 kB | 
+chunk-AMNRL6SS.js   | role-list-component                |  40.08 kB | 
+chunk-FOOJGNVD.js   | classroom-list-component           |  33.74 kB | 
+chunk-64WI7H6X.js   | academic-year-list-component       |  33.70 kB | 
+chunk-XBZJ4Y5J.js   | establishment-list-component       |  32.50 kB | 
+chunk-R3MVZMJC.js   | teaching-assignment-list-component |  30.23 kB | 
+chunk-YQGEOYWT.js   | contract-type-list-component       |  24.81 kB | 
+chunk-CLCC4EZH.js   | planning-list-component            |  22.94 kB | 
+chunk-IMUE2L6R.js   | -                                  |  16.45 kB | 
+chunk-ZTI4ZXAD.js   | -                                  |  13.07 kB | 
+...and 20 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [1.816 seconds]
+
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4200/
+  ➜  press h + enter to show help
+
+> frontend@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names                              |  Raw size
+polyfills.js        | polyfills                          |  90.20 kB | 
+main.js             | main                               |  75.48 kB | 
+styles.css          | styles                             |  66.75 kB | 
+chunk-PUSOQ6P7.js   | -                                  |  33.67 kB | 
+chunk-6INBKNMI.js   | -                                  |  13.26 kB | 
+chunk-Y5RQAIA6.js   | -                                  |   1.50 kB | 
+chunk-PVWP66PV.js   | -                                  |   1.46 kB | 
+
+                    | Initial total                      | 282.32 kB
+
+Lazy chunk files    | Names                              |  Raw size
+chunk-N55MD4RQ.js   | student-list-component             |  92.91 kB | 
+chunk-LCCZWZOP.js   | personnel-list-component           |  72.55 kB | 
+chunk-6S56MFIZ.js   | structure-tree-component           |  69.83 kB | 
+chunk-GYKZJUYO.js   | user-list-component                |  67.58 kB | 
+chunk-XPQJIZUM.js   | -                                  |  45.58 kB | 
+chunk-OPILWJXJ.js   | subject-list-component             |  41.30 kB | 
+chunk-BXX4KJNM.js   | role-list-component                |  40.08 kB | 
+chunk-KEALBTXG.js   | classroom-list-component           |  33.74 kB | 
+chunk-J3QYZHQI.js   | academic-year-list-component       |  33.70 kB | 
+chunk-B25EZAW5.js   | establishment-list-component       |  32.50 kB | 
+chunk-D55ZMWTP.js   | teaching-assignment-list-component |  30.23 kB | 
+chunk-MN4QJZQQ.js   | contract-type-list-component       |  24.81 kB | 
+chunk-VU7TCSSF.js   | planning-list-component            |  24.35 kB | 
+chunk-ZTI4ZXAD.js   | -                                  |  13.07 kB | 
+chunk-OFRXW5BK.js   | -                                  |  12.94 kB | 
+...and 20 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [17.618 seconds]
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4200/
+  ➜  press h + enter to show help
+Killed
+
+> frontend@0.0.0 start
+> ng serve
+
+ Port 4200 is already in use.
+Would you like to use a different port? (Y/n)[47G
+> frontend@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Application bundle generation failed. [15.156 seconds]
+
+✘ [ERROR] NG9: Property 'formattedActiveDate' does not exist on type 'PlanningFormComponent'. [plugin angular-compiler]
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:44:84:
+      44 │ ... text-xl text-slate-900 capitalize">{{ formattedActiveDate }}</h3>
+         ╵                                           ~~~~~~~~~~~~~~~~~~~
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:27:17:
+      27 │     templateUrl: './planning-form.component.html',
+         ╵                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Watch mode enabled. Watching for file changes...
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                              |  Raw size
+polyfills.js        | polyfills                          |  90.20 kB | 
+main.js             | main                               |  75.48 kB | 
+styles.css          | styles                             |  69.97 kB | 
+chunk-PUSOQ6P7.js   | -                                  |  33.67 kB | 
+chunk-6INBKNMI.js   | -                                  |  13.26 kB | 
+chunk-Y5RQAIA6.js   | -                                  |   1.50 kB | 
+chunk-PVWP66PV.js   | -                                  |   1.46 kB | 
+
+                    | Initial total                      | 285.54 kB
+
+Lazy chunk files    | Names                              |  Raw size
+chunk-N55MD4RQ.js   | student-list-component             |  92.91 kB | 
+chunk-LCCZWZOP.js   | personnel-list-component           |  72.55 kB | 
+chunk-6S56MFIZ.js   | structure-tree-component           |  69.83 kB | 
+chunk-GYKZJUYO.js   | user-list-component                |  67.58 kB | 
+chunk-XPQJIZUM.js   | -                                  |  45.58 kB | 
+chunk-OPILWJXJ.js   | subject-list-component             |  41.30 kB | 
+chunk-BXX4KJNM.js   | role-list-component                |  40.08 kB | 
+chunk-IN4HSK3B.js   | planning-list-component            |  35.23 kB | 
+chunk-KEALBTXG.js   | classroom-list-component           |  33.74 kB | 
+chunk-J3QYZHQI.js   | academic-year-list-component       |  33.70 kB | 
+chunk-B25EZAW5.js   | establishment-list-component       |  32.50 kB | 
+chunk-D55ZMWTP.js   | teaching-assignment-list-component |  30.23 kB | 
+chunk-MN4QJZQQ.js   | contract-type-list-component       |  24.81 kB | 
+chunk-ZTI4ZXAD.js   | -                                  |  13.07 kB | 
+chunk-OFRXW5BK.js   | -                                  |  12.94 kB | 
+...and 20 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [6.555 seconds]
+
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4200/
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [1.746 seconds]
+
+✘ [ERROR] TS7034: Variable 'dayList' implicitly has type 'any[]' in some locations where its type cannot be determined. [plugin angular-compiler]
+
+    src/app/features/pedagogy/components/planning-calendar/planning-calendar.component.ts:70:14:
+      70 │         const dayList = [];
+         ╵               ~~~~~~~
+
+
+✘ [ERROR] TS7005: Variable 'dayList' implicitly has an 'any[]' type. [plugin angular-compiler]
+
+    src/app/features/pedagogy/components/planning-calendar/planning-calendar.component.ts:93:33:
+      93 │ ...           const dayIndex = dayList.findIndex(day => day.date =...
+         ╵                                ~~~~~~~
+
+
+✘ [ERROR] TS-992008: Could not find template file './planning-list.component.html'. [plugin angular-compiler]
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:28:15:
+      28 │   templateUrl: './planning-list.component.html'
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [1.742 seconds]
+
+✘ [ERROR] TS-992008: Could not find template file './planning-list.component.html'. [plugin angular-compiler]
+
+    src/app/features/pedagogy/components/planning-list/planning-list.component.ts:28:15:
+      28 │   templateUrl: './planning-list.component.html'
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Killed
+
+> frontend@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names                              |  Raw size
+polyfills.js        | polyfills                          |  90.20 kB | 
+main.js             | main                               |  75.48 kB | 
+styles.css          | styles                             |  70.87 kB | 
+chunk-PUSOQ6P7.js   | -                                  |  33.67 kB | 
+chunk-6INBKNMI.js   | -                                  |  13.26 kB | 
+chunk-Y5RQAIA6.js   | -                                  |   1.50 kB | 
+chunk-PVWP66PV.js   | -                                  |   1.46 kB | 
+
+                    | Initial total                      | 286.44 kB
+
+Lazy chunk files    | Names                              |  Raw size
+chunk-N55MD4RQ.js   | student-list-component             |  92.91 kB | 
+chunk-LCCZWZOP.js   | personnel-list-component           |  72.55 kB | 
+chunk-6S56MFIZ.js   | structure-tree-component           |  69.83 kB | 
+chunk-GYKZJUYO.js   | user-list-component                |  67.58 kB | 
+chunk-TOIQDCM2.js   | planning-list-component            |  57.59 kB | 
+chunk-XPQJIZUM.js   | -                                  |  45.58 kB | 
+chunk-OPILWJXJ.js   | subject-list-component             |  41.30 kB | 
+chunk-BXX4KJNM.js   | role-list-component                |  40.08 kB | 
+chunk-KEALBTXG.js   | classroom-list-component           |  33.74 kB | 
+chunk-J3QYZHQI.js   | academic-year-list-component       |  33.70 kB | 
+chunk-B25EZAW5.js   | establishment-list-component       |  32.50 kB | 
+chunk-D55ZMWTP.js   | teaching-assignment-list-component |  30.23 kB | 
+chunk-MN4QJZQQ.js   | contract-type-list-component       |  24.81 kB | 
+chunk-ZTI4ZXAD.js   | -                                  |  13.07 kB | 
+chunk-OFRXW5BK.js   | -                                  |  12.94 kB | 
+...and 20 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [11.856 seconds]
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4200/
+Killed
+
+> frontend@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Application bundle generation failed. [12.418 seconds]
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'min' since it isn't a known property of 'app-ui-input'.
+1. If 'app-ui-input' is an Angular component and it has 'min' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-ui-input' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:23:97:
+[37m      23 │ ...ControlName="date_start"[32m [min]="minDate[37m" [required]="true"></ap...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:27:17:
+[37m      27 │     templateUrl: [32m'./planning-form.component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'min' since it isn't a known property of 'app-ui-input'.
+1. If 'app-ui-input' is an Angular component and it has 'min' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-ui-input' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.html:26:93:
+[37m      26 │ ...mControlName="date_end" [32m[min]="minDate"[37m [required]="true"></app...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component PlanningFormComponent.
+
+    src/app/features/pedagogy/components/planning-form/planning-form.component.ts:27:17:
+[37m      27 │     templateUrl: [32m'./planning-form.component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+Watch mode enabled. Watching for file changes...
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [6.135 seconds]
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDuplicate member "theme" in class body[0m [duplicate-class-member]
+
+    src/app/shared/components/ui-input/ui-input.component.ts:64:4:
+[37m      64 │     [32mtheme[37m = 'light';
+         ╵     [32m~~~~~[0m
+
+  The original member "theme" is here:
+
+    src/app/shared/components/ui-input/ui-input.component.ts:63:4:
+[37m      63 │     [32mtheme[37m = 'light';
+         ╵     [32m~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'theme'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/components/ui-input/ui-input.component.ts:45:11:
+[37m      45 │   @Input() [32mtheme[37m: 'light' | 'dark' = 'light';
+         ╵            [32m~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Application bundle generation failed. [1.654 seconds]
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDuplicate member "theme" in class body[0m [duplicate-class-member]
+
+    src/app/shared/components/ui-input/ui-input.component.ts:64:4:
+[37m      64 │     [32mtheme[37m = 'light';
+         ╵     [32m~~~~~[0m
+
+  The original member "theme" is here:
+
+    src/app/shared/components/ui-input/ui-input.component.ts:63:4:
+[37m      63 │     [32mtheme[37m = 'light';
+         ╵     [32m~~~~~[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'theme'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/components/ui-input/ui-input.component.ts:46:11:
+[37m      46 │   @Input() [32mtheme[37m: 'light' | 'dark' = 'light';
+         ╵            [32m~~~~~[0m
+
+
+❯ Changes detected. Rebuilding...
+✔ Changes detected. Rebuilding...
+Initial chunk files | Names                              |  Raw size
+polyfills.js        | polyfills                          |  90.20 kB | 
+main.js             | main                               |  75.48 kB | 
+styles.css          | styles                             |  70.27 kB | 
+chunk-WP4WFY53.js   | -                                  |  33.71 kB | 
+chunk-FYWI7R4B.js   | -                                  |  13.31 kB | 
+chunk-Y5RQAIA6.js   | -                                  |   1.50 kB | 
+chunk-PVWP66PV.js   | -                                  |   1.46 kB | 
+
+                    | Initial total                      | 285.92 kB
+
+Lazy chunk files    | Names                              |  Raw size
+chunk-Y7JE3CAZ.js   | student-list-component             |  92.91 kB | 
+chunk-6RX65MYC.js   | personnel-list-component           |  72.55 kB | 
+chunk-PEKAAMHF.js   | structure-tree-component           |  69.83 kB | 
+chunk-47PCWJ7G.js   | user-list-component                |  67.58 kB | 
+chunk-DXPYDVDQ.js   | planning-list-component            |  58.39 kB | 
+chunk-KFABJTUD.js   | -                                  |  45.58 kB | 
+chunk-GAAQL2E3.js   | subject-list-component             |  41.30 kB | 
+chunk-SWHLHFPG.js   | role-list-component                |  40.08 kB | 
+chunk-FHYFLXXD.js   | classroom-list-component           |  33.74 kB | 
+chunk-PENTCILI.js   | academic-year-list-component       |  33.70 kB | 
+chunk-AURNV5XA.js   | establishment-list-component       |  32.50 kB | 
+chunk-3FHFCAWV.js   | teaching-assignment-list-component |  30.23 kB | 
+chunk-QO5QTYGV.js   | contract-type-list-component       |  24.81 kB | 
+chunk-ZTI4ZXAD.js   | -                                  |  13.07 kB | 
+chunk-OFRXW5BK.js   | -                                  |  12.94 kB | 
+...and 20 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [2.072 seconds]
+
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4200/
+  ➜  press h + enter to show help
+Killed
+
+> frontend@0.0.0 start
+> ng serve
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names                              |  Raw size
+polyfills.js        | polyfills                          |  90.20 kB | 
+main.js             | main                               |  75.48 kB | 
+styles.css          | styles                             |  70.27 kB | 
+chunk-WP4WFY53.js   | -                                  |  33.71 kB | 
+chunk-FYWI7R4B.js   | -                                  |  13.31 kB | 
+chunk-Y5RQAIA6.js   | -                                  |   1.50 kB | 
+chunk-PVWP66PV.js   | -                                  |   1.46 kB | 
+
+                    | Initial total                      | 285.92 kB
+
+Lazy chunk files    | Names                              |  Raw size
+chunk-Y7JE3CAZ.js   | student-list-component             |  92.91 kB | 
+chunk-6RX65MYC.js   | personnel-list-component           |  72.55 kB | 
+chunk-PEKAAMHF.js   | structure-tree-component           |  69.83 kB | 
+chunk-47PCWJ7G.js   | user-list-component                |  67.58 kB | 
+chunk-DXPYDVDQ.js   | planning-list-component            |  58.39 kB | 
+chunk-KFABJTUD.js   | -                                  |  45.58 kB | 
+chunk-GAAQL2E3.js   | subject-list-component             |  41.30 kB | 
+chunk-SWHLHFPG.js   | role-list-component                |  40.08 kB | 
+chunk-FHYFLXXD.js   | classroom-list-component           |  33.74 kB | 
+chunk-PENTCILI.js   | academic-year-list-component       |  33.70 kB | 
+chunk-AURNV5XA.js   | establishment-list-component       |  32.50 kB | 
+chunk-3FHFCAWV.js   | teaching-assignment-list-component |  30.23 kB | 
+chunk-QO5QTYGV.js   | contract-type-list-component       |  24.81 kB | 
+chunk-ZTI4ZXAD.js   | -                                  |  13.07 kB | 
+chunk-OFRXW5BK.js   | -                                  |  12.94 kB | 
+...and 20 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [11.861 seconds]
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4200/
+  ➜  press h + enter to show help
+Killed

@@ -1,6 +1,6 @@
 <app-ui-form [title]="level ? 'Modifier le Niveau' : 'Nouveau Niveau'" [formGroup]="form" [isLoading]="isSubmitting"
-    [errorMessage]="errorMessage" [submitLabel]="level ? 'Modifier' : 'Créer'" (submitForm)="submit()"
-    (cancel)="onCancel()">
+    [errorMessage]="errorMessage" [submitLabel]="level ? 'Modifier' : 'Créer'"
+    description="Organisez les niveaux d'études par cycle." (submitForm)="submit()" (cancel)="onCancel()">
 
     <div class="grid grid-cols-1 gap-6 mb-6">
         <app-ui-select label="Cycle" [control]="form.controls.cycleId" [options]="cycles" [required]="true"

@@ -13,4 +13,5 @@ export enum AppRoutes {
   PERSONNELS = '/personnels',
   TYPE_DE_CONTRAT = '/contract-types',
   AFFECTATIONS = '/assignments',
+  PLANNINGS = '/plannings',
 }

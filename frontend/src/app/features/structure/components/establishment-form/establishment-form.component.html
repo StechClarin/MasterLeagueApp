@@ -1,5 +1,6 @@
 <app-ui-form [title]="establishment ? 'Modifier' : 'Nouvel Établissement'" [formGroup]="form" [isLoading]="isSubmitting"
-    [errorMessage]="errorMessage" [submitLabel]="establishment ? 'Modifier' : 'Créer'" (submitForm)="submit()"
+    [errorMessage]="errorMessage" [submitLabel]="establishment ? 'Modifier' : 'Créer'"
+    description="Administrez les informations générales de l'établissement." (submitForm)="submit()"
     (cancel)="onCancel()">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

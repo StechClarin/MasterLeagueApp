@@ -1,0 +1,128 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5">
+    <!-- Header Section: Premium Look -->
+    <div class="glass-card shadow-lg rounded-3xl overflow-hidden border border-slate-200">
+        <!-- Title Header -->
+        <app-ui-form-header
+            [title]="form.get('id')?.value ? 'Modifier le Planning' : 'Nouveau Planning'"
+            description="Structurez les semaines de cours par classe."
+            (close)="onCancel()">
+        </app-ui-form-header>
+
+        <div class="px-6 py-5 bg-slate-50/50 flex flex-col gap-5">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                <div class="md:col-span-2">
+                    <app-ui-input label="Nom du Planning" formControlName="nom" placeholder="ex: Semaine de Rentrée 2026" [required]="true"></app-ui-input>
+                </div>
+                <div class="md:col-span-1">
+                    <app-ui-input type="date" label="Date de début" formControlName="date_start" [min]="minDate" [required]="true"></app-ui-input>
+                </div>
+                <div class="md:col-span-1">
+                    <app-ui-input type="date" label="Date de fin" formControlName="date_end" [min]="minDate" [required]="true"></app-ui-input>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation des Onglets (Seulement si dates valides) -->
+        <div class="px-6 py-0 bg-white border-t border-slate-100" *ngIf="tabs().length > 0">
+            <div class="tab-container overflow-x-auto">
+                <app-ui-tabs [tabs]="tabs()" [currentTab]="activeTab()" (tabChange)="activeTab.set($event)"></app-ui-tabs>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="min-h-[300px]">
+        <div *ngIf="activeTab(); else emptyDates" class="space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                 <div>
+                    <h3 class="font-extrabold text-xl text-slate-900 capitalize">{{ formattedActiveDate }}</h3>
+                    <p class="text-sm text-slate-500 font-medium">Gestion des cours pour cette journée</p>
+                 </div>
+                 <button type="button" 
+                    class="btn-gradient px-5 py-2.5 text-white rounded-xl transition-all flex items-center gap-2 shadow-md shadow-indigo-200 font-bold active:scale-95 text-sm group" 
+                    (click)="addDetail(activeTab())">
+                    <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Ajouter un cours
+                 </button>
+            </div>
+            
+            <!-- List of Courses -->
+            <div class="flex flex-col gap-3">
+                <div *ngFor="let ctrl of getDetailsControlsForDate(activeTab())" 
+                     class="group bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all duration-300 relative overflow-hidden">
+                    
+                    <!-- Decorative stripe -->
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                    <ng-container [formGroup]="$any(ctrl)">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+                            <!-- Horaires Area -->
+                            <div class="md:col-span-4 grid grid-cols-2 gap-2 p-2.5 bg-slate-50/80 rounded-xl border border-slate-100">
+                                <app-ui-input type="time" label="Début" formControlName="heure_debut" [required]="true"></app-ui-input>
+                                <app-ui-input type="time" label="Fin" formControlName="heure_fin" [required]="true"></app-ui-input>
+                                
+                                <!-- Validation Error Inline -->
+                                <div *ngIf="ctrl.errors?.['timeRange']" class="col-span-2 text-red-500 text-[10px] font-bold px-1 -mt-1 leading-tight text-center">
+                                    Fin > Début invalide
+                                </div>
+                            </div>
+                            
+                            <!-- Selection Area -->
+                            <div class="md:col-span-3 pt-1">
+                                <app-ui-select label="Enseignant" [options]="teachers()" formControlName="enseignant_id" bindLabel="fullName" bindValue="id" [required]="true"></app-ui-select>
+                            </div>
+                            
+                            <div class="md:col-span-2 pt-1">
+                                <app-ui-select label="Matière" [options]="subjects()" formControlName="matiere_id" bindLabel="name" bindValue="id" [required]="true"></app-ui-select>
+                            </div>
+                            
+                            <div class="md:col-span-2 pt-1">
+                                <app-ui-select label="Salle / Classe" [options]="classrooms()" formControlName="classe_id" bindLabel="name" bindValue="id" [required]="true"></app-ui-select>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="md:col-span-1 flex justify-center pt-4">
+                                <button type="button" (click)="removeDetailControl(ctrl)" 
+                                    class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Supprimer">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+                
+                <!-- Empty State per Day -->
+                <div *ngIf="getDetailsControlsForDate(activeTab()).length === 0" 
+                    class="flex flex-col items-center justify-center py-12 bg-white/40 rounded-2xl border-2 border-dashed border-slate-200">
+                    <p class="text-slate-400 font-medium text-sm">Aucun cours pour le moment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Empty State (Before date selection) -->
+    <ng-template #emptyDates>
+        <div class="p-20 flex flex-col items-center justify-center bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
+            <div class="relative mb-8">
+                <div class="absolute -inset-4 bg-indigo-500/10 rounded-full blur-2xl animate-pulse"></div>
+                <div class="relative bg-gradient-to-br from-indigo-500 to-violet-600 w-24 h-24 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-200 rotate-12">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+            </div>
+            <h4 class="text-slate-900 font-black text-3xl text-center">Définissez votre Période</h4>
+            <p class="text-slate-500 text-center max-w-sm mt-4 text-lg leading-relaxed">
+                Veuillez sélectionner une date de début et une date de fin ci-dessus pour générer votre grille de planification.
+            </p>
+        </div>
+    </ng-template>
+    
+    <!-- Real Action Footer -->
+    <app-ui-form-actions
+        [isSubmitting]="isSubmitting"
+        [disabled]="!form.valid || isSubmitting || tabs().length === 0"
+        submitLabel="Enregistrer le Planning Global"
+        [cancelLabel]="'Annuler les modifications'"
+        (submit)="submit()"
+        (cancel)="onCancel()">
+    </app-ui-form-actions>
+</form>

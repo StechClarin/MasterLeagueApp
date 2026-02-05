@@ -3,10 +3,12 @@ import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '@core/services/toast.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const toastService = inject(ToastService);
     const router = inject(Router);
+    const authService = inject(AuthService);
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
@@ -20,8 +22,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 switch (error.status) {
                     case 401:
                         errorMessage = 'Session expirée. Veuillez vous reconnecter.';
-                        // Optionnel : Redirection vers login
-                        // router.navigate(['/login']);
+                        authService.logout();
+                        router.navigate(['/auth/login']);
                         break;
                     case 403:
                         errorMessage = 'Accès refusé. Vous n\'avez pas les droits nécessaires.';

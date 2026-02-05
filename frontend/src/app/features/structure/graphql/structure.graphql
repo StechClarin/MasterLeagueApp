@@ -33,6 +33,13 @@ fragment AcademicYearFields on AcademicYearType {
   end_date
   isActive
   isArchived
+  cycleConfigs {
+    id
+    cycle {
+      id
+    }
+    startDate
+  }
 }
 
 fragment CycleFields on CycleType {

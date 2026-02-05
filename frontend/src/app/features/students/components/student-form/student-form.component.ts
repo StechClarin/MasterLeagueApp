@@ -16,13 +16,17 @@ import { DocumentUploadComponent } from '@features/documents/components/document
 import { environment } from 'src/environments/environment';
 
 
+import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
+import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
+
 @Component({
     selector: 'app-student-form',
     standalone: true,
     imports: [
         CommonModule, ReactiveFormsModule,
         UiTabsComponent, UiInputComponent, UiSelectComponent, UiMediaInputComponent,
-        DocumentUploadComponent
+        DocumentUploadComponent,
+        UiFormHeaderComponent, UiFormActionsComponent
     ],
     templateUrl: './student-form.component.html'
 })

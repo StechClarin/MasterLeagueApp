@@ -1,6 +1,8 @@
 import { Type } from '@angular/core';
 import { LoadChildrenCallback } from '@angular/router';
 
+import { AppRoutes } from './routes.enum';
+
 // On définit ici le lien entre l'URL de la BDD et le fichier Angular
 // On utilise des fonctions d'import (Lazy Loading) pour la performance
 export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
@@ -17,5 +19,6 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/personnels': () => import('../../features/hr/components/personnel-list/personnel-list.component').then(m => m.PersonnelListComponent),
   '/contract-types': () => import('../../features/hr/components/contract-type-list/contract-type-list.component').then(m => m.ContractTypeListComponent),
   '/assignments': () => import('../../features/pedagogy/components/teaching-assignment-list/teaching-assignment-list.component').then(m => m.TeachingAssignmentListComponent),
-  // Ajoute tes futurs modules ici...
+
+  [AppRoutes.PLANNINGS]: () => import('../../features/pedagogy/components/planning-list/planning-list.component').then(m => m.PlanningListComponent),
 };

@@ -112,4 +112,8 @@ export class TeachingAssignmentListComponent extends BaseModalListComponent<Teac
         this.searchControl.setValue('');
         this.filterForm.reset();
     }
+
+    hasData(): boolean {
+        return this.totalCount() > 0;
+    }
 }

@@ -36,12 +36,28 @@ export type Scalars = {
    * schema (one of the key benefits of GraphQL).
    */
   JSONString: { input: any; output: any; }
+  /**
+   * The `Time` scalar type represents a Time value as
+   * specified by
+   * [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+   */
+  Time: { input: any; output: any; }
+};
+
+export type AcademicCycleConfigType = {
+  __typename?: 'AcademicCycleConfigType';
+  academicYear: AcademicYearType;
+  cycle: CycleType;
+  id: Scalars['ID']['output'];
+  /** Date de rentrée spécifique pour ce cycle. Si vide, utilise la date de l'année. */
+  startDate?: Maybe<Scalars['Date']['output']>;
 };
 
 export type AcademicYearType = {
   __typename?: 'AcademicYearType';
   classrooms: Array<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  cycleConfigs?: Maybe<Array<Maybe<AcademicCycleConfigType>>>;
   end_date?: Maybe<Scalars['Date']['output']>;
   enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
@@ -77,6 +93,7 @@ export type ClassRoomType = {
   mainTeacher?: Maybe<UserType>;
   name: Scalars['String']['output'];
   pedagogyAssignments: Array<TeachingAssignmentType>;
+  planningDetails: Array<PlanningDetailType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
@@ -111,6 +128,7 @@ export type ContractTypeTypePaginated = {
 
 export type CycleType = {
   __typename?: 'CycleType';
+  academicConfigs: Array<AcademicCycleConfigType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
@@ -203,9 +221,12 @@ export type EstablishmentType = {
   name: Scalars['String']['output'];
   personnelSet: Array<PersonnelType>;
   phone?: Maybe<Scalars['String']['output']>;
+  planningSet: Array<PlanningType>;
+  planningdetailSet: Array<PlanningDetailType>;
   /** Texte légal en bas de page */
   printFooter?: Maybe<Scalars['String']['output']>;
   printHeader?: Maybe<Scalars['String']['output']>;
+  roomSet: Array<RoomType>;
   slogan?: Maybe<Scalars['String']['output']>;
   studentSet: Array<StudentType>;
   studenthealthSet: Array<StudentHealthType>;
@@ -357,6 +378,55 @@ export type PersonnelTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+export type PlanningDetailType = {
+  __typename?: 'PlanningDetailType';
+  classe: ClassRoomType;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  date: Scalars['Date']['output'];
+  enseignant: TeacherType;
+  establishment: EstablishmentType;
+  heureDebut: Scalars['Time']['output'];
+  heureFin: Scalars['Time']['output'];
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  matiere: SubjectType;
+  planning: PlanningType;
+  salle?: Maybe<RoomType>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type PlanningDetailTypePaginated = {
+  __typename?: 'PlanningDetailTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<PlanningDetailType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type PlanningType = {
+  __typename?: 'PlanningType';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  dateEnd?: Maybe<Scalars['Date']['output']>;
+  dateStart?: Maybe<Scalars['Date']['output']>;
+  details: Array<PlanningDetailType>;
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isTemplate: Scalars['Boolean']['output'];
+  nom: Scalars['String']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type PlanningTypePaginated = {
+  __typename?: 'PlanningTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<PlanningType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   academicyear?: Maybe<AcademicYearType>;
@@ -381,8 +451,14 @@ export type Query = {
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
   personnel?: Maybe<PersonnelType>;
   personnels?: Maybe<PersonnelTypePaginated>;
+  planning?: Maybe<PlanningType>;
+  planningDetail?: Maybe<PlanningDetailType>;
+  planningDetails?: Maybe<PlanningDetailTypePaginated>;
+  plannings?: Maybe<PlanningTypePaginated>;
   role?: Maybe<RoleType>;
   roles?: Maybe<RoleTypePaginated>;
+  room?: Maybe<RoomType>;
+  rooms?: Maybe<RoomTypePaginated>;
   student?: Maybe<StudentType>;
   students?: Maybe<StudentTypePaginated>;
   subject?: Maybe<SubjectType>;
@@ -525,6 +601,30 @@ export type QueryPersonnelsArgs = {
 };
 
 
+export type QueryPlanningArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPlanningDetailArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPlanningDetailsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPlanningsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryRoleArgs = {
   id: Scalars['ID']['input'];
 };
@@ -534,6 +634,18 @@ export type QueryRolesArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryRoomArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryRoomsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -613,6 +725,27 @@ export type RoleTypePaginated = {
   __typename?: 'RoleTypePaginated';
   currentPage?: Maybe<Scalars['Int']['output']>;
   items?: Maybe<Array<Maybe<RoleType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type RoomType = {
+  __typename?: 'RoomType';
+  capacity?: Maybe<Scalars['Int']['output']>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  planningDetails: Array<PlanningDetailType>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type RoomTypePaginated = {
+  __typename?: 'RoomTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<RoomType>>>;
   numPages?: Maybe<Scalars['Int']['output']>;
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
@@ -723,6 +856,7 @@ export type SubjectType = {
   levelSubjects?: Maybe<Array<Maybe<LevelSubjectType>>>;
   name: Scalars['String']['output'];
   pedagogyAssignments: Array<TeachingAssignmentType>;
+  planningDetails: Array<PlanningDetailType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
@@ -751,6 +885,7 @@ export type TeacherType = {
   pedagogyAssignments: Array<TeachingAssignmentType>;
   personnelPtr: PersonnelType;
   phoneNumber?: Maybe<Scalars['String']['output']>;
+  planningDetails: Array<PlanningDetailType>;
   roles: Array<RoleType>;
   specialty?: Maybe<Scalars['String']['output']>;
   teacher?: Maybe<TeacherType>;
@@ -877,6 +1012,27 @@ export type GetAllTeachersQueryVariables = Exact<{
 
 export type GetAllTeachersQuery = { __typename?: 'Query', teachers?: { __typename?: 'TeacherTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'TeacherType', id: string, specialty?: string | null, hoursPerWeek: number, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null } | null> | null } | null };
 
+export type GetAllPlanningsQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllPlanningsQuery = { __typename?: 'Query', plannings?: { __typename?: 'PlanningTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'PlanningType', id: string, nom: string, dateStart?: any | null, dateEnd?: any | null, isTemplate: boolean, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
+
+export type GetPlanningByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetPlanningByIdQuery = { __typename?: 'Query', planning?: { __typename?: 'PlanningType', id: string, nom: string, dateStart?: any | null, dateEnd?: any | null, isTemplate: boolean, details: Array<{ __typename?: 'PlanningDetailType', id: string, date: any, heureDebut: any, heureFin: any, enseignant: { __typename?: 'TeacherType', id: string, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: string, name: string }, matiere: { __typename?: 'SubjectType', id: string, name: string }, salle?: { __typename?: 'RoomType', id: string, name: string } | null }> } | null };
+
+export type GetPlanningDependenciesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPlanningDependenciesQuery = { __typename?: 'Query', teachers?: { __typename?: 'TeacherTypePaginated', items?: Array<{ __typename?: 'TeacherType', id: string, matricule: string, roles: Array<{ __typename?: 'RoleType', name: string }>, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null } | null> | null } | null, subjects?: { __typename?: 'SubjectTypePaginated', items?: Array<{ __typename?: 'SubjectType', id: string, name: string } | null> | null } | null, classrooms?: { __typename?: 'ClassRoomTypePaginated', items?: Array<{ __typename?: 'ClassRoomType', id: string, name: string } | null> | null } | null, rooms?: { __typename?: 'RoomTypePaginated', items?: Array<{ __typename?: 'RoomType', id: string, name: string } | null> | null } | null, academicyears?: { __typename?: 'AcademicYearTypePaginated', items?: Array<{ __typename?: 'AcademicYearType', id: string, name: string, isActive: boolean, startDate?: any | null, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: string, startDate?: any | null, cycle: { __typename?: 'CycleType', id: string } } | null> | null } | null> | null } | null };
+
 export type GetAllTeachingAssignmentsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
@@ -940,7 +1096,7 @@ export type GetAllPermissionsQuery = { __typename?: 'Query', permissions?: Array
 
 export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null };
 
-export type AcademicYearFieldsFragment = { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean };
+export type AcademicYearFieldsFragment = { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: string, startDate?: any | null, cycle: { __typename?: 'CycleType', id: string } } | null> | null };
 
 export type CycleFieldsFragment = { __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean, establishment: { __typename?: 'EstablishmentType', id: string, name: string } };
 
@@ -982,14 +1138,14 @@ export type GetAllAcademicYearsQueryVariables = Exact<{
 }>;
 
 
-export type GetAllAcademicYearsQuery = { __typename?: 'Query', academicyears?: { __typename?: 'AcademicYearTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null> | null } | null };
+export type GetAllAcademicYearsQuery = { __typename?: 'Query', academicyears?: { __typename?: 'AcademicYearTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: string, startDate?: any | null, cycle: { __typename?: 'CycleType', id: string } } | null> | null } | null> | null } | null };
 
 export type GetAcademicYearByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetAcademicYearByIdQuery = { __typename?: 'Query', academicyear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null };
+export type GetAcademicYearByIdQuery = { __typename?: 'Query', academicyear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: string, startDate?: any | null, cycle: { __typename?: 'CycleType', id: string } } | null> | null } | null };
 
 export type GetAllCyclesQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
@@ -1124,6 +1280,13 @@ export const AcademicYearFieldsFragmentDoc = gql`
   end_date
   isActive
   isArchived
+  cycleConfigs {
+    id
+    cycle {
+      id
+    }
+    startDate
+  }
 }
     `;
 export const LevelFieldsFragmentDoc = gql`
@@ -1411,6 +1574,145 @@ export const GetAllTeachersDocument = gql`
   })
   export class GetAllTeachersGQL extends Apollo.Query<GetAllTeachersQuery, GetAllTeachersQueryVariables> {
     document = GetAllTeachersDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllPlanningsDocument = gql`
+    query GetAllPlannings($search: String, $page: Int, $pageSize: Int) {
+  plannings(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      nom
+      dateStart
+      dateEnd
+      isTemplate
+      establishment {
+        id
+        name
+      }
+    }
+    totalCount
+    numPages
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllPlanningsGQL extends Apollo.Query<GetAllPlanningsQuery, GetAllPlanningsQueryVariables> {
+    document = GetAllPlanningsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetPlanningByIdDocument = gql`
+    query GetPlanningById($id: ID!) {
+  planning(id: $id) {
+    id
+    nom
+    dateStart
+    dateEnd
+    isTemplate
+    details {
+      id
+      date
+      heureDebut
+      heureFin
+      enseignant {
+        id
+        matricule
+        user {
+          firstName
+          lastName
+        }
+      }
+      classe {
+        id
+        name
+      }
+      matiere {
+        id
+        name
+      }
+      salle {
+        id
+        name
+      }
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetPlanningByIdGQL extends Apollo.Query<GetPlanningByIdQuery, GetPlanningByIdQueryVariables> {
+    document = GetPlanningByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetPlanningDependenciesDocument = gql`
+    query GetPlanningDependencies {
+  teachers(search: "", page: 1, pageSize: 100) {
+    items {
+      id
+      matricule
+      roles {
+        name
+      }
+      user {
+        firstName
+        lastName
+      }
+    }
+  }
+  subjects(search: "", page: 1, pageSize: 100) {
+    items {
+      id
+      name
+    }
+  }
+  classrooms(search: "", page: 1, pageSize: 100) {
+    items {
+      id
+      name
+    }
+  }
+  rooms(search: "", page: 1, pageSize: 100) {
+    items {
+      id
+      name
+    }
+  }
+  academicyears(search: "", page: 1, pageSize: 100) {
+    items {
+      id
+      name
+      isActive
+      startDate: start_date
+      cycleConfigs {
+        id
+        cycle {
+          id
+        }
+        startDate
+      }
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetPlanningDependenciesGQL extends Apollo.Query<GetPlanningDependenciesQuery, GetPlanningDependenciesQueryVariables> {
+    document = GetPlanningDependenciesDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

@@ -18,6 +18,7 @@ import { PersonnelService } from '../../services/personnel.service';
 import { PersonnelFormComponent } from '../personnel-form/personnel-form.component';
 import { PersonnelDetailComponent } from '../personnel-detail/personnel-detail.component';
 import { UiAvatarComponent } from '@shared/components/ui-avatar/ui-avatar.component';
+import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
 
 @Component({
     selector: 'app-personnel-list',
@@ -35,7 +36,9 @@ import { UiAvatarComponent } from '@shared/components/ui-avatar/ui-avatar.compon
         UiExportModalComponent,
         PersonnelFormComponent,
         PersonnelDetailComponent,
-        UiAvatarComponent
+        PersonnelDetailComponent,
+        UiAvatarComponent,
+        UiPaginationComponent
     ],
     templateUrl: './personnel-list.component.html'
 })

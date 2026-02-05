@@ -11,11 +11,16 @@ import { AbstractControl, ControlValueAccessor, FormControl, NgControl, Reactive
       <label [for]="'input-' + label" class="block text-sm font-medium mb-1" [ngClass]="labelClasses">
         {{ label }} <span *ngIf="required" class="text-red-500">*</span>
       </label>
+      
+      <!-- Description -->
+      <p *ngIf="description" class="text-xs text-gray-500 mb-2" [ngClass]="{'text-slate-400': theme === 'dark'}">{{ description }}</p>
+
       <input
         [id]="'input-' + label"
         [type]="type"
         [formControl]="control"
         [placeholder]="placeholder"
+        [min]="min"
         [readOnly]="readonly"
         [ngClass]="inputClasses"
         (blur)="onBlur()"
@@ -42,7 +47,10 @@ export class UiInputComponent implements ControlValueAccessor, OnInit {
   @Input() required: boolean = false;
   @Input() readonly: boolean = false;
   @Input() theme: 'light' | 'dark' = 'light';
+
   @Input() helper: string = '';
+  @Input() description: string = '';
+  @Input() min: string = '';
 
   get labelClasses(): string {
     return this.theme === 'dark' ? 'text-slate-300' : 'text-gray-700';

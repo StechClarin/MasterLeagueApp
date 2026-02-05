@@ -7,3 +7,11 @@ from .level_subject import LevelSubject
 
 __all__ = ['AcademicYear', 'Cycle', 'Level', 'ClassRoom', 'Subject', 'LevelSubject']
 
+from .room import Room
+from .academic_cycle_config import AcademicCycleConfig
+
+__all__ = [
+    'AcademicYear', 'Cycle', 'Level', 'ClassRoom', 
+    'Subject', 'LevelSubject', 'Room', 
+    'AcademicCycleConfig'
+]

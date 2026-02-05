@@ -1,6 +1,7 @@
-<app-ui-form [title]="academicYear ? 'Modifier l\'Année' : 'Nouvelle Année Scolaire'" [formGroup]="form"
+<app-ui-form [title]="academicYear ? (isReadOnly ? 'Détails de l\'Année' : 'Modifier l\'Année') : 'Nouvelle Année Scolaire'" [formGroup]="form"
     [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="academicYear ? 'Modifier' : 'Créer'"
-    (submitForm)="submit()" (cancel)="onCancel()">
+    description="Définissez les dates clés et les périodes scolaires." [isReadOnly]="isReadOnly" (submitForm)="submit()"
+    (cancel)="onCancel()">
 
     <div class="grid grid-cols-1 gap-6 mb-6">
         <app-ui-input label="Nom de l'année" [control]="form.controls.name" [required]="true"
@@ -13,18 +14,30 @@
             <app-ui-input label="Date de fin" type="date" [control]="form.controls.end_date"
                 [required]="true"></app-ui-input>
         </div>
+    
+        <!-- Cycle Overrides -->
+        <div class="mt-6 pt-6 border-t border-gray-100">
+            <h3 class="text-sm font-bold text-gray-900 mb-2">Dates de Rentrée par Cycle (Optionnel)</h3>
+            <p class="text-xs text-gray-500 mb-4">Si renseigné, cette date remplace la date de début par défaut pour ce cycle.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let cycle of cycles$ | async">
+                    <!-- Note: We use the helper to get the control properly typed -->
+                    <app-ui-input 
+                        [label]="cycle.name" 
+                        type="date" 
+                        [control]="getOverrideControl(cycle.id)"
+                        [description]="'Remplacement pour ce cycle'">
+                    </app-ui-input>
+                </div>
+            </div>
+            <div *ngIf="(cycles$ | async)?.length === 0" class="text-xs text-gray-400 italic">Aucun cycle trouvé.</div>
+        </div>
 
         <!-- Status Toggles -->
-        <div class="flex gap-6 mt-4">
-            <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" formControlName="isActive" class="form-checkbox text-indigo-600 rounded">
-                <span class="text-sm text-gray-700 font-medium">Définir comme Année Active</span>
-            </label>
-
-            <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" formControlName="isArchived" class="form-checkbox text-gray-600 rounded">
-                <span class="text-sm text-gray-700 font-medium">Archivée</span>
-            </label>
+        <div class="grid grid-cols-2 gap-6 mt-6">
+            <app-ui-toggle label="Définir comme Année Active" description="Cette année sera utilisée par défaut système" [control]="form.controls.isActive"></app-ui-toggle>
+            <app-ui-toggle label="Année Archivée" description="Lecture seule, aucune modification possible" [control]="form.controls.isArchived"></app-ui-toggle>
         </div>
 
     </div>

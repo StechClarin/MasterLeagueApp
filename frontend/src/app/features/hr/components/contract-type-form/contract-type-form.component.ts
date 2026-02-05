@@ -6,13 +6,18 @@ import { UiInputComponent } from '@app/shared/components/ui-input/ui-input.compo
 import { ContractTypeService } from '../../services/contract-type.service';
 import { Observable } from 'rxjs';
 
+import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
+import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
+
 @Component({
     selector: 'app-contract-type-form',
     standalone: true,
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        UiInputComponent
+        UiInputComponent,
+        UiFormHeaderComponent,
+        UiFormActionsComponent
     ],
     templateUrl: './contract-type-form.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
