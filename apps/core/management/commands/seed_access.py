@@ -85,13 +85,13 @@ GROUP_STRUCTURE = [
         ]
     },
     {
-        "name": "Gestion des Employés",
+        "name": "Gestion des Personnels",
         "tag": "personnel",
         "permissions": [
-            {"name": "Lire les employés", "codename": "view_personnel"},
-            {"name": "Ajouter un employé", "codename": "add_personnel"},
-            {"name": "Modifier un employé", "codename": "change_personnel"},
-            {"name": "Supprimer un employé", "codename": "delete_personnel"},
+            {"name": "Lire les personnels", "codename": "view_personnel"},
+            {"name": "Ajouter un personnel", "codename": "add_personnel"},
+            {"name": "Modifier un personnel", "codename": "change_personnel"},
+            {"name": "Supprimer un personnel", "codename": "delete_personnel"},
         ]
     },
     {
@@ -152,6 +152,16 @@ GROUP_STRUCTURE = [
             {"name": "Ajouter une inscription", "codename": "add_enrollment"},
             {"name": "Modifier une inscription", "codename": "change_enrollment"},
             {"name": "Supprimer une inscription", "codename": "delete_enrollment"},
+        ]
+    },
+    {
+        "name": "Gestion des Plannings",
+        "tag": "planning",
+        "permissions": [
+            {"name": "Lire les plannings", "codename": "view_planning"},
+            {"name": "Ajouter un planning", "codename": "add_planning"},
+            {"name": "Modifier un planning", "codename": "change_planning"},
+            {"name": "Supprimer un planning", "codename": "delete_planning"},
         ]
     },
 ]

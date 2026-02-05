@@ -1,6 +1,6 @@
 # --- PLANNING ---
-query GetAllPlannings($search: String, $page: Int, $pageSize: Int) {
-  plannings(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllPlannings($search: String, $minDate: Date, $maxDate: Date, $page: Int, $pageSize: Int) {
+  plannings(search: $search, minDate: $minDate, maxDate: $maxDate, page: $page, pageSize: $pageSize) {
     items {
       id
       nom

@@ -10,6 +10,7 @@ export enum AppRoutes {
   USER = '/users',
   ROLE = '/roles',
   APPRENANTS = '/students',
+  EMPLOI_DU_TEMPS = '/timetable',
   PERSONNELS = '/personnels',
   TYPE_DE_CONTRAT = '/contract-types',
   AFFECTATIONS = '/assignments',

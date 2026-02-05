@@ -619,6 +619,8 @@ export type QueryPlanningDetailsArgs = {
 
 
 export type QueryPlanningsArgs = {
+  maxDate?: InputMaybe<Scalars['Date']['input']>;
+  minDate?: InputMaybe<Scalars['Date']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -1014,6 +1016,8 @@ export type GetAllTeachersQuery = { __typename?: 'Query', teachers?: { __typenam
 
 export type GetAllPlanningsQueryVariables = Exact<{
   search?: InputMaybe<Scalars['String']['input']>;
+  minDate?: InputMaybe<Scalars['Date']['input']>;
+  maxDate?: InputMaybe<Scalars['Date']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 }>;
@@ -1580,8 +1584,14 @@ export const GetAllTeachersDocument = gql`
     }
   }
 export const GetAllPlanningsDocument = gql`
-    query GetAllPlannings($search: String, $page: Int, $pageSize: Int) {
-  plannings(search: $search, page: $page, pageSize: $pageSize) {
+    query GetAllPlannings($search: String, $minDate: Date, $maxDate: Date, $page: Int, $pageSize: Int) {
+  plannings(
+    search: $search
+    minDate: $minDate
+    maxDate: $maxDate
+    page: $page
+    pageSize: $pageSize
+  ) {
     items {
       id
       nom

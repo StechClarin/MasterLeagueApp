@@ -83,6 +83,13 @@ MODULE_STRUCTURE = [
                 "link": "/students",
                 "tags": ["student"]
             },
+            {
+                "title": "Emploi du temps",
+                "icon": "calendar-icon",
+                "order": 1,
+                "link": "/timetable",
+                "tags": ["planning"] 
+            },
         ]
     },
     {

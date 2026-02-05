@@ -4,7 +4,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { PlanningService } from '../../services/planning.service';
 import { PlanningFormComponent } from '../planning-form/planning-form.component';
-import { PlanningCalendarComponent } from '../planning-calendar/planning-calendar.component';
+import { PlanningResourceGridComponent } from '../planning-resource-grid/planning-resource-grid.component';
 import { UiListPageComponent } from '@shared/components/ui-list-page/ui-list-page.component';
 import { UiTableComponent } from '@shared/components/ui-table/ui-table.component';
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
@@ -21,7 +21,7 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
     UiTableComponent,
     UiModalComponent,
     PlanningFormComponent,
-    PlanningCalendarComponent,
+    PlanningResourceGridComponent,
     UiConfirmModalComponent,
     UiToolbarComponent
   ],
@@ -46,8 +46,8 @@ export class PlanningListComponent extends BaseModalListComponent<any> {
 
   data = signal<any[]>([]);
 
-  // Calendar View State
-  showCalendar = signal<boolean>(false);
+  // View State
+  viewMode = signal<'list' | 'calendar'>('list');
   selectedPlanning = signal<any>(null);
 
   override initFilterForm() {
@@ -66,6 +66,8 @@ export class PlanningListComponent extends BaseModalListComponent<any> {
     this.searchControl.valueChanges.subscribe(val => {
       this.filterForm.patchValue({ search: val });
     });
+
+    // Auto-select first planning if none selected when switching to calendar (optional enhancement)
   }
 
   ngAfterViewInit() {
@@ -86,21 +88,18 @@ export class PlanningListComponent extends BaseModalListComponent<any> {
     this.onSave();
   }
 
+  // Tab Navigation
+  switchView(mode: 'list' | 'calendar') {
+    this.viewMode.set(mode);
+  }
+
   openCalendar(item: any) {
-    // Fetch full details if needed, or assume item has details
-    // Usually list item might miss details. 
-    // Better to fetch details or ensure list query includes them.
-    // For now, assuming list includes details or we rely on what we have.
-    // Step 1: Check if details present. If not, fetch.
-    // Actually, let's just use what we have, if it's missing details, calendar will be empty.
-    // But usually Planning List query might not fetch details for performance.
-    // Let's assume we pass what we have.
     this.selectedPlanning.set(item);
-    this.showCalendar.set(true);
+    this.switchView('calendar');
   }
 
   closeCalendar() {
-    this.showCalendar.set(false);
+    this.switchView('list');
     this.selectedPlanning.set(null);
   }
 }

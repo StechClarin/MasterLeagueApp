@@ -21,4 +21,5 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/assignments': () => import('../../features/pedagogy/components/teaching-assignment-list/teaching-assignment-list.component').then(m => m.TeachingAssignmentListComponent),
 
   [AppRoutes.PLANNINGS]: () => import('../../features/pedagogy/components/planning-list/planning-list.component').then(m => m.PlanningListComponent),
+  '/timetable': () => import('../../features/students/components/student-timetable/student-timetable.component').then(m => m.StudentTimetableComponent),
 };

@@ -1,46 +1,107 @@
 <app-ui-list-page
   title="Gestions des Plannings"
   [isLoading]="isLoading()"
-  [isEmpty]="isEmpty()"
+  [isEmpty]="isEmpty() && viewMode() === 'list'"
   (create)="openModal(null, 'create')"
   (refresh)="refresh()"
 >
   <ng-container header-actions>
-     <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher un planning...">
-         <button (click)="openModal(null, 'create')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 transition-colors font-medium text-sm shadow-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Nouveau Planning
-         </button>
-     </app-ui-toolbar>
+     <div class="flex items-center gap-4 w-full">
+         <!-- Tabs -->
+         <div class="flex p-1 bg-gray-100 rounded-lg">
+             <button 
+                (click)="switchView('list')"
+                [class.bg-white]="viewMode() === 'list'"
+                [class.shadow-sm]="viewMode() === 'list'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                [class.text-gray-900]="viewMode() === 'list'"
+                [class.text-gray-500]="viewMode() !== 'list'"
+             >
+                Liste
+             </button>
+             <button 
+                (click)="switchView('calendar')"
+                [class.bg-white]="viewMode() === 'calendar'"
+                [class.shadow-sm]="viewMode() === 'calendar'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                [class.text-gray-900]="viewMode() === 'calendar'"
+                [class.text-gray-500]="viewMode() !== 'calendar'"
+             >
+                Calendrier
+             </button>
+         </div>
+
+         <div class="flex-1"></div>
+
+         <app-ui-toolbar *ngIf="viewMode() === 'list'" [searchControl]="searchControl" placeholder="Rechercher un planning...">
+             <button (click)="openModal(null, 'create')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 transition-colors font-medium text-sm shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Nouveau Planning
+             </button>
+         </app-ui-toolbar>
+     </div>
   </ng-container>
 
   <ng-container table>
-    <app-ui-table
-      [columns]="columns"
-      [data]="data()"
-    ></app-ui-table>
+    <!-- List View -->
+    <ng-container *ngIf="viewMode() === 'list'">
+        <app-ui-table
+        [columns]="columns"
+        [data]="data()"
+        ></app-ui-table>
 
-    <!-- Custom Actions Template -->
-    <ng-template #actionsCell let-item>
-       <div class="flex justify-end gap-1">
-          <!-- Calendar Button -->
-          <button (click)="openCalendar(item)" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition-colors group" title="Voir Calendrier">
-             <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          </button>
-          
-          <div class="w-px h-6 bg-gray-200 mx-1 self-center"></div>
+        <!-- Custom Actions Template -->
+        <ng-template #actionsCell let-item>
+        <div class="flex justify-end gap-1">
+            <!-- Calendar Button -->
+            <button (click)="openCalendar(item)" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition-colors group" title="Voir Calendrier">
+                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </button>
+            
+            <div class="w-px h-6 bg-gray-200 mx-1 self-center"></div>
 
-          <!-- Edit Button -->
-          <button (click)="onEdit(item)" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition-colors" title="Modifier">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-          </button>
-          
-          <!-- Delete Button -->
-          <button (click)="onDelete(item)" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Supprimer">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-          </button>
-       </div>
-    </ng-template>
+            <!-- Edit Button -->
+            <button (click)="onEdit(item)" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition-colors" title="Modifier">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            </button>
+            
+            <!-- Delete Button -->
+            <button (click)="onDelete(item)" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Supprimer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        </div>
+        </ng-template>
+    </ng-container>
+
+    <!-- Calendar View -->
+    <div *ngIf="viewMode() === 'calendar'" class="w-full h-full min-h-[600px] bg-white rounded-lg p-6">
+        <ng-container *ngIf="selectedPlanning(); else noSelection">
+            <div class="mb-6 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    {{ selectedPlanning().nom }}
+                    <span class="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full ml-2">
+                        Du {{ selectedPlanning().dateStart | date:'shortDate' }} au {{ selectedPlanning().dateEnd | date:'shortDate' }}
+                    </span>
+                </h2>
+                
+                <!-- Simple Dropdown to switch planning could go here if needed -->
+            </div>
+            
+            <app-planning-resource-grid [planning]="selectedPlanning()"></app-planning-resource-grid>
+        </ng-container>
+
+        <ng-template #noSelection>
+            <div class="flex flex-col items-center justify-center h-96 text-gray-400">
+                <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <p class="text-lg font-medium">Aucun planning sélectionné</p>
+                <p class="text-sm mb-6">Veuillez sélectionner un planning dans la liste ou ci-dessus.</p>
+                <button (click)="switchView('list')" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                    Retourner à la liste
+                </button>
+            </div>
+        </ng-template>
+    </div>
   </ng-container>
   
   <ng-container pagination>
@@ -64,19 +125,4 @@
          (success)="onModalSuccess()"
       ></app-planning-form>
   </ng-container>
-</app-ui-modal>
-
-<!-- Calendar View Modal -->
-<app-ui-modal [isOpen]="showCalendar()" (close)="closeCalendar()" maxWidth="sm:max-w-7xl">
-    <div class="bg-white rounded-2xl overflow-hidden shadow-2xl">
-        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <h3 class="text-lg font-bold text-gray-800">Aperçu du Planning</h3>
-            <button (click)="closeCalendar()" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        <div class="p-6 bg-white min-h-[600px]">
-            <app-planning-calendar *ngIf="selectedPlanning()" [planning]="selectedPlanning()"></app-planning-calendar>
-        </div>
-    </div>
 </app-ui-modal>
