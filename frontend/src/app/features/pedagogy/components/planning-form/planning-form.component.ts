@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormArray, ReactiveFormsModule, Validators, FormGroup, FormBuilder, AbstractControl, ValidationErrors } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { PlanningService } from '../../services/planning.service';
+import { PersonnelService } from '../../../hr/services/personnel.service';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
 import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
@@ -63,6 +64,8 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
 
     service = inject(PlanningService);
     private fb = inject(FormBuilder);
+    // private teacherService... (not used here previously, but just in case)
+    private personnelService = inject(PersonnelService);
     structureState = inject(StructureStateService);
 
     teachers = signal<any[]>([]);
@@ -111,20 +114,19 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
     currentWeekNumber = signal<number | null>(null);
 
     loadDependencies() {
-        this.service.getDependencies().subscribe(res => {
-            const rawTeachers = res.data.teachers?.items || [];
-            // Filter only teachers (Role Check)
-            const filteredTeachers = rawTeachers.filter((t: any) =>
-                t.roles?.some((r: any) => {
-                    const rName = r.name.toUpperCase();
-                    return rName === 'TEACHER' || rName === 'ENSEIGNANT' || rName === 'PROFESSEUR';
-                })
-            );
+        // Parallel requests: Dependencies (Subjects, Rooms...) AND Teachers (Filtered)
 
-            this.teachers.set(filteredTeachers.map((t: any) => ({
+        // 1. Fetch Teachers with Role 'ENSEIGNANT'
+        this.personnelService.listByRole('ENSEIGNANT').subscribe((items: any[]) => {
+            this.teachers.set(items.map((t: any) => ({
                 id: t.id,
-                fullName: t.user ? `${t.user.firstName || ''} ${t.user.lastName || ''}` : t.matricule
+                fullName: t.user ? `${t.user.firstName || ''} ${t.user.lastName || ''}`.trim() : t.matricule
             })));
+        });
+
+        // 2. Fetch other dependencies
+        this.service.getDependencies().subscribe(res => {
+            // we ignore res.data.teachers here
             this.subjects.set(res.data.subjects?.items || []);
             this.classrooms.set(res.data.classrooms?.items || []);
             this.rooms.set(res.data.rooms?.items || []);

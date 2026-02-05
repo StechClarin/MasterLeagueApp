@@ -2,10 +2,10 @@
     [title]="isEditMode() ? 'Modifier l\'affectation' : 'Nouvelle Affectation'"
     description="Affectez les enseignants aux classes et matières."
     [formGroup]="form"
-    [submitLabel]="isEditMode() ? 'Modifier' : 'Créer'"
+    [submitLabel]="isEditMode() ? 'Modifier' : 'Enregistrer'"
     [isLoading]="isSubmitting"
     [errorMessage]="errorMessage"
-    (submitForm)="save()"
+    (submitForm)="submit()"
     (cancel)="cancel.emit()">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">

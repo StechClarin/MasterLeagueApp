@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
 import { GetAllPersonnelsGQL } from '@app/graphql/generated';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -14,5 +16,19 @@ export class PersonnelService extends BaseService {
      */
     getQuery() {
         return this.getAllPersonnelsGQL.document;
+    }
+
+    list(): Observable<any[]> {
+        return this.getAllPersonnelsGQL.fetch().pipe(
+            // @ts-ignore
+            map(res => res.data.personnels?.items || [])
+        );
+    }
+
+    listByRole(roleName: string): Observable<any[]> {
+        return this.getAllPersonnelsGQL.fetch({ roleName, pageSize: 100 }).pipe(
+            // @ts-ignore
+            map(res => res.data.personnels?.items || [])
+        );
     }
 }

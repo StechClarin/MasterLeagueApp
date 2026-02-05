@@ -42,7 +42,7 @@ query GetPlanningById($id: ID!) {
 }
 
 query GetPlanningDependencies {
-   teachers(search: "", page: 1, pageSize: 100) {
+   personnels(search: "", page: 1, pageSize: 100) {
        items { 
            id 
            matricule
@@ -82,7 +82,7 @@ query GetAllTeachingAssignments($search: String, $page: Int, $pageSize: Int) {
       startDate
       endDate
       hoursScheduled
-      teacher {
+      personnel {
         id
         user {
           firstName
@@ -114,7 +114,7 @@ query GetTeachingAssignment($id: ID!) {
     startDate
     endDate
     hoursScheduled
-    teacher {
+    personnel {
       id
       user {
         firstName

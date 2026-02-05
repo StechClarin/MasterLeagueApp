@@ -1,5 +1,5 @@
-query GetAllPersonnels($search: String, $establishment: ID, $contractType: ID, $role: ID, $jobTitle: String, $page: Int, $pageSize: Int) {
-  personnels(search: $search, establishment: $establishment, contractType: $contractType, role: $role, jobTitle: $jobTitle, page: $page, pageSize: $pageSize) {
+query GetAllPersonnels($search: String, $establishment: ID, $contractType: ID, $role: ID, $roleName: String, $jobTitle: String, $page: Int, $pageSize: Int) {
+  personnels(search: $search, establishment: $establishment, contractType: $contractType, role: $role, roleName: $roleName, jobTitle: $jobTitle, page: $page, pageSize: $pageSize) {
     items {
       id
       user {

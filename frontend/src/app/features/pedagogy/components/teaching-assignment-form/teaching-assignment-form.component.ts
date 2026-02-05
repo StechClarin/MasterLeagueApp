@@ -9,7 +9,8 @@ import { TeachingAssignmentType } from '@app/graphql/generated';
 import { AcademicYearService } from '../../../structure/services/academic_year.service';
 import { ClassRoomService } from '../../../structure/services/classroom.service';
 import { SubjectService } from '../../../structure/services/subject.service';
-import { TeacherService } from '../../../hr/services/teacher.service';
+import { PersonnelService } from '../../../hr/services/personnel.service';
+// import { TeacherService } from '../../../hr/services/teacher.service'; // Removed
 
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
@@ -38,13 +39,16 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
     private yearService = inject(AcademicYearService);
     private classService = inject(ClassRoomService);
     private subjectService = inject(SubjectService);
-    private teacherService = inject(TeacherService);
+    // private teacherService = inject(TeacherService);
+    private personnelService = inject(PersonnelService);
 
     // Dropdown Data Observables
     years$ = this.yearService.list();
     classes$ = this.classService.list();
     subjects$ = this.subjectService.list();
-    teachers$ = this.teacherService.list().pipe(
+
+    // FETCH ONLY PERSONNEL WITH 'ENSEIGNANT' ROLE
+    teachers$ = this.personnelService.listByRole('ENSEIGNANT').pipe(
         map((items: any[]) => items.map(t => ({
             ...t,
             fullName: `${t.user?.firstName || ''} ${t.user?.lastName || ''}`.trim() || 'Inconnu'
@@ -55,13 +59,6 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
         super.ngOnInit();
         if (this.data) {
             this.isEditMode.set(true);
-            // patchValue is handled by super.ngOnInit -> patchValue(this.data)
-            // but we need to map flat fields?
-            // TeachingAssignmentType has structure: custom fields?
-            // Check TeachingAssignmentType structure.
-            // Usually form expects flat IDs for select: academic_year_id etc.
-            // But data comes as object: academicYear: { id: ... }
-            // So we MUST manually patch IDs.
             this.patchCustomValues(this.data);
         }
     }
@@ -102,7 +99,16 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
     }
 
     save() {
-        // Must return Observable
-        return this.service.save(this.form.value);
+        const val = this.form.value;
+        // Map teacher_id (from form control) to personnel_id (for backend service mapping)
+        // OR the backend service expects 'personnel_id' -> 'personnel'
+        // Let's send { personnel_id: val.teacher_id, ... }
+
+        const payload = {
+            ...val,
+            personnel_id: val.teacher_id,
+            // We keep teacher_id in case, but semantic is personnel_id is the primary key for the relation
+        };
+        return this.service.save(payload);
     }
 }

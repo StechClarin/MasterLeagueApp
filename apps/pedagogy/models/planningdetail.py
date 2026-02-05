@@ -18,7 +18,7 @@ class PlanningDetail(EstablishmentAwareModel):
         related_name='planning_details'
     )
     enseignant = models.ForeignKey(
-        'hr.Teacher', 
+        'hr.Personnel', 
         on_delete=models.CASCADE, 
         related_name='planning_details'
     )

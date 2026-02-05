@@ -1,4 +1,4 @@
 
 from .personnel_serializer import PersonnelSerializer
-from .teacher_serializer import TeacherSerializer
+# from .teacher_serializer import TeacherSerializer
 from .contract_type_serializer import ContractTypeSerializer

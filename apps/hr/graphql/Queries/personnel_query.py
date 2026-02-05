@@ -14,6 +14,7 @@ class PersonnelQuery(graphene.ObjectType):
         establishment=graphene.ID(),
         contract_type=graphene.ID(),
         role=graphene.ID(),
+        role_name=graphene.String(),
         job_title=graphene.String(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
@@ -25,7 +26,7 @@ class PersonnelQuery(graphene.ObjectType):
         except Personnel.DoesNotExist:
             return None
 
-    def resolve_personnels(root, info, search=None, establishment=None, contract_type=None, role=None, job_title=None, page=1, page_size=10, **kwargs):
+    def resolve_personnels(root, info, search=None, establishment=None, contract_type=None, role=None, role_name=None, job_title=None, page=1, page_size=10, **kwargs):
         queryset = Personnel.objects.all().select_related('user', 'contract_type', 'establishment').prefetch_related('roles').order_by('-created_at')
 
         if establishment:
@@ -36,6 +37,9 @@ class PersonnelQuery(graphene.ObjectType):
 
         if role:
             queryset = queryset.filter(roles__id=role)
+
+        if role_name:
+            queryset = queryset.filter(roles__name=role_name)
 
         if job_title:
             queryset = queryset.filter(job_title__icontains=job_title)

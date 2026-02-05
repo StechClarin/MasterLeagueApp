@@ -7,8 +7,8 @@ class TeachingAssignment(EstablishmentAwareModel):
     Table pivot principale: Qui enseigne Quoi à Qui (et Quand).
     Module Pedagogy.
     """
-    teacher = models.ForeignKey(
-        'hr.Teacher', 
+    personnel = models.ForeignKey(
+        'hr.Personnel', 
         on_delete=models.CASCADE, 
         related_name='pedagogy_assignments'
     )
@@ -53,4 +53,4 @@ class TeachingAssignment(EstablishmentAwareModel):
         ]
 
     def __str__(self):
-        return f"{self.teacher} -> {self.subject} ({self.classroom})"
+        return f"{self.personnel} -> {self.subject} ({self.classroom})"

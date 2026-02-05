@@ -54,8 +54,8 @@ export class TeachingAssignmentListComponent extends BaseModalListComponent<Teac
     ngAfterViewInit() {
         setTimeout(() => {
             this.tableColumns = [
-                { header: 'Année', key: 'academicYear.name' },
-                { header: 'Classe', key: 'classroom.name' },
+                { header: 'Année', key: 'academicYear.name', format: (row) => row.academicYear?.name },
+                { header: 'Classe', key: 'classroom.name', format: (row) => row.classroom?.name },
                 { header: 'Matière', template: this.subjectCell },
                 { header: 'Enseignant', template: this.teacherCell },
                 { header: 'Période', template: this.dateCell },

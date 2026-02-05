@@ -47,5 +47,10 @@ class Personnel(EstablishmentAwareModel):
     # save() logic moved to PersonnelService.before_save()
     
     def __str__(self):
-        name = self.user.get_full_name() if self.user else "En attente de liaison"
+        if self.user:
+            name = f"{self.user.first_name} {self.user.last_name}".strip()
+            if not name:
+                name = self.user.email
+        else:
+            name = "En attente de liaison"
         return f"{name} - {self.job_title} ({self.establishment.name})"
