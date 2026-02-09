@@ -24,7 +24,7 @@ WORKDIR /app
 
 # RUNTIME DEPS
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libpq5 && \
+    apt-get install -y --no-install-recommends libpq5 netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
 # COPY INSTALLED DEPS FROM BUILDER
