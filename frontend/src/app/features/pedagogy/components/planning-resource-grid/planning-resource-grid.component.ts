@@ -102,7 +102,7 @@ import { CommonModule } from '@angular/common';
                     <div class="flex-1 grid" [style.grid-template-columns]="'repeat(' + days().length + ', minmax(240px, 1fr))'">
                         <div *ngFor="let day of days()" 
                              class="p-3 border-r border-slate-50 min-h-[160px] relative transition-colors"
-                             [class.bg-indigo-50/30]="day.isToday">
+                             [ngClass]="{'bg-indigo-50/30': day.isToday}">
                              
                              <div class="flex flex-col gap-3 h-full">
                                  <div *ngFor="let evt of getEvents(teacher.id, day.date)" 
