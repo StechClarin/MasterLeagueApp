@@ -14,32 +14,42 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         catchError((error: HttpErrorResponse) => {
             let errorMessage = 'Une erreur inconnue est survenue';
 
-            if (error.error instanceof ErrorEvent) {
-                // Erreur côté client
-                errorMessage = `Erreur: ${error.error.message}`;
+            if (error.status === 0) {
+                // Erreur réseau / CORS / Serveur éteint
+                errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion internet ou si le serveur est en ligne.';
+            } else if (error.error instanceof ErrorEvent) {
+                // Erreur côté client pure (Angular)
+                errorMessage = `Erreur Client: ${error.error.message}`;
             } else {
                 // Erreur côté serveur
                 switch (error.status) {
+                    case 400:
+                        // Bad Request (souvent règles métier ou validation non gérée par 422)
+                        errorMessage = error.error?.detail || 'Requête invalide.';
+                        break;
                     case 401:
                         errorMessage = 'Session expirée. Veuillez vous reconnecter.';
                         authService.logout();
                         router.navigate(['/auth/login']);
+                        // On retourne l'erreur pour que le composant sache qu'il y a eu un souci, 
+                        // mais le redirect gère la suite.
                         break;
                     case 403:
-                        errorMessage = 'Accès refusé. Vous n\'avez pas les droits nécessaires.';
+                        errorMessage = error.error?.detail || 'Accès refusé. Vous n\'avez pas les droits nécessaires.';
                         break;
                     case 404:
                         errorMessage = 'Ressource introuvable.';
                         break;
                     case 422:
-                        // Souvent des erreurs de validation, gérées par les formulaires
-                        // On peut ne pas afficher de toast générique si le formulaire le gère
+                        // Erreurs de validation (souvent gérées par les formulaires)
+                        // On retourne l'erreur brute pour que le composant la traite
                         return throwError(() => error);
                     case 500:
                         errorMessage = 'Erreur interne du serveur. Veuillez réessayer plus tard.';
                         break;
                     default:
-                        errorMessage = `Erreur ${error.status}: ${error.message}`;
+                        // Cas par défaut : on essaie d'afficher le message du backend s'il existe
+                        errorMessage = error.error?.detail || error.message || `Erreur ${error.status}`;
                 }
             }
 
