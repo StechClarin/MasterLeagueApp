@@ -3,7 +3,9 @@ import { ApolloClientOptions, InMemoryCache } from '@apollo/client/core';
 import { Apollo, APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 
-const uri = 'http://127.0.0.1:8000/graphql'; // Ton Backend Django
+import { environment } from '../../../environments/environment';
+
+const uri = environment.graphqlUrl; // URL dynamique selon l'environnement
 
 export function apolloOptionsFactory(): ApolloClientOptions<any> {
     const httpLink = inject(HttpLink);
