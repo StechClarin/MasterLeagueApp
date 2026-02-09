@@ -4,7 +4,7 @@ echo "🚀 Starting Deployment..."
 
 # 1. Pull latest code
 echo "📦 Pulling latest code..."
-git pull origin main
+git pull
 
 # 2. Build and Deploy
 echo "🐳 Building and Starting Containers..."
