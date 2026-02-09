@@ -11,6 +11,20 @@ query GetAllPlannings($search: String, $minDate: Date, $maxDate: Date, $page: In
         id
         name
       }
+      details {
+        id
+        date
+        heureDebut
+        heureFin
+        enseignant { 
+            id 
+            matricule 
+            user { firstName lastName }
+        } 
+        classe { id name }
+        matiere { id name }
+        salle { id name }
+      }
     }
     totalCount
     numPages

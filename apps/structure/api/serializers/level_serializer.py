@@ -5,3 +5,4 @@ class LevelSerializer(BaseSerializer):
     class Meta:
         model = Level
         fields = "__all__"
+        validators = [] # On désactive la validation unique par défaut pour la gérer dans le Service

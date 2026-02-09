@@ -970,7 +970,7 @@ export type GetAllPlanningsQueryVariables = Exact<{
 }>;
 
 
-export type GetAllPlanningsQuery = { __typename?: 'Query', plannings?: { __typename?: 'PlanningTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'PlanningType', id: string, nom: string, dateStart?: any | null, dateEnd?: any | null, isTemplate: boolean, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
+export type GetAllPlanningsQuery = { __typename?: 'Query', plannings?: { __typename?: 'PlanningTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'PlanningType', id: string, nom: string, dateStart?: any | null, dateEnd?: any | null, isTemplate: boolean, establishment: { __typename?: 'EstablishmentType', id: string, name: string }, details: Array<{ __typename?: 'PlanningDetailType', id: string, date: any, heureDebut: any, heureFin: any, enseignant: { __typename?: 'PersonnelType', id: string, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: string, name: string }, matiere: { __typename?: 'SubjectType', id: string, name: string }, salle?: { __typename?: 'RoomType', id: string, name: string } | null }> } | null> | null } | null };
 
 export type GetPlanningByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1519,6 +1519,32 @@ export const GetAllPlanningsDocument = gql`
       establishment {
         id
         name
+      }
+      details {
+        id
+        date
+        heureDebut
+        heureFin
+        enseignant {
+          id
+          matricule
+          user {
+            firstName
+            lastName
+          }
+        }
+        classe {
+          id
+          name
+        }
+        matiere {
+          id
+          name
+        }
+        salle {
+          id
+          name
+        }
       }
     }
     totalCount

@@ -25,6 +25,30 @@ class BaseSerializer(serializers.ModelSerializer):
     class Meta:
         abstract = True
 
+    def create(self, validated_data):
+        """
+        Surcharge de create pour injecter automatiquement l'établissement
+        si le modèle est 'EstablishmentAware' et que l'ID est dans la request.
+        """
+        model_class = self.Meta.model
+        request = self.context.get('request')
+
+        # Si le modèle a un champ 'establishment' et qu'il n'est pas déjà fourni
+        if hasattr(model_class, 'establishment') and 'establishment' not in validated_data:
+            if request and hasattr(request, 'establishment_id') and request.establishment_id:
+                validated_data['establishment_id'] = request.establishment_id
+            else:
+                # Si l'ID n'est pas dans la request (Header manquant) et pas dans le body
+                # On lève une erreur explicite au lieu de laisser l'IntegrityError
+                raise serializers.ValidationError({
+                    "establishment": [
+                        "Impossible de déterminer l'établissement de contexte. "
+                        "Veuillez sélectionner un établissement actif ou en fournir un."
+                    ]
+                })
+
+        return super().create(validated_data)
+
     def create_nested(self, parent_instance, relation_name, data_list, parent_field_name=None):
         """
         Helper pour créer des objets enfants liés.

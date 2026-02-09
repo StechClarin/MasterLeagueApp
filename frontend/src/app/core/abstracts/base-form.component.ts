@@ -37,6 +37,7 @@ export abstract class BaseFormComponent implements OnInit {
                 next: (res) => {
                     this.isSubmitting = false;
                     this.logger.logAction(this.componentName, 'Save Success', res);
+                    this.form.reset(); // [GLOBAL RESET] On vide le formulaire après succès
                     this.success.emit();
                 },
                 error: (err) => {
@@ -97,6 +98,7 @@ export abstract class BaseFormComponent implements OnInit {
 
     onCancel() {
         this.logger.logAction(this.componentName, 'Click Cancel');
+        this.form.reset(); // [GLOBAL RESET] On vide le formulaire lors de l'annulation
         this.cancel.emit();
     }
 }

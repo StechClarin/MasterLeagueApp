@@ -6,35 +6,56 @@ from django.db.models import Q
 class PlanningDetailService(BaseService):
     model = PlanningDetail
     
-    def before_save(self, instance):
-        # 1. Vérifier que l'établissement est défini (sécurité)
-        if not instance.establishment_id:
-             pass
+    def before_save(self, data, instance=None):
+        # Création d'une instance temporaire pour la validation (Overlap)
+        # data contient des objets (liés par le serializer) ou des valeurs brutes
+        
+        is_creation = instance is None
+        
+        if is_creation:
+            # Attention : data peut contenir des objets (FK resolues)
+            # On instancie proprement
+            valid_fields = {k: v for k, v in data.items() if hasattr(self.model, k) or k == 'id'}
+            temp_instance = self.model(**valid_fields)
+        else:
+            temp_instance = instance
+            # On applique les changements (simulation)
+            for k, v in data.items():
+                if hasattr(temp_instance, k):
+                    setattr(temp_instance, k, v)
 
+        # 1. Vérifier que l'établissement est défini (sécurité)
+        # Si manquante, BaseService l'injectera après, mais pour le check on en a besoin
+        # Si on est en nested create, l'establishment est dans data['establishment']
+        
         # === Validation des Conflits (Chevauchement) ===
         # Formule : (StartA < EndB) and (EndA > StartB)
         
         # A. Conflit Enseignant
-        self._check_overlap(
-            instance,
-            Q(enseignant=instance.enseignant),
-            f"L'enseignant {instance.enseignant} est déjà pris sur ce créneau."
-        )
+        if temp_instance.enseignant:
+             self._check_overlap(
+                temp_instance,
+                Q(enseignant=temp_instance.enseignant),
+                f"L'enseignant {temp_instance.enseignant} est déjà pris sur ce créneau."
+            )
         
         # B. Conflit Salle (si salle définie)
-        if instance.salle:
+        if temp_instance.salle:
             self._check_overlap(
-                instance,
-                Q(salle=instance.salle),
-                f"La salle {instance.salle} est déjà occupée sur ce créneau."
+                temp_instance,
+                Q(salle=temp_instance.salle),
+                f"La salle {temp_instance.salle} est déjà occupée sur ce créneau."
             )
             
         # C. Conflit Classe
-        self._check_overlap(
-            instance,
-            Q(classe=instance.classe),
-            f"La classe {instance.classe} a déjà cours sur ce créneau."
-        )
+        if temp_instance.classe:
+            self._check_overlap(
+                temp_instance,
+                Q(classe=temp_instance.classe),
+                f"La classe {temp_instance.classe} a déjà cours sur ce créneau."
+            )
+            
+        return data
 
     def _check_overlap(self, instance, specific_filter, error_msg):
         query = self.model.objects.filter(

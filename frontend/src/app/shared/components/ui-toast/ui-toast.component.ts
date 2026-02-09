@@ -4,22 +4,22 @@ import { ToastService } from '@core/services/toast.service';
 import { animate, style, transition, trigger } from '@angular/animations';
 
 @Component({
-    selector: 'app-ui-toast',
-    standalone: true,
-    imports: [CommonModule],
-    animations: [
-        trigger('toastAnimation', [
-            transition(':enter', [
-                style({ transform: 'translateX(100%)', opacity: 0 }),
-                animate('300ms ease-out', style({ transform: 'translateX(0)', opacity: 1 }))
-            ]),
-            transition(':leave', [
-                animate('200ms ease-in', style({ transform: 'translateX(100%)', opacity: 0 }))
-            ])
-        ])
-    ],
-    template: `
-    <div class="fixed top-24 right-5 z-50 flex flex-col gap-3">
+  selector: 'app-ui-toast',
+  standalone: true,
+  imports: [CommonModule],
+  animations: [
+    trigger('toastAnimation', [
+      transition(':enter', [
+        style({ transform: 'translateX(100%)', opacity: 0 }),
+        animate('300ms ease-out', style({ transform: 'translateX(0)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ transform: 'translateX(100%)', opacity: 0 }))
+      ])
+    ])
+  ],
+  template: `
+    <div class="fixed top-24 right-5 z-[9999] flex flex-col gap-3">
       <div
         *ngFor="let toast of toastService.toasts()"
         [@toastAnimation]
@@ -57,5 +57,5 @@ import { animate, style, transition, trigger } from '@angular/animations';
   `
 })
 export class UiToastComponent {
-    toastService = inject(ToastService);
+  toastService = inject(ToastService);
 }

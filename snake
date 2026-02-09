@@ -40,10 +40,11 @@ case "$COMMAND" in
         echo "Toute autre commande (ex: 'craft ...', 'migrate', 'createsuperuser') est passée à manage.py."
         ;;
     seed:all)
-        echo "--- Lancement de tous les seeders (Ordre : Access -> Roles) ---"
+        echo "--- Lancement de tous les seeders (Ordre : Access -> Roles -> Data) ---"
         ./venv/bin/python3 manage.py seed_access
         ./venv/bin/python3 manage.py seed_navigation
         ./venv/bin/python3 manage.py seed_roles
+        ./venv/bin/python3 manage.py seed_data
         
         echo "--- Tous les seeders sont terminés ---"
         ;;

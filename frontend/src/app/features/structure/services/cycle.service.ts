@@ -16,8 +16,8 @@ export class CycleService extends BaseService {
         return this.generatedGQL.document;
     }
 
-    getAllCycles(search = '', page = 1, pageSize = 100) {
-        return this.generatedGQL.watch({ search, page, pageSize });
+    getAllCycles(search = '', page = 1, pageSize = 100, establishmentId?: string) {
+        return this.generatedGQL.watch({ search, page, pageSize, establishmentId });
     }
 
     override save(data: any) {

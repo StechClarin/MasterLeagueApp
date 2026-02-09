@@ -105,19 +105,7 @@ class BaseController(APIView):
         # On valide les données préparées
         serializer = self.serializer(instance, data=prepared_data, partial=bool(instance))
         if not serializer.is_valid():
-            # DEBUG INTENSIF : On renvoie tout ce qu'on sait pour comprendre pourquoi l'injection échoue
-            debug_info = {
-                "errors": serializer.errors,
-                "debug_context": {
-                    "request_establishment_id": getattr(request, 'establishment_id', 'NOT FOUND IN REQUEST'),
-                    "service_establishment_id": getattr(self.service, 'establishment_id', 'NOT FOUND IN SERVICE'),
-                    "prepared_data_has_establishment": 'establishment' in prepared_data,
-                    "prepared_data_establishment_value": prepared_data.get('establishment'),
-                    "header_x_establishment_id": request.headers.get('x-establishment-id') or request.headers.get('X-Establishment-ID'),
-                    "all_headers_keys": list(request.headers.keys())
-                }
-            }
-            return Response(debug_info, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         validated_data = serializer.validated_data
 

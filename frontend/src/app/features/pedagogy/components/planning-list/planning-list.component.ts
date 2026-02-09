@@ -1,4 +1,4 @@
-import { Component, inject, signal, ViewChild, TemplateRef } from '@angular/core';
+import { Component, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
@@ -10,6 +10,7 @@ import { UiTableComponent } from '@shared/components/ui-table/ui-table.component
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.component';
+import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 
 @Component({
   selector: 'app-planning-list',
@@ -23,7 +24,8 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
     PlanningFormComponent,
     PlanningResourceGridComponent,
     UiConfirmModalComponent,
-    UiToolbarComponent
+    UiToolbarComponent,
+    UiDropdownComponent
   ],
   templateUrl: './planning-list.component.html'
 })
@@ -49,6 +51,36 @@ export class PlanningListComponent extends BaseModalListComponent<any> {
   // View State
   viewMode = signal<'list' | 'calendar'>('list');
   selectedPlanning = signal<any>(null);
+
+  mergedPlanning = computed(() => {
+    const allPlannings = this.data();
+    if (!allPlannings || allPlannings.length === 0) return null;
+
+    // 1. Déterminer la plage globale (Min Start, Max End)
+    // On initialise avec le premier
+    let minStart = new Date(allPlannings[0].dateStart);
+    let maxEnd = new Date(allPlannings[0].dateEnd);
+
+    // On parcourt tout pour étendre la plage
+    allPlannings.forEach(p => {
+      const s = new Date(p.dateStart);
+      const e = new Date(p.dateEnd);
+      if (s < minStart) minStart = s;
+      if (e > maxEnd) maxEnd = e;
+    });
+
+    // 2. Fusionner tous les détails
+    const allDetails = allPlannings.flatMap(p => p.details || []);
+
+    return {
+      id: 'global-view',
+      nom: 'Vue Globale (Tous les plannings)',
+      dateStart: minStart.toISOString().split('T')[0],
+      dateEnd: maxEnd.toISOString().split('T')[0],
+      details: allDetails,
+      isGlobal: true
+    };
+  });
 
   override initFilterForm() {
     this.filterForm = this.fb.group({

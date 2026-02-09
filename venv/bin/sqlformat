@@ -1,4 +1,4 @@
-#!/home/stechclarin/Documents/projet_init/venv/bin/python3
+#!/home/stechclarin/Personnel/project_init_django_Angular/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -9,3 +9,4 @@ class PlanningSerializer(BaseSerializer):
     class Meta:
         model = Planning
         fields = "__all__"
+        read_only_fields = ['establishment']

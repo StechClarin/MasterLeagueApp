@@ -1,16 +1,35 @@
-
 import os
 import django
-try:
-    print("Attempting to import PersonnelController...")
-    from apps.hr.api.controllers.personnel_controller import PersonnelController
-    print("SUCCESS: PersonnelController imported.")
-except Exception as e:
-    print(f"FAILURE: {e}")
+import sys
 
+# Setup Django environment
+sys.path.append('/home/stechclarin/Personnel/project_init_django_Angular')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+django.setup()
+
+print("--- Attempting to import PlanningController ---")
 try:
-    print("Attempting to import ContractTypeController...")
-    from apps.hr.api.controllers.contract_type_controller import ContractTypeController
-    print("SUCCESS: ContractTypeController imported.")
+    from apps.pedagogy.api.controllers.planning_controller import PlanningController
+    print("SUCCESS: PlanningController imported")
 except Exception as e:
     print(f"FAILURE: {e}")
+    import traceback
+    traceback.print_exc()
+
+print("\n--- Attempting to import PlanningDetailController ---")
+try:
+    from apps.pedagogy.api.controllers.planning_detail_controller import PlanningDetailController
+    print("SUCCESS: PlanningDetailController imported")
+except Exception as e:
+    print(f"FAILURE: {e}")
+    import traceback
+    traceback.print_exc()
+
+print("\n--- Attempting to import TeachingAssignmentController ---")
+try:
+    from apps.pedagogy.api.controllers.teaching_assignment_controller import TeachingAssignmentController
+    print("SUCCESS: TeachingAssignmentController imported")
+except Exception as e:
+    print(f"FAILURE: {e}")
+    import traceback
+    traceback.print_exc()

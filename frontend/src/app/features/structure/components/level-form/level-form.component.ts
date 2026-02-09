@@ -88,14 +88,18 @@ export class LevelFormComponent extends BaseFormComponent implements OnChanges, 
             variables.establishmentId = establishmentId;
         }
 
-        this.cyclesGQL.fetch(variables, { fetchPolicy: 'network-only' }).subscribe(res => {
-            console.log('[LevelForm] Cycles loaded:', res.data?.cycles?.items);
-            this.cycles = (res.data?.cycles?.items || []).map((c: any) => ({
-                value: c.id,
-                label: c.name
-            }));
-            this.cdr.markForCheck();
-        });
+        // [REACTIVITY FIX] Use watch() instead of fetch() to subscribe to Cache Updates
+        this.cyclesGQL.watch(variables, { fetchPolicy: 'cache-and-network' })
+            .valueChanges
+            .pipe(takeUntil(this.destroy$)) // Ensure we unsubscribe
+            .subscribe(res => {
+                console.log('[LevelForm] Cycles loaded (Reactive):', res.data?.cycles?.items?.length);
+                this.cycles = (res.data?.cycles?.items || []).map((c: any) => ({
+                    value: c.id,
+                    label: c.name
+                }));
+                this.cdr.markForCheck();
+            });
     }
 
     ngOnChanges(changes: SimpleChanges) {

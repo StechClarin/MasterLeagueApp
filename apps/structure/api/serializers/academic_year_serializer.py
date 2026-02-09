@@ -8,3 +8,4 @@ class AcademicYearSerializer(BaseSerializer):
     class Meta:
         model = AcademicYear
         fields = "__all__"
+        read_only_fields = ['establishment', 'is_active', 'is_archived']

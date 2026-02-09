@@ -1,7 +1,9 @@
 import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
+import { StructureStateService } from '@core/services/structure-state.service';
 import { AcademicYearService } from '../../services/academic_year.service';
 import { CycleService } from '../../services/cycle.service';
 import { AcademicCycleConfigService } from '../../services/academic_cycle_config.service';
@@ -26,10 +28,16 @@ export class AcademicYearFormComponent extends BaseFormComponent implements OnCh
 
     overrides = this.fb.group({});
 
-    cycles$ = this.cycleService.getAllCycles().valueChanges.pipe(
-        map(res => (res.data.cycles?.items || []).filter((c): c is NonNullable<typeof c> => !!c)),
+    private structureState = inject(StructureStateService);
+
+    cycles$ = toObservable(this.structureState.currentEstablishmentId).pipe(
+        switchMap(estId => {
+            if (!estId) return of({ data: { cycles: { items: [] } } });
+            return this.cycleService.getAllCycles('', 1, 100, estId).valueChanges;
+        }),
+        map((res: any) => (res.data?.cycles?.items || []).filter((c: any) => !!c)),
         // Dynamically create controls for each cycle
-        map(cycles => {
+        map((cycles: any[]) => {
             cycles.forEach(c => {
                 if (!this.overrides.contains(c.id)) {
                     this.overrides.addControl(c.id, this.fb.control(

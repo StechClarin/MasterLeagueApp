@@ -58,17 +58,20 @@ export class FormUtils {
             }
             // 2. Erreurs de champs
             else {
+                const message = Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key];
+
+                // On garde une trace de tous les messages pour le Toast
+                // Format: "Nom: Ce champ est requis"
+                const fieldLabel = key.charAt(0).toUpperCase() + key.slice(1);
+                const readableMessage = `${fieldLabel} : ${message}`;
+
+                globalErrorMessage = globalErrorMessage ? `${globalErrorMessage} | ${readableMessage}` : readableMessage;
+
                 const control = form.get(key);
                 if (control) {
-                    const message = Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key];
                     // On set l'erreur sur le control Angular
                     control.setErrors({ serverError: message });
                     control.markAsTouched(); // Pour afficher l'erreur visuellement
-                } else {
-                    // Si le champ n'existe pas dans le formulaire, on le traite comme une erreur globale
-                    // (ex: erreur sur un champ caché ou supprimé)
-                    const message = Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key];
-                    globalErrorMessage = globalErrorMessage ? `${globalErrorMessage} | ${key}: ${message}` : `${key}: ${message}`;
                 }
             }
         });
