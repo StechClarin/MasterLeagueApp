@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 // ✅ 1. On utilise les ALIAS pour importer les composants structurels
 import { LoginComponent } from '@features/auth/login/login.component';
 import { MainLayoutComponent } from '@layout/main-layout/main-layout.component';
-// import { authGuard } from '@core/guards/auth.guard'; // (Sera décommenté plus tard)
+import { authGuard } from '@core/guards/auth.guard'; // (Sera décommenté plus tard)
 
 export const routes: Routes = [
 
@@ -17,7 +17,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    // canActivate: [authGuard], // Sécurité à venir
+    canActivate: [authGuard], // Sécurité à venir
     children: [
       // Redirection par défaut
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
