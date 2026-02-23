@@ -29,7 +29,10 @@ export class DynamicRouterService {
       // 1. On récupère la structure depuis Django
       console.log('Fetching modules from GraphQL...');
       const result: any = await firstValueFrom(
-        this.apollo.query({ query: GET_SIDEBAR_MODULES })
+        this.apollo.query({
+          query: GET_SIDEBAR_MODULES,
+          fetchPolicy: 'network-only' // On force le réseau pour avoir les dernières routes après login
+        })
       );
       console.log('Modules fetched:', result);
 

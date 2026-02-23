@@ -1,38 +1,34 @@
-<app-ui-form
-    [title]="isEditMode() ? 'Modifier l\'affectation' : 'Nouvelle Affectation'"
-    description="Affectez les enseignants aux classes et matières."
-    [formGroup]="form"
-    [submitLabel]="isEditMode() ? 'Modifier' : 'Enregistrer'"
-    [isLoading]="isSubmitting"
-    [errorMessage]="errorMessage"
-    (submitForm)="submit()"
-    (cancel)="cancel.emit()">
+<app-ui-form [title]="isEditMode() ? 'Modifier l\'affectation' : 'Nouvelle Affectation'"
+    description="Affectez les enseignants aux classes et matières." [formGroup]="form"
+    [submitLabel]="isEditMode() ? 'Modifier' : 'Enregistrer'" [isLoading]="isSubmitting" [errorMessage]="errorMessage"
+    (submitForm)="submit()" (cancel)="cancel.emit()">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
         <!-- Année Scolaire -->
-        <app-ui-select label="Année Scolaire" formControlName="academic_year_id" 
-            [options]="(years$ | async) || []" bindLabel="name" bindValue="id"
-            placeholder="Sélectionner l'année">
+        <app-ui-select label="Année Scolaire" formControlName="academic_year_id" [options]="(years$ | async) || []"
+            bindLabel="name" bindValue="id" placeholder="Sélectionner l'année">
+        </app-ui-select>
+
+        <!-- Niveau (Filtrage) -->
+        <app-ui-select label="Niveau" formControlName="level_id" [options]="(levels$ | async) || []" bindLabel="name"
+            bindValue="id" placeholder="Sélectionner le niveau">
         </app-ui-select>
 
         <!-- Classe -->
-        <app-ui-select label="Classe" formControlName="classroom_id" 
-            [options]="(classes$ | async) || []" bindLabel="name" bindValue="id"
-            placeholder="Sélectionner la classe">
+        <app-ui-select label="Classe" formControlName="classroom_id" [options]="classes$()" bindLabel="name"
+            bindValue="id" placeholder="Sélectionner la classe">
         </app-ui-select>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
         <!-- Matière -->
-        <app-ui-select label="Matière" formControlName="subject_id" 
-            [options]="(subjects$ | async) || []" bindLabel="name" bindValue="id"
-            placeholder="Sélectionner la matière">
+        <app-ui-select label="Matière" formControlName="subject_id" [options]="subjects$()" bindLabel="name"
+            bindValue="id" placeholder="Sélectionner la matière">
         </app-ui-select>
 
         <!-- Enseignant -->
-        <app-ui-select label="Enseignant" formControlName="teacher_id" 
-            [options]="(teachers$ | async) || []" bindLabel="fullName" bindValue="id"
-            placeholder="Sélectionner l'enseignant">
+        <app-ui-select label="Enseignant" formControlName="teacher_id" [options]="(teachers$ | async) || []"
+            bindLabel="fullName" bindValue="id" placeholder="Sélectionner l'enseignant">
         </app-ui-select>
     </div>
 

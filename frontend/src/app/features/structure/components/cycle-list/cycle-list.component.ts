@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { CycleService } from '../../services/cycle.service';
-import { CycleType } from '@app/graphql/generated';
+import { CycleType } from '@app/graphql/types';
 import { CycleFormComponent } from '../cycle-form/cycle-form.component';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';

@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { LevelService } from '../../services/level.service';
 import { CycleService } from '../../services/cycle.service';
-import { LevelType, CycleType } from '@app/graphql/generated';
+import { LevelType, CycleType } from '@app/graphql/types';
 import { LevelFormComponent } from '../level-form/level-form.component';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';

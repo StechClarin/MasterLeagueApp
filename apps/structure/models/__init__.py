@@ -9,9 +9,10 @@ __all__ = ['AcademicYear', 'Cycle', 'Level', 'ClassRoom', 'Subject', 'LevelSubje
 
 from .room import Room
 from .academic_cycle_config import AcademicCycleConfig
+from .academic_period import AcademicPeriod
 
 __all__ = [
     'AcademicYear', 'Cycle', 'Level', 'ClassRoom', 
     'Subject', 'LevelSubject', 'Room', 
-    'AcademicCycleConfig'
+    'AcademicCycleConfig', 'AcademicPeriod'
 ]

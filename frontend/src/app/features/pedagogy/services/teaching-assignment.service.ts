@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
-import { GetAllTeachingAssignmentsGQL } from '@app/graphql/generated';
+import { GetAllTeachingAssignmentsGQL } from '../graphql/pedagogy.generated';
 
 @Injectable({
     providedIn: 'root'

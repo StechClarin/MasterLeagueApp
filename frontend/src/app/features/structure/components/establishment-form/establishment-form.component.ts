@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { EstablishmentService } from '../../services/establishment.service';
-import { EstablishmentType } from '@app/graphql/generated';
+import { EstablishmentType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { StructureStateService } from '@core/services/structure-state.service';

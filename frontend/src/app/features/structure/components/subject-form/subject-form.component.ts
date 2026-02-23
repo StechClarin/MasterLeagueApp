@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { SubjectService } from '../../services/subject.service';
-import { SubjectType, LevelType, LevelSubjectType } from '../../../../graphql/generated';
+import { SubjectType, LevelType, LevelSubjectType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
@@ -16,7 +16,13 @@ import { switchMap } from 'rxjs/operators';
     selector: 'app-subject-form',
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent, UiTabsComponent],
-    templateUrl: './subject-form.component.html'
+    templateUrl: './subject-form.component.html',
+    styles: [`
+        :host {
+            display: block;
+            width: 100%;
+        }
+    `]
 })
 export class SubjectFormComponent extends BaseFormComponent implements OnChanges, OnInit {
     private fb = inject(FormBuilder);
@@ -37,7 +43,8 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     activeTab = signal('general');
 
     // Data
-    allLevels: LevelType[] = [];
+    allLevels = signal<LevelType[]>([]);
+    isLoadingLevels = signal(false);
 
     override form = this.fb.group({
         name: ['', [Validators.required]],
@@ -61,27 +68,38 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
                 this.form.enable();
             }
         });
-
-        // Reactive Loading with SwitchMap to avoid leaks
-        toObservable(this.structureState.currentEstablishmentId)
-            .pipe(
-                takeUntilDestroyed(),
-                switchMap(estId => this.levelService.getAll(estId))
-            )
-            .subscribe((res: any) => {
-                this.allLevels = (res.data?.levels?.items as LevelType[]) || [];
-                // Re-initialize controls when establishment (and thus level list) changes
-                this.initLevelControls();
-                this.cdr.markForCheck();
-            });
     }
 
     override ngOnInit() {
-        // Init handled by constructor subscription
+        super.ngOnInit();
+        this.loadLevels();
+    }
+
+    private loadLevels() {
+        const estId = this.structureState.currentEstablishmentId();
+
+        this.isLoadingLevels.set(true);
+        this.levelService.getAll(estId).subscribe({
+            next: (res: any) => {
+                const levels = (res.data?.levels?.items as LevelType[]) || [];
+                this.allLevels.set(levels);
+                this.initLevelControls();
+                this.isLoadingLevels.set(false);
+                this.cdr.markForCheck();
+            },
+            error: (err) => {
+                this.isLoadingLevels.set(false);
+                this.logger.logAction(this.componentName, 'Error loading levels', err);
+                this.toastService.error('Erreur lors du chargement des niveaux');
+            }
+        });
     }
 
     // Initialize controls for ALL levels (ViewModel pattern)
     initLevelControls() {
+        const levels = this.allLevels();
+        if (levels.length === 0) return;
+
         this.levelSubjectsArray.clear();
 
         // Map existing assignments for easy lookup
@@ -92,7 +110,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             });
         }
 
-        this.allLevels.forEach(level => {
+        levels.forEach(level => {
             const assignment = existingAssignments.get(level.id);
             const isSelected = !!assignment;
 
@@ -135,14 +153,10 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
                 };
                 this.form.patchValue(patch);
                 // Re-init levels if data already loaded
-                if (this.allLevels.length > 0) {
-                    this.initLevelControls();
-                }
+                this.initLevelControls();
             } else {
                 this.form.reset({ isOptional: false });
-                if (this.allLevels.length > 0) {
-                    this.initLevelControls(); // Reset checkboxes
-                }
+                this.initLevelControls(); // Reset checkboxes
             }
         }
 

@@ -67,14 +67,23 @@ import { firstValueFrom } from 'rxjs';
                 <div class="calendar-grid" [style.--days-count]="days().length" [style.--hours-count]="endHour - startHour">
                     
                     <!-- Header: Days -->
-                    <div class="col-start-1 row-start-1 sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm"></div>
+                    <div class="col-start-1 row-start-1 sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm"></div>
                     <div *ngFor="let day of days(); let i = index" 
-                         class="text-center py-4 sticky top-0 z-30 bg-white border-b border-gray-100 border-r border-gray-50 flex flex-col justify-center transition-colors hover:bg-gray-50"
-                         [class.bg-blue-50]="isToday(day.date)"
+                         class="text-center py-5 sticky top-0 z-40 bg-white border-b-2 border-gray-100 border-r border-gray-50 flex flex-col justify-center transition-all hover:bg-gray-50/80 group/day"
+                         [class.today-header]="isToday(day.date)"
                          [style.grid-column]="i + 2"
                          [style.grid-row]="1">
-                        <span class="uppercase text-xs font-bold tracking-widest" [class.text-indigo-600]="isToday(day.date)" [class.text-gray-400]="!isToday(day.date)">{{ day.label.split(' ')[0] }}</span>
-                        <span class="text-xl font-bold mt-1" [class.text-indigo-700]="isToday(day.date)" [class.text-gray-800]="!isToday(day.date)">{{ day.label.split(' ')[1] }}</span>
+                        <span class="uppercase text-[10px] font-black tracking-[0.2em] mb-1" 
+                              [class.text-indigo-600]="isToday(day.date)" 
+                              [class.text-gray-400]="!isToday(day.date)">
+                            {{ day.obj.toLocaleDateString('fr-FR', { weekday: 'long' }) }}
+                        </span>
+                        <span class="text-2xl font-black leading-none" 
+                              [class.text-indigo-700]="isToday(day.date)" 
+                              [class.text-gray-900]="!isToday(day.date)">
+                            {{ day.obj.getDate() }}
+                        </span>
+                        <div *ngIf="isToday(day.date)" class="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-indigo-500 rounded-t-full"></div>
                     </div>
 
                     <!-- Sidebar: Hours -->
@@ -103,42 +112,63 @@ import { firstValueFrom } from 'rxjs';
 
                     <!-- Events -->
                     <div *ngFor="let evt of events()" 
-                         class="event-card p-3 flex flex-col gap-1 cursor-pointer absolute w-[94%] left-[3%] hover:z-50 group"
+                         class="event-card p-2.5 flex flex-col cursor-pointer z-10 hover:z-50 group shadow-sm w-[96%] mx-auto"
                          [ngStyle]="evt.style"
                          [style.background]="getTheme(evt.matiere).bg"
                          [style.border-left-color]="getTheme(evt.matiere).accent"
                          [style.color]="getTheme(evt.matiere).text"
-                         title="{{ evt.matiere?.name }} - {{ evt.salle?.name }}"
                          >
                          
-                        <div class="font-bold text-xs truncate uppercase tracking-tight">{{ evt.matiere?.name }}</div>
+                        <!-- Top Info: Subject & Time -->
+                        <div class="flex justify-between items-start mb-1.5">
+                            <span class="font-black text-[11px] uppercase tracking-wider truncate flex-1 pr-2">
+                                {{ evt.matiere?.name }}
+                            </span>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/40 whitespace-nowrap">
+                                {{ evt.heureDebut }} - {{ evt.heureFin }}
+                            </span>
+                        </div>
                         
-                        <div class="flex flex-col gap-0.5 mt-auto">
-                            <div class="text-[10px] bg-white/60 rounded px-1.5 py-0.5 self-start backdrop-blur-sm font-medium flex items-center gap-1 shadow-sm">
-                                <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                                {{ evt.classe?.name }}
+                        <!-- Middle/Bottom Info -->
+                        <div class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
+                            <!-- Teacher -->
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <div class="w-5 h-5 rounded-full bg-white/50 flex items-center justify-center shrink-0 border border-white/20 shadow-sm">
+                                    <svg class="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-semibold truncate opacity-90 leading-tight">
+                                    {{ evt.enseignant?.user?.firstName }} {{ evt.enseignant?.user?.lastName }}
+                                </span>
                             </div>
 
-                            <div class="flex justify-between items-end mt-1">
-                                <div class="text-[10px] opacity-80 flex items-center gap-1 font-medium">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                    {{ evt.enseignant?.user?.lastName || '?' }}
+                            <!-- Bottom Row: Room & Class -->
+                            <div class="flex items-center justify-between gap-1 mt-auto">
+                                <!-- Room -->
+                                <div class="flex items-center gap-1 min-w-0">
+                                    <div class="w-4 h-4 rounded bg-white/40 flex items-center justify-center shrink-0">
+                                        <svg class="w-2.5 h-2.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    </div>
+                                    <span class="text-[9px] font-bold truncate opacity-70">{{ evt.salle?.name || 'Salle NC' }}</span>
                                 </div>
-                                <div class="text-[10px] font-bold opacity-70">
-                                    {{ evt.heureDebut }}
+
+                                <!-- Class Badge (only if visible height allows) -->
+                                <div class="text-[9px] bg-black/5 rounded-md px-1.5 py-0.5 font-bold shrink-0 shadow-inner">
+                                    {{ evt.classe?.name }}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Hover Details (Tooltip-ish) -->
-                        <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded pointer-events-none"></div>
+                        <!-- Hover Overlay -->
+                        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-md pointer-events-none"></div>
                     </div>
 
                     <!-- No Data State (if empty grid) -->
-                    <div *ngIf="!loading() && events().length === 0" class="col-span-full row-start-2 row-end-10 flex items-center justify-center pointer-events-none opacity-50">
-                        <div class="text-center">
-                            <p class="text-gray-400 text-lg">Aucun cours cette semaine</p>
+                    <div *ngIf="!loading() && events().length === 0" class="col-span-full row-start-2 row-end-10 flex flex-col items-center justify-center pointer-events-none p-10">
+                        <div class="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                            <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         </div>
+                        <h3 class="text-xl font-bold text-gray-400 mb-1">Aucun cours prévu</h3>
+                        <p class="text-sm text-gray-300">Profitez de votre temps libre !</p>
                     </div>
                 </div>
             </div>
@@ -151,22 +181,27 @@ import { firstValueFrom } from 'rxjs';
     }
     .calendar-grid {
       display: grid;
-      grid-template-columns: 60px repeat(var(--days-count), 1fr);
-      grid-template-rows: 60px repeat(calc(var(--hours-count) * 4), 20px); 
+      grid-template-columns: 80px repeat(var(--days-count), 1fr);
+      grid-template-rows: 70px repeat(calc(var(--hours-count) * 4), 20px); 
     }
     .hour-marker { border-bottom: 1px solid #f3f4f6; }
     .quarter-marker { border-bottom: 1px dotted #f9fafb; }
     
     .event-card {
-      border-left-width: 4px;
-      border-radius: 6px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      border-left-width: 5px;
+      border-radius: 10px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
     }
     .event-card:hover {
       z-index: 50;
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .today-header {
+      background: linear-gradient(to bottom, #f8fafc, white);
     }
     `]
 })
@@ -226,13 +261,15 @@ export class StudentTimetableComponent implements OnInit {
         return this.mapEventsToGrid(evts);
     });
 
+    constructor() {
+        // React to Week or Class Change
+        effect(() => {
+            this.loadEventsForWeek(this.currentDate(), this.selectedClassId());
+        }, { allowSignalWrites: true });
+    }
+
     ngOnInit() {
         this.loadClassrooms();
-
-        // React to Week Change
-        effect(() => {
-            this.loadEventsForWeek(this.currentDate());
-        }, { allowSignalWrites: true });
     }
 
     async loadClassrooms() {
@@ -244,32 +281,25 @@ export class StudentTimetableComponent implements OnInit {
         }
     }
 
-    async loadEventsForWeek(date: Date) {
+    async loadEventsForWeek(date: Date, classId?: string) {
         this.loading.set(true);
         const start = this.getStartOfWeek(date);
         const end = new Date(start);
         end.setDate(start.getDate() + 6); // Weekly range
 
         try {
-            // Using minDate/maxDate filter on GetAllPlannings
-            const res = await firstValueFrom(this.planningService.getAllGQL.fetch({
+            const res = await firstValueFrom(this.planningService.getDetailsGQL.fetch({
                 minDate: start.toISOString().split('T')[0],
                 maxDate: end.toISOString().split('T')[0],
-                pageSize: 100 // Fetch enough plannings
+                classeId: classId || null,
+                pageSize: 200
             }));
 
-            const plannings = res.data.plannings?.items || [];
-
-            // Flatten all details from all overlapping plannings
-            let allDetails: any[] = [];
-            plannings.forEach((p: any) => {
-                if (p.details) allDetails = [...allDetails, ...p.details];
-            });
-
-            this.rawEvents.set(allDetails);
+            const details = res.data.planningDetails?.items || [];
+            this.rawEvents.set(details);
 
         } catch (e) {
-            console.error(e);
+            console.error('Failed to load planning details', e);
         } finally {
             this.loading.set(false);
         }

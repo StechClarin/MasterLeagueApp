@@ -1,0 +1,13 @@
+{
+  "source_directories": [
+    "."
+  ],
+  "search_path": [
+    ".venv/lib/python3.12/site-packages",
+    "apps"
+  ],
+  "exclude": [
+    ".*/migrations/.*",
+    "frontend/.*"
+  ]
+}

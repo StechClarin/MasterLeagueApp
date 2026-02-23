@@ -88,18 +88,20 @@
 
 <!-- Modals -->
 <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
-        <ng-container [ngSwitch]="modalMode()">
+    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-[800px]">
+        <ng-container *ngIf="isModalOpen()">
+            <ng-container [ngSwitch]="modalMode()">
 
-            <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer la matière ?"
-                message="Êtes-vous sûr de vouloir supprimer cette matière ? Cette action est irréversible."
-                (confirm)="confirmDelete()" (cancel)="closeModal()">
-            </app-ui-confirm-modal>
+                <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer la matière ?"
+                    message="Êtes-vous sûr de vouloir supprimer cette matière ? Cette action est irréversible."
+                    (confirm)="confirmDelete()" (cancel)="closeModal()">
+                </app-ui-confirm-modal>
 
-            <app-subject-form *ngSwitchDefault [subject]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
-                (success)="onSave()" (cancel)="closeModal()">
-            </app-subject-form>
+                <app-subject-form *ngSwitchDefault [subject]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
+                    (success)="onSave()" (cancel)="closeModal()">
+                </app-subject-form>
 
+            </ng-container>
         </ng-container>
     </app-ui-modal>
 </ng-container>

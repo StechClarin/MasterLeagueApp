@@ -10,7 +10,9 @@
 # Auto-détection de l'exécutable Python
 # > Si un venv est présent, on l'utilise.
 # > Sinon (ex: Docker), on utilise le python système.
-if [ -f "./venv/bin/python3" ]; then
+if [ -f "./.venv/bin/python3" ]; then
+    PYTHON_EXEC="./.venv/bin/python3"
+elif [ -f "./venv/bin/python3" ]; then
     PYTHON_EXEC="./venv/bin/python3"
 elif [ -f "./venv/Scripts/python.exe" ]; then
     # Support Windows (au cas où)

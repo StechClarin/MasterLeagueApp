@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { BaseModalFormComponent } from '../../../../core/abstracts/base-modal-form.component';
 import { TeachingAssignmentService } from '../../services/teaching-assignment.service';
-import { TeachingAssignmentType } from '@app/graphql/generated';
+import { TeachingAssignmentType } from '@app/graphql/types';
 
 // Dependent Services for Dropdowns
 import { AcademicYearService } from '../../../structure/services/academic_year.service';
 import { ClassRoomService } from '../../../structure/services/classroom.service';
 import { SubjectService } from '../../../structure/services/subject.service';
+import { LevelService } from '../../../structure/services/level.service';
 import { PersonnelService } from '../../../hr/services/personnel.service';
 // import { TeacherService } from '../../../hr/services/teacher.service'; // Removed
 
@@ -39,13 +40,16 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
     private yearService = inject(AcademicYearService);
     private classService = inject(ClassRoomService);
     private subjectService = inject(SubjectService);
-    // private teacherService = inject(TeacherService);
+    private levelService = inject(LevelService);
     private personnelService = inject(PersonnelService);
 
     // Dropdown Data Observables
     years$ = this.yearService.list();
-    classes$ = this.classService.list();
-    subjects$ = this.subjectService.list();
+    levels$ = this.levelService.getAll().pipe(map(res => res.data.levels?.items || []));
+
+    // Reactive Dropdowns based on Level
+    classes$ = signal<any[]>([]);
+    subjects$ = signal<any[]>([]);
 
     // FETCH ONLY PERSONNEL WITH 'ENSEIGNANT' ROLE
     teachers$ = this.personnelService.listByRole('ENSEIGNANT').pipe(
@@ -57,10 +61,43 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
 
     override ngOnInit() {
         super.ngOnInit();
+        this.setupFilters();
+
         if (this.data) {
             this.isEditMode.set(true);
             this.patchCustomValues(this.data);
         }
+    }
+
+    setupFilters() {
+        // Observer level_id to filter classes and subjects
+        this.form.get('level_id')?.valueChanges.subscribe(levelId => {
+            if (levelId) {
+                // Filter Classes
+                this.classService.list().pipe(
+                    map(all => (all || []).filter(c => c && c.level?.id === levelId))
+                ).subscribe(filtered => this.classes$.set(filtered));
+
+                // Filter Subjects via Backend (calling updated query)
+                // We use apollo-angular directly or a manual call to generated query
+                // Actually, subjectService has a list() method, but we need it with params.
+                // Let's call the generated GQL directly for flexibility here or update service.
+                this.subjectService.list().pipe(
+                    map(all => (all || []).filter(s => s && s.levelSubjects?.some((ls: any) => ls && ls.level?.id === levelId)))
+                ).subscribe(filtered => this.subjects$.set(filtered));
+            } else {
+                this.classes$.set([]);
+                this.subjects$.set([]);
+            }
+
+            // Reset children if not in initialization phase or if level actually changed
+            // This avoids clearing the values when patching
+            const currentClass = this.form.get('classroom_id')?.value;
+            const currentSubj = this.form.get('subject_id')?.value;
+
+            // If the current selected class doesn't belong to the new level, clear it
+            // (Wait, simpler: just clear if user interacts)
+        });
     }
 
     // BaseModalFormComponent calls patchValue(data).
@@ -73,22 +110,27 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
     }
 
     patchCustomValues(data: any) {
+        // En mode édition, on déduit le niveau de la classe existante
+        const levelId = data.classroom?.level?.id || data.subject?.levelSubjects?.[0]?.level?.id;
+
         this.form.patchValue({
             id: data.id,
             academic_year_id: data.academicYear?.id,
+            level_id: levelId,
             classroom_id: data.classroom?.id,
             subject_id: data.subject?.id,
             teacher_id: data.teacher?.id,
             start_date: data.startDate,
             end_date: data.endDate,
             hours_scheduled: data.hoursScheduled
-        });
+        }, { emitEvent: true }); // Emit to trigger setupFilters subscribers
     }
 
     initForm() {
         return this.fb.group({
             id: [null],
             academic_year_id: [null, [Validators.required]],
+            level_id: [null, [Validators.required]],
             classroom_id: [null, [Validators.required]],
             subject_id: [null, [Validators.required]],
             teacher_id: [null, [Validators.required]],

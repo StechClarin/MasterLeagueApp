@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { EstablishmentService } from '../../services/establishment.service';
-import { EstablishmentType } from '@app/graphql/generated';
+import { EstablishmentType } from '@app/graphql/types';
 import { EstablishmentFormComponent } from '../establishment-form/establishment-form.component';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';

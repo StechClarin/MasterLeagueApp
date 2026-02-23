@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { SubjectService } from '../../services/subject.service';
-import { SubjectType } from '@app/graphql/generated';
+import { SubjectType } from '@app/graphql/types';
 import { SubjectFormComponent } from '../subject-form/subject-form.component';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';

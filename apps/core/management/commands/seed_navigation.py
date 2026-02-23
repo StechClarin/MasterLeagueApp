@@ -19,19 +19,20 @@ MODULE_STRUCTURE = [
                 "tags": ["establishment"]
             },
             {
-                "title": "Années Scolaires",
-                "icon": "calendar-icon",
-                "order": 1,
-                "link": "/years",
-                "tags": ["academic_year"]
-            },
-            {
                 "title": "Cycles & Niveaux",
                 "icon": "tree-icon",
-                "order": 2,
+                "order": 1,
                 "link": "/tree",
                 "tags": ["level"]
             },
+            {
+                "title": "Années Scolaires",
+                "icon": "calendar-icon",
+                "order": 2,
+                "link": "/years",
+                "tags": ["academic_year"]
+            },
+
             {
                 "title": "Classes",
                 "icon": "class-icon",
@@ -45,6 +46,13 @@ MODULE_STRUCTURE = [
                 "order": 4,
                 "link": "/subjects",
                 "tags": ["subject"]
+            },
+            {
+                "title": "Périodes Académiques",
+                "icon": "calendar-icon",
+                "order": 5,
+                "link": "/academic-periods",
+                "tags": ["academicperiod"]
             },
         ]
     },
@@ -92,6 +100,7 @@ MODULE_STRUCTURE = [
             },
         ]
     },
+
     {
         "name": "Ressources Humaines",
         "order": 2,
@@ -135,6 +144,42 @@ MODULE_STRUCTURE = [
                 "order": 1,
                 "link": "/plannings",
                 "tags": ["planning"]
+            },
+        ]
+    },
+    {
+        "name": "Évaluations",
+        "order": 3,
+        "display_mod": "card-view",
+        "icon": "evaluation-icon",
+        "pages": [
+            {
+                "title": "Dossiers d'Épreuve",
+                "icon": "exam-icon",
+                "order": 0,
+                "link": "/evaluations",
+                "tags": ["evaluation"]
+            },
+            {
+                "title": "Saisie des Notes",
+                "icon": "edit-icon",
+                "order": 1,
+                "link": "/grade-entry",
+                "tags": ["grade"]
+            },
+            {
+                "title": "Configuration",
+                "icon": "settings-icon",
+                "order": 2,
+                "link": "/evaluation-types",
+                "tags": ["evaluationtype"]
+            },
+            {
+                "title": "Performance & Bulletins",
+                "icon": "chart-icon",
+                "order": 3,
+                "link": "/reports",
+                "tags": ["grade"]
             },
         ]
     },

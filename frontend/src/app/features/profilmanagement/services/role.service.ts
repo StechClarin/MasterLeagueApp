@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GetAllRolesGQL, GetRoleByIdGQL, GetAllPermissionsGQL } from '@app/graphql/generated';
+import { GetAllRolesGQL, GetRoleByIdGQL, GetAllPermissionsGQL } from '../graphql/profil.generated';
 
 @Injectable({
     providedIn: 'root'

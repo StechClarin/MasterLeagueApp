@@ -13,7 +13,7 @@ import { RoleService } from '../../../profilmanagement/services/role.service';
 import { map, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { EstablishmentService } from '../../../structure/services/establishment.service';
 import { Observable, of } from 'rxjs';
-import { GetAllContractTypesGQL, GetAllPersonnelsGQL } from '@app/graphql/generated';
+import { GetAllContractTypesGQL, GetAllPersonnelsGQL } from '../../graphql/hr.generated';
 
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';

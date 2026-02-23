@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
-import { GetAllPersonnelsGQL } from '@app/graphql/generated';
+import { GetAllPersonnelsGQL } from '../graphql/hr.generated';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 

@@ -31,6 +31,27 @@ query GetAllPlannings($search: String, $minDate: Date, $maxDate: Date, $page: In
   }
 }
 
+query GetPlanningDetails($search: String, $classeId: ID, $minDate: Date, $maxDate: Date, $page: Int, $pageSize: Int) {
+  planningDetails(search: $search, classeId: $classeId, minDate: $minDate, maxDate: $maxDate, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      date
+      heureDebut
+      heureFin
+      enseignant { 
+          id 
+          matricule 
+          user { firstName lastName }
+      } 
+      classe { id name }
+      matiere { id name }
+      salle { id name }
+    }
+    totalCount
+    numPages
+  }
+}
+
 query GetPlanningById($id: ID!) {
   planning(id: $id) {
     id

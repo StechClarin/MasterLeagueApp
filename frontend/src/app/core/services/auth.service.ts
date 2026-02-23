@@ -1,7 +1,8 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
+import { Apollo } from 'apollo-angular';
 import { environment } from '../../../environments/environment';
 
 // Interface pour la réponse Django
@@ -20,13 +21,13 @@ export class AuthService {
   currentUserSignal = signal(this.hasToken());
 
   // --- LOGIN ---
-  login(credentials: {username: string, password: string}) {
+  login(credentials: { username: string, password: string }) {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login/`, credentials).pipe(
       tap(response => {
         // 1. On stocke les tokens
         localStorage.setItem('access_token', response.access);
         localStorage.setItem('refresh_token', response.refresh);
-        
+
         // 2. On met à jour le signal
         this.currentUserSignal.set(true);
       })
@@ -34,10 +35,18 @@ export class AuthService {
   }
 
   // --- LOGOUT ---
+  private injector = inject(Injector);
+
   logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     this.currentUserSignal.set(false);
+
+    // On récupère Apollo via l'injecteur pour éviter une dépendance circulaire
+    // car le GraphQLProvider (qui configure Apollo) dépend de AuthService
+    const apollo = this.injector.get(Apollo);
+    apollo.client.resetStore();
+
     this.router.navigate(['/login']);
   }
 

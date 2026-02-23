@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
-import { GetAllSubjectsGQL } from '@app/graphql/generated';
+import { GetAllSubjectsGQL } from '../graphql/structure.generated';
 import { map } from 'rxjs/operators';
 
 @Injectable({

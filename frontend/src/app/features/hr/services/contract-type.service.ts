@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@app/core/abstracts/base.service';
-import { GetAllContractTypesGQL, GetContractTypeGQL } from '@app/graphql/generated';
+import { GetAllContractTypesGQL, GetContractTypeGQL } from '../graphql/hr.generated';
 
 @Injectable({
     providedIn: 'root'

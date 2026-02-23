@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, exceptions
 from django.db import transaction
 from django.http import Http404
+from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -125,7 +126,9 @@ class BaseController(APIView):
 
         except Exception as e:
             # On renvoie une erreur 400 propre
-            # (Notre CustomExceptionHandler peut aussi l'attraper si on le laisse lever)
+            if isinstance(e, ValidationError):
+                return Response(e.message_dict if hasattr(e, 'message_dict') else e.messages, status=status.HTTP_400_BAD_REQUEST)
+            
             if hasattr(e, 'detail'):
                 raise e # Laisse passer les erreurs DRF
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

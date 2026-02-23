@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
-import { GetAllPlanningsGQL, GetPlanningByIdGQL, GetPlanningDependenciesGQL } from '../../../graphql/generated';
+import { GetAllPlanningsGQL, GetPlanningByIdGQL, GetPlanningDependenciesGQL, GetPlanningDetailsGQL } from '../graphql/pedagogy.generated';
 
 @Injectable({ providedIn: 'root' })
 export class PlanningService extends BaseService {
@@ -9,6 +9,7 @@ export class PlanningService extends BaseService {
     getAllGQL = inject(GetAllPlanningsGQL);
     getByIdGQL = inject(GetPlanningByIdGQL);
     getDependenciesGQL = inject(GetPlanningDependenciesGQL);
+    getDetailsGQL = inject(GetPlanningDetailsGQL);
 
     getQuery() {
         return this.getAllGQL.document;

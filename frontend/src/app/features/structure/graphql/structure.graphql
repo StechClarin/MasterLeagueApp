@@ -200,8 +200,8 @@ query GetClassRoomById($id: ID!) {
   }
 }
 
-query GetAllSubjects($search: String, $page: Int, $pageSize: Int) {
-  subjects(search: $search, page: $page, pageSize: $pageSize) {
+query GetAllSubjects($search: String, $levelId: ID, $page: Int, $pageSize: Int) {
+  subjects(search: $search, levelId: $levelId, page: $page, pageSize: $pageSize) {
     items {
       ...SubjectFields
     }

@@ -13,9 +13,16 @@ const config: CodegenConfig = {
     ],
     documents: "src/**/*.graphql",
     generates: {
-        "src/app/graphql/generated.ts": {
+        "src/app/graphql/types.ts": {
+            plugins: ["typescript"]
+        },
+        "src/": {
+            preset: "near-operation-file",
+            presetConfig: {
+                extension: ".generated.ts",
+                baseTypesPath: "app/graphql/types.ts"
+            },
             plugins: [
-                "typescript",
                 "typescript-operations",
                 "typescript-apollo-angular"
             ]

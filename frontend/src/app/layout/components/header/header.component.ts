@@ -9,7 +9,8 @@ import { map, startWith, takeUntil } from 'rxjs/operators';
 // ✅ On utilise l'alias @core pour l'import propre
 import { AuthService } from '@core/services/auth.service';
 import { StructureStateService } from '@core/services/structure-state.service';
-import { GetAllEstablishmentsGQL, EstablishmentType } from '@app/graphql/generated';
+import { EstablishmentType } from '@app/graphql/types';
+import { GetAllEstablishmentsGQL } from '../../../features/structure/graphql/structure.generated';
 import { GET_SIDEBAR_MODULES } from '../sidebar/sidebar.queries';
 
 interface Page {

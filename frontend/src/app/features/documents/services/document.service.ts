@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { GetDocumentsByEntityGQL } from '../../../graphql/generated';
+import { GetDocumentsByEntityGQL } from '../graphql/documents.generated';
 
 @Injectable({
     providedIn: 'root'

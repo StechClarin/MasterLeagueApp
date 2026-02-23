@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { ClassRoomService } from '../../services/classroom.service';
-import { ClassRoomType } from '@app/graphql/generated';
+import { ClassRoomType } from '@app/graphql/types';
 import { ClassRoomFormComponent } from '../classroom-form/classroom-form.component';
 import { LevelService } from '../../services/level.service';
 import { map } from 'rxjs/operators';

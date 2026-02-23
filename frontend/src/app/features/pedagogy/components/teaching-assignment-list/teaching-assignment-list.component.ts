@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { TeachingAssignmentService } from '../../services/teaching-assignment.service';
-import { TeachingAssignmentType } from '@app/graphql/generated';
+import { TeachingAssignmentType } from '@app/graphql/types';
 import { TeachingAssignmentFormComponent } from '../teaching-assignment-form/teaching-assignment-form.component';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'apps.hr.apps.HrConfig',
     'apps.pedagogy.apps.PedagogyConfig',
     'apps.documents.apps.DocumentsConfig',
+    'apps.evaluations.apps.EvaluationsConfig',
 
     'rest_framework',
     'rest_framework_simplejwt',

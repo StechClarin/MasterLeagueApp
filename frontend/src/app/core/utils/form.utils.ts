@@ -40,7 +40,7 @@ export class FormUtils {
     }
     /**
      * Mappe les erreurs backend directement sur les contrôles du formulaire.
-     * Retourne un message global si l'erreur ne correspond à aucun champ.
+     * Supporte les erreurs imbriquées (ex: { "enrollment_input": { "classroom_id": ["..."] } })
      */
     static setErrors(form: FormGroup, err: any): string | null {
         if (!err || !err.error) {
@@ -50,32 +50,44 @@ export class FormUtils {
         const errorData = err.error;
         let globalErrorMessage: string | null = null;
 
-        Object.keys(errorData).forEach(key => {
-            // 1. Erreurs globales
-            if (key === 'non_field_errors' || key === 'detail') {
-                const message = Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key];
-                globalErrorMessage = message;
-            }
-            // 2. Erreurs de champs
-            else {
-                const message = Array.isArray(errorData[key]) ? errorData[key].join(' ') : errorData[key];
+        const processErrors = (container: FormGroup, errors: any, prefix = '') => {
+            Object.keys(errors).forEach(key => {
+                const error = errors[key];
 
-                // On garde une trace de tous les messages pour le Toast
-                // Format: "Nom: Ce champ est requis"
-                const fieldLabel = key.charAt(0).toUpperCase() + key.slice(1);
-                const readableMessage = `${fieldLabel} : ${message}`;
-
-                globalErrorMessage = globalErrorMessage ? `${globalErrorMessage} | ${readableMessage}` : readableMessage;
-
-                const control = form.get(key);
-                if (control) {
-                    // On set l'erreur sur le control Angular
-                    control.setErrors({ serverError: message });
-                    control.markAsTouched(); // Pour afficher l'erreur visuellement
+                // 1. Erreurs globales au niveau actuel
+                if (key === 'non_field_errors' || key === 'detail') {
+                    const message = Array.isArray(error) ? error.join(' ') : error;
+                    globalErrorMessage = globalErrorMessage ? `${globalErrorMessage} | ${message}` : message;
                 }
-            }
-        });
+                // 2. Erreurs imbriquées (Recursion)
+                else if (typeof error === 'object' && !Array.isArray(error)) {
+                    const subControl = container.get(key);
+                    if (subControl instanceof FormGroup) {
+                        processErrors(subControl, error, `${prefix}${key}.`);
+                    } else {
+                        // Si ce n'est pas un FormGroup, on traite comme une erreur plate mais avec préfixe
+                        const message = JSON.stringify(error);
+                        globalErrorMessage = globalErrorMessage ? `${globalErrorMessage} | ${prefix}${key}: ${message}` : `${prefix}${key}: ${message}`;
+                    }
+                }
+                // 3. Erreurs de champs standards
+                else {
+                    const message = Array.isArray(error) ? error.join(' ') : error;
+                    const fieldLabel = key.charAt(0).toUpperCase() + key.slice(1);
+                    const readableMessage = `${prefix}${fieldLabel} : ${message}`;
 
+                    globalErrorMessage = globalErrorMessage ? `${globalErrorMessage} | ${readableMessage}` : readableMessage;
+
+                    const control = container.get(key);
+                    if (control) {
+                        control.setErrors({ serverError: message });
+                        control.markAsTouched();
+                    }
+                }
+            });
+        };
+
+        processErrors(form, errorData);
         return globalErrorMessage;
     }
 }

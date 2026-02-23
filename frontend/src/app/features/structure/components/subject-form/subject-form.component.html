@@ -1,10 +1,11 @@
 <app-ui-form [title]="subject ? 'Modifier la Matière' : 'Nouvelle Matière'" [formGroup]="form"
     [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="subject ? 'Modifier' : 'Créer'"
-    description="Maintenez le catalogue des matières enseignées." (submitForm)="submit()" (cancel)="onCancel()">
+    description="Maintenez le catalogue des matières enseignées." (submitForm)="submit()" (cancel)="onCancel()"
+    class="block h-[600px] w-[800px] max-w-full">
 
     <app-ui-tabs [tabs]="tabs" [currentTab]="activeTab()" (tabChange)="activeTab.set($event)"></app-ui-tabs>
 
-    <div class="mt-6" [ngSwitch]="activeTab()">
+    <div class="mt-6 flex-1 overflow-y-auto" [ngSwitch]="activeTab()">
 
         <!-- GENERAL TAB -->
         <div *ngSwitchCase="'general'" class="grid grid-cols-1 gap-6">
@@ -24,7 +25,14 @@
 
         <!-- LEVELS TAB -->
         <div *ngSwitchCase="'levels'">
-            <div class="overflow-x-auto border rounded-lg">
+
+            <div *ngIf="isLoadingLevels()" class="py-12 flex flex-col items-center justify-center space-y-4">
+                <div class="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-600 rounded-full animate-spin">
+                </div>
+                <p class="text-slate-500 text-sm animate-pulse">Chargement des niveaux...</p>
+            </div>
+
+            <div *ngIf="!isLoadingLevels()" class="overflow-x-auto border rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>

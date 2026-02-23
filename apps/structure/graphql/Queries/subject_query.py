@@ -10,6 +10,7 @@ class SubjectQuery(graphene.ObjectType):
     subjects = graphene.Field(
         get_paginated_type(SubjectType),
         search=graphene.String(),
+        level_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -20,10 +21,13 @@ class SubjectQuery(graphene.ObjectType):
         except Subject.DoesNotExist:
             return None
 
-    def resolve_subjects(root, info, search=None, page=1, page_size=10, **kwargs):
+    def resolve_subjects(root, info, search=None, level_id=None, page=1, page_size=10, **kwargs):
         queryset = get_context_filtered_queryset(Subject, info, order_by='name')
         
         if search:
             queryset = queryset.filter(name__icontains=search)
+
+        if level_id:
+            queryset = queryset.filter(level_subjects__level_id=level_id)
             
         return paginate_queryset(queryset, page, page_size)

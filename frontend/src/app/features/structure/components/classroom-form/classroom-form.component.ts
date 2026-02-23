@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { ClassRoomService } from '../../services/classroom.service';
 import { LevelService } from '../../services/level.service';
-import { ClassRoomType } from '@app/graphql/generated';
+import { ClassRoomType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';

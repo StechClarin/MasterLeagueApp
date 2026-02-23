@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
-import { GetAllCyclesGQL } from '@app/graphql/generated';
+import { GetAllCyclesGQL } from '../graphql/structure.generated';
 import { tap } from 'rxjs/operators';
 import { Apollo } from 'apollo-angular';
 

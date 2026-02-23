@@ -7,7 +7,7 @@ import { StructureStateService } from '@core/services/structure-state.service';
 import { AcademicYearService } from '../../services/academic_year.service';
 import { CycleService } from '../../services/cycle.service';
 import { AcademicCycleConfigService } from '../../services/academic_cycle_config.service';
-import { AcademicYearType } from '@app/graphql/generated';
+import { AcademicYearType } from '@app/graphql/types';
 import { forkJoin, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';

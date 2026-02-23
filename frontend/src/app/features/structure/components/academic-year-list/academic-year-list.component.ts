@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { AcademicYearService } from '../../services/academic_year.service';
-import { AcademicYearType } from '@app/graphql/generated';
+import { AcademicYearType } from '@app/graphql/types';
 import { AcademicYearFormComponent } from '../academic-year-form/academic-year-form.component';
 
 // Shared UI Imports

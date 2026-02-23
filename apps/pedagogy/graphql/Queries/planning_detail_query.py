@@ -12,6 +12,9 @@ class PlanningDetailQuery(graphene.ObjectType):
     planning_details = graphene.Field(
         PlanningDetailPaginatedType,
         search=graphene.String(),
+        classe_id=graphene.ID(),
+        min_date=graphene.Date(),
+        max_date=graphene.Date(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -22,14 +25,24 @@ class PlanningDetailQuery(graphene.ObjectType):
         except PlanningDetail.DoesNotExist:
             return None
 
-    def resolve_planning_details(root, info, search=None, page=1, page_size=10, **kwargs):
-        queryset = PlanningDetail.objects.filter(is_active=True).order_by('-date')
+    def resolve_planning_details(root, info, search=None, classe_id=None, min_date=None, max_date=None, page=1, page_size=10, **kwargs):
+        queryset = PlanningDetail.objects.filter(is_active=True).order_by('date', 'heure_debut')
 
         if search:
             queryset = queryset.filter(
-                Q(enseignant__first_name__icontains=search) | 
+                Q(enseignant__user__first_name__icontains=search) | 
+                Q(enseignant__user__last_name__icontains=search) |
                 Q(matiere__name__icontains=search)
             )
+
+        if classe_id:
+            queryset = queryset.filter(classe_id=classe_id)
+
+        if min_date:
+            queryset = queryset.filter(date__gte=min_date)
+
+        if max_date:
+            queryset = queryset.filter(date__lte=max_date)
 
         paginated_data = paginate_queryset(queryset, page, page_size)
         return PlanningDetailPaginatedType(**paginated_data)

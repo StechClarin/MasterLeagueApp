@@ -1,11 +1,13 @@
 {
     "python.analysis.extraPaths": [
-        "./",
-        "./apps"
+        "${workspaceFolder}",
+        "${workspaceFolder}/apps"
     ],
     "python.autoComplete.extraPaths": [
-        "./",
-        "./apps"
+        "${workspaceFolder}",
+        "${workspaceFolder}/apps"
     ],
-    "python.defaultInterpreterPath": "./venv/bin/python"
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.venvPath": "${workspaceFolder}",
+    "python.analysis.venv": ".venv"
 }
