@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit, effect } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlanningService } from '../../../pedagogy/services/planning.service';
+import { EvaluationService } from '../../../evaluations/services/evaluation.service';
 import { ClassRoomService } from '../../../structure/services/classroom.service';
 import { firstValueFrom } from 'rxjs';
 
@@ -121,9 +122,14 @@ import { firstValueFrom } from 'rxjs';
                          
                         <!-- Top Info: Subject & Time -->
                         <div class="flex justify-between items-start mb-1.5">
-                            <span class="font-black text-[11px] uppercase tracking-wider truncate flex-1 pr-2">
-                                {{ evt.matiere?.name }}
-                            </span>
+                            <div class="flex flex-col flex-1 truncate pr-2">
+                                <span class="font-black text-[11px] uppercase tracking-wider truncate">
+                                    {{ evt.matiere?.name }}
+                                </span>
+                                <span *ngIf="evt.isEvaluation" class="text-[8px] font-black text-white bg-red-600 px-1 rounded-sm w-fit mt-0.5">
+                                    ÉVALUATION
+                                </span>
+                            </div>
                             <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/40 whitespace-nowrap">
                                 {{ evt.heureDebut }} - {{ evt.heureFin }}
                             </span>
@@ -137,7 +143,7 @@ import { firstValueFrom } from 'rxjs';
                                     <svg class="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 </div>
                                 <span class="text-[10px] font-semibold truncate opacity-90 leading-tight">
-                                    {{ evt.enseignant?.user?.firstName }} {{ evt.enseignant?.user?.lastName }}
+                                    {{ evt.isEvaluation ? 'Évaluation' : (evt.enseignant?.user?.firstName + ' ' + evt.enseignant?.user?.lastName) }}
                                 </span>
                             </div>
 
@@ -207,6 +213,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class StudentTimetableComponent implements OnInit {
     planningService = inject(PlanningService);
+    evaluationService = inject(EvaluationService);
     classroomService = inject(ClassRoomService);
 
     // Filter States
@@ -287,22 +294,54 @@ export class StudentTimetableComponent implements OnInit {
         const end = new Date(start);
         end.setDate(start.getDate() + 6); // Weekly range
 
+        const minDate = start.toISOString().split('T')[0];
+        const maxDate = end.toISOString().split('T')[0];
+
         try {
-            const res = await firstValueFrom(this.planningService.getDetailsGQL.fetch({
-                minDate: start.toISOString().split('T')[0],
-                maxDate: end.toISOString().split('T')[0],
-                classeId: classId || null,
-                pageSize: 200
+            // Load both regular planning and evaluation planning in parallel
+            const [regRes, evalRes] = await Promise.all([
+                firstValueFrom(this.planningService.getDetailsGQL.fetch({
+                    minDate,
+                    maxDate,
+                    classeId: classId || null,
+                    pageSize: 200
+                }, { fetchPolicy: 'network-only' })),
+                firstValueFrom(this.evaluationService.evaluationPlanningsGQL.fetch({
+                    minDate,
+                    maxDate,
+                    classeId: classId || null,
+                    pageSize: 100
+                }, { fetchPolicy: 'network-only' }))
+            ]);
+
+            const details = (regRes.data.planningDetails?.items || []).map((d: any) => ({ ...d, isEvaluation: false }));
+            const evals = (evalRes.data.evaluationPlannings?.items || []).map((e: any) => ({
+                ...e,
+                isEvaluation: true,
+                heureDebut: e.startTime,
+                // Calculate end time for evaluations
+                heureFin: this.calculateEndTime(e.startTime, e.durationMinutes),
+                matiere: e.evaluationSubject?.subject,
+                enseignant: null, // Supervisors not yet in this view
+                classe: e.classrooms?.[0] || { name: 'Multi' }
             }));
 
-            const details = res.data.planningDetails?.items || [];
-            this.rawEvents.set(details);
+            this.rawEvents.set([...details, ...evals]);
 
         } catch (e) {
-            console.error('Failed to load planning details', e);
+            console.error('Failed to load timetable events', e);
         } finally {
             this.loading.set(false);
         }
+    }
+
+    calculateEndTime(startTime: string, duration: number): string {
+        if (!startTime || !duration) return startTime;
+        const [h, m] = startTime.split(':').map(Number);
+        const totalMinutes = (h * 60) + m + duration;
+        const endH = Math.floor(totalMinutes / 60);
+        const endM = totalMinutes % 60;
+        return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
     }
 
     mapEventsToGrid(details: any[]) {
@@ -350,7 +389,7 @@ export class StudentTimetableComponent implements OnInit {
         return dateStr === new Date().toISOString().split('T')[0];
     }
 
-    getTheme(subject: any) {
+    getTheme(event: any) {
         const themes = [
             { bg: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', accent: '#3b82f6', text: '#1e40af' }, // Blue
             { bg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', accent: '#22c55e', text: '#15803d' }, // Green
@@ -359,6 +398,12 @@ export class StudentTimetableComponent implements OnInit {
             { bg: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)', accent: '#f43f5e', text: '#be123c' }, // Pink
             { bg: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)', accent: '#eab308', text: '#854d0e' }, // Yellow
         ];
+
+        if (event.isEvaluation) {
+            return { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', accent: '#f97316', text: '#c2410c' }; // Orange for eval
+        }
+
+        const subject = event.matiere;
         if (!subject?.id) return themes[0];
         const idx = (typeof subject.id === 'number' ? subject.id : subject.id.charCodeAt(0)) % themes.length;
         return themes[idx];

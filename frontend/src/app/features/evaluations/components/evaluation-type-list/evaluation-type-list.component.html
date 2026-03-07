@@ -1,0 +1,46 @@
+<app-ui-list-page title="Types d'Évaluation" [isLoading]="isLoading()">
+    <!-- Filtres & Actions -->
+    <ng-container header-actions>
+        <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher un type...">
+            <button (click)="openModal()"
+                class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 focus:ring-4 focus:ring-indigo-500/30 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center font-medium text-sm transform hover:-translate-y-0.5">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Nouveau Type
+            </button>
+        </app-ui-toolbar>
+    </ng-container>
+
+    <!-- Table -->
+    <ng-container table>
+        <app-ui-table [columns]="tableColumns" [data]="(items$ | async) || []" (edit)="openModal($event, 'edit')"
+            (delete)="onDelete($event)"></app-ui-table>
+    </ng-container>
+
+    <!-- Pagination -->
+    <ng-container pagination>
+        <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
+            [numPages]="numPages()" (prev)="prevPage()" (next)="nextPage()" (goTo)="goToPage($event)">
+        </app-ui-pagination>
+    </ng-container>
+</app-ui-list-page>
+
+<!-- Modale de formulaire -->
+<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-2xl w-full">
+    <ng-container [ngSwitch]="modalMode()">
+        <!-- Suppression -->
+        <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer le type"
+            [message]="'Êtes-vous sûr de vouloir supprimer le type \'' + selectedItem()?.name + '\' ? Cette action est irréversible.'"
+            (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
+
+        <!-- Formulaire -->
+        <app-evaluation-type-form *ngSwitchDefault [item]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
+            (cancel)="closeModal()" (success)="onSave()"></app-evaluation-type-form>
+    </ng-container>
+</app-ui-modal>
+
+<!-- Cell Templates -->
+<ng-template #nameCell let-item>
+    <div class="font-medium text-gray-900 dark:text-white">{{ item.name }}</div>
+</ng-template>

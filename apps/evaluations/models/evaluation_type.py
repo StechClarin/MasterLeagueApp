@@ -7,12 +7,6 @@ class EvaluationType(EstablishmentAwareModel):
     Définit un type d'évaluation (ex: Devoir, Composition, Examen).
     """
     name = models.CharField(max_length=100)
-    default_coefficient = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        default=1.0,
-        help_text="Coefficient par défaut appliqué à ce type d'épreuve"
-    )
     description = models.TextField(null=True, blank=True)
 
     class Meta:

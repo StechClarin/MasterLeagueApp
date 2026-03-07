@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-ui-toggle',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
-    template: `
+  selector: 'app-ui-toggle',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
     <div class="flex items-center justify-between">
       <div class="flex flex-col">
         <label *ngIf="label" class="text-sm font-medium text-gray-700">{{ label }}</label>
@@ -18,8 +18,12 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
         role="switch"
         [attr.aria-checked]="control.value"
         (click)="toggle()"
-        [class.bg-indigo-600]="control.value"
-        [class.bg-gray-200]="!control.value"
+        [class.bg-indigo-600]="control.value && !readonly"
+        [class.bg-gray-200]="!control.value && !readonly"
+        [class.bg-indigo-400]="control.value && readonly"
+        [class.bg-gray-100]="!control.value && readonly"
+        [class.cursor-not-allowed]="readonly"
+        [class.opacity-50]="readonly"
         class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
         
         <span class="sr-only">{{ label }}</span>
@@ -33,13 +37,16 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
   `
 })
 export class UiToggleComponent {
-    @Input() label: string = '';
-    @Input() description: string = '';
-    @Input({ required: true }) control!: FormControl;
+  @Input() label: string = '';
+  @Input() description: string = '';
+  @Input() readonly: boolean = false;
+  @Input({ required: true }) control!: FormControl;
 
-    toggle() {
-        this.control.setValue(!this.control.value);
-        this.control.markAsTouched();
-        this.control.markAsDirty();
-    }
+  toggle() {
+    if (this.readonly || this.control.disabled) return;
+    this.control.setValue(!this.control.value);
+    this.control.markAsTouched();
+    this.control.markAsDirty();
+  }
 }
+

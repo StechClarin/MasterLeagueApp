@@ -127,7 +127,7 @@ MODULE_STRUCTURE = [
     },
     {
         "name": "Pédagogie",
-        "order": 15,
+        "order": 9,
         "display_mod": "card-view",
         "icon": "pedagogy-icon",
         "pages": [
@@ -154,33 +154,27 @@ MODULE_STRUCTURE = [
         "icon": "evaluation-icon",
         "pages": [
             {
-                "title": "Dossiers d'Épreuve",
+                "title": "Évaluations",
                 "icon": "exam-icon",
-                "order": 0,
+                "order": 1,
                 "link": "/evaluations",
                 "tags": ["evaluation"]
             },
             {
-                "title": "Saisie des Notes",
+                "title": "Notes & Bulletins",
                 "icon": "edit-icon",
-                "order": 1,
+                "order": 2,
                 "link": "/grade-entry",
                 "tags": ["grade"]
             },
             {
-                "title": "Configuration",
+                "title": "Types d'Évaluations",
                 "icon": "settings-icon",
-                "order": 2,
+                "order": 0,
                 "link": "/evaluation-types",
                 "tags": ["evaluationtype"]
             },
-            {
-                "title": "Performance & Bulletins",
-                "icon": "chart-icon",
-                "order": 3,
-                "link": "/reports",
-                "tags": ["grade"]
-            },
+            
         ]
     },
     # --- AJOUTE TES AUTRES MODULES ICI ---

@@ -105,6 +105,24 @@ fragment SubjectFields on SubjectType {
   }
 }
 
+fragment AcademicPeriodFields on AcademicPeriodType {
+  id
+  name
+  startDate
+  endDate
+  isActive
+  academicYear {
+    id
+    name
+  }
+}
+
+fragment RoomFields on RoomType {
+  id
+  name
+  capacity
+}
+
 fragment StructureResponse on StructureResponseType {
   activeAcademicYear {
     id
@@ -204,6 +222,28 @@ query GetAllSubjects($search: String, $levelId: ID, $page: Int, $pageSize: Int) 
   subjects(search: $search, levelId: $levelId, page: $page, pageSize: $pageSize) {
     items {
       ...SubjectFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAllAcademicPeriods($search: String, $academicYearId: Int, $page: Int, $pageSize: Int) {
+  academicPeriods(search: $search, academicYearId: $academicYearId, page: $page, pageSize: $pageSize) {
+    items {
+      ...AcademicPeriodFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAllRooms($search: String, $page: Int, $pageSize: Int) {
+  rooms(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...RoomFields
     }
     totalCount
     numPages

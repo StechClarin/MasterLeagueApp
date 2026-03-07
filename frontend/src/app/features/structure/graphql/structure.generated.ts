@@ -17,6 +17,10 @@ export type LevelSubjectFieldsFragment = { __typename?: 'LevelSubjectType', id: 
 
 export type SubjectFieldsFragment = { __typename?: 'SubjectType', id: string, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } } | null> | null };
 
+export type AcademicPeriodFieldsFragment = { __typename?: 'AcademicPeriodType', id: string, name: string, startDate: any, endDate: any, isActive: boolean, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } };
+
+export type RoomFieldsFragment = { __typename?: 'RoomType', id: string, name: string, capacity?: number | null };
+
 export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: string, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: string, name: string, order: number, isActive: boolean, levels: Array<{ __typename?: 'LevelType', id: string, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: string, name: string, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null };
 
 export type GetAllEstablishmentsQueryVariables = Types.Exact<{
@@ -104,6 +108,25 @@ export type GetAllSubjectsQueryVariables = Types.Exact<{
 
 
 export type GetAllSubjectsQuery = { __typename?: 'Query', subjects?: { __typename?: 'SubjectTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'SubjectType', id: string, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: string, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: string, name: string } } | null> | null } | null> | null } | null };
+
+export type GetAllAcademicPeriodsQueryVariables = Types.Exact<{
+  search?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  academicYearId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllAcademicPeriodsQuery = { __typename?: 'Query', academicPeriods?: { __typename?: 'AcademicPeriodTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicPeriodType', id: string, name: string, startDate: any, endDate: any, isActive: boolean, academicYear: { __typename?: 'AcademicYearType', id: string, name: string } } | null> | null } | null };
+
+export type GetAllRoomsQueryVariables = Types.Exact<{
+  search?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllRoomsQuery = { __typename?: 'Query', rooms?: { __typename?: 'RoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'RoomType', id: string, name: string, capacity?: number | null } | null> | null } | null };
 
 export type GetActiveStructureQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
@@ -200,6 +223,26 @@ export const SubjectFieldsFragmentDoc = gql`
   }
 }
     ${LevelSubjectFieldsFragmentDoc}`;
+export const AcademicPeriodFieldsFragmentDoc = gql`
+    fragment AcademicPeriodFields on AcademicPeriodType {
+  id
+  name
+  startDate
+  endDate
+  isActive
+  academicYear {
+    id
+    name
+  }
+}
+    `;
+export const RoomFieldsFragmentDoc = gql`
+    fragment RoomFields on RoomType {
+  id
+  name
+  capacity
+}
+    `;
 export const CycleFieldsFragmentDoc = gql`
     fragment CycleFields on CycleType {
   id
@@ -448,6 +491,57 @@ export const GetAllSubjectsDocument = gql`
   })
   export class GetAllSubjectsGQL extends Apollo.Query<GetAllSubjectsQuery, GetAllSubjectsQueryVariables> {
     document = GetAllSubjectsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllAcademicPeriodsDocument = gql`
+    query GetAllAcademicPeriods($search: String, $academicYearId: Int, $page: Int, $pageSize: Int) {
+  academicPeriods(
+    search: $search
+    academicYearId: $academicYearId
+    page: $page
+    pageSize: $pageSize
+  ) {
+    items {
+      ...AcademicPeriodFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    ${AcademicPeriodFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllAcademicPeriodsGQL extends Apollo.Query<GetAllAcademicPeriodsQuery, GetAllAcademicPeriodsQueryVariables> {
+    document = GetAllAcademicPeriodsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllRoomsDocument = gql`
+    query GetAllRooms($search: String, $page: Int, $pageSize: Int) {
+  rooms(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...RoomFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    ${RoomFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllRoomsGQL extends Apollo.Query<GetAllRoomsQuery, GetAllRoomsQueryVariables> {
+    document = GetAllRoomsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

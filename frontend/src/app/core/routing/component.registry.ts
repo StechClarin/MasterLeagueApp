@@ -19,6 +19,10 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/personnels': () => import('../../features/hr/components/personnel-list/personnel-list.component').then(m => m.PersonnelListComponent),
   '/contract-types': () => import('../../features/hr/components/contract-type-list/contract-type-list.component').then(m => m.ContractTypeListComponent),
   '/assignments': () => import('../../features/pedagogy/components/teaching-assignment-list/teaching-assignment-list.component').then(m => m.TeachingAssignmentListComponent),
+  '/academic-periods': () => import('../../features/structure/components/academic-period-list/academic-period-list.component').then(m => m.AcademicPeriodListComponent),
+  '/evaluation-types': () => import('../../features/evaluations/components/evaluation-type-list/evaluation-type-list.component').then(m => m.EvaluationTypeListComponent),
+  '/evaluations': () => import('../../features/evaluations/components/evaluation-list/evaluation-list.component').then(m => m.EvaluationListComponent),
+  '/grade-entry': () => import('../../features/evaluations/components/grade-entry-list/grade-entry-list.component').then(m => m.GradeEntryListComponent),
 
   [AppRoutes.PLANNINGS]: () => import('../../features/pedagogy/components/planning-list/planning-list.component').then(m => m.PlanningListComponent),
   '/timetable': () => import('../../features/students/components/student-timetable/student-timetable.component').then(m => m.StudentTimetableComponent),

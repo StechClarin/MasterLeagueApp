@@ -75,15 +75,12 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
             if (levelId) {
                 // Filter Classes
                 this.classService.list().pipe(
-                    map(all => (all || []).filter(c => c && c.level?.id === levelId))
+                    map(all => (all || []).filter((c: any) => c && c.level?.id === levelId))
                 ).subscribe(filtered => this.classes$.set(filtered));
 
                 // Filter Subjects via Backend (calling updated query)
-                // We use apollo-angular directly or a manual call to generated query
-                // Actually, subjectService has a list() method, but we need it with params.
-                // Let's call the generated GQL directly for flexibility here or update service.
                 this.subjectService.list().pipe(
-                    map(all => (all || []).filter(s => s && s.levelSubjects?.some((ls: any) => ls && ls.level?.id === levelId)))
+                    map(all => (all || []).filter((s: any) => s && s.levelSubjects?.some((ls: any) => ls && ls.level?.id === levelId)))
                 ).subscribe(filtered => this.subjects$.set(filtered));
             } else {
                 this.classes$.set([]);

@@ -15,9 +15,15 @@ export class ClassRoomService extends BaseService {
         return this.generatedGQL.document;
     }
 
-    list() {
-        return this.generatedGQL.fetch().pipe(
-            map(res => res.data.classrooms?.items || [])
+    override list() {
+        return this.generatedGQL.fetch({ page: 1, pageSize: 100 }, { fetchPolicy: 'network-only' }).pipe(
+            map((res: any) => res.data.classrooms?.items || [])
+        );
+    }
+
+    listByLevel(levelId: string) {
+        return this.generatedGQL.fetch({ levelId, page: 1, pageSize: 100 }, { fetchPolicy: 'network-only' }).pipe(
+            map((res: any) => res.data.classrooms?.items || [])
         );
     }
 }

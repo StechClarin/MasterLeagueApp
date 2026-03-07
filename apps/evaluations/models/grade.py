@@ -1,22 +1,24 @@
 from django.db import models
 from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 from apps.students.models import Student
-from .evaluation import Evaluation
+from .evaluation_subject import EvaluationSubject
 
 
 class Grade(EstablishmentAwareModel):
     """
-    La Note d'un élève pour une évaluation spécifique.
+    La Note d'un élève pour une épreuve spécifique.
     """
     student = models.ForeignKey(
         Student, 
         on_delete=models.CASCADE, 
         related_name='grades'
     )
-    evaluation = models.ForeignKey(
-        Evaluation, 
+    evaluation_subject = models.ForeignKey(
+        EvaluationSubject, 
         on_delete=models.CASCADE, 
-        related_name='grades'
+        related_name='grades',
+        verbose_name="Épreuve",
+        null=True, blank=True
     )
     value = models.DecimalField(
         max_digits=5, 
@@ -35,10 +37,12 @@ class Grade(EstablishmentAwareModel):
     class Meta:
         verbose_name = "Note"
         verbose_name_plural = "Notes"
-        # Contrainte industrielle : un élève, une évaluation, une seule note par établissement.
-        unique_together = ['student', 'evaluation', 'establishment']
-        ordering = ['evaluation', 'student']
+        # Contrainte industrielle : un élève, une épreuve, une seule note par établissement.
+        unique_together = ['student', 'evaluation_subject', 'establishment']
+        ordering = ['evaluation_subject', 'student']
 
     def __str__(self):
         status = "ABS" if self.is_absent else self.value
-        return f"{self.student} - {self.evaluation.title} : {status}"
+        # Use evaluation_subject instead of evaluation
+        session_title = self.evaluation_subject.session.title if self.evaluation_subject else "Sans Session"
+        return f"{self.student} - {session_title} : {status}"

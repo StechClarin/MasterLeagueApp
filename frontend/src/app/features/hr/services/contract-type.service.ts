@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@app/core/abstracts/base.service';
 import { GetAllContractTypesGQL, GetContractTypeGQL } from '../graphql/hr.generated';
+import { Observable } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -16,7 +17,7 @@ export class ContractTypeService extends BaseService {
         return this.listQuery.document;
     }
 
-    list(variables?: any) {
+    override list(variables?: any): Observable<any> {
         return this.listQuery.watch(variables).valueChanges;
     }
 }

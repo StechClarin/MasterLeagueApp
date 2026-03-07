@@ -13,9 +13,10 @@ export class SubjectService extends BaseService {
     getQuery() {
         return this.generatedGQL.document;
     }
-    list() {
-        return this.generatedGQL.fetch().pipe(
-            map(res => res.data.subjects?.items || [])
+
+    override list() {
+        return this.generatedGQL.fetch({ page: 1, pageSize: 100 }, { fetchPolicy: 'network-only' }).pipe(
+            map((res: any) => res.data.subjects?.items || [])
         );
     }
 }

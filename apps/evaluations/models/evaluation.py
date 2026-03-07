@@ -5,9 +5,9 @@ from apps.structure.models import Level, ClassRoom, Subject, Room, AcademicPerio
 from .evaluation_type import EvaluationType
 
 
-class Evaluation(EstablishmentAwareModel):
+class EvaluationSession(EstablishmentAwareModel):
     """
-    Le 'Dossier de l'Épreuve' : centralise toute la configuration et la logistique d'un examen.
+    La 'Session d'Évaluation' (ou Groupe) : centralise une période d'examens (ex: Séquence 1, Compo Trim 1).
     """
     SCOPE_CHOICES = [
         ('CLASS', 'Classe'),
@@ -20,6 +20,7 @@ class Evaluation(EstablishmentAwareModel):
         ('IN_PROGRESS', 'Saisie en cours'),
         ('COMPLETED', 'Saisie terminée'),
         ('LOCKED', 'Verrouillée'),
+        ('CANCELLED', 'Annulée'),
     ]
 
     title = models.CharField(max_length=200)
@@ -30,69 +31,28 @@ class Evaluation(EstablishmentAwareModel):
     academic_period = models.ForeignKey(
         AcademicPeriod, 
         on_delete=models.CASCADE, 
-        related_name='evaluations'
-    )
-    # Ciblage flexible (Multi-classes ou Multi-niveaux pour les examens généraux)
-    levels = models.ManyToManyField(Level, related_name='evaluations', blank=True)
-    classrooms = models.ManyToManyField(ClassRoom, related_name='evaluations', blank=True)
-    subject = models.ForeignKey(
-        Subject, 
-        on_delete=models.CASCADE, 
-        related_name='evaluations'
+        related_name='evaluation_sessions'
     )
     
-    # Type & Weight
+    # Type (ex: Séquence, Composition)
     evaluation_type = models.ForeignKey(
         EvaluationType, 
         on_delete=models.CASCADE, 
-        related_name='evaluations'
-    )
-    coefficient = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        default=1.0,
-        help_text="Possibilité de forcer une valeur différente du type par défaut"
-    )
-    max_score = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        default=20.0,
-        help_text="Note maximale (ex: 20, 100)"
-    )
-    
-    # Logistics
-    date = models.DateField()
-    start_time = models.TimeField(null=True, blank=True)
-    duration_minutes = models.PositiveIntegerField(
-        null=True, blank=True, 
-        help_text="Durée de l'épreuve en minutes"
-    )
-    room = models.ForeignKey(
-        Room, 
-        on_delete=models.SET_NULL, 
-        null=True, blank=True,
-        verbose_name="Salle d'examen"
+        related_name='evaluation_sessions'
     )
     
     # Metadata
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
-        related_name='created_evaluations'
-    )
-    # Surveillants (Personnel de l'établissement)
-    supervisors = models.ManyToManyField(
-        'hr.Personnel', 
-        related_name='supervised_evaluations', 
-        blank=True,
-        verbose_name="Surveillants"
+        related_name='created_evaluation_sessions'
     )
 
     class Meta:
-        verbose_name = "Évaluation"
-        verbose_name_plural = "Évaluations"
-        ordering = ['-date', '-created_at']
-        unique_together = ['title', 'date', 'subject', 'establishment']
+        verbose_name = "Session d'Évaluation"
+        verbose_name_plural = "Sessions d'Évaluation"
+        ordering = ['-created_at']
+        unique_together = ['title', 'academic_period', 'establishment']
 
     def __str__(self):
-        return f"{self.title} - {self.subject.name} ({self.get_scope_display()})"
+        return f"{self.title} ({self.academic_period.name})"

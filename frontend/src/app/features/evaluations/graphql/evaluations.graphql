@@ -1,0 +1,173 @@
+# ==============================================================================
+# FRAGMENTS
+# ==============================================================================
+
+fragment EvaluationTypeFields on EvaluationTypeType {
+  id
+  name
+  description
+  isActive
+}
+
+fragment EvaluationSessionFields on EvaluationSessionType {
+  id
+  title
+  status
+  scope
+  evaluationType {
+    id
+    name
+  }
+  academicPeriod {
+    id
+    name
+  }
+  subjects {
+    ...EvaluationSubjectFields
+  }
+}
+
+fragment EvaluationSubjectFields on EvaluationSubjectType {
+  id
+  maxScore
+  coefficient
+  levelCoefficients {
+    levelId
+    coefficient
+  }
+  subjectFile
+  subject {
+    id
+    name
+  }
+  levels {
+    id
+    name
+  }
+  plannings {
+    ...EvaluationPlanningFields
+  }
+}
+
+fragment EvaluationPlanningFields on EvaluationPlanningType {
+  id
+  date
+  startTime
+  durationMinutes
+  levels {
+    id
+    name
+  }
+  classrooms {
+    id
+    name
+    level {
+      id
+    }
+  }
+}
+
+fragment EvaluationSupervisionFields on EvaluationSupervisionType {
+  id
+  date
+  classroom {
+    id
+    name
+  }
+  supervisors {
+    id
+    user {
+      firstName
+      lastName
+    }
+  }
+}
+
+fragment GradeFields on GradeType {
+  id
+  value
+  comment
+  isAbsent
+  student {
+    id
+    matricule
+    firstName
+    lastName
+  }
+  evaluationSubject {
+    id
+    subject {
+      name
+    }
+  }
+}
+
+# ==============================================================================
+# QUERIES
+# ==============================================================================
+
+query GetAllEvaluationTypes($search: String, $page: Int, $pageSize: Int) {
+  evaluationTypes(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...EvaluationTypeFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAllEvaluationSessions($search: String, $classroomId: Int, $levelId: Int, $periodId: Int, $subjectId: Int, $evaluationTypeId: Int, $page: Int, $pageSize: Int) {
+  evaluationSessions(search: $search, classroomId: $classroomId, levelId: $levelId, periodId: $periodId, subjectId: $subjectId, evaluationTypeId: $evaluationTypeId, page: $page, pageSize: $pageSize) {
+    items {
+      ...EvaluationSessionFields
+      supervisions {
+        ...EvaluationSupervisionFields
+      }
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAllGrades($evaluationSubjectId: Int, $evaluationSessionId: Int, $studentId: Int, $page: Int, $pageSize: Int) {
+  grades(evaluationSubjectId: $evaluationSubjectId, evaluationSessionId: $evaluationSessionId, studentId: $studentId, page: $page, pageSize: $pageSize) {
+    items {
+      ...GradeFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetEvaluationSession($id: ID!) {
+  evaluationSession(id: $id) {
+    ...EvaluationSessionFields
+  }
+}
+
+query GetAllEvaluationPlannings($classeId: ID, $minDate: Date, $maxDate: Date, $page: Int, $pageSize: Int) {
+  evaluationPlannings(classeId: $classeId, minDate: $minDate, maxDate: $maxDate, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      date
+      startTime
+      durationMinutes
+      evaluationSubject {
+        id
+        subject {
+          id
+          name
+        }
+      }
+      classrooms {
+        id
+        name
+      }
+    }
+    totalCount
+    numPages
+  }
+}

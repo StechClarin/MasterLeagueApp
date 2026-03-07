@@ -10,19 +10,23 @@ GradePaginatedType = get_paginated_type(GradeType)
 class GradeQuery(graphene.ObjectType):
     grades = graphene.Field(
         GradePaginatedType,
-        evaluation_id=graphene.Int(),
+        evaluation_subject_id=graphene.Int(),
+        evaluation_session_id=graphene.Int(),
         student_id=graphene.Int(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
 
-    def resolve_grades(root, info, evaluation_id=None, student_id=None, page=1, page_size=10, **kwargs):
+    def resolve_grades(root, info, evaluation_subject_id=None, evaluation_session_id=None, student_id=None, page=1, page_size=10, **kwargs):
         # Multi-tenancy Isolation
         est_id = getattr(info.context, 'establishment_id', None)
-        queryset = Grade.objects.filter(establishment_id=est_id).order_by('evaluation', 'student')
+        queryset = Grade.objects.filter(establishment_id=est_id).order_by('evaluation_subject', 'student')
         
-        if evaluation_id:
-            queryset = queryset.filter(evaluation_id=evaluation_id)
+        if evaluation_subject_id:
+            queryset = queryset.filter(evaluation_subject_id=evaluation_subject_id)
+            
+        if evaluation_session_id:
+            queryset = queryset.filter(evaluation_subject__session=evaluation_session_id)
             
         if student_id:
             queryset = queryset.filter(student_id=student_id)

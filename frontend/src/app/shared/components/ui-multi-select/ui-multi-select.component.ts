@@ -21,10 +21,10 @@ import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule, NG_V
         (click)="toggleOpen()">
         
         <div class="flex flex-wrap gap-2 items-center">
-            <span *ngIf="selectedItems().length === 0" class="text-gray-400 text-sm">{{ placeholder }}</span>
+            <span *ngIf="getSelectedItems().length === 0" class="text-gray-400 text-sm">{{ placeholder }}</span>
             
             <!-- Chips -->
-            <div *ngFor="let item of selectedItems()" class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-lg text-sm font-medium flex items-center gap-1">
+            <div *ngFor="let item of getSelectedItems()" class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-lg text-sm font-medium flex items-center gap-1">
                 <span>{{ item[bindLabel] }}</span>
                 <button type="button" (click)="removeItem($event, item)" class="text-indigo-400 hover:text-indigo-900 rounded-full p-0.5 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -88,13 +88,13 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit {
 
     ngOnInit() { }
 
-    // Computed state for UI display (mapping values back to options)
-    selectedItems = computed(() => {
+    // Logic for UI display (mapping values back to options)
+    getSelectedItems() {
         if (!this.value || this.value.length === 0) return [];
         if (!this.options) return [];
         // Map stored values to full option objects for display
         return this.options.filter(opt => this.value.includes(opt[this.bindValue]));
-    });
+    }
 
     toggleOpen() {
         this.isOpen.update(v => !v);

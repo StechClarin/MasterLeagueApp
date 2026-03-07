@@ -1,0 +1,15 @@
+<app-ui-form [title]="item ? 'Modifier le Type' : 'Nouveau Type'"
+    description="Définissez les caractéristiques du type d'évaluation" [formGroup]="form" (submitForm)="submit()"
+    (cancel)="onCancel()" [isLoading]="isSubmitting">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-[350px]">
+        <app-ui-select label="Type d'Évaluation" formControlName="name" [options]="EXAM_TYPES" bindLabel="name"
+            bindValue="id" [required]="true"></app-ui-select>
+
+        <!-- Description -->
+        <div class="col-span-1 md:col-span-2">
+            <app-ui-input label="Description (Optionnel)" formControlName="description"
+                placeholder="Informations supplémentaires sur ce type d'épreuve..."
+                [readonly]="isReadOnly"></app-ui-input>
+        </div>
+    </div>
+</app-ui-form>

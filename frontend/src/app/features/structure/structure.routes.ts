@@ -14,6 +14,12 @@ export const STRUCTURE_ROUTES: Routes = [
         data: { title: 'Années Scolaires' }
     },
     {
+        path: 'periods',
+        loadComponent: () => import('./components/academic-period-list/academic-period-list.component')
+            .then(m => m.AcademicPeriodListComponent),
+        data: { title: 'Périodes Académiques' }
+    },
+    {
         path: 'subjects',
         loadComponent: () => import('./components/subject-list/subject-list.component')
             .then(m => m.SubjectListComponent),

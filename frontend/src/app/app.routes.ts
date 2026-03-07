@@ -12,6 +12,11 @@ export const routes: Routes = [
     path: 'login',
     component: LoginComponent
   },
+  {
+    path: 'print/evaluation-planning/:id',
+    loadComponent: () => import('./features/evaluations/components/evaluation-planning-print/evaluation-planning-print.component')
+      .then(m => m.EvaluationPlanningPrintComponent)
+  },
 
   // --- ZONE PROTÉGÉE (Layout Admin) ---
   {
@@ -43,6 +48,14 @@ export const routes: Routes = [
       {
         path: 'hr',
         loadChildren: () => import('@features/hr/hr.routes').then(m => m.HR_ROUTES)
+      },
+      {
+        path: 'grade-entry',
+        loadComponent: () => import('@features/evaluations/components/grade-entry-list/grade-entry-list.component').then(m => m.GradeEntryListComponent)
+      },
+      {
+        path: 'grade-entry/:id',
+        loadComponent: () => import('@features/evaluations/components/grade-entry/grade-entry.component').then(m => m.GradeEntryComponent)
       },
 
     ]

@@ -117,8 +117,9 @@ e) Configuration du Menu (Navigation)
 Nous n'écrivons PAS de requêtes GraphQL "en dur" (inline) dans les composants. Nous utilisons la génération de code.
 
 a) Définir la Query
-   Fichier : frontend/src/app/features/<module>/graphql/profil.graphql (ou fichier dédié)
+   Fichier : frontend/src/app/features/<module>/graphql/<module>.graphql (Ex: structure.graphql)
    Action  : Ajoutez les Fragments et les Queries (GetById et GetAll).
+   Règle   : Utilisez UN SEUL fichier par module (ex: structure.graphql pour tout le module structure).
    
    Exemple :
    query GetAllEvenements($search: String, $page: Int, $pageSize: Int) {

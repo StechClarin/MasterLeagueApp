@@ -100,7 +100,11 @@ class BaseController(APIView):
         # On laisse le service nettoyer les données brutes (ex: trim, upper, formatage)
         # On utilise .copy() pour éviter de modifier la request.data immuable
         raw_data = request.data.copy() if hasattr(request.data, 'copy') else request.data
+        
         prepared_data = self.service.before_validate(raw_data, instance)
+
+        # [CRITICAL UPDATE] Expose raw payload to service for nested custom saves (after_save logic)
+        self.service.initial_data = prepared_data
 
         # 2. VALIDATION (Serializer)
         # On valide les données préparées

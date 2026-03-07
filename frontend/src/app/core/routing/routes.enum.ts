@@ -16,8 +16,7 @@ export enum AppRoutes {
   TYPE_DE_CONTRAT = '/contract-types',
   AFFECTATIONS = '/assignments',
   PLANNINGS = '/plannings',
-  DOSSIERS_DEPREUVE = '/evaluations',
-  SAISIE_DES_NOTES = '/grade-entry',
-  CONFIGURATION = '/evaluation-types',
-  PERFORMANCE_AND_BULLETINS = '/reports',
+  EVALUATIONS = '/evaluations',
+  NOTES_AND_BULLETINS = '/grade-entry',
+  TYPES_DEVALUATIONS = '/evaluation-types',
 }

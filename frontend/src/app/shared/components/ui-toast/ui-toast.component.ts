@@ -23,6 +23,8 @@ import { animate, style, transition, trigger } from '@angular/animations';
       <div
         *ngFor="let toast of toastService.toasts()"
         [@toastAnimation]
+        (mouseenter)="toastService.pause(toast.id)"
+        (mouseleave)="toastService.resume(toast.id)"
         class="flex items-center w-full max-w-xs p-4 text-gray-100 bg-slate-900 rounded-lg shadow-lg dark:text-gray-400 dark:bg-gray-800 border-l-4"
         [ngClass]="{
           'border-green-500': toast.type === 'success',

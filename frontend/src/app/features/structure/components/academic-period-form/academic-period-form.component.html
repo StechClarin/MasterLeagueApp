@@ -1,0 +1,35 @@
+<app-ui-form [title]="item ? (isReadOnly ? 'Détails de la Période' : 'Modifier la Période') : 'Nouvelle Période'"
+    [formGroup]="form" [isLoading]="isSubmitting" [errorMessage]="errorMessage"
+    [submitLabel]="item ? 'Modifier' : 'Créer'" [isReadOnly]="isReadOnly"
+    description="Définissez les périodes de l'année scolaire (trimestres, semestres, etc.)" (submitForm)="submit()"
+    (cancel)="onCancel()">
+
+    <div class="grid grid-cols-1 gap-6 mb-6">
+        <!-- Nom de la période -->
+        <app-ui-input label="Nom de la période" [control]="getControl('name')" placeholder="ex: 1er Trimestre"
+            [required]="true" [readonly]="isReadOnly"></app-ui-input>
+
+        <!-- Année Scolaire -->
+        <app-ui-select label="Année Scolaire" [control]="getControl('academic_year')"
+            [options]="(academicYears$ | async) || []" bindLabel="name" bindValue="id" [required]="true"
+            placeholder="Sélectionner une année scolaire"></app-ui-select>
+
+        <!-- Dates -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <app-ui-input label="Date de début" type="date" [control]="getControl('start_date')" [required]="true"
+                [readonly]="isReadOnly"></app-ui-input>
+
+            <app-ui-input label="Date de fin" type="date" [control]="getControl('end_date')" [required]="true"
+                [readonly]="isReadOnly"></app-ui-input>
+        </div>
+
+        <!-- Statut -->
+        <div
+            class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl flex items-center gap-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+            <app-ui-toggle [control]="getControl('is_active')" label="Période Active"
+                [readonly]="isReadOnly"></app-ui-toggle>
+            <span class="text-sm text-gray-500">Définit si cette période est ouverte à la saisie des notes.</span>
+        </div>
+    </div>
+
+</app-ui-form>

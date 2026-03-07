@@ -15,7 +15,7 @@ export class AcademicYearService extends BaseService {
         return this.generatedGQL.document;
     }
 
-    list() {
+    override list() {
         return this.generatedGQL.fetch().pipe(
             map(res => res.data.academicyears?.items || [])
         );

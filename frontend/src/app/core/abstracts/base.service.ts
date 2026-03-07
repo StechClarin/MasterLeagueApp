@@ -27,9 +27,19 @@ export abstract class BaseService {
     }
 
     /**
-     * Generic Get by ID
-     * GET /api/{endpoint}/{id}/
+     * Generic List
+     * GET /api/{endpoint}/
      */
+    list(params: any = {}): Observable<any[]> {
+        this.logger.logApi('GET', this.apiUrl, 'START', params);
+        return this.http.get<any[]>(this.apiUrl, { params }).pipe(
+            tap(res => this.logger.logApi('GET', this.apiUrl, 'SUCCESS', res)),
+            catchError(err => {
+                this.logger.logApi('GET', this.apiUrl, 'ERROR', err);
+                throw err;
+            })
+        );
+    }
     get_by_id(id: number | string): Observable<any> {
         const url = `${this.apiUrl}/${id}/`;
         this.logger.logApi('GET', url, 'START');

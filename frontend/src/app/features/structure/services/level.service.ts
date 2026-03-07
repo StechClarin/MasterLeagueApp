@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
 import { GetAllLevelsGQL } from '../graphql/structure.generated';
+import { map } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -20,5 +21,11 @@ export class LevelService extends BaseService {
             page: 1,
             pageSize: 100
         }, { fetchPolicy: 'network-only' });
+    }
+
+    override list() {
+        return this.generatedGQL.fetch({ page: 1, pageSize: 100 }, { fetchPolicy: 'network-only' }).pipe(
+            map((res: any) => res.data.levels?.items || [])
+        );
     }
 }

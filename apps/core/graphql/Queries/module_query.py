@@ -13,9 +13,14 @@ class ModuleQuery(graphene.ObjectType):
         if not user.is_authenticated:
             return Module.objects.none()
 
+        from django.db.models import Prefetch
+        from apps.core.models import Page
+
+        pages_prefetch = Prefetch('pages', queryset=Page.objects.order_by('order'))
+
         # 2. SUPERUSER : Il voit tout (Admin)
         if user.is_superuser:
-            return Module.objects.prefetch_related('pages').order_by('order')
+            return Module.objects.prefetch_related(pages_prefetch).order_by('order')
 
         # 3. UTILISATEUR STANDARD : Filtrage par Tags
         allowed_tags = set()
@@ -34,7 +39,7 @@ class ModuleQuery(graphene.ObjectType):
 
         # 4. FILTRAGE DES PAGES
         # On charge tous les modules
-        all_modules = Module.objects.prefetch_related('pages').order_by('order')
+        all_modules = Module.objects.prefetch_related(pages_prefetch).order_by('order')
         filtered_modules = []
 
         for module in all_modules:
