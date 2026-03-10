@@ -55,7 +55,21 @@ export class AuthService {
     return localStorage.getItem('access_token');
   }
 
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiry = payload.exp;
+      return (Math.floor((new Date).getTime() / 1000)) >= expiry;
+    } catch (e) {
+      return true; // Token invalide = expiré/inutilisable
+    }
+  }
+
   private hasToken(): boolean {
-    return !!localStorage.getItem('access_token');
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired();
   }
 }

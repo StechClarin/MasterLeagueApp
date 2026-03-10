@@ -1,4 +1,4 @@
-<app-ui-list-page [title]="'Saisie des Notes : ' + (session()?.title || 'Chargement...')" [isLoading]="isLoading()"
+<app-ui-list-page [title]="'Saisie des Notes : ' + (session()?.title || 'Chargement...') + (session()?.evaluationType?.code ? ' ( ' + session()?.evaluationType?.code + ' )' : '')" [isLoading]="isLoading()"
     [isEmpty]="isEmpty()">
 
     <!-- Header Actions -->
@@ -6,7 +6,7 @@
         <div class="flex gap-3">
             <button
                 class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-all flex items-center font-semibold"
-                (click)="back()">
+                (click)="backToSessions()">
                 <i class="pascal-icon-arrow-left mr-2"></i> Retour
             </button>
             <button

@@ -55,6 +55,9 @@ import { AppRoutes } from '@core/routing/routes.enum';
                     <div class="flex items-center gap-2 mb-2">
                          <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                              {{ session.evaluationType.name }}
+                             <span *ngIf="session.evaluationType.code" class="ml-1 opacity-60">
+                                 ({{ session.evaluationType.code }})
+                             </span>
                          </span>
                          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                              • {{ getScopeLabel(session.scope) }}
@@ -136,7 +139,7 @@ export class GradeEntryListComponent extends BaseListComponent<EvaluationSession
   }
 
   goToEntry(id: string) {
-    this.router.navigate([AppRoutes.NOTES, id]);
+    this.router.navigate([AppRoutes.NOTES_AND_BULLETINS, id]);
   }
 
   getStatusClass(status: string) {

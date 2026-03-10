@@ -30,9 +30,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                     case 401:
                         errorMessage = 'Session expirée. Veuillez vous reconnecter.';
                         authService.logout();
-                        router.navigate(['/auth/login']);
-                        // On retourne l'erreur pour que le composant sache qu'il y a eu un souci, 
-                        // mais le redirect gère la suite.
+                        router.navigate(['/login']);
                         break;
                     case 403:
                         errorMessage = error.error?.detail || 'Accès refusé. Vous n\'avez pas les droits nécessaires.';

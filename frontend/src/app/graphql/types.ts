@@ -343,6 +343,8 @@ export type EvaluationSupervisionType = {
 
 export type EvaluationTypeType = {
   __typename?: 'EvaluationTypeType';
+  /** Code système (ex: CC, EXAM) pour le moteur de bulletin */
+  code?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
@@ -351,6 +353,8 @@ export type EvaluationTypeType = {
   isActive: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  /** Poids par défaut dans le calcul de la moyenne de matière */
+  weight: Scalars['Decimal']['output'];
 };
 
 export type EvaluationTypeTypePaginated = {
@@ -781,6 +785,8 @@ export type QueryEvaluationTypesArgs = {
 
 
 export type QueryGradesArgs = {
+  academicPeriodId?: InputMaybe<Scalars['Int']['input']>;
+  classroomId?: InputMaybe<Scalars['Int']['input']>;
   evaluationSessionId?: InputMaybe<Scalars['Int']['input']>;
   evaluationSubjectId?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;

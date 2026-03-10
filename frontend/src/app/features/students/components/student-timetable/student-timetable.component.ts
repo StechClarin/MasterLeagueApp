@@ -262,7 +262,7 @@ export class StudentTimetableComponent implements OnInit {
         let evts = this.rawEvents();
 
         if (classId) {
-            evts = evts.filter(e => e.classe?.id === classId);
+            evts = evts.filter(e => String(e.classe?.id) === String(classId));
         }
 
         return this.mapEventsToGrid(evts);

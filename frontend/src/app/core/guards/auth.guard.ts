@@ -6,8 +6,8 @@ export const authGuard: CanActivateFn = (route, state) => {
     const authService = inject(AuthService);
     const router = inject(Router);
 
-    // Vérification simple basée sur le signal ou la présence du token
-    if (authService.currentUserSignal() || localStorage.getItem('access_token')) {
+    // Vérification basée sur le signal (qui gère maintenant l'expiration via hasToken())
+    if (authService.currentUserSignal()) {
         return true;
     }
 

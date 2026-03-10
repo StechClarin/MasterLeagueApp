@@ -26,6 +26,13 @@ export class DynamicRouterService {
     console.log('🔄 Chargement des routes dynamiques...');
 
     try {
+      // 0. Vérification de l'authentification
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.warn('⚠️ Aucun token trouvé. Saut du chargement des routes dynamiques.');
+        return;
+      }
+
       // 1. On récupère la structure depuis Django
       console.log('Fetching modules from GraphQL...');
       const result: any = await firstValueFrom(

@@ -3,9 +3,9 @@ import * as Types from '../../../graphql/types';
 import { gql } from 'apollo-angular';
 import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
-export type EvaluationTypeFieldsFragment = { __typename?: 'EvaluationTypeType', id: string, name: string, description?: string | null, isActive: boolean };
+export type EvaluationTypeFieldsFragment = { __typename?: 'EvaluationTypeType', id: string, name: string, code?: string | null, weight: any, description?: string | null, isActive: boolean };
 
-export type EvaluationSessionFieldsFragment = { __typename?: 'EvaluationSessionType', id: string, title: string, status: Types.EvaluationsEvaluationSessionStatusChoices, scope: Types.EvaluationsEvaluationSessionScopeChoices, evaluationType: { __typename?: 'EvaluationTypeType', id: string, name: string }, academicPeriod: { __typename?: 'AcademicPeriodType', id: string, name: string }, subjects: Array<{ __typename?: 'EvaluationSubjectType', id: string, maxScore: any, coefficient?: any | null, subjectFile?: string | null, levelCoefficients?: Array<{ __typename?: 'LevelCoefficientType', levelId?: number | null, coefficient?: any | null } | null> | null, subject: { __typename?: 'SubjectType', id: string, name: string }, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, plannings: Array<{ __typename?: 'EvaluationPlanningType', id: string, date: any, startTime?: any | null, durationMinutes?: number | null, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, classrooms: Array<{ __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string } }> }> }> };
+export type EvaluationSessionFieldsFragment = { __typename?: 'EvaluationSessionType', id: string, title: string, status: Types.EvaluationsEvaluationSessionStatusChoices, scope: Types.EvaluationsEvaluationSessionScopeChoices, evaluationType: { __typename?: 'EvaluationTypeType', id: string, name: string, code?: string | null, weight: any }, academicPeriod: { __typename?: 'AcademicPeriodType', id: string, name: string }, subjects: Array<{ __typename?: 'EvaluationSubjectType', id: string, maxScore: any, coefficient?: any | null, subjectFile?: string | null, levelCoefficients?: Array<{ __typename?: 'LevelCoefficientType', levelId?: number | null, coefficient?: any | null } | null> | null, subject: { __typename?: 'SubjectType', id: string, name: string }, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, plannings: Array<{ __typename?: 'EvaluationPlanningType', id: string, date: any, startTime?: any | null, durationMinutes?: number | null, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, classrooms: Array<{ __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string } }> }> }> };
 
 export type EvaluationSubjectFieldsFragment = { __typename?: 'EvaluationSubjectType', id: string, maxScore: any, coefficient?: any | null, subjectFile?: string | null, levelCoefficients?: Array<{ __typename?: 'LevelCoefficientType', levelId?: number | null, coefficient?: any | null } | null> | null, subject: { __typename?: 'SubjectType', id: string, name: string }, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, plannings: Array<{ __typename?: 'EvaluationPlanningType', id: string, date: any, startTime?: any | null, durationMinutes?: number | null, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, classrooms: Array<{ __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string } }> }> };
 
@@ -13,7 +13,7 @@ export type EvaluationPlanningFieldsFragment = { __typename?: 'EvaluationPlannin
 
 export type EvaluationSupervisionFieldsFragment = { __typename?: 'EvaluationSupervisionType', id: string, date: any, classroom: { __typename?: 'ClassRoomType', id: string, name: string }, supervisors: Array<{ __typename?: 'PersonnelType', id: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }> };
 
-export type GradeFieldsFragment = { __typename?: 'GradeType', id: string, value?: any | null, comment?: string | null, isAbsent: boolean, student: { __typename?: 'StudentType', id: string, matricule: string, firstName: string, lastName: string }, evaluationSubject?: { __typename?: 'EvaluationSubjectType', id: string, subject: { __typename?: 'SubjectType', name: string } } | null };
+export type GradeFieldsFragment = { __typename?: 'GradeType', id: string, value?: any | null, comment?: string | null, isAbsent: boolean, student: { __typename?: 'StudentType', id: string, matricule: string, firstName: string, lastName: string }, evaluationSubject?: { __typename?: 'EvaluationSubjectType', id: string, subject: { __typename?: 'SubjectType', name: string }, session: { __typename?: 'EvaluationSessionType', evaluationType: { __typename?: 'EvaluationTypeType', code?: string | null, weight: any } } } | null };
 
 export type GetAllEvaluationTypesQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -22,7 +22,7 @@ export type GetAllEvaluationTypesQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllEvaluationTypesQuery = { __typename?: 'Query', evaluationTypes?: { __typename?: 'EvaluationTypeTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EvaluationTypeType', id: string, name: string, description?: string | null, isActive: boolean } | null> | null } | null };
+export type GetAllEvaluationTypesQuery = { __typename?: 'Query', evaluationTypes?: { __typename?: 'EvaluationTypeTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EvaluationTypeType', id: string, name: string, code?: string | null, weight: any, description?: string | null, isActive: boolean } | null> | null } | null };
 
 export type GetAllEvaluationSessionsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -36,25 +36,27 @@ export type GetAllEvaluationSessionsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllEvaluationSessionsQuery = { __typename?: 'Query', evaluationSessions?: { __typename?: 'EvaluationSessionTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EvaluationSessionType', id: string, title: string, status: Types.EvaluationsEvaluationSessionStatusChoices, scope: Types.EvaluationsEvaluationSessionScopeChoices, supervisions?: Array<{ __typename?: 'EvaluationSupervisionType', id: string, date: any, classroom: { __typename?: 'ClassRoomType', id: string, name: string }, supervisors: Array<{ __typename?: 'PersonnelType', id: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }> } | null> | null, evaluationType: { __typename?: 'EvaluationTypeType', id: string, name: string }, academicPeriod: { __typename?: 'AcademicPeriodType', id: string, name: string }, subjects: Array<{ __typename?: 'EvaluationSubjectType', id: string, maxScore: any, coefficient?: any | null, subjectFile?: string | null, levelCoefficients?: Array<{ __typename?: 'LevelCoefficientType', levelId?: number | null, coefficient?: any | null } | null> | null, subject: { __typename?: 'SubjectType', id: string, name: string }, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, plannings: Array<{ __typename?: 'EvaluationPlanningType', id: string, date: any, startTime?: any | null, durationMinutes?: number | null, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, classrooms: Array<{ __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string } }> }> }> } | null> | null } | null };
+export type GetAllEvaluationSessionsQuery = { __typename?: 'Query', evaluationSessions?: { __typename?: 'EvaluationSessionTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EvaluationSessionType', id: string, title: string, status: Types.EvaluationsEvaluationSessionStatusChoices, scope: Types.EvaluationsEvaluationSessionScopeChoices, supervisions?: Array<{ __typename?: 'EvaluationSupervisionType', id: string, date: any, classroom: { __typename?: 'ClassRoomType', id: string, name: string }, supervisors: Array<{ __typename?: 'PersonnelType', id: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }> } | null> | null, evaluationType: { __typename?: 'EvaluationTypeType', id: string, name: string, code?: string | null, weight: any }, academicPeriod: { __typename?: 'AcademicPeriodType', id: string, name: string }, subjects: Array<{ __typename?: 'EvaluationSubjectType', id: string, maxScore: any, coefficient?: any | null, subjectFile?: string | null, levelCoefficients?: Array<{ __typename?: 'LevelCoefficientType', levelId?: number | null, coefficient?: any | null } | null> | null, subject: { __typename?: 'SubjectType', id: string, name: string }, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, plannings: Array<{ __typename?: 'EvaluationPlanningType', id: string, date: any, startTime?: any | null, durationMinutes?: number | null, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, classrooms: Array<{ __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string } }> }> }> } | null> | null } | null };
 
 export type GetAllGradesQueryVariables = Types.Exact<{
   evaluationSubjectId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   evaluationSessionId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   studentId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  academicPeriodId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  classroomId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
 
 
-export type GetAllGradesQuery = { __typename?: 'Query', grades?: { __typename?: 'GradeTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'GradeType', id: string, value?: any | null, comment?: string | null, isAbsent: boolean, student: { __typename?: 'StudentType', id: string, matricule: string, firstName: string, lastName: string }, evaluationSubject?: { __typename?: 'EvaluationSubjectType', id: string, subject: { __typename?: 'SubjectType', name: string } } | null } | null> | null } | null };
+export type GetAllGradesQuery = { __typename?: 'Query', grades?: { __typename?: 'GradeTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'GradeType', id: string, value?: any | null, comment?: string | null, isAbsent: boolean, student: { __typename?: 'StudentType', id: string, matricule: string, firstName: string, lastName: string }, evaluationSubject?: { __typename?: 'EvaluationSubjectType', id: string, subject: { __typename?: 'SubjectType', name: string }, session: { __typename?: 'EvaluationSessionType', evaluationType: { __typename?: 'EvaluationTypeType', code?: string | null, weight: any } } } | null } | null> | null } | null };
 
 export type GetEvaluationSessionQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetEvaluationSessionQuery = { __typename?: 'Query', evaluationSession?: { __typename?: 'EvaluationSessionType', id: string, title: string, status: Types.EvaluationsEvaluationSessionStatusChoices, scope: Types.EvaluationsEvaluationSessionScopeChoices, evaluationType: { __typename?: 'EvaluationTypeType', id: string, name: string }, academicPeriod: { __typename?: 'AcademicPeriodType', id: string, name: string }, subjects: Array<{ __typename?: 'EvaluationSubjectType', id: string, maxScore: any, coefficient?: any | null, subjectFile?: string | null, levelCoefficients?: Array<{ __typename?: 'LevelCoefficientType', levelId?: number | null, coefficient?: any | null } | null> | null, subject: { __typename?: 'SubjectType', id: string, name: string }, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, plannings: Array<{ __typename?: 'EvaluationPlanningType', id: string, date: any, startTime?: any | null, durationMinutes?: number | null, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, classrooms: Array<{ __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string } }> }> }> } | null };
+export type GetEvaluationSessionQuery = { __typename?: 'Query', evaluationSession?: { __typename?: 'EvaluationSessionType', id: string, title: string, status: Types.EvaluationsEvaluationSessionStatusChoices, scope: Types.EvaluationsEvaluationSessionScopeChoices, evaluationType: { __typename?: 'EvaluationTypeType', id: string, name: string, code?: string | null, weight: any }, academicPeriod: { __typename?: 'AcademicPeriodType', id: string, name: string }, subjects: Array<{ __typename?: 'EvaluationSubjectType', id: string, maxScore: any, coefficient?: any | null, subjectFile?: string | null, levelCoefficients?: Array<{ __typename?: 'LevelCoefficientType', levelId?: number | null, coefficient?: any | null } | null> | null, subject: { __typename?: 'SubjectType', id: string, name: string }, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, plannings: Array<{ __typename?: 'EvaluationPlanningType', id: string, date: any, startTime?: any | null, durationMinutes?: number | null, levels: Array<{ __typename?: 'LevelType', id: string, name: string }>, classrooms: Array<{ __typename?: 'ClassRoomType', id: string, name: string, level: { __typename?: 'LevelType', id: string } }> }> }> } | null };
 
 export type GetAllEvaluationPlanningsQueryVariables = Types.Exact<{
   classeId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
@@ -71,6 +73,8 @@ export const EvaluationTypeFieldsFragmentDoc = gql`
     fragment EvaluationTypeFields on EvaluationTypeType {
   id
   name
+  code
+  weight
   description
   isActive
 }
@@ -126,6 +130,8 @@ export const EvaluationSessionFieldsFragmentDoc = gql`
   evaluationType {
     id
     name
+    code
+    weight
   }
   academicPeriod {
     id
@@ -169,6 +175,12 @@ export const GradeFieldsFragmentDoc = gql`
     id
     subject {
       name
+    }
+    session {
+      evaluationType {
+        code
+        weight
+      }
     }
   }
 }
@@ -233,11 +245,13 @@ ${EvaluationSupervisionFieldsFragmentDoc}`;
     }
   }
 export const GetAllGradesDocument = gql`
-    query GetAllGrades($evaluationSubjectId: Int, $evaluationSessionId: Int, $studentId: Int, $page: Int, $pageSize: Int) {
+    query GetAllGrades($evaluationSubjectId: Int, $evaluationSessionId: Int, $studentId: Int, $academicPeriodId: Int, $classroomId: Int, $page: Int, $pageSize: Int) {
   grades(
     evaluationSubjectId: $evaluationSubjectId
     evaluationSessionId: $evaluationSessionId
     studentId: $studentId
+    academicPeriodId: $academicPeriodId
+    classroomId: $classroomId
     page: $page
     pageSize: $pageSize
   ) {

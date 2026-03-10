@@ -24,6 +24,17 @@ export class GradeService extends BaseService {
         );
     }
 
+    listByPeriodAndClass(academicPeriodId: number, classroomId: number) {
+        return this.generatedGQL.fetch({
+            academicPeriodId,
+            classroomId,
+            page: 1,
+            pageSize: 2000 // All grades for all sessions in this class/period
+        }, { fetchPolicy: 'network-only' }).pipe(
+            map((res: any) => res.data.grades?.items || [])
+        );
+    }
+
     /**
      * Bulk save grades for an evaluation
      */

@@ -5,6 +5,8 @@
 fragment EvaluationTypeFields on EvaluationTypeType {
   id
   name
+  code
+  weight
   description
   isActive
 }
@@ -17,6 +19,8 @@ fragment EvaluationSessionFields on EvaluationSessionType {
   evaluationType {
     id
     name
+    code
+    weight
   }
   academicPeriod {
     id
@@ -99,6 +103,12 @@ fragment GradeFields on GradeType {
     subject {
       name
     }
+    session {
+      evaluationType {
+        code
+        weight
+      }
+    }
   }
 }
 
@@ -131,8 +141,8 @@ query GetAllEvaluationSessions($search: String, $classroomId: Int, $levelId: Int
   }
 }
 
-query GetAllGrades($evaluationSubjectId: Int, $evaluationSessionId: Int, $studentId: Int, $page: Int, $pageSize: Int) {
-  grades(evaluationSubjectId: $evaluationSubjectId, evaluationSessionId: $evaluationSessionId, studentId: $studentId, page: $page, pageSize: $pageSize) {
+query GetAllGrades($evaluationSubjectId: Int, $evaluationSessionId: Int, $studentId: Int, $academicPeriodId: Int, $classroomId: Int, $page: Int, $pageSize: Int) {
+  grades(evaluationSubjectId: $evaluationSubjectId, evaluationSessionId: $evaluationSessionId, studentId: $studentId, academicPeriodId: $academicPeriodId, classroomId: $classroomId, page: $page, pageSize: $pageSize) {
     items {
       ...GradeFields
     }

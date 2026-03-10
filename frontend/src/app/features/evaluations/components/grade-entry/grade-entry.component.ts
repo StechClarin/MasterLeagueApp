@@ -62,6 +62,7 @@ export class GradeEntryComponent implements OnInit {
     isSaving = signal(false);
 
     gradeRows = signal<StudentGradeRow[]>([]);
+    periodGrades = signal<GradeFieldsFragment[]>([]); // For bulletin aggregation
     searchQuery = signal<string>('');
     selectedClassroomId = signal<string | null>(null);
 
@@ -401,13 +402,16 @@ export class GradeEntryComponent implements OnInit {
         return row.grades.find(g => g.evaluationSubjectId === subjectId);
     }
 
-    back() {
-        this.router.navigate([AppRoutes.NOTES]);
+    backToSessions() {
+        this.router.navigate([AppRoutes.NOTES_AND_BULLETINS]);
     }
 
     // PDF GENERATION
     async printStudentBulletin(row: StudentGradeRow) {
+        this.isLoading.set(true);
         try {
+            await this.fetchAllPeriodGrades();
+            
             const [jsPDFModule, autoTableModule] = await Promise.all([
                 import('jspdf'),
                 import('jspdf-autotable')
@@ -416,12 +420,15 @@ export class GradeEntryComponent implements OnInit {
             const doc = new JsPDF();
             const autoTable = (autoTableModule as any).default || autoTableModule;
 
+            const periodName = this.session()?.academicPeriod?.name || 'periode';
             this.generateSingleBulletin(doc, autoTable, row);
-            doc.save(`bulletin_${row.matricule}_${row.lastName}.pdf`);
+            doc.save(`bulletin_${row.matricule}_${periodName}.pdf`);
             this.toast.success(`Bulletin généré pour ${row.lastName}`);
         } catch (err) {
             console.error('PDF Error:', err);
             this.toast.error('Erreur lors de la génération du bulletin');
+        } finally {
+            this.isLoading.set(false);
         }
     }
 
@@ -432,7 +439,10 @@ export class GradeEntryComponent implements OnInit {
             return;
         }
 
+        this.isLoading.set(true);
         try {
+            await this.fetchAllPeriodGrades();
+
             const [jsPDFModule, autoTableModule] = await Promise.all([
                 import('jspdf'),
                 import('jspdf-autotable')
@@ -447,11 +457,28 @@ export class GradeEntryComponent implements OnInit {
             });
 
             const className = this.availableClassrooms().find(c => c.id === this.selectedClassroomId())?.name || 'classe';
-            doc.save(`bulletins_${className}.pdf`);
+            const periodName = this.session()?.academicPeriod?.name || 'periode';
+            doc.save(`bulletins_${className}_${periodName}.pdf`);
             this.toast.success(`Impression de ${rows.length} bulletins terminée.`);
         } catch (err) {
             console.error('PDF Error:', err);
             this.toast.error('Erreur lors de la génération groupée');
+        } finally {
+            this.isLoading.set(false);
+        }
+    }
+
+    private async fetchAllPeriodGrades() {
+        const session = this.session();
+        const classroomId = this.selectedClassroomId();
+        if (!session || !classroomId) return;
+
+        try {
+            const periodId = parseInt(session.academicPeriod.id);
+            const grades = await firstValueFrom(this.gradeService.listByPeriodAndClass(periodId, parseInt(classroomId)));
+            this.periodGrades.set(grades as GradeFieldsFragment[]);
+        } catch (err) {
+            console.error('Failed to fetch period grades', err);
         }
     }
 
@@ -460,93 +487,196 @@ export class GradeEntryComponent implements OnInit {
         const est = session?.establishment;
         const period = session?.academicPeriod;
 
-        // Header
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(79, 70, 229); // Indigo 600
-        doc.text(est?.name || 'Établissement Scolaire', 105, 20, { align: 'center' });
+        // --- GLOBAL STYLES & COLORS ---
+        const primaryColor = [30, 41, 59]; // slate-800
+        const accentColor = [79, 110, 229]; // indigo-600
+        const lightGray = [248, 250, 252]; // shadow/bg
 
+        // --- HEADER DESIGN (International Standard) ---
+        // Left Column: School Logo & Name
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, 210, 15, 'F'); // Top accent bar
+
+        // School Branding
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(...primaryColor);
+        doc.text(est?.name || 'INTERNATIONAL EXCELLENCE ACADEMY', 20, 35, { maxWidth: 110 });
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100);
+        doc.text('Inspiring Excellence, Empowering Minds', 20, 44);
+
+        // Right Column: School Metadata (Ensuring NO overlap)
+        doc.setFontSize(8);
+        doc.setTextColor(80);
+        doc.text(`BP: 1234 - Yaoundé, Cameroun`, 190, 28, { align: 'right' });
+        doc.text(`Tel: (+237) 677 00 00 00`, 190, 33, { align: 'right' });
+        doc.text(`Email: admin@${est?.name?.toLowerCase().replace(/\s/g, '') || 'academy'}.com`, 190, 38, { align: 'right' });
+        doc.text(`Web: www.${est?.name?.toLowerCase().replace(/\s/g, '') || 'academy'}.edu`, 190, 43, { align: 'right' });
+
+        // Horizontal Separator
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.5);
+        doc.line(20, 52, 190, 52);
+
+        // --- BULLETIN TITLE & PERIOD ---
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...accentColor);
+        doc.text('BULLETIN DE NOTES / REPORT CARD', 105, 62, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.setTextColor(70);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${period?.name || 'Période Scolaire'} - ${period?.academicYear?.name || 'ANNÉE ACADÉMIQUE'}`, 105, 68, { align: 'center' });
+
+        // --- STUDENT INFORMATION BLOCK (Premium Box) ---
+        doc.setFillColor(...lightGray);
+        doc.roundedRect(20, 78, 170, 30, 3, 3, 'F');
+        
         doc.setFontSize(10);
         doc.setTextColor(100);
         doc.setFont('helvetica', 'normal');
-        doc.text(session?.title || 'Bulletin de Notes', 105, 28, { align: 'center' });
-        doc.text(`Année Académique: ${period?.academicYear?.name || 'N/A'} - ${period?.name || ''}`, 105, 34, { align: 'center' });
-
-        // Student Info
-        doc.setDrawColor(226, 232, 240);
-        doc.line(20, 40, 190, 40);
-
-        doc.setFontSize(12);
-        doc.setTextColor(30);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${row.lastName} ${row.firstName}`, 20, 50);
+        doc.text('ÉLÈVE / STUDENT:', 25, 85);
         
+        doc.setFontSize(14);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${row.lastName.toUpperCase()} ${row.firstName}`, 25, 93);
+
         doc.setFontSize(9);
+        doc.setTextColor(100);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Matricule: ${row.matricule}`, 20, 56);
+        doc.text(`ID: ${row.matricule}`, 25, 102);
         
         const className = this.availableClassrooms().find(c => c.id === row.classroomId)?.name || 'N/A';
-        doc.text(`Classe: ${className}`, 20, 62);
+        doc.text(`CLASSE: ${className}`, 25, 107);
 
-        // Grades Table
-        const headers = [['Matière', 'Note', 'Max', 'Coef', 'Pondérée', 'Appréciation']];
-        const body = row.grades.map(g => {
-            const subj = this.subjects().find(s => s.id === g.evaluationSubjectId);
-            const coeff = this.getDynamicCoefficient(subj);
-            const val = g.isAbsent.value ? 'ABS' : (g.value.value ?? '--');
-            const weighted = !g.isAbsent.value && g.value.value !== null ? (g.value.value * coeff).toFixed(2) : '--';
-            
-            return [
-                subj?.subject?.name || 'N/A',
-                val,
-                g.maxScore,
-                coeff,
-                weighted,
-                this.getAppreciation(g.value.value ?? 0)
-            ];
+        // Watermark (International Style)
+        doc.setFontSize(80);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(245, 247, 250); // Very light gray
+        doc.text('OFFICIAL', 105, 160, { align: 'center', angle: 45 });
+
+        // --- GRADES TABLE ---
+        const headers = [['MATIÈRE / SUBJECT', 'CC (AVG)', 'EXAM', 'TOTAL /20', 'COEF', 'WEIGHTED', 'REMARK']];
+        
+        // FIX: Ensure ID matching handles string/number/object ambiguity
+        const studentIdToMatch = String(row.studentId);
+        const allGrades = this.periodGrades().filter(g => String(g.student.id) === studentIdToMatch);
+        
+        const subjectGroups = new Map<string, GradeFieldsFragment[]>();
+        allGrades.forEach(g => {
+            const name = g.evaluationSubject?.subject?.name || 'Subject';
+            if (!subjectGroups.has(name)) subjectGroups.set(name, []);
+            subjectGroups.get(name)!.push(g);
         });
 
-        const tableConfig = {
-            startY: 70,
+        const body = [];
+        let totalPeriodPoints = 0;
+        let totalPeriodCoeff = 0;
+
+        for (const [subjectName, grades] of subjectGroups.entries()) {
+            const ccGrades = grades.filter(g => g.evaluationSubject?.session?.evaluationType?.code === 'CC');
+            const ccGradesWithValue = ccGrades.filter(g => g.value !== null && g.value !== undefined);
+            const ccAvg = ccGradesWithValue.length > 0 ? ccGradesWithValue.reduce((a, b) => a + (b.value!), 0) / ccGradesWithValue.length : null;
+            const ccWeight = ccGrades.length > 0 ? Number(ccGrades[0].evaluationSubject?.session?.evaluationType?.weight || 1) : 1;
+
+            const examGrade = grades.find(g => g.evaluationSubject?.session?.evaluationType?.code === 'EXAM');
+            const examVal = (examGrade?.value !== null && examGrade?.value !== undefined) ? examGrade.value : null;
+            const examWeight = examGrade ? Number(examGrade.evaluationSubject?.session?.evaluationType?.weight || 2) : 2;
+
+            const currentSubj = this.subjects().find(s => s.subject?.name === subjectName);
+            const coeff = this.getDynamicCoefficient(currentSubj);
+
+            let subjectWeightedTotal = 0;
+            let divisor = 0;
+            if (ccAvg !== null) { subjectWeightedTotal += ccAvg * ccWeight; divisor += ccWeight; }
+            if (examVal !== null) { subjectWeightedTotal += examVal * examWeight; divisor += examWeight; }
+            
+            const finalSubjAvg = divisor > 0 ? subjectWeightedTotal / divisor : 0;
+            const finalWeighted = finalSubjAvg * coeff;
+
+            totalPeriodPoints += finalWeighted;
+            totalPeriodCoeff += coeff;
+
+            body.push([
+                subjectName.toUpperCase(),
+                ccAvg !== null ? ccAvg.toFixed(2) : '--',
+                examVal !== null ? examVal.toFixed(2) : '--',
+                finalSubjAvg.toFixed(2),
+                coeff,
+                finalWeighted.toFixed(2),
+                this.getAppreciation(finalSubjAvg)
+            ]);
+        }
+
+        const rowAvg = totalPeriodCoeff > 0 ? totalPeriodPoints / totalPeriodCoeff : 0;
+
+        autoTable(doc, {
+            startY: 115,
             head: headers,
             body: body,
             theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229], halign: 'center' },
-            styles: { fontSize: 9, cellPadding: 3 },
+            headStyles: { 
+                fillColor: primaryColor, 
+                halign: 'center', 
+                fontSize: 9, 
+                fontStyle: 'bold',
+                textColor: [255, 255, 255]
+            },
+            bodyStyles: { fontSize: 9, cellPadding: 3, textColor: primaryColor },
+            alternateRowStyles: { fillColor: [252, 253, 255] },
             columnStyles: {
-                0: { cellWidth: 60 },
+                0: { cellWidth: 55, fontStyle: 'bold' },
                 1: { halign: 'center' },
                 2: { halign: 'center' },
-                3: { halign: 'center' },
+                3: { halign: 'center', fontStyle: 'bold' },
                 4: { halign: 'center' },
-                5: { halign: 'center' }
+                5: { halign: 'center', fontStyle: 'bold' },
+                6: { halign: 'center', cellWidth: 35 }
             }
-        };
+        });
 
-        if (typeof (doc as any).autoTable === 'function') {
-            (doc as any).autoTable(tableConfig);
-        } else {
-            autoTable(doc, tableConfig);
-        }
+        // --- FOOTER SUMMARY ---
+        const finalY = (doc as any).lastAutoTable?.finalY || 200;
+        
+        // Summary Box
+        doc.setFillColor(...lightGray);
+        doc.rect(130, finalY + 5, 60, 25, 'F');
+        doc.setDrawColor(...primaryColor);
+        doc.rect(130, finalY + 5, 60, 25, 'S');
 
-        // Summary
-        const finalY = (doc as any).lastAutoTable?.finalY || 150;
-        doc.setFontSize(14);
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        if (row.average >= 10) {
-            doc.setTextColor(5, 150, 105); // Emerald 600
-        } else {
-            doc.setTextColor(220, 38, 38); // Red 600
-        }
-        doc.text(`MOYENNE: ${row.average.toFixed(2)} / 20`, 190, finalY + 10, { align: 'right' });
+        doc.setTextColor(...primaryColor);
+        doc.text('TOTAL AVG / MOY', 145, finalY + 12);
+        
+        doc.setFontSize(16);
+        const avgColor = rowAvg >= 10 ? [5, 150, 105] : [220, 38, 38];
+        doc.setTextColor(avgColor[0], avgColor[1], avgColor[2]);
+        doc.text(`${rowAvg.toFixed(2)} / 20`, 160, finalY + 23, { align: 'center' });
 
+        // Global Appreciation
         doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(`Appréciation Globale: ${row.appreciation}`, 190, finalY + 17, { align: 'right' });
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Appreciation: ${this.getAppreciation(rowAvg)}`, 20, finalY + 15);
 
-        // Signature area
+        // Signatures
         doc.setFontSize(9);
-        doc.setTextColor(150);
-        doc.text('Le Chef d\'Établissement', 150, finalY + 40);
+        doc.setTextColor(80);
+        doc.setFont('helvetica', 'bold');
+        doc.text('THE DIRECTOR / LE DIRECTEUR', 150, finalY + 45);
+        
+        doc.setDrawColor(200);
+        doc.setLineWidth(0.2);
+        doc.line(140, finalY + 65, 190, finalY + 65);
+        
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'italic');
+        doc.text(`GigaCore Education System - Generated on ${new Date().toLocaleDateString()}`, 105, 285, { align: 'center' });
     }
 }
