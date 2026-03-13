@@ -19,7 +19,7 @@ services:
       - CSRF_TRUSTED_ORIGINS=http://72.60.2.96:8080
     # On force la connexion au réseau du container de prod pour voir la DB
     networks:
-      - schoolmanage_prod_default 
+      - schoolmanage_default 
     restart: always
 
   frontend-test:
@@ -32,12 +32,12 @@ services:
     depends_on:
       - backend-test
     networks:
-      - schoolmanage_prod_default
+      - schoolmanage_default
     restart: always
 
 networks:
   # On se connecte au réseau existant créé par le docker-compose de prod
-  schoolmanage_prod_default:
+  schoolmanage_default:
     external: true
 
 volumes:
