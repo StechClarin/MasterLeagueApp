@@ -4,10 +4,10 @@ FROM node:20 as builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 COPY . .
-RUN npm run build -- --base-href /schoolmanage_test/
+RUN npm run build -- --base-href /schoolmanage/test/
 
 # STAGE 2: Serve
 FROM nginx:alpine
