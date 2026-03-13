@@ -29,6 +29,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80" # ACCÈS SUR LE PORT 8080
+    volumes:
+      - ./releases:/app/releases
     depends_on:
       - backend-test
     networks:
