@@ -1,5 +1,5 @@
 export const environment = {
     production: true,
-    apiUrl: '/schoolmanage_test/api',
-    graphqlUrl: '/schoolmanage_test/graphql'
+    apiUrl: '/schoolmanage/test/api',
+    graphqlUrl: '/schoolmanage/test/graphql'
 };
