@@ -11,6 +11,9 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
+# Arrêter le script en cas d'erreur
+set -e
+
 APP_NAME="schoolmanage"
 RELEASE_DIR="./releases/$VERSION"
 ARCHIVE_NAME="$APP_NAME-v$VERSION.tar.gz"
