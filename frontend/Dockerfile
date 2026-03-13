@@ -9,7 +9,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build -- --base-href /schoolmanage/test/
 
-# STAGE 2: Serve
+# STAGE 2: Serve aa
 FROM nginx:alpine
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
