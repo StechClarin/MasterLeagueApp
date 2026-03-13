@@ -1,43 +1,45 @@
 services:
-  db:
-    image: postgres:17
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=app_db
-      - POSTGRES_USER=app_user
-      - POSTGRES_PASSWORD=secure_password
-    restart: always
-
-  backend:
+  # On ne redéfinit pas 'db' ici car on utilise celui de la prod
+  
+  backend-test:
+    container_name: schoolmanage-test-api
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - static_volume:/app/static
-      - media_volume:/app/media
+      - static_volume_test:/app/static
+      - media_volume_test:/app/media
     environment:
-      - DATABASE_URL=postgres://app_user:secure_password@db:5432/app_db
+      # On pointe vers le container de db de la prod, mais sur la base 'schoolmanage_test'
+      - DATABASE_URL=postgres://app_user:secure_password@schoolmanage-db-1:5432/schoolmanage_test
       - DEBUG=0
-      - SECRET_KEY=change_me_in_prod
+      - SECRET_KEY=test_secret_key_123
       - ALLOWED_HOSTS=*
       - CORS_ALLOW_ALL_ORIGINS=True
-      - CSRF_TRUSTED_ORIGINS=http://72.60.2.96,http://localhost:4200
-    depends_on:
-      - db
+      - CSRF_TRUSTED_ORIGINS=http://72.60.2.96:8080
+    # On force la connexion au réseau du container de prod pour voir la DB
+    networks:
+      - schoolmanage_prod_default 
     restart: always
 
-  frontend:
+  frontend-test:
+    container_name: schoolmanage-test-app
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8080:80" # ACCÈS SUR LE PORT 8080
     depends_on:
-      - backend
+      - backend-test
+    networks:
+      - schoolmanage_prod_default
     restart: always
 
+networks:
+  # On se connecte au réseau existant créé par le docker-compose de prod
+  schoolmanage_prod_default:
+    external: true
+
 volumes:
-  postgres_data:
-  static_volume:
-  media_volume:
+  static_volume_test:
+  media_volume_test:
