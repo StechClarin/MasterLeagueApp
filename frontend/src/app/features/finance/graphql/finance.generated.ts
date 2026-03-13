@@ -24,6 +24,7 @@ export type GetInvoicesQueryVariables = Types.Exact<{
   studentId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   status?: Types.InputMaybe<Types.Scalars['String']['input']>;
   category?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  classroomId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
@@ -39,6 +40,11 @@ export type GetPaymentsQueryVariables = Types.Exact<{
 
 
 export type GetPaymentsQuery = { __typename?: 'Query', payments?: { __typename?: 'PaymentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, pageSize?: number | null, items?: Array<{ __typename?: 'PaymentType', id: string, amount: any, paymentDate: any, paymentMethod: Types.FinancePaymentPaymentMethodChoices, reference: string, note: string, invoice: { __typename?: 'InvoiceType', id: string, title: string, reference?: string | null, enrollment?: { __typename?: 'EnrollmentType', classroom: { __typename?: 'ClassRoomType', name: string } } | null, student: { __typename?: 'StudentType', firstName: string, lastName: string, matricule: string } } } | null> | null } | null };
+
+export type GetUsedFeeCategoriesQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type GetUsedFeeCategoriesQuery = { __typename?: 'Query', usedFeeCategories?: Array<any | null> | null };
 
 export const FeeDefinitionFieldsFragmentDoc = gql`
     fragment FeeDefinitionFields on FeeDefinitionType {
@@ -149,12 +155,13 @@ export const GetFeeDefinitionsDocument = gql`
     }
   }
 export const GetInvoicesDocument = gql`
-    query GetInvoices($search: String, $studentId: Int, $status: String, $category: String, $page: Int, $pageSize: Int) {
+    query GetInvoices($search: String, $studentId: Int, $status: String, $category: String, $classroomId: Int, $page: Int, $pageSize: Int) {
   invoices(
     search: $search
     studentId: $studentId
     status: $status
     category: $category
+    classroomId: $classroomId
     page: $page
     pageSize: $pageSize
   ) {
@@ -198,6 +205,22 @@ export const GetPaymentsDocument = gql`
   })
   export class GetPaymentsGQL extends Apollo.Query<GetPaymentsQuery, GetPaymentsQueryVariables> {
     document = GetPaymentsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetUsedFeeCategoriesDocument = gql`
+    query GetUsedFeeCategories {
+  usedFeeCategories
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetUsedFeeCategoriesGQL extends Apollo.Query<GetUsedFeeCategoriesQuery, GetUsedFeeCategoriesQueryVariables> {
+    document = GetUsedFeeCategoriesDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

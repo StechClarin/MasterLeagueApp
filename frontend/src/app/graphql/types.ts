@@ -882,6 +882,7 @@ export type Query = {
   subjects?: Maybe<SubjectTypePaginated>;
   teachingAssignment?: Maybe<TeachingAssignmentType>;
   teachingAssignments?: Maybe<TeachingAssignmentTypePaginated>;
+  usedFeeCategories?: Maybe<Array<Maybe<Scalars['JSONString']['output']>>>;
   user?: Maybe<UserType>;
   users?: Maybe<UserTypePaginated>;
 };
@@ -1050,6 +1051,7 @@ export type QueryGuardiansArgs = {
 
 export type QueryInvoicesArgs = {
   category?: InputMaybe<Scalars['String']['input']>;
+  classroomId?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;

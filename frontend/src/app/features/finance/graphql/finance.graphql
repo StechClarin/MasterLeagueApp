@@ -86,8 +86,8 @@ query GetFeeDefinitions($search: String, $levelId: Int, $page: Int, $pageSize: I
   }
 }
 
-query GetInvoices($search: String, $studentId: Int, $status: String, $category: String, $page: Int, $pageSize: Int) {
-  invoices(search: $search, studentId: $studentId, status: $status, category: $category, page: $page, pageSize: $pageSize) {
+query GetInvoices($search: String, $studentId: Int, $status: String, $category: String, $classroomId: Int, $page: Int, $pageSize: Int) {
+  invoices(search: $search, studentId: $studentId, status: $status, category: $category, classroomId: $classroomId, page: $page, pageSize: $pageSize) {
     totalCount
     numPages
     currentPage
@@ -108,4 +108,7 @@ query GetPayments($invoiceId: Int, $page: Int, $pageSize: Int) {
       ...PaymentFields
     }
   }
+}
+query GetUsedFeeCategories {
+  usedFeeCategories
 }
