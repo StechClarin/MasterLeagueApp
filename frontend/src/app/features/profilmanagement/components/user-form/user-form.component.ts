@@ -20,7 +20,7 @@ import { CustomValidators } from '@core/validators/custom-validators';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent, UiMediaInputComponent, UiMultiSelectComponent],
   template: `
-    <app-ui-form
+    <app-ui-form [formErrors]="formErrors"
       [title]="user ? 'Modifier l\\'Utilisateur' : 'Nouvel Utilisateur'"
       [formGroup]="form"
       [isLoading]="isSubmitting"

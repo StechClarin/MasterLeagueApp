@@ -4,11 +4,12 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { UiFormHeaderComponent } from '../ui-form-header/ui-form-header.component';
 import { UiFormActionsComponent } from '../ui-form-actions/ui-form-actions.component';
+import { UiFormErrorsComponent } from '../ui-form-errors/ui-form-errors.component';
 
 @Component({
   selector: 'app-ui-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UiFormHeaderComponent, UiFormActionsComponent],
+  imports: [CommonModule, ReactiveFormsModule, UiFormHeaderComponent, UiFormActionsComponent, UiFormErrorsComponent],
   template: `
     <div class="h-full flex flex-col bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
       <!-- Shared Header -->
@@ -23,13 +24,7 @@ import { UiFormActionsComponent } from '../ui-form-actions/ui-form-actions.compo
          <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
             <ng-content></ng-content>
 
-            <!-- Global Error Message -->
-            <div *ngIf="errorMessage" class="mt-4 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm flex items-start">
-                <svg class="w-5 h-5 mr-2 flex-shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                {{ errorMessage }}
-            </div>
+            <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
          </form>
       </div>
 
@@ -52,6 +47,7 @@ export class UiFormComponent {
   @Input() formGroup!: FormGroup;
   @Input() isLoading: boolean = false;
   @Input() errorMessage: string | null = null;
+  @Input() formErrors: Array<{ field: string, message: string }> = [];
   @Input() submitLabel: string = 'Enregistrer';
   @Input() cancelLabel: string = 'Annuler';
   @Input() disableInvalid: boolean = true;

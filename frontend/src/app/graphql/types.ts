@@ -32,6 +32,7 @@ export type AcademicPeriodType = {
   __typename?: 'AcademicPeriodType';
   academicYear: AcademicYearType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   endDate: Scalars['Date']['output'];
   establishment: EstablishmentType;
   evaluationSessions: Array<EvaluationSessionType>;
@@ -41,6 +42,7 @@ export type AcademicPeriodType = {
   name: Scalars['String']['output'];
   startDate: Scalars['Date']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type AcademicPeriodTypePaginated = {
@@ -56,10 +58,12 @@ export type AcademicYearType = {
   __typename?: 'AcademicYearType';
   classrooms: Array<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   cycleConfigs?: Maybe<Array<Maybe<AcademicCycleConfigType>>>;
   end_date?: Maybe<Scalars['Date']['output']>;
   enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
+  feedefinitionSet: Array<FeeDefinitionType>;
   id: Scalars['ID']['output'];
   /** L'année en cours */
   isActive: Scalars['Boolean']['output'];
@@ -69,6 +73,7 @@ export type AcademicYearType = {
   periods: Array<AcademicPeriodType>;
   start_date?: Maybe<Scalars['Date']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type AcademicYearTypePaginated = {
@@ -85,9 +90,11 @@ export type ClassRoomType = {
   academicYear: AcademicYearType;
   capacity: Scalars['Int']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
   evaluationPlannings: Array<EvaluationPlanningType>;
+  groupFees: Array<FeeDefinitionType>;
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
   level: LevelType;
@@ -97,6 +104,7 @@ export type ClassRoomType = {
   planningDetails: Array<PlanningDetailType>;
   supervisions: Array<EvaluationSupervisionType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type ClassRoomTypePaginated = {
@@ -132,6 +140,7 @@ export type CycleType = {
   __typename?: 'CycleType';
   academicConfigs: Array<AcademicCycleConfigType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
@@ -139,6 +148,7 @@ export type CycleType = {
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type CycleTypePaginated = {
@@ -148,6 +158,23 @@ export type CycleTypePaginated = {
   numPages?: Maybe<Scalars['Int']['output']>;
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type DashboardType = {
+  __typename?: 'DashboardType';
+  averageGrade?: Maybe<Scalars['Float']['output']>;
+  gradeEvolution?: Maybe<Array<Maybe<EvolutionPointType>>>;
+  studentDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
+  totalActiveEvaluations?: Maybe<Scalars['Int']['output']>;
+  totalClassrooms?: Maybe<Scalars['Int']['output']>;
+  totalStaff?: Maybe<Scalars['Int']['output']>;
+  totalStudents?: Maybe<Scalars['Int']['output']>;
+};
+
+export type DistributionPointType = {
+  __typename?: 'DistributionPointType';
+  category?: Maybe<Scalars['String']['output']>;
+  count?: Maybe<Scalars['Int']['output']>;
 };
 
 export type DocumentType = {
@@ -183,14 +210,17 @@ export type EnrollmentType = {
   academicYear: AcademicYearType;
   classroom: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   enrollmentDate: Scalars['Date']['output'];
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
+  invoices: Array<InvoiceType>;
   isActive: Scalars['Boolean']['output'];
   isRepeater: Scalars['Boolean']['output'];
   status: StudentsEnrollmentStatusChoices;
   student: StudentType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type EnrollmentTypePaginated = {
@@ -220,14 +250,17 @@ export type EstablishmentType = {
   evaluationsubjectSet: Array<EvaluationSubjectType>;
   evaluationsupervisionSet: Array<EvaluationSupervisionType>;
   evaluationtypeSet: Array<EvaluationTypeType>;
+  feedefinitionSet: Array<FeeDefinitionType>;
   gradeSet: Array<GradeType>;
   guardianSet: Array<GuardianType>;
   id: Scalars['ID']['output'];
+  invoiceSet: Array<InvoiceType>;
   isActive: Scalars['Boolean']['output'];
   levelSet: Array<LevelType>;
   levelsubjectSet: Array<LevelSubjectType>;
   logo?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  paymentSet: Array<PaymentType>;
   personnelSet: Array<PersonnelType>;
   phone?: Maybe<Scalars['String']['output']>;
   planningSet: Array<PlanningType>;
@@ -260,6 +293,7 @@ export type EvaluationPlanningType = {
   __typename?: 'EvaluationPlanningType';
   classrooms: Array<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   date: Scalars['Date']['output'];
   /** Durée de l'épreuve en minutes */
   durationMinutes?: Maybe<Scalars['Int']['output']>;
@@ -271,6 +305,7 @@ export type EvaluationPlanningType = {
   levels: Array<LevelType>;
   startTime?: Maybe<Scalars['Time']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type EvaluationPlanningTypePaginated = {
@@ -286,7 +321,7 @@ export type EvaluationSessionType = {
   __typename?: 'EvaluationSessionType';
   academicPeriod: AcademicPeriodType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
-  createdBy: UserType;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   evaluationType: EvaluationTypeType;
   id: Scalars['ID']['output'];
@@ -297,6 +332,7 @@ export type EvaluationSessionType = {
   supervisions?: Maybe<Array<Maybe<EvaluationSupervisionType>>>;
   title: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type EvaluationSessionTypePaginated = {
@@ -312,6 +348,7 @@ export type EvaluationSubjectType = {
   __typename?: 'EvaluationSubjectType';
   coefficient?: Maybe<Scalars['Decimal']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   grades: Array<GradeType>;
   id: Scalars['ID']['output'];
@@ -326,12 +363,14 @@ export type EvaluationSubjectType = {
   /** Sujet de l'épreuve (PDF/Image) */
   subjectFile?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type EvaluationSupervisionType = {
   __typename?: 'EvaluationSupervisionType';
   classroom: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   date: Scalars['Date']['output'];
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
@@ -339,6 +378,7 @@ export type EvaluationSupervisionType = {
   session: EvaluationSessionType;
   supervisors: Array<PersonnelType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type EvaluationTypeType = {
@@ -346,6 +386,7 @@ export type EvaluationTypeType = {
   /** Code système (ex: CC, EXAM) pour le moteur de bulletin */
   code?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   description?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
   evaluationSessions: Array<EvaluationSessionType>;
@@ -353,6 +394,7 @@ export type EvaluationTypeType = {
   isActive: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
   /** Poids par défaut dans le calcul de la moyenne de matière */
   weight: Scalars['Decimal']['output'];
 };
@@ -390,10 +432,119 @@ export enum EvaluationsEvaluationSessionStatusChoices {
   Locked = 'LOCKED'
 }
 
+export type EvolutionPointType = {
+  __typename?: 'EvolutionPointType';
+  label?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['Float']['output']>;
+};
+
+export type FeeDefinitionType = {
+  __typename?: 'FeeDefinitionType';
+  academicYear: AcademicYearType;
+  amount: Scalars['Decimal']['output'];
+  category: FinanceFeeDefinitionCategoryChoices;
+  classroom?: Maybe<ClassRoomType>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  /** Nombre de tranches si applicable */
+  installmentCount: Scalars['Int']['output'];
+  installmentPeriod?: Maybe<FinanceFeeDefinitionInstallmentPeriodChoices>;
+  isActive: Scalars['Boolean']['output'];
+  isRequired: Scalars['Boolean']['output'];
+  level: LevelType;
+  name: Scalars['String']['output'];
+  paymentModality: FinanceFeeDefinitionPaymentModalityChoices;
+  students: Array<StudentType>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type FeeDefinitionTypePaginated = {
+  __typename?: 'FeeDefinitionTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<FeeDefinitionType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+/** An enumeration. */
+export enum FinanceFeeDefinitionCategoryChoices {
+  /** Cantine */
+  Canteen = 'CANTEEN',
+  /** Autre */
+  Other = 'OTHER',
+  /** Frais d'Inscription */
+  Registration = 'REGISTRATION',
+  /** Transport */
+  Transport = 'TRANSPORT',
+  /** Scolarité */
+  Tuition = 'TUITION'
+}
+
+/** An enumeration. */
+export enum FinanceFeeDefinitionInstallmentPeriodChoices {
+  /** Mensuel */
+  Monthly = 'MONTHLY',
+  /** Semestriel */
+  Semestrial = 'SEMESTRIAL',
+  /** Trimestriel */
+  Trimestrial = 'TRIMESTRIAL'
+}
+
+/** An enumeration. */
+export enum FinanceFeeDefinitionPaymentModalityChoices {
+  /** Paiement par Tranches */
+  Installments = 'INSTALLMENTS',
+  /** Paiement Unique */
+  Unique = 'UNIQUE'
+}
+
+/** An enumeration. */
+export enum FinanceInvoiceCategoryChoices {
+  /** Cantine */
+  Canteen = 'CANTEEN',
+  /** Autre */
+  Other = 'OTHER',
+  /** Frais d'Inscription */
+  Registration = 'REGISTRATION',
+  /** Transport */
+  Transport = 'TRANSPORT',
+  /** Scolarité */
+  Tuition = 'TUITION'
+}
+
+/** An enumeration. */
+export enum FinanceInvoiceStatusChoices {
+  /** Annulé */
+  Cancelled = 'CANCELLED',
+  /** Payé */
+  Paid = 'PAID',
+  /** Partiel */
+  Partial = 'PARTIAL',
+  /** Impayé */
+  Unpaid = 'UNPAID'
+}
+
+/** An enumeration. */
+export enum FinancePaymentPaymentMethodChoices {
+  /** Virement Bancaire */
+  BankTransfer = 'BANK_TRANSFER',
+  /** Espèces */
+  Cash = 'CASH',
+  /** Chèque */
+  Check = 'CHECK',
+  /** Mobile Money */
+  MobileMoney = 'MOBILE_MONEY'
+}
+
 export type GradeType = {
   __typename?: 'GradeType';
   comment?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   evaluationSubject?: Maybe<EvaluationSubjectType>;
   id: Scalars['ID']['output'];
@@ -402,6 +553,7 @@ export type GradeType = {
   isActive: Scalars['Boolean']['output'];
   student: StudentType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
   /** Note obtenue */
   value?: Maybe<Scalars['Decimal']['output']>;
 };
@@ -418,6 +570,7 @@ export type GradeTypePaginated = {
 export type GuardianType = {
   __typename?: 'GuardianType';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   firstName?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -427,6 +580,7 @@ export type GuardianType = {
   profession?: Maybe<Scalars['String']['output']>;
   students: Array<StudentType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
   user?: Maybe<UserType>;
 };
 
@@ -434,6 +588,39 @@ export type GuardianTypePaginated = {
   __typename?: 'GuardianTypePaginated';
   currentPage?: Maybe<Scalars['Int']['output']>;
   items?: Maybe<Array<Maybe<GuardianType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type InvoiceType = {
+  __typename?: 'InvoiceType';
+  category: FinanceInvoiceCategoryChoices;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  dueDate?: Maybe<Scalars['Date']['output']>;
+  enrollment?: Maybe<EnrollmentType>;
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  /** Nombre de tranches prévu pour ce frais */
+  installmentCount: Scalars['Int']['output'];
+  isActive: Scalars['Boolean']['output'];
+  paidAmount: Scalars['Decimal']['output'];
+  payments: Array<PaymentType>;
+  reference?: Maybe<Scalars['String']['output']>;
+  remainingAmount?: Maybe<Scalars['Decimal']['output']>;
+  status: FinanceInvoiceStatusChoices;
+  student: StudentType;
+  title: Scalars['String']['output'];
+  totalAmount: Scalars['Decimal']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type InvoiceTypePaginated = {
+  __typename?: 'InvoiceTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<InvoiceType>>>;
   numPages?: Maybe<Scalars['Int']['output']>;
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
@@ -449,6 +636,7 @@ export type LevelSubjectType = {
   __typename?: 'LevelSubjectType';
   coefficient: Scalars['Decimal']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   /** Volume horaire annuel */
   hourlyQuota: Scalars['Int']['output'];
@@ -457,6 +645,7 @@ export type LevelSubjectType = {
   level: LevelType;
   subject: SubjectType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type LevelType = {
@@ -464,12 +653,14 @@ export type LevelType = {
   classes?: Maybe<Array<Maybe<ClassRoomType>>>;
   classrooms: Array<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   cycle: CycleType;
   establishment: EstablishmentType;
   /** Niveaux concernés par cette planification */
   evaluationPlannings: Array<EvaluationPlanningType>;
   /** Niveaux concernés par cette épreuve */
   evaluationSubjects: Array<EvaluationSubjectType>;
+  fees: Array<FeeDefinitionType>;
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
   levelSubjects: Array<LevelSubjectType>;
@@ -477,6 +668,7 @@ export type LevelType = {
   order: Scalars['Int']['output'];
   shortName?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 
@@ -519,6 +711,34 @@ export type PageType = {
   title: Scalars['String']['output'];
 };
 
+export type PaymentType = {
+  __typename?: 'PaymentType';
+  amount: Scalars['Decimal']['output'];
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  establishment: EstablishmentType;
+  id: Scalars['ID']['output'];
+  invoice: InvoiceType;
+  isActive: Scalars['Boolean']['output'];
+  note: Scalars['String']['output'];
+  paymentDate: Scalars['DateTime']['output'];
+  paymentMethod: FinancePaymentPaymentMethodChoices;
+  receivedBy?: Maybe<PersonnelType>;
+  /** Numéro de reçu ou réf transaction */
+  reference: Scalars['String']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type PaymentTypePaginated = {
+  __typename?: 'PaymentTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<PaymentType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type PermissionType = {
   __typename?: 'PermissionType';
   codename: Scalars['String']['output'];
@@ -533,6 +753,7 @@ export type PersonnelType = {
   address?: Maybe<Scalars['String']['output']>;
   contractType?: Maybe<ContractTypeType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   dateHired?: Maybe<Scalars['Date']['output']>;
   emailPro?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
@@ -540,12 +761,14 @@ export type PersonnelType = {
   isActive: Scalars['Boolean']['output'];
   jobTitle: Scalars['String']['output'];
   matricule: Scalars['String']['output'];
+  paymentSet: Array<PaymentType>;
   pedagogyAssignments: Array<TeachingAssignmentType>;
   phoneNumber?: Maybe<Scalars['String']['output']>;
   planningDetails: Array<PlanningDetailType>;
   roles: Array<RoleType>;
   supervisions: Array<EvaluationSupervisionType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
   user?: Maybe<UserType>;
 };
 
@@ -562,6 +785,7 @@ export type PlanningDetailType = {
   __typename?: 'PlanningDetailType';
   classe: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   date: Scalars['Date']['output'];
   enseignant: PersonnelType;
   establishment: EstablishmentType;
@@ -573,6 +797,7 @@ export type PlanningDetailType = {
   planning: PlanningType;
   salle?: Maybe<RoomType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type PlanningDetailTypePaginated = {
@@ -587,6 +812,7 @@ export type PlanningDetailTypePaginated = {
 export type PlanningType = {
   __typename?: 'PlanningType';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   dateEnd?: Maybe<Scalars['Date']['output']>;
   dateStart?: Maybe<Scalars['Date']['output']>;
   details: Array<PlanningDetailType>;
@@ -596,6 +822,7 @@ export type PlanningType = {
   isTemplate: Scalars['Boolean']['output'];
   nom: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type PlanningTypePaginated = {
@@ -619,6 +846,7 @@ export type Query = {
   contractTypes?: Maybe<ContractTypeTypePaginated>;
   cycle?: Maybe<CycleType>;
   cycles?: Maybe<CycleTypePaginated>;
+  dashboardData?: Maybe<DashboardType>;
   documentsByEntity?: Maybe<Array<Maybe<DocumentType>>>;
   enrollment?: Maybe<EnrollmentType>;
   enrollments?: Maybe<EnrollmentTypePaginated>;
@@ -628,12 +856,15 @@ export type Query = {
   evaluationSession?: Maybe<EvaluationSessionType>;
   evaluationSessions?: Maybe<EvaluationSessionTypePaginated>;
   evaluationTypes?: Maybe<EvaluationTypeTypePaginated>;
+  feeDefinitions?: Maybe<FeeDefinitionTypePaginated>;
   grades?: Maybe<GradeTypePaginated>;
   guardian?: Maybe<GuardianType>;
   guardians?: Maybe<GuardianTypePaginated>;
+  invoices?: Maybe<InvoiceTypePaginated>;
   level?: Maybe<LevelType>;
   levels?: Maybe<LevelTypePaginated>;
   modules?: Maybe<Array<Maybe<ModuleType>>>;
+  payments?: Maybe<PaymentTypePaginated>;
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
   personnel?: Maybe<PersonnelType>;
   personnels?: Maybe<PersonnelTypePaginated>;
@@ -730,6 +961,8 @@ export type QueryEnrollmentArgs = {
 
 
 export type QueryEnrollmentsArgs = {
+  academicYearId?: InputMaybe<Scalars['ID']['input']>;
+  classroomId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -784,6 +1017,14 @@ export type QueryEvaluationTypesArgs = {
 };
 
 
+export type QueryFeeDefinitionsArgs = {
+  levelId?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryGradesArgs = {
   academicPeriodId?: InputMaybe<Scalars['Int']['input']>;
   classroomId?: InputMaybe<Scalars['Int']['input']>;
@@ -807,6 +1048,16 @@ export type QueryGuardiansArgs = {
 };
 
 
+export type QueryInvoicesArgs = {
+  category?: InputMaybe<Scalars['String']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
+  studentId?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
 export type QueryLevelArgs = {
   id: Scalars['ID']['input'];
 };
@@ -818,6 +1069,13 @@ export type QueryLevelsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPaymentsArgs = {
+  invoiceId?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -897,11 +1155,13 @@ export type QueryStudentArgs = {
 
 
 export type QueryStudentsArgs = {
+  academicYearId?: InputMaybe<Scalars['ID']['input']>;
   classroomId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   parentPhone?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -965,12 +1225,14 @@ export type RoomType = {
   __typename?: 'RoomType';
   capacity?: Maybe<Scalars['Int']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   planningDetails: Array<PlanningDetailType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type RoomTypePaginated = {
@@ -994,6 +1256,7 @@ export type StudentHealthType = {
   allergies?: Maybe<Scalars['String']['output']>;
   bloodGroup?: Maybe<StudentsStudentHealthBloodGroupChoices>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   emergencyContactName?: Maybe<Scalars['String']['output']>;
   emergencyContactPhone?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
@@ -1004,6 +1267,7 @@ export type StudentHealthType = {
   medicalConditions?: Maybe<Scalars['String']['output']>;
   student: StudentType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
   weightKg?: Maybe<Scalars['Int']['output']>;
 };
 
@@ -1011,6 +1275,7 @@ export type StudentType = {
   __typename?: 'StudentType';
   address?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   dateOfBirth?: Maybe<Scalars['Date']['output']>;
   enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
@@ -1020,13 +1285,16 @@ export type StudentType = {
   guardians: Array<GuardianType>;
   health?: Maybe<StudentHealthType>;
   id: Scalars['ID']['output'];
+  invoices: Array<InvoiceType>;
   isActive: Scalars['Boolean']['output'];
   lastName: Scalars['String']['output'];
   matricule: Scalars['String']['output'];
   photo?: Maybe<Scalars['String']['output']>;
   placeOfBirth?: Maybe<Scalars['String']['output']>;
   siblings?: Maybe<Array<Maybe<StudentType>>>;
+  specialFees: Array<FeeDefinitionType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
   user?: Maybe<UserType>;
 };
 
@@ -1081,6 +1349,7 @@ export type SubjectType = {
   __typename?: 'SubjectType';
   code: Scalars['String']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   establishment: EstablishmentType;
   evaluationSubjects: Array<EvaluationSubjectType>;
   id: Scalars['ID']['output'];
@@ -1091,6 +1360,7 @@ export type SubjectType = {
   pedagogyAssignments: Array<TeachingAssignmentType>;
   planningDetails: Array<PlanningDetailType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type SubjectTypePaginated = {
@@ -1107,6 +1377,7 @@ export type TeachingAssignmentType = {
   academicYear: AcademicYearType;
   classroom: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
   /** Date de fin d'intervention. Si vide, correspond à la fin de l'année scolaire. */
   endDate?: Maybe<Scalars['Date']['output']>;
   establishment: EstablishmentType;
@@ -1119,6 +1390,7 @@ export type TeachingAssignmentType = {
   startDate?: Maybe<Scalars['Date']['output']>;
   subject: SubjectType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
 };
 
 export type TeachingAssignmentTypePaginated = {
@@ -1132,7 +1404,31 @@ export type TeachingAssignmentTypePaginated = {
 
 export type UserType = {
   __typename?: 'UserType';
-  createdEvaluationSessions: Array<EvaluationSessionType>;
+  createdAcademicperiodSet: Array<AcademicPeriodType>;
+  createdAcademicyearSet: Array<AcademicYearType>;
+  createdClassroomSet: Array<ClassRoomType>;
+  createdCycleSet: Array<CycleType>;
+  createdEnrollmentSet: Array<EnrollmentType>;
+  createdEvaluationplanningSet: Array<EvaluationPlanningType>;
+  createdEvaluationsessionSet: Array<EvaluationSessionType>;
+  createdEvaluationsubjectSet: Array<EvaluationSubjectType>;
+  createdEvaluationsupervisionSet: Array<EvaluationSupervisionType>;
+  createdEvaluationtypeSet: Array<EvaluationTypeType>;
+  createdFeedefinitionSet: Array<FeeDefinitionType>;
+  createdGradeSet: Array<GradeType>;
+  createdGuardianSet: Array<GuardianType>;
+  createdInvoiceSet: Array<InvoiceType>;
+  createdLevelSet: Array<LevelType>;
+  createdLevelsubjectSet: Array<LevelSubjectType>;
+  createdPaymentSet: Array<PaymentType>;
+  createdPersonnelSet: Array<PersonnelType>;
+  createdPlanningSet: Array<PlanningType>;
+  createdPlanningdetailSet: Array<PlanningDetailType>;
+  createdRoomSet: Array<RoomType>;
+  createdStudentSet: Array<StudentType>;
+  createdStudenthealthSet: Array<StudentHealthType>;
+  createdSubjectSet: Array<SubjectType>;
+  createdTeachingassignmentSet: Array<TeachingAssignmentType>;
   dateJoined: Scalars['DateTime']['output'];
   email: Scalars['String']['output'];
   employments: Array<PersonnelType>;
@@ -1151,6 +1447,31 @@ export type UserType = {
   photo?: Maybe<Scalars['String']['output']>;
   roles: Array<RoleType>;
   studentProfile?: Maybe<StudentType>;
+  updatedAcademicperiodSet: Array<AcademicPeriodType>;
+  updatedAcademicyearSet: Array<AcademicYearType>;
+  updatedClassroomSet: Array<ClassRoomType>;
+  updatedCycleSet: Array<CycleType>;
+  updatedEnrollmentSet: Array<EnrollmentType>;
+  updatedEvaluationplanningSet: Array<EvaluationPlanningType>;
+  updatedEvaluationsessionSet: Array<EvaluationSessionType>;
+  updatedEvaluationsubjectSet: Array<EvaluationSubjectType>;
+  updatedEvaluationsupervisionSet: Array<EvaluationSupervisionType>;
+  updatedEvaluationtypeSet: Array<EvaluationTypeType>;
+  updatedFeedefinitionSet: Array<FeeDefinitionType>;
+  updatedGradeSet: Array<GradeType>;
+  updatedGuardianSet: Array<GuardianType>;
+  updatedInvoiceSet: Array<InvoiceType>;
+  updatedLevelSet: Array<LevelType>;
+  updatedLevelsubjectSet: Array<LevelSubjectType>;
+  updatedPaymentSet: Array<PaymentType>;
+  updatedPersonnelSet: Array<PersonnelType>;
+  updatedPlanningSet: Array<PlanningType>;
+  updatedPlanningdetailSet: Array<PlanningDetailType>;
+  updatedRoomSet: Array<RoomType>;
+  updatedStudentSet: Array<StudentType>;
+  updatedStudenthealthSet: Array<StudentHealthType>;
+  updatedSubjectSet: Array<SubjectType>;
+  updatedTeachingassignmentSet: Array<TeachingAssignmentType>;
   username: Scalars['String']['output'];
 };
 

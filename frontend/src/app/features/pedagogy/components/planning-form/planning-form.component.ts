@@ -23,11 +23,12 @@ export function timeRangeValidator(group: AbstractControl): ValidationErrors | n
 
 import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
 import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
+import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
 
 @Component({
     selector: 'app-planning-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiSelectComponent, UiTabsComponent, UiFormHeaderComponent, UiFormActionsComponent],
+    imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiSelectComponent, UiTabsComponent, UiFormHeaderComponent, UiFormActionsComponent, UiFormErrorsComponent],
     templateUrl: './planning-form.component.html',
     styles: [`
     :host {
@@ -181,6 +182,19 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
             details: this.fb.array([])
         });
     }
+
+    override fieldLabels = {
+        nom: 'Nom du planning',
+        date_start: 'Date de début',
+        date_end: 'Date de fin',
+        is_template: 'Modèle',
+        heure_debut: 'Heure de début',
+        heure_fin: 'Heure de fin',
+        enseignant_id: 'Enseignant',
+        matiere_id: 'Matière',
+        classe_id: 'Classe',
+        salle_id: 'Salle'
+    };
 
     get details() { return this.form.get('details') as FormArray; }
 

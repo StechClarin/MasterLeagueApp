@@ -13,6 +13,7 @@ export abstract class BaseFormComponent implements OnInit {
     abstract form: FormGroup;
     isSubmitting = false;
     errorMessage: string | null = null;
+    formErrors: Array<{ field: string, message: string }> = [];
 
     protected toastService = inject(ToastService);
     protected logger = inject(LoggingService);
@@ -28,26 +29,30 @@ export abstract class BaseFormComponent implements OnInit {
 
     submit() {
         this.logger.logAction(this.componentName, 'Submit Attempt');
+        this.errorMessage = null;
+        this.formErrors = [];
+
         if (this.form.valid) {
             this.isSubmitting = true;
-            this.errorMessage = null;
 
             this.logger.logAction(this.componentName, 'Form Valid - Saving...');
             this.save().subscribe({
                 next: (res) => {
                     this.isSubmitting = false;
                     this.logger.logAction(this.componentName, 'Save Success', res);
-                    this.form.reset(); // [GLOBAL RESET] On vide le formulaire après succès
+                    this.form.reset(); 
                     this.success.emit();
                 },
                 error: (err) => {
                     console.error('Erreur soumission formulaire:', err);
                     this.logger.logAction(this.componentName, 'Save Error', err);
                     this.isSubmitting = false;
-                    // Injection automatique des erreurs dans les champs
-                    this.errorMessage = FormUtils.setErrors(this.form, err);
-                    if (this.errorMessage) {
-                        this.toastService.error(this.errorMessage);
+                    
+                    // Injection et récupération des erreurs structurées
+                    this.formErrors = FormUtils.setErrors(this.form, err, this.fieldLabels);
+                    
+                    if (this.formErrors.length > 0) {
+                        this.toastService.error('Veuillez corriger les erreurs indiquées.');
                     } else {
                         this.toastService.error('Une erreur est survenue lors de l\'enregistrement.');
                     }
@@ -57,7 +62,7 @@ export abstract class BaseFormComponent implements OnInit {
             this.logger.logAction(this.componentName, 'Form Invalid', this.form.errors);
             this.form.markAllAsTouched();
 
-            // Generic Error Message Generation
+            // Génération des erreurs pour la validation locale
             const invalidFields: string[] = [];
 
             const findInvalidControls = (control: any, prefix = '') => {
@@ -78,6 +83,11 @@ export abstract class BaseFormComponent implements OnInit {
                                     const fieldKey = prefix ? `${prefix}.${key}` : key;
                                     const label = this.fieldLabels[fieldKey] || this.fieldLabels[key] || key;
                                     invalidFields.push(label);
+                                    
+                                    this.formErrors.push({
+                                        field: label,
+                                        message: 'Ce champ est obligatoire ou invalide.'
+                                    });
                                 }
                             }
                         });
@@ -87,11 +97,8 @@ export abstract class BaseFormComponent implements OnInit {
 
             findInvalidControls(this.form);
 
-            if (invalidFields.length > 0) {
-                const uniqueFields = [...new Set(invalidFields)];
-                this.errorMessage = `Veuillez remplir les champs obligatoires : ${uniqueFields.join(', ')}.`;
-            } else {
-                this.errorMessage = "Le formulaire contient des erreurs. Veuillez vérifier les champs.";
+            if (this.formErrors.length > 0) {
+                this.toastService.warning('Le formulaire est incomplet.');
             }
         }
     }

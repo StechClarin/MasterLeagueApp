@@ -5,9 +5,9 @@ from apps.core.models import Module, Page
 
 # TA STRUCTURE DE SEED POUR LE MENU
 MODULE_STRUCTURE = [
-        {
-        "name": "Structure",
-        "order": 0,
+    {
+        "name": "Référentiel",
+        "order": 1,
         "display_mod": "card-view",
         "icon": "pascal-icon-dashboard",
         "pages": [
@@ -19,20 +19,19 @@ MODULE_STRUCTURE = [
                 "tags": ["establishment"]
             },
             {
-                "title": "Cycles & Niveaux",
-                "icon": "tree-icon",
-                "order": 1,
-                "link": "/tree",
-                "tags": ["level"]
-            },
-            {
                 "title": "Années Scolaires",
                 "icon": "calendar-icon",
-                "order": 2,
+                "order": 1,
                 "link": "/years",
                 "tags": ["academic_year"]
             },
-
+            {
+                "title": "Cycles & Niveaux",
+                "icon": "tree-icon",
+                "order": 2,
+                "link": "/tree",
+                "tags": ["level"]
+            },
             {
                 "title": "Classes",
                 "icon": "class-icon",
@@ -57,91 +56,51 @@ MODULE_STRUCTURE = [
         ]
     },
     {
-        "name": "Admin",
-        "order": 10,
-        "display_mod": "card-view",
-        "icon": "pascal-icon-dashboard",
-        "pages": [
-            {
-                "title": "user",
-                "icon": "user-icon",
-                "order": 1,
-                "link": "/users",
-                "tags": ["user"]
-            },
-            {
-                "title": "Role",
-                "icon": "role-icon",
-                "order": 2,
-                "link": "/roles",
-                "tags": ["role",]
-            }
-        ]
-    },
-    {
-        "name": "Scolarité",
-        "order": 1,
+        "name": "Vie Scolaire",
+        "order": 2,
         "display_mod": "card-view",
         "icon": "student-icon",
         "pages": [
             {
-                "title": "Apprenants",
+                "title": "Apprenants (Élèves)",
                 "icon": "student-icon",
                 "order": 0,
                 "link": "/students",
                 "tags": ["student"]
             },
             {
-                "title": "Emploi du temps",
-                "icon": "calendar-icon",
+                "title": "Inscriptions",
+                "icon": "assignment-icon",
                 "order": 1,
-                "link": "/timetable",
-                "tags": ["planning"] 
+                "link": "/enrollments",
+                "tags": ["enrollment"]
             },
         ]
     },
-
     {
-        "name": "Ressources Humaines",
-        "order": 2,
-        "display_mod": "card-view",
-        "icon": "hr-icon",
-        "pages": [
-            {
-                "title": "Personnels",
-                "icon": "personnel-icon",
-                "order": 0,
-                "link": "/personnels",
-                "tags": ["personnel"]
-            },
-            {
-                "title": "Type de contrat",
-                "icon": "contract-icon",
-                "order": 1,
-                "link": "/contract-types",
-                "tags": ["contract_type"]
-            },
-
-
-        ]
-    },
-    {
-        "name": "Pédagogie",
-        "order": 9,
+        "name": "Académique",
+        "order": 3,
         "display_mod": "card-view",
         "icon": "pedagogy-icon",
         "pages": [
             {
-                "title": "Affectations",
-                "icon": "assignment-icon",
+                "title": "Emploi du temps",
+                "icon": "calendar-icon",
                 "order": 0,
+                "link": "/timetable",
+                "tags": ["planning"] 
+            },
+            {
+                "title": "Affectations Profs",
+                "icon": "assignment-icon",
+                "order": 1,
                 "link": "/assignments",
                 "tags": ["teachingassignment"]
             },
             {
-                "title": "Plannings",
+                "title": "Plannings Pédagogiques",
                 "icon": "pedagogy-icon",
-                "order": 1,
+                "order": 2,
                 "link": "/plannings",
                 "tags": ["planning"]
             },
@@ -149,12 +108,12 @@ MODULE_STRUCTURE = [
     },
     {
         "name": "Évaluations",
-        "order": 3,
+        "order": 4,
         "display_mod": "card-view",
         "icon": "evaluation-icon",
         "pages": [
             {
-                "title": "Évaluations",
+                "title": "Sessions d'Examens",
                 "icon": "exam-icon",
                 "order": 1,
                 "link": "/evaluations",
@@ -168,16 +127,94 @@ MODULE_STRUCTURE = [
                 "tags": ["grade"]
             },
             {
-                "title": "Types d'Évaluations",
+                "title": "Paramétrage Barème",
                 "icon": "settings-icon",
                 "order": 0,
                 "link": "/evaluation-types",
                 "tags": ["evaluationtype"]
             },
-            
         ]
     },
-    # --- AJOUTE TES AUTRES MODULES ICI ---
+    {
+        "name": "Ressources Humaines",
+        "order": 5,
+        "display_mod": "card-view",
+        "icon": "hr-icon",
+        "pages": [
+            {
+                "title": "Gestion du Personnel",
+                "icon": "personnel-icon",
+                "order": 0,
+                "link": "/personnels",
+                "tags": ["personnel"]
+            },
+            {
+                "title": "Types de Contrat",
+                "icon": "contract-icon",
+                "order": 1,
+                "link": "/contract-types",
+                "tags": ["contract_type"]
+            },
+        ]
+    },
+    {
+        "name": "Administration",
+        "order": 10,
+        "display_mod": "card-view",
+        "icon": "settings-icon",
+        "pages": [
+            {
+                "title": "Comptes Utilisateurs",
+                "icon": "user-icon",
+                "order": 0,
+                "link": "/users",
+                "tags": ["user"]
+            },
+            {
+                "title": "Rôles & Permissions",
+                "icon": "role-icon",
+                "order": 1,
+                "link": "/roles",
+                "tags": ["role"]
+            }
+        ]
+    },
+    {
+        "name": "Finance",
+        "order": 6,
+        "display_mod": "card-view",
+        "icon": "evaluation-icon",
+        "pages": [
+            {
+                "title": "Configuration Tarifs",
+                "icon": "settings-icon",
+                "order": 0,
+                "link": "/finance/fees",
+                "tags": ["feedefinition"]
+            },
+            {
+                "title": "Facturation",
+                "icon": "edit-icon",
+                "order": 1,
+                "link": "/finance/invoices",
+                "tags": ["invoice"]
+            },
+            {
+                "title": "Encaissements",
+                "icon": "exam-icon",
+                "order": 2,
+                "link": "/finance/payments",
+                "tags": ["payment"]
+            },
+            {
+                "title": "État de Recouvrement",
+                "icon": "clipboard-icon",
+                "order": 3,
+                "link": "/finance/collection-report",
+                "tags": ["payment"]
+            },
+        ]
+    },
 ]
 
 class Command(BaseCommand):

@@ -1,0 +1,111 @@
+fragment FeeDefinitionFields on FeeDefinitionType {
+  id
+  name
+  category
+  amount
+  isActive
+  level {
+    id
+    name
+  }
+  academicYear {
+    id
+    name
+  }
+  paymentModality
+  installmentCount
+  installmentPeriod
+  students {
+    id
+    firstName
+    lastName
+    matricule
+  }
+  classroom {
+    id
+    name
+  }
+}
+
+fragment InvoiceFields on InvoiceType {
+  id
+  title
+  totalAmount
+  paidAmount
+  remainingAmount
+  dueDate
+  status
+  category
+  student {
+    id
+    firstName
+    lastName
+    matricule
+  }
+  reference
+  enrollment {
+    classroom {
+      name
+    }
+  }
+}
+
+fragment PaymentFields on PaymentType {
+  id
+  amount
+  paymentDate
+  paymentMethod
+  reference
+  note
+  invoice {
+    id
+    title
+    reference
+    enrollment {
+      classroom {
+        name
+      }
+    }
+    student {
+      firstName
+      lastName
+      matricule
+    }
+  }
+}
+
+query GetFeeDefinitions($search: String, $levelId: Int, $page: Int, $pageSize: Int) {
+  feeDefinitions(search: $search, levelId: $levelId, page: $page, pageSize: $pageSize) {
+    totalCount
+    numPages
+    currentPage
+    pageSize
+    items {
+      ...FeeDefinitionFields
+    }
+  }
+}
+
+query GetInvoices($search: String, $studentId: Int, $status: String, $category: String, $page: Int, $pageSize: Int) {
+  invoices(search: $search, studentId: $studentId, status: $status, category: $category, page: $page, pageSize: $pageSize) {
+    totalCount
+    numPages
+    currentPage
+    pageSize
+    items {
+      ...InvoiceFields
+    }
+  }
+}
+
+query GetPayments($invoiceId: Int, $page: Int, $pageSize: Int) {
+  payments(invoiceId: $invoiceId, page: $page, pageSize: $pageSize) {
+    totalCount
+    numPages
+    currentPage
+    pageSize
+    items {
+      ...PaymentFields
+    }
+  }
+}

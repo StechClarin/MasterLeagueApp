@@ -47,31 +47,63 @@
       </div>
   
       <!-- SCOLARITÉ -->
-      <div *ngIf="currentTab() === 'cursus'" class="space-y-4 pt-4">
-          <div *ngIf="currentEnrollment; else noEnrollment">
+      <div *ngIf="currentTab() === 'cursus'" class="space-y-6 pt-4">
+          <!-- Current Enrollment -->
+          <div *ngIf="currentEnrollment; else noEnrollment" class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
+              <h3 class="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">Inscription Actuelle</h3>
               <div class="grid grid-cols-2 gap-4">
                   <div>
-                     <label class="block text-xs font-medium text-gray-500 uppercase">Classe Actuelle</label>
-                     <div class="mt-1 text-lg text-indigo-600 font-bold">{{ currentEnrollment.classroom.name }}</div>
-                     <div class="text-xs text-gray-400">{{ currentEnrollment.classroom.level.name }}</div>
+                     <label class="block text-[10px] font-medium text-gray-400 uppercase">Classe</label>
+                     <div class="mt-0.5 text-lg text-gray-900 font-bold leading-tight">{{ currentEnrollment.classroom.name }}</div>
+                     <div class="text-[11px] text-gray-500 font-medium">{{ currentEnrollment.classroom.level.name }}</div>
                   </div>
-                  <div>
-                     <label class="block text-xs font-medium text-gray-500 uppercase">Année Scolaire</label>
-                     <div class="mt-1 text-sm text-gray-900">{{ currentEnrollment.academicYear.name }}</div>
-                  </div>
-                  <div>
-                     <label class="block text-xs font-medium text-gray-500 uppercase">Statut</label>
+                  <div class="text-right">
+                     <label class="block text-[10px] font-medium text-gray-400 uppercase">Statut</label>
                      <div class="mt-1">
-                         <span class="px-2 py-1 text-xs font-semibold rounded-full" 
-                               [ngClass]="currentEnrollment.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
-                             {{ currentEnrollment.status }}
-                         </span>
+                        <span [class]="getStatusClass(currentEnrollment.status)">
+                            {{ getStatusLabel(currentEnrollment.status) }}
+                        </span>
                      </div>
+                     <div class="text-[11px] text-gray-500 mt-1">{{ currentEnrollment.academicYear.name }}</div>
                   </div>
               </div>
           </div>
+
+          <!-- Enrollment History -->
+          <div *ngIf="data?.enrollments?.length > 0">
+              <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 ml-1">Historique Complet</h3>
+              <div class="border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+                  <table class="min-w-full divide-y divide-gray-100">
+                      <thead class="bg-gray-50/50">
+                          <tr>
+                              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Année</th>
+                              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Classe</th>
+                              <th class="px-4 py-2.5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Statut</th>
+                          </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-50">
+                          <tr *ngFor="let e of data?.enrollments" class="hover:bg-gray-50/50 transition-colors">
+                              <td class="px-4 py-3 text-xs text-gray-600 font-medium">{{ e.academicYear.name }}</td>
+                              <td class="px-4 py-3">
+                                  <div class="text-xs text-gray-900 font-semibold">{{ e.classroom.name }}</div>
+                                  <div class="text-[10px] text-gray-400">{{ e.classroom.level.name }}</div>
+                              </td>
+                              <td class="px-4 py-3 text-right">
+                                  <span [class]="getStatusClass(e.status)">
+                                      {{ getStatusLabel(e.status) }}
+                                  </span>
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+
           <ng-template #noEnrollment>
-              <div class="text-center py-8 text-gray-400 italic">Aucune inscription active.</div>
+              <div class="text-center py-12 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100">
+                  <div class="text-gray-400 text-sm font-medium">Aucun historique scolaire trouvé</div>
+                  <div class="text-[11px] text-gray-300 mt-1 italic">Cet élève n'a pas encore été inscrit.</div>
+              </div>
           </ng-template>
       </div>
   

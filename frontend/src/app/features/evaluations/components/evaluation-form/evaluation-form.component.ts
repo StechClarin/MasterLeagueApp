@@ -12,12 +12,14 @@ import { RoomService } from '../../../structure/services/room.service';
 import { EvaluationSessionFieldsFragment } from '../../graphql/evaluations.generated';
 
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
-import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
 import { UiMultiSelectComponent } from '@shared/components/ui-multi-select/ui-multi-select.component';
 import { UiToggleComponent } from '@shared/components/ui-toggle/ui-toggle.component';
 import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
 import { UiMediaInputComponent } from '@shared/components/ui-media-input/ui-media-input.component';
+import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
+import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
+import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
 import { PersonnelService } from '../../../hr/services/personnel.service';
 import { of, Observable } from 'rxjs';
 import { map, shareReplay, take, tap, switchMap } from 'rxjs/operators';
@@ -30,12 +32,14 @@ import { ToastService } from '@core/services/toast.service';
         CommonModule,
         ReactiveFormsModule,
         UiInputComponent,
-        UiFormComponent,
         UiSelectComponent,
         UiMultiSelectComponent,
         UiToggleComponent,
         UiTabsComponent,
-        UiMediaInputComponent
+        UiMediaInputComponent,
+        UiFormHeaderComponent,
+        UiFormActionsComponent,
+        UiFormErrorsComponent
     ],
     templateUrl: './evaluation-form.component.html'
 })
@@ -93,10 +97,26 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
     );
 
     tabs: Tab[] = [
-        { id: 'general', label: '1. Session' },
-        { id: 'subjects', label: '2. Épreuves' },
-        { id: 'planning', label: '3. Planification' },
-        { id: 'supervision', label: '4. Surveillance' }
+        { 
+            id: 'general', 
+            label: '1. Session',
+            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>`
+        },
+        { 
+            id: 'subjects', 
+            label: '2. Épreuves',
+            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>`
+        },
+        { 
+            id: 'planning', 
+            label: '3. Planification',
+            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+        },
+        { 
+            id: 'supervision', 
+            label: '4. Surveillance',
+            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`
+        }
     ];
     activeTabId = signal<string>('general');
 

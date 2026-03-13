@@ -1,9 +1,12 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { RoleService } from '../../services/role.service';
 import { ToastService } from '@core/services/toast.service';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
+
+import { BaseFormComponent } from '@core/abstracts/base-form.component';
 
 @Component({
     selector: 'app-role-form',
@@ -11,14 +14,14 @@ import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
     imports: [CommonModule, ReactiveFormsModule, FormsModule, UiFormComponent],
     templateUrl: './role-form.component.html'
 })
-export class RoleFormComponent implements OnInit, OnChanges {
+export class RoleFormComponent extends BaseFormComponent implements OnInit, OnChanges {
     fb = inject(FormBuilder);
     roleService = inject(RoleService);
     toast = inject(ToastService);
 
     @Input() role: any | null = null;
-    @Output() cancel = new EventEmitter<void>();
-    @Output() success = new EventEmitter<void>();
+    @Output() override cancel = new EventEmitter<void>();
+    @Output() override success = new EventEmitter<void>();
 
     form: FormGroup;
     isEditMode = false;
@@ -31,14 +34,13 @@ export class RoleFormComponent implements OnInit, OnChanges {
     selectedPermissions: number[] = [];
 
     constructor() {
+        super();
         this.form = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(3)]],
-            // Les permissions ne sont pas dans le FormGroup principal en tant que FormControl unique
-            // On les gère à part ou via un FormArray si besoin, mais ici simple array d'IDs pour le payload
         });
     }
 
-    ngOnInit(): void {
+    override ngOnInit(): void {
         this.loadPermissions();
         this.initForm();
     }
@@ -150,8 +152,8 @@ export class RoleFormComponent implements OnInit, OnChanges {
         return this.selectedPermissions.includes(permId);
     }
 
-    save() {
-        if (this.form.invalid) return;
+    save(): Observable<any> {
+        if (this.form.invalid) return new Observable(subscriber => subscriber.error('Form invalid'));
 
         const payload = {
             ...this.form.value,
@@ -162,15 +164,6 @@ export class RoleFormComponent implements OnInit, OnChanges {
             ? this.roleService.save({ ...payload, id: this.roleId }) // Update
             : this.roleService.save(payload); // Create
 
-        request$.subscribe({
-            next: () => {
-                // this.toast.success(`Rôle ${this.isEditMode ? 'modifié' : 'créé'} avec succès`); // Handled by parent
-                this.success.emit();
-            },
-            error: (err) => {
-                console.error(err);
-                this.toast.error('Erreur lors de la sauvegarde');
-            }
-        });
+        return request$;
     }
 }

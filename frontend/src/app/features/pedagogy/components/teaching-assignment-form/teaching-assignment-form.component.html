@@ -1,4 +1,4 @@
-<app-ui-form [title]="isEditMode() ? 'Modifier l\'affectation' : 'Nouvelle Affectation'"
+<app-ui-form [formErrors]="formErrors" [title]="isEditMode() ? 'Modifier l\'affectation' : 'Nouvelle Affectation'"
     description="Affectez les enseignants aux classes et matières." [formGroup]="form"
     [submitLabel]="isEditMode() ? 'Modifier' : 'Enregistrer'" [isLoading]="isSubmitting" [errorMessage]="errorMessage"
     (submitForm)="submit()" (cancel)="cancel.emit()">

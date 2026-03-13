@@ -1,4 +1,4 @@
-<app-ui-form [title]="academicYear ? (isReadOnly ? 'Détails de l\'Année' : 'Modifier l\'Année') : 'Nouvelle Année Scolaire'" [formGroup]="form"
+<app-ui-form [formErrors]="formErrors" [title]="academicYear ? (isReadOnly ? 'Détails de l\'Année' : 'Modifier l\'Année') : 'Nouvelle Année Scolaire'" [formGroup]="form"
     [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="academicYear ? 'Modifier' : 'Créer'"
     description="Définissez les dates clés et les périodes scolaires." [isReadOnly]="isReadOnly" (submitForm)="submit()"
     (cancel)="onCancel()">

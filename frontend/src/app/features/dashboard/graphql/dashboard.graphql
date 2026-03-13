@@ -1,0 +1,17 @@
+query GetDashboardData {
+  dashboardData {
+    totalStudents
+    totalStaff
+    totalClassrooms
+    totalActiveEvaluations
+    averageGrade
+    gradeEvolution {
+      label
+      value
+    }
+    studentDistribution {
+      category
+      count
+    }
+  }
+}

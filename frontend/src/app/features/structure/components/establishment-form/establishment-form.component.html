@@ -1,4 +1,4 @@
-<app-ui-form [title]="establishment ? 'Modifier' : 'Nouvel Établissement'" [formGroup]="form" [isLoading]="isSubmitting"
+<app-ui-form [formErrors]="formErrors" [title]="establishment ? 'Modifier' : 'Nouvel Établissement'" [formGroup]="form" [isLoading]="isSubmitting"
     [errorMessage]="errorMessage" [submitLabel]="establishment ? 'Modifier' : 'Créer'"
     description="Administrez les informations générales de l'établissement." (submitForm)="submit()"
     (cancel)="onCancel()">

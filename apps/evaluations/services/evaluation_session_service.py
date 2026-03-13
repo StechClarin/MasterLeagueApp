@@ -20,8 +20,6 @@ class EvaluationSessionService(BaseService):
                     pass
 
         data = super().before_validate(data, instance)
-        if not instance and getattr(self, 'user', None):
-            data['created_by_id'] = self.user.id
         return data
 
     def before_save(self, data, instance=None):

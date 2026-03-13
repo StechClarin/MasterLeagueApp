@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5">
+<form  (ngSubmit)="submit()" class="flex flex-col gap-5">
     <!-- Header Section: Premium Look -->
     <div class="glass-card shadow-lg rounded-3xl overflow-hidden border border-slate-200">
         <!-- Title Header -->
@@ -9,6 +9,7 @@
         </app-ui-form-header>
 
         <div class="px-6 py-5 bg-slate-50/50 flex flex-col gap-5">
+            <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
                 <div class="md:col-span-2">
                     <app-ui-input label="Nom du Planning" formControlName="nom" placeholder="ex: Semaine de Rentrée 2026" [required]="true"></app-ui-input>

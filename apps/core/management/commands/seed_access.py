@@ -164,6 +164,36 @@ GROUP_STRUCTURE = [
             {"name": "Supprimer un planning", "codename": "delete_planning"},
         ]
     },
+    {
+        "name": "Gestion des Tarifs",
+        "tag": "feedefinition",
+        "permissions": [
+            {"name": "Lire les tarifs", "codename": "view_feedefinition"},
+            {"name": "Ajouter un tarif", "codename": "add_feedefinition"},
+            {"name": "Modifier un tarif", "codename": "change_feedefinition"},
+            {"name": "Supprimer un tarif", "codename": "delete_feedefinition"},
+        ]
+    },
+    {
+        "name": "Gestion des Factures",
+        "tag": "invoice",
+        "permissions": [
+            {"name": "Lire les factures", "codename": "view_invoice"},
+            {"name": "Ajouter une facture", "codename": "add_invoice"},
+            {"name": "Modifier une facture", "codename": "change_invoice"},
+            {"name": "Supprimer une facture", "codename": "delete_invoice"},
+        ]
+    },
+    {
+        "name": "Gestion des Paiements",
+        "tag": "payment",
+        "permissions": [
+            {"name": "Lire les paiements", "codename": "view_payment"},
+            {"name": "Ajouter un paiement", "codename": "add_payment"},
+            {"name": "Modifier un paiement", "codename": "change_payment"},
+            {"name": "Supprimer un paiement", "codename": "delete_payment"},
+        ]
+    },
 ]
 
 class Command(BaseCommand):

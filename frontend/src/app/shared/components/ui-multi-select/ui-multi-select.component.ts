@@ -1,6 +1,8 @@
-import { Component, Input, OnInit, ElementRef, HostListener, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ElementRef, HostListener, signal, computed, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
     selector: 'app-ui-multi-select',
@@ -39,19 +41,42 @@ import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule, NG_V
       </div>
 
       <!-- Dropdown Menu -->
-      <div *ngIf="isOpen()" class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-100 max-h-60 overflow-auto py-1 animate-in fade-in slide-in-from-top-2 duration-200">
-         <div *ngIf="!options || options.length === 0" class="px-4 py-2 text-sm text-gray-500 italic">Aucune option disponible</div>
-         
-         <div *ngFor="let option of options" 
-              (click)="toggleSelection(option)"
-              class="px-4 py-2.5 hover:bg-indigo-50 cursor-pointer text-sm flex items-center justify-between group transition-colors"
-              [class.bg-indigo-50]="isSelected(option)"
-              [class.text-indigo-700]="isSelected(option)"
-              [class.font-medium]="isSelected(option)">
-              
-              <span>{{ option[bindLabel] }}</span>
-              
-              <svg *ngIf="isSelected(option)" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      <div *ngIf="isOpen()" class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-100 max-h-72 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+         <!-- Search Input -->
+         <div class="p-2 border-b border-gray-100" *ngIf="isSearchable">
+            <input 
+              #searchInput
+              type="text" 
+              class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              [placeholder]="searchPlaceholder"
+              (input)="onSearch($event)"
+              (click)="$event.stopPropagation()">
+         </div>
+
+         <!-- Options List -->
+         <div class="overflow-y-auto max-h-60 py-1">
+             <div *ngIf="isLoading" class="px-4 py-3 flex justify-center">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+             </div>
+
+             <div *ngIf="!isLoading && (!options || options.length === 0)" class="px-4 py-2 text-sm text-gray-500 italic">
+                {{ emptyMessage }}
+             </div>
+             
+             <div *ngFor="let option of options" 
+                  (click)="toggleSelection(option)"
+                  class="px-4 py-2 hover:bg-indigo-50 cursor-pointer text-sm flex items-center justify-between group transition-colors"
+                  [class.bg-indigo-50]="isSelected(option)"
+                  [class.text-indigo-700]="isSelected(option)"
+                  [class.font-medium]="isSelected(option)">
+                  
+                  <div class="flex flex-col">
+                    <span>{{ option[bindLabel] }}</span>
+                    <span *ngIf="bindSubLabel && option[bindSubLabel]" class="text-[10px] text-gray-400">{{ option[bindSubLabel] }}</span>
+                  </div>
+                  
+                  <svg *ngIf="isSelected(option)" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+             </div>
          </div>
       </div>
 
@@ -74,6 +99,13 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit {
     @Input() bindValue: string = 'value'; // value property of option to store
     @Input() required: boolean = false;
     @Input() hint: string = '';
+    @Input() isSearchable: boolean = true;
+    @Input() searchPlaceholder: string = 'Rechercher...';
+    @Input() emptyMessage: string = 'Aucune option trouvée';
+    @Input() isLoading: boolean = false;
+    @Input() bindSubLabel: string = '';
+
+    @Output() search = new EventEmitter<string>();
 
     // Internal state
     isOpen = signal(false);
@@ -83,17 +115,30 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit {
 
     onChange: any = () => { };
     onTouch: any = () => { };
+    
+    // To keep track of selected objects (important for async search where current options might change)
+    selectedObjects: any[] = [];
+    
+    private searchSubject = new Subject<string>();
 
-    constructor(private elementRef: ElementRef) { }
+    constructor(private elementRef: ElementRef, private cdr: ChangeDetectorRef) { }
 
-    ngOnInit() { }
+    ngOnInit() {
+        this.searchSubject.pipe(
+            debounceTime(300),
+            distinctUntilChanged()
+        ).subscribe(val => {
+            this.search.emit(val);
+        });
+    }
 
     // Logic for UI display (mapping values back to options)
     getSelectedItems() {
-        if (!this.value || this.value.length === 0) return [];
-        if (!this.options) return [];
-        // Map stored values to full option objects for display
-        return this.options.filter(opt => this.value.includes(opt[this.bindValue]));
+        return this.selectedObjects;
+    }
+
+    onSearch(event: any) {
+        this.searchSubject.next(event.target.value);
     }
 
     toggleOpen() {
@@ -110,9 +155,11 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit {
         if (index === -1) {
             // Add
             this.value = [...this.value, val];
+            this.selectedObjects = [...this.selectedObjects, option];
         } else {
             // Remove
             this.value = this.value.filter(v => v !== val);
+            this.selectedObjects = this.selectedObjects.filter(o => o[this.bindValue] !== val);
         }
 
         this.onChange(this.value);

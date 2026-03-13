@@ -1,4 +1,4 @@
-<app-ui-form [title]="cycle ? 'Modifier le Cycle' : 'Nouveau Cycle'" [formGroup]="form" [isLoading]="isSubmitting"
+<app-ui-form [formErrors]="formErrors" [title]="cycle ? 'Modifier le Cycle' : 'Nouveau Cycle'" [formGroup]="form" [isLoading]="isSubmitting"
     [errorMessage]="errorMessage" [submitLabel]="cycle ? 'Modifier' : 'Créer'"
     description="Configurez les cycles d'enseignement et leur ordre." (submitForm)="submit()"
     (cancel)="onCancel()">

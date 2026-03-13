@@ -16,7 +16,7 @@ ROLES_STRUCTURE = {
         "Gestion des Matières", "Gestion des Années Académiques", "Gestion des Cycles", 
         "Gestion des Personnels", "Gestion des Enseignants", "Gestion des Affectations", 
         "Gestion des Apprenants", "Gestion des Tuteurs", "Gestion des Inscriptions", 
-        "Gestion des Plannings"
+        "Gestion des Plannings", "Gestion des Tarifs", "Gestion des Factures", "Gestion des Paiements"
     ],
     "DIRECTEUR_ETUDES": [
         "Gestion des Classes", "Gestion des Matières", "Gestion des Enseignants",
@@ -33,7 +33,7 @@ ROLES_STRUCTURE = {
         "Gestion des Plannings"
     ],
     "COMPTABLE": [
-        "Gestion des Type de contrat"
+        "Gestion des Type de contrat", "Gestion des Tarifs", "Gestion des Factures", "Gestion des Paiements"
     ],
     "ELEVE": [],
     "PARENT": []

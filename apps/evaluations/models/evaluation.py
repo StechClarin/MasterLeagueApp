@@ -27,7 +27,6 @@ class EvaluationSession(EstablishmentAwareModel):
     scope = models.CharField(max_length=20, choices=SCOPE_CHOICES, default='CLASS')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
     
-    # Target
     academic_period = models.ForeignKey(
         AcademicPeriod, 
         on_delete=models.CASCADE, 
@@ -39,13 +38,6 @@ class EvaluationSession(EstablishmentAwareModel):
         EvaluationType, 
         on_delete=models.CASCADE, 
         related_name='evaluation_sessions'
-    )
-    
-    # Metadata
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='created_evaluation_sessions'
     )
 
     class Meta:

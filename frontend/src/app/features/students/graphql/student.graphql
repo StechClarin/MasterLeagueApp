@@ -1,17 +1,24 @@
-query GetAllStudents($search: String, $classroomId: ID, $parentPhone: String, $page: Int, $pageSize: Int) {
-  students(search: $search, classroomId: $classroomId, parentPhone: $parentPhone, page: $page, pageSize: $pageSize) {
-    totalCount
-    numPages
+# Student and Enrollment Queries
+query GetAllStudents($search: String, $classroomId: ID, $academicYearId: ID, $status: String, $page: Int, $pageSize: Int) {
+  students(search: $search, classroomId: $classroomId, academicYearId: $academicYearId, status: $status, page: $page, pageSize: $pageSize) {
     items {
       id
-      matricule
       firstName
       lastName
-      gender
+      matricule
       photo
       dateOfBirth
       placeOfBirth
+      gender
       address
+      health {
+        id
+        bloodGroup
+        medicalConditions
+        allergies
+        emergencyContactName
+        emergencyContactPhone
+      }
       enrollments {
         id
         status
@@ -28,14 +35,6 @@ query GetAllStudents($search: String, $classroomId: ID, $parentPhone: String, $p
           id
           name
         }
-      }
-      health {
-        id
-        bloodGroup
-        allergies
-        medicalConditions
-        emergencyContactName
-        emergencyContactPhone
       }
       guardians {
         id
@@ -107,5 +106,37 @@ query GetStudent($id: ID!) {
       photo
       dateOfBirth
     }
+  }
+}
+
+query GetAllEnrollments($search: String, $classroomId: ID, $academicYearId: ID, $page: Int, $pageSize: Int) {
+  enrollments(search: $search, classroomId: $classroomId, academicYearId: $academicYearId, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      status
+      enrollmentDate
+      isRepeater
+      student {
+        id
+        firstName
+        lastName
+        matricule
+        photo
+      }
+      classroom {
+        id
+        name
+        level {
+          id
+          name
+        }
+      }
+      academicYear {
+        id
+        name
+      }
+    }
+    totalCount
+    numPages
   }
 }

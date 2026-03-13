@@ -43,5 +43,10 @@ class Enrollment(EstablishmentAwareModel):
             self.establishment = self.classroom.establishment
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
         self.clean()
         super().save(*args, **kwargs)
+        
+        if is_new:
+            from apps.finance.services.finance_service import FinanceService
+            FinanceService.generate_invoices_for_enrollment(self)

@@ -12,6 +12,8 @@ class StudentQuery(graphene.ObjectType):
         StudentPaginatedType,
         search=graphene.String(),
         classroom_id=graphene.ID(),
+        academic_year_id=graphene.ID(),
+        status=graphene.String(),
         parent_phone=graphene.String(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
@@ -23,7 +25,7 @@ class StudentQuery(graphene.ObjectType):
         except Student.DoesNotExist:
             return None
 
-    def resolve_students(root, info, search=None, classroom_id=None, parent_phone=None, page=1, page_size=10, **kwargs):
+    def resolve_students(root, info, search=None, classroom_id=None, academic_year_id=None, status=None, parent_phone=None, page=1, page_size=10, **kwargs):
         from django.db.models import Q
         
         # 1. Base Query with optimization
@@ -48,7 +50,13 @@ class StudentQuery(graphene.ObjectType):
             
         if classroom_id:
             # Filter by current/any enrollment in this classroom
-            queryset = queryset.filter(enrollments__classroom_id=classroom_id)
+            queryset = queryset.filter(enrollments__classroom_id=classroom_id, enrollments__is_active=True)
+
+        if academic_year_id:
+            queryset = queryset.filter(enrollments__academic_year_id=academic_year_id, enrollments__is_active=True)
+
+        if status:
+            queryset = queryset.filter(enrollments__status=status, enrollments__is_active=True)
 
         if parent_phone:
             queryset = queryset.filter(guardians__phone_number__icontains=parent_phone)

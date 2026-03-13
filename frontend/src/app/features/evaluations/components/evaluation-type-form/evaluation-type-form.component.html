@@ -1,4 +1,4 @@
-<app-ui-form [title]="item ? 'Modifier le Type' : 'Nouveau Type'"
+<app-ui-form [formErrors]="formErrors" [title]="item ? 'Modifier le Type' : 'Nouveau Type'"
     description="Définissez les caractéristiques du type d'évaluation" [formGroup]="form" (submitForm)="submit()"
     (cancel)="onCancel()" [isLoading]="isSubmitting">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-[350px]">

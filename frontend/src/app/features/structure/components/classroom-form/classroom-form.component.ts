@@ -26,6 +26,12 @@ export class ClassRoomFormComponent extends BaseFormComponent implements OnChang
     @Input() classroom: ClassRoomType | null = null;
     levels: any[] = [];
 
+    override fieldLabels = {
+        name: 'Nom de la classe',
+        capacity: 'Capacité',
+        levelId: 'Niveau'
+    };
+
     override form = this.fb.nonNullable.group({
         name: ['', [Validators.required]],
         capacity: [30, [Validators.required, Validators.min(1)]],

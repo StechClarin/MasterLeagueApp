@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'apps.pedagogy.apps.PedagogyConfig',
     'apps.documents.apps.DocumentsConfig',
     'apps.evaluations.apps.EvaluationsConfig',
+    'apps.finance.apps.FinanceConfig',
 
     'rest_framework',
     'rest_framework_simplejwt',

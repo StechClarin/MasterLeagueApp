@@ -184,7 +184,7 @@
   </ng-container>
 </app-ui-list-page>
 
-<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-3xl">
+<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-5xl">
   <ng-container [ngSwitch]="modalMode()">
     <app-ui-confirm-modal
       *ngSwitchCase="'delete'"

@@ -1,8 +1,8 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 from apps.students.models import Student
 from .evaluation_subject import EvaluationSubject
-
 
 class Grade(EstablishmentAwareModel):
     """
@@ -24,7 +24,8 @@ class Grade(EstablishmentAwareModel):
         max_digits=5, 
         decimal_places=2, 
         null=True, blank=True,
-        help_text="Note obtenue"
+        help_text="Note obtenue",
+        validators=[MinValueValidator(0), MaxValueValidator(20)]
     )
     comment = models.TextField(null=True, blank=True)
     

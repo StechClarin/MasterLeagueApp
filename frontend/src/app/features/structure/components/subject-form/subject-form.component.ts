@@ -5,8 +5,10 @@ import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { SubjectService } from '../../services/subject.service';
 import { SubjectType, LevelType, LevelSubjectType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
-import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
+import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
+import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
+import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
 import { StructureStateService } from '@core/services/structure-state.service';
 import { LevelService } from '../../services/level.service';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -15,7 +17,11 @@ import { switchMap } from 'rxjs/operators';
 @Component({
     selector: 'app-subject-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent, UiTabsComponent],
+    imports: [
+        CommonModule, ReactiveFormsModule, 
+        UiInputComponent, UiTabsComponent,
+        UiFormHeaderComponent, UiFormActionsComponent, UiFormErrorsComponent
+    ],
     templateUrl: './subject-form.component.html',
     styles: [`
         :host {
@@ -37,8 +43,16 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
 
     // Tabs configuration
     tabs: Tab[] = [
-        { id: 'general', label: 'Général' },
-        { id: 'levels', label: 'Niveaux & Quotas' }
+        { 
+            id: 'general', 
+            label: 'Général',
+            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>`
+        },
+        { 
+            id: 'levels', 
+            label: 'Niveaux & Quotas',
+            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>`
+        }
     ];
     activeTab = signal('general');
 

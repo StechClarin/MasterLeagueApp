@@ -30,6 +30,7 @@ export interface SelectOption {
       <p *ngIf="hint" class="mt-1 text-sm text-gray-500">{{ hint }}</p>
       <div *ngIf="control.invalid && (control.dirty || control.touched)" class="text-red-600 text-sm mt-1">
         <div *ngIf="control.errors?.['required']">Ce champ est requis.</div>
+        <div *ngIf="control.errors?.['serverError']">{{ control.errors?.['serverError'] }}</div>
       </div>
     </div>
   `

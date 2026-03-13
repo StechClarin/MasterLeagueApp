@@ -35,6 +35,7 @@ import { AbstractControl, ControlValueAccessor, FormControl, NgControl, Reactive
         <div *ngIf="control.errors?.['minlength']">
           Ce champ doit contenir au moins {{ control.errors?.['minlength'].requiredLength }} caractères.
         </div>
+        <div *ngIf="control.errors?.['serverError']">{{ control.errors?.['serverError'] }}</div>
       </div>
     </div>
   `

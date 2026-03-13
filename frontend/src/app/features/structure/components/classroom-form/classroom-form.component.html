@@ -1,4 +1,4 @@
-<app-ui-form [title]="classroom ? 'Modifier la Classe' : 'Nouvelle Classe'" [formGroup]="form"
+<app-ui-form [formErrors]="formErrors" [title]="classroom ? 'Modifier la Classe' : 'Nouvelle Classe'" [formGroup]="form"
     [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="classroom ? 'Modifier' : 'Créer'"
     description="Gérez les classes et leur capacité d'accueil." (submitForm)="submit()" (cancel)="onCancel()">
 

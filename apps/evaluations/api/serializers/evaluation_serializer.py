@@ -5,14 +5,14 @@ class EvaluationPlanningSerializer(BaseSerializer):
     class Meta:
         model = EvaluationPlanning
         fields = "__all__"
-        read_only_fields = ['created_by']
+        read_only_fields = ['created_by_user', 'updated_by_user']
 
 
 class EvaluationSupervisionSerializer(BaseSerializer):
     class Meta:
         model = EvaluationSupervision
         fields = "__all__"
-        read_only_fields = ['created_by']
+        read_only_fields = ['created_by_user', 'updated_by_user']
 
 
 class EvaluationSubjectSerializer(BaseSerializer):
@@ -21,7 +21,7 @@ class EvaluationSubjectSerializer(BaseSerializer):
     class Meta:
         model = EvaluationSubject
         fields = "__all__"
-        read_only_fields = ['created_by']
+        read_only_fields = ['created_by_user', 'updated_by_user']
 
 
 class EvaluationSessionSerializer(BaseSerializer):
@@ -31,4 +31,4 @@ class EvaluationSessionSerializer(BaseSerializer):
     class Meta:
         model = EvaluationSession
         fields = "__all__"
-        read_only_fields = ['created_by']
+        read_only_fields = ['created_by_user', 'updated_by_user']

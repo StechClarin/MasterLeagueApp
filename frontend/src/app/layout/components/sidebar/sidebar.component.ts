@@ -39,12 +39,14 @@ interface SidebarModule {
               <span class="text-white font-bold text-xl">G</span>
             </div>
           </div>
+          <a href="/dashboard">
           <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-indigo-200 transition-all duration-300">
               GigaCore
             </span>
             <span class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Admin Panel</span>
           </div>
+          </a>
         </div>
       </div>
 

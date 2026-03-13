@@ -1,4 +1,4 @@
-<app-ui-form
+<app-ui-form [formErrors]="formErrors"
     [title]="isEditMode ? 'Modifier le Rôle' : 'Créer un Rôle'"
     [formGroup]="form"
     [submitLabel]="isEditMode ? 'Modifier' : 'Créer'"

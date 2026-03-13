@@ -1,7 +1,8 @@
 from django.db import models
 from .establishment import Establishment
+from .user_audit_model import UserAuditModel
 
-class EstablishmentAwareModel(models.Model):
+class EstablishmentAwareModel(UserAuditModel):
     """
     Classe abstraite pour les modèles qui appartiennent à un établissement.
     """

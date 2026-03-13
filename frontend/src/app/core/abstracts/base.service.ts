@@ -4,6 +4,7 @@ import { Observable, Subject } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { LoggingService } from '../services/logging.service';
+import { FormUtils } from '../utils/form.utils';
 
 @Injectable({
     providedIn: 'root'
@@ -62,8 +63,9 @@ export abstract class BaseService {
             url += `${data.id}/`;
         }
 
-        this.logger.logApi('POST', url, 'START', data);
-        const request = this.http.post(url, data);
+        const snakeData = FormUtils.convertPayloadToSnakeCase(data);
+        this.logger.logApi('POST', url, 'START', snakeData);
+        const request = this.http.post(url, snakeData);
 
         return request.pipe(
             tap(res => {

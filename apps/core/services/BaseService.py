@@ -112,9 +112,7 @@ class BaseService:
         [HOOK] À surcharger pour modifier les données juste avant l'écriture BDD.
         Ex: Générer un matricule automatique, crypter une donnée.
         """
-        # [SAFETY NET] Injection de l'établissement si manquant (ex: stripped by read-only serializer)
-        # ATTENTION: On ne le fait qu'en CRÉATION (pas d'instance) ou si l'instance n'a pas d'établissement
-        # Sinon, si un user (Context A) modifie un objet (Context B), on risque de déplacer l'objet dans A
+        # [SAFETY NET] Injection de l'établissement si manquant
         if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
             should_inject = False
             if not instance:
@@ -123,10 +121,18 @@ class BaseService:
                 should_inject = True # Instance orpheline (rare)
             
             if should_inject:
-                # On vérifie si 'establishment' ou 'establishment_id' est présent
                 if 'establishment' not in data and 'establishment_id' not in data:
-                     print(f"DEBUG: [SafetyNet] Injecting establishment_id {self.establishment_id} in before_save")
                      data['establishment_id'] = self.establishment_id
+
+        # [AUDIT] Injection automatique de l'utilisateur (Pattern Global)
+        if hasattr(self, 'user') and self.user:
+            # updated_by_user : Toujours mis à jour
+            if hasattr(self.model, 'updated_by_user'):
+                data['updated_by_user_id'] = self.user.id
+            
+            # created_by_user : Uniquement à la création
+            if not instance and hasattr(self.model, 'created_by_user'):
+                data['created_by_user_id'] = self.user.id
 
         return data
 

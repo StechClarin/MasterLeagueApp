@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 
 import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
 import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
+import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
 
 @Component({
     selector: 'app-contract-type-form',
@@ -17,7 +18,8 @@ import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-fo
         ReactiveFormsModule,
         UiInputComponent,
         UiFormHeaderComponent,
-        UiFormActionsComponent
+        UiFormActionsComponent,
+        UiFormErrorsComponent
     ],
     templateUrl: './contract-type-form.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,6 +35,12 @@ export class ContractTypeFormComponent extends BaseModalFormComponent {
             description: ['']
         });
     }
+
+    override fieldLabels = {
+        code: 'Code',
+        designation: 'Désignation',
+        description: 'Description'
+    };
 
     save(): Observable<any> {
         return this.service.save(this.form.value);
