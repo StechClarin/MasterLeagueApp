@@ -117,7 +117,7 @@ export class AcademicPeriodListComponent extends BaseModalListComponent<Academic
         const values = { ...this.filterForm.value };
         values.search = this.searchControl.value || '';
         if (values.academic_year) {
-            values.academicYearId = parseInt(values.academic_year);
+            values.academicYearId = values.academic_year;
         }
         delete values.academic_year;
         return values;

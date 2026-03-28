@@ -1,6 +1,9 @@
+import uuid
 from django.db import models
 from .permission import Permission # On importe notre Permission custom
-class Group(models.Model):
+from .user_audit_model import UserAuditModel
+
+class Group(UserAuditModel):
     name = models.CharField(max_length=150, blank=True)
     permissions = models.ManyToManyField(
         Permission,

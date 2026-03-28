@@ -1,7 +1,10 @@
 # apps/core/models/module.py
+import uuid
 from django.db import models
 
-class Module(models.Model):
+from .user_audit_model import UserAuditModel
+
+class Module(UserAuditModel):
     name = models.CharField(max_length=100)
     order = models.PositiveSmallIntegerField(default=1)
     display_mod = models.CharField(max_length=50, default='list-view', help_text="ex: card-view, list-view")

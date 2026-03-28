@@ -19,7 +19,11 @@ class EstablishmentQuery(graphene.ObjectType):
     establishment = graphene.Field(EstablishmentType, id=graphene.ID(required=True))
 
     def resolve_establishments(self, info, search=None, page=1, page_size=10, **kwargs):
-        queryset = Establishment.objects.all().order_by('name')
+        user = info.context.user
+        if not user.is_authenticated:
+            return None # Or an empty paginated response, depending on the error handling policy
+            
+        queryset = Establishment.objects.filter(user=user).order_by('name')
         
         # 1. Global Search "FIND" (OR conditions)
         if search:
@@ -45,4 +49,10 @@ class EstablishmentQuery(graphene.ObjectType):
         return paginate_queryset(queryset, page, page_size)
 
     def resolve_establishment(self, info, id):
-        return Establishment.objects.get(pk=id)
+        user = info.context.user
+        if not user.is_authenticated:
+            return None
+        try:
+            return Establishment.objects.get(pk=id, user=user)
+        except Establishment.DoesNotExist:
+            return None

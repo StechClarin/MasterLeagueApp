@@ -199,7 +199,7 @@ export class GradeEntryComponent implements OnInit {
             // 3. Fetch Students & Existing Grades
             const [students, existingGrades] = await Promise.all([
                 this.loadStudents(classroomMetadata),
-                firstValueFrom(this.gradeService.list(parseInt(evalId)))
+                firstValueFrom(this.gradeService.list(Number(evalId)))
             ]);
 
             this.buildGrid(students, existingGrades as any[]);
@@ -554,8 +554,8 @@ export class GradeEntryComponent implements OnInit {
         if (!session || !classroomId) return;
 
         try {
-            const periodId = parseInt(session.academicPeriod.id);
-            const grades = await firstValueFrom(this.gradeService.listByPeriodAndClass(periodId, parseInt(classroomId)));
+            const periodId = session.academicPeriod.id;
+            const grades = await firstValueFrom(this.gradeService.listByPeriodAndClass(Number(periodId), Number(classroomId)));
             this.periodGrades.set(grades as GradeFieldsFragment[]);
         } catch (err) {
             console.error('Failed to fetch period grades', err);

@@ -3,7 +3,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from ..utils import document_upload_path
 
-class Document(models.Model):
+from apps.core.models.user_audit_model import UserAuditModel
+
+class Document(UserAuditModel):
     TYPE_CHOICES = [
         ('CV', 'CV'),
         ('CONTRAT', 'Contrat de Travail'),

@@ -39,12 +39,26 @@ if [ ! -d "frontend/dist/frontend/browser" ]; then
 fi
 
 # 3. Préparation du dossier de release
-echo "📂 Création du dossier de release : $RELEASE_DIR"
+echo "📂 Préparation des fichiers..."
 mkdir -p "$RELEASE_DIR"
+rm -rf frontend_build
+mkdir -p frontend_build
+cp -r frontend/dist/frontend/browser/* frontend_build/
 
-# 4. Compression (on compresse le contenu de dist/frontend/browser)
-echo "🗜️ Création de l'archive .tar.gz..."
-tar -czf "$RELEASE_DIR/$ARCHIVE_NAME" -C frontend/dist/frontend/browser .
+# 4. Compression (on compresse tout le projet sauf les dossiers inutiles)
+echo "🗜️ Création de l'archive .tar.gz COMPLÈTE..."
+# On utilise --exclude pour ignorer les lourdeurs
+tar -czf "$RELEASE_DIR/$ARCHIVE_NAME" \
+    --exclude="./.git" \
+    --exclude="./.venv" \
+    --exclude="./frontend/node_modules" \
+    --exclude="./frontend/dist" \
+    --exclude="./releases" \
+    --exclude="./staticfiles" \
+    --exclude="./media" \
+    --exclude="./.agent" \
+    --exclude="*/__pycache__" \
+    .
 
 # 5. Calcul de l'empreinte SHA-256
 echo "🔐 Calcul du Hash SHA-256..."

@@ -1,0 +1,7 @@
+{
+  "id": "930e2a6f-7dfb-4541-b607-7b520053b9b4",
+  "name": "School Manager",
+  "version": "1.0.0",
+  "port": 8000,
+  "exec_command": "./hub_start.sh"
+}

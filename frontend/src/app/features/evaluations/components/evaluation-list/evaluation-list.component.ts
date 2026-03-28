@@ -144,11 +144,11 @@ export class EvaluationListComponent extends BaseModalListComponent<EvaluationSe
         values.search = this.searchControl.value || '';
 
         // Convert string IDs to Int if needed by backend
-        if (values.period) values['periodId'] = parseInt(values.period as string);
-        if (values.level) values['levelId'] = parseInt(values.level as string);
-        if (values.classroom) values['classroomId'] = parseInt(values.classroom as string);
-        if (values.subject) values['subjectId'] = parseInt(values.subject as string);
-        if (values.evaluationType) values['evaluationTypeId'] = parseInt(values.evaluationType as string);
+        if (values.period) values['periodId'] = values.period as string;
+        if (values.level) values['levelId'] = values.level as string;
+        if (values.classroom) values['classroomId'] = values.classroom as string;
+        if (values.subject) values['subjectId'] = values.subject as string;
+        if (values.evaluationType) values['evaluationTypeId'] = values.evaluationType as string;
 
         delete values['period'];
         delete values['level'];

@@ -1,11 +1,14 @@
 # apps/profilmanagement/models/user.py
+import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from .role import Role
 from apps.documents.utils import document_upload_path
 from .user_manager import UserManager
 
-class User(AbstractBaseUser, PermissionsMixin):
+from apps.core.models.user_audit_model import UserAuditModel
+
+class User(UserAuditModel, AbstractBaseUser, PermissionsMixin):
     # ... (Champs standards inchangés : username, email, etc.) ...
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)

@@ -1,7 +1,8 @@
-
 from .establishment import Establishment
 from .establishment_aware_model import EstablishmentAwareModel
 from .module import Module
 from .page import Page
 from .permission import Permission
 from .group import Group
+from .sync_log import SyncLog
+from .user_audit_model import UserAuditModel

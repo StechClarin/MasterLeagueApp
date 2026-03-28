@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path, re_path, include
+from django.views.generic import TemplateView
 
 # Nos Contrôleurs
 from apps.core.api.controllers.RouterController import RouterView
@@ -15,6 +16,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # 1. Admin Django
     path('admin/', admin.site.urls),
+    path('api/', include('apps.core.api.urls')),
 
     # 2. Authentification (Publique)
     path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -28,7 +30,10 @@ urlpatterns = [
     # --- CORRECTION : On utilise GraphQLController ---
     # Il gère la sécurité JWT et désactive le CSRF automatiquement
     re_path(r'^graphql.*', GraphQLController.as_view(graphiql=True)),
-    # Force reload
+    
+    # 5. Frontend Angular (Maquette/App)
+    path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
 
 from django.conf import settings

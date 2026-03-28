@@ -2,7 +2,9 @@ from django.db import models
 from apps.structure.models.academic_year import AcademicYear
 from apps.structure.models.cycle import Cycle
 
-class AcademicCycleConfig(models.Model):
+from apps.core.models.user_audit_model import UserAuditModel
+
+class AcademicCycleConfig(UserAuditModel):
     """
     Configuration spécifique pour un Cycle durant une Année Scolaire donné.
     Permet de définir une date de rentrée spécifique (ex: Prepa rentre avant Lycée).

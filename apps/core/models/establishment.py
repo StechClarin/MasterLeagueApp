@@ -1,6 +1,10 @@
+import uuid
 from django.db import models
+from django.conf import settings
+from apps.core.models.user_audit_model import UserAuditModel
 
-class Establishment(models.Model):
+class Establishment(UserAuditModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='establishments_owned')
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     logo = models.ImageField(upload_to='establishments/', null=True, blank=True)

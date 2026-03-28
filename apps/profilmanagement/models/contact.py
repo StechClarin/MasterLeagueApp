@@ -1,7 +1,9 @@
 from django.db import models
-from .personne import Personne
+from apps.hr.models.personnel import Personnel as Personne
 
-class Contact(models.Model):
+from apps.core.models.user_audit_model import UserAuditModel
+
+class Contact(UserAuditModel):
     personne = models.ForeignKey(Personne, on_delete=models.CASCADE, related_name='contacts')
     telephone = models.CharField(max_length=20)
     email = models.EmailField()

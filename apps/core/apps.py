@@ -7,3 +7,4 @@ class CoreConfig(AppConfig):
 
     def ready(self):
         import apps.core.checks # Enregistre les checks
+        import apps.core.signals.sync_handlers # Enregistre les logs de synchro

@@ -1,9 +1,12 @@
 # apps/profilmanagement/models/role.py
+import uuid
 from django.db import models
 from apps.core.models.group import Group  # On importe notre Group custom
 from apps.core.models.permission import Permission # Import Permission
 
-class Role(models.Model):
+from apps.core.models.user_audit_model import UserAuditModel
+
+class Role(UserAuditModel):
     name = models.CharField(max_length=150, unique=True, verbose_name="Nom du rôle")
     groups = models.ManyToManyField(
         Group,

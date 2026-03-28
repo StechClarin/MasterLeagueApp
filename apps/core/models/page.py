@@ -1,8 +1,11 @@
 # apps/core/models/page.py
+import uuid
 from django.db import models
 from .module import Module # On importe notre modèle Module
 
-class Page(models.Model):
+from .user_audit_model import UserAuditModel
+
+class Page(UserAuditModel):
     title = models.CharField(max_length=100)
     icon = models.CharField(max_length=100, blank=True, help_text="Nom de l'icône (ex: client-icon)")
     order = models.PositiveSmallIntegerField(default=1)
