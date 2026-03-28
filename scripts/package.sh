@@ -14,6 +14,12 @@ fi
 # Arrêter le script en cas d'erreur
 set -e
 
+# S'assurer qu'on est à la racine du projet
+if [ ! -f "ethernanos.json" ]; then
+    echo "❌ Erreur: Ce script doit être exécuté depuis la racine du projet (contenant ethernanos.json)"
+    exit 1
+fi
+
 APP_NAME="schoolmanage"
 RELEASE_DIR="./releases/$VERSION"
 ARCHIVE_NAME="$APP_NAME-v$VERSION.tar.gz"
@@ -27,49 +33,63 @@ rm -rf frontend/dist
 # 2. Build Frontend
 echo "🏗️ Build du Frontend Angular..."
 cd frontend
-# Utilisation de --legacy-peer-deps pour éviter les conflits connus
 npm install --legacy-peer-deps
 npm run build -- --base-href /
 cd ..
 
-# Vérification du build
+# Vérification du build frontend
 if [ ! -d "frontend/dist/frontend/browser" ]; then
-    echo "❌ Erreur: Le dossier de build est introuvable."
+    echo "❌ Erreur: Le dossier de build frontend est introuvable."
     exit 1
 fi
 
-# 3. Préparation du dossier de release
-echo "📂 Préparation des fichiers..."
+# 3. Préparation de la Zone de Staging
+echo "📂 Préparation des fichiers (Staging)..."
 mkdir -p "$RELEASE_DIR"
-rm -rf frontend_build
-mkdir -p frontend_build
-cp -r frontend/dist/frontend/browser/* frontend_build/
 
-# 4. Compression (on compresse tout le projet sauf les dossiers inutiles)
-echo "🗜️ Création de l'archive .tar.gz COMPLÈTE..."
-# On utilise --exclude pour ignorer les lourdeurs
-tar -czf "$RELEASE_DIR/$ARCHIVE_NAME" \
-    --exclude="./.git" \
-    --exclude="./.venv" \
-    --exclude="./frontend/node_modules" \
-    --exclude="./frontend/dist" \
-    --exclude="./releases" \
-    --exclude="./staticfiles" \
-    --exclude="./media" \
-    --exclude="./.agent" \
-    --exclude="*/__pycache__" \
-    .
+STAGING="staging_tmp"
+rm -rf "$STAGING"
+mkdir -p "$STAGING"
+
+# Copie des fichiers Core Django
+echo "📋 Copie du backend Django..."
+cp manage.py "$STAGING/"
+cp requirements.txt "$STAGING/"
+cp -r apps "$STAGING/"
+cp -r config "$STAGING/"
+# Optionnels (si existants)
+[ -d "finance" ] && cp -r finance "$STAGING/"
+[ -d "snake" ] && cp -r snake "$STAGING/"
+
+# Copie des fichiers Manifest Hub (CRITIQUE)
+echo "📋 Copie des manifests Hub (ethernanos.json, hub_start.sh)..."
+cp ethernanos.json "$STAGING/"
+cp hub_start.sh "$STAGING/"
+
+# Copie du Frontend Build
+echo "📋 Copie du build frontend..."
+mkdir -p "$STAGING/frontend_build"
+cp -r frontend/dist/frontend/browser/* "$STAGING/frontend_build/"
+
+# 4. Compression (on compresse le CONTENU du staging)
+echo "🗜️ Création de l'archive .tar.gz (Production)..."
+cd "$STAGING"
+# Utilisation de . pour que les fichiers soient à la racine de l'archive
+tar -czf "../$RELEASE_DIR/$ARCHIVE_NAME" .
+cd ..
+
+# Nettoyage
+rm -rf "$STAGING"
 
 # 5. Calcul de l'empreinte SHA-256
 echo "🔐 Calcul du Hash SHA-256..."
-# Sur Linux: sha256sum, sur Mac: shasum -a 256
 if command -v sha256sum >/dev/null 2>&1; then
     HASH=$(sha256sum "$RELEASE_DIR/$ARCHIVE_NAME" | awk '{ print $1 }')
 else
     HASH=$(shasum -a 256 "$RELEASE_DIR/$ARCHIVE_NAME" | awk '{ print $1 }')
 fi
 
-# 6. Génération des métadonnées JSON
+# 6. Génération des métadonnées JSON pour le Hub
 echo "📝 Génération de metadata.json..."
 cat <<EOF > "$RELEASE_DIR/metadata.json"
 {
@@ -86,3 +106,4 @@ echo "✅ PACKAGING TERMINÉ AVEC SUCCÈS !"
 echo "📦 Archive : $RELEASE_DIR/$ARCHIVE_NAME"
 echo "🔑 Hash    : $HASH"
 echo "--------------------------------------------------"
+echo "CONSEIL : Téléchargez l'archive et utilisez ce Hash dans la release Hub."
