@@ -25,6 +25,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
+        shell: bash
         run: |
           pip install -r requirements.txt
           pip install pyinstaller
@@ -35,13 +36,15 @@ jobs:
           node-version: '18'
 
       - name: Build Frontend (Angular)
+        shell: bash
         run: |
           cd frontend
           npm install --legacy-peer-deps
           npm run build -- --base-href /
           cd ..
+          rm -rf frontend_build
           mkdir -p frontend_build
-          cp -r frontend/dist/frontend/browser/* frontend_build/
+          cp -R frontend/dist/frontend/browser/* frontend_build/
 
       - name: Compile Backend (PyInstaller)
         shell: bash
