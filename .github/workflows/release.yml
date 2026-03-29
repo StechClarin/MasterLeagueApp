@@ -75,23 +75,6 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           if [ "$VERSION" = "$GITHUB_REF" ]; then VERSION="latest"; fi
           
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            EXE_NAME="schoolmanage.exe"
-            ARCHIVE_NAME="schoolmanage-v$VERSION-win.tar.gz"
-            META_NAME="metadata-win.json"
-          else
-            EXE_NAME="schoolmanage"
-            ARCHIVE_NAME="schoolmanage-v$VERSION-linux.tar.gz"
-            META_NAME="metadata-linux.json"
-          fi
-          
-          # Create staging for tarball
-          mkdir -p staging
-          cp dist/$EXE_NAME staging/
-          cp ethernanos.json staging/
-          
-          # Tarball creation
-          tar -czf "$ARCHIVE_NAME" -C staging .
           
           # Hash calculation of the ARCHIVE (as expected by the Hub)
           HASH=$(sha256sum $ARCHIVE_NAME | awk '{ print $1 }')
