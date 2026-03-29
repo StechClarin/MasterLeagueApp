@@ -3,12 +3,20 @@
 import os
 import sys
 
-
 def main():
     """Run administrative tasks."""
+    # --- SECURITY HANDSHAKE (The Shield) ---
+    # We skip security check for migrations or help commands to avoid blocking dev tasks,
+    # but we enforce it for 'runserver' which is what the Hub uses.
+    if len(sys.argv) > 1 and sys.argv[1] == "runserver":
+        try:
+            from hub_security import verify_hub_handshake
+            verify_hub_handshake()
+        except Exception as e:
+            print(f"CRITICAL: Security Subsystem Failure ({e}). Access Denied.")
+            sys.exit(1)
+
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-    # import sys
-    # sys.path.append(os.path.join(os.path.dirname(__file__), 'apps'))
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

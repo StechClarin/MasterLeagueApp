@@ -51,15 +51,6 @@ STAGING="staging_tmp"
 rm -rf "$STAGING"
 mkdir -p "$STAGING"
 
-# Copie des fichiers Core Django
-echo "📋 Copie du backend Django..."
-cp manage.py "$STAGING/"
-cp requirements.txt "$STAGING/"
-cp -r apps "$STAGING/"
-cp -r config "$STAGING/"
-# Optionnels (si existants)
-[ -d "finance" ] && cp -r finance "$STAGING/"
-[ -d "snake" ] && cp -r snake "$STAGING/"
 
 # Copie des fichiers Manifest Hub (CRITIQUE)
 echo "📋 Copie des manifests Hub (ethernanos.json, hub_start.sh)..."

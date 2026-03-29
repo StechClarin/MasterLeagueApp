@@ -1,0 +1,125 @@
+name: Release Build
+
+on:
+  push:
+    branches:
+      - schoolmanage_prod_test
+    tags:
+      - 'v*' # Trigger on any version tag like v1.0.0
+
+jobs:
+  build:
+    name: Build Binary (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build Frontend (Angular)
+        run: |
+          cd frontend
+          npm install --legacy-peer-deps
+          npm run build -- --base-href /
+          cd ..
+          mkdir -p frontend_build
+          cp -r frontend/dist/frontend/browser/* frontend_build/
+
+      - name: Compile Backend (PyInstaller)
+        shell: bash
+        run: |
+          # 1. Pre-generate OS-specific manifest for the build
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            EXE_NAME="schoolmanage.exe"
+          else
+            EXE_NAME="schoolmanage"
+          fi
+          
+          cat <<EOF > ethernanos.json
+          {
+            "name": "schoolmanage",
+            "version": "${GITHUB_REF#refs/tags/v}",
+            "port": 8000,
+            "exec_command": "$EXE_NAME"
+          }
+          EOF
+          
+          # 2. Run PyInstaller
+          pyinstaller app.spec
+
+      - name: Prepare Artifact
+        shell: bash
+        run: |
+          # Detect Version from Tag
+          VERSION=${GITHUB_REF#refs/tags/v}
+          if [ "$VERSION" = "$GITHUB_REF" ]; then VERSION="latest"; fi
+          
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            EXE_NAME="schoolmanage.exe"
+            ARCHIVE_NAME="schoolmanage-v$VERSION-win.tar.gz"
+          else
+            EXE_NAME="schoolmanage"
+            ARCHIVE_NAME="schoolmanage-v$VERSION-linux.tar.gz"
+          fi
+          
+          # Create staging for tarball
+          mkdir -p staging
+          cp dist/$EXE_NAME staging/
+          cp ethernanos.json staging/
+          
+          # Tarball creation
+          tar -czf "$ARCHIVE_NAME" -C staging .
+          
+          # Hash calculation of the ARCHIVE (as expected by the Hub)
+          HASH=$(sha256sum $ARCHIVE_NAME | awk '{ print $1 }')
+          
+          # Prepare deploy directory
+          mkdir -p deploy_dir
+          cp $ARCHIVE_NAME deploy_dir/
+          
+          # Generate Metadata with ARCHIVE HASH
+          cat <<EOF > deploy_dir/metadata.json
+          {
+            "app": "schoolmanage",
+            "version": "$VERSION",
+            "hash": "$HASH",
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "archive": "$ARCHIVE_NAME"
+          }
+          EOF
+
+      - name: Deploy to Server (SCP)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          source: "deploy_dir/*"
+          target: "${{ secrets.SERVER_PATH }}/${{ github.ref_name }}"
+          strip_components: 1
+
+      - name: Upload Artifact (GitHub)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.os }}
+          path: deploy_dir/*
