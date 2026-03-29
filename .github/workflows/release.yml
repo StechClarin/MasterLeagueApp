@@ -78,9 +78,11 @@ jobs:
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             EXE_NAME="schoolmanage.exe"
             ARCHIVE_NAME="schoolmanage-v$VERSION-win.tar.gz"
+            META_NAME="metadata-win.json"
           else
             EXE_NAME="schoolmanage"
             ARCHIVE_NAME="schoolmanage-v$VERSION-linux.tar.gz"
+            META_NAME="metadata-linux.json"
           fi
           
           # Create staging for tarball
@@ -99,13 +101,14 @@ jobs:
           cp $ARCHIVE_NAME deploy_dir/
           
           # Generate Metadata with ARCHIVE HASH
-          cat <<EOF > deploy_dir/metadata.json
+          cat <<EOF > deploy_dir/$META_NAME
           {
             "app": "schoolmanage",
             "version": "$VERSION",
             "hash": "$HASH",
             "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-            "archive": "$ARCHIVE_NAME"
+            "archive": "$ARCHIVE_NAME",
+            "os": "${{ matrix.os }}"
           }
           EOF
 
