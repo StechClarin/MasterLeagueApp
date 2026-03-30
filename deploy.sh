@@ -6,7 +6,7 @@ echo "🚀 Starting Deployment..."
 echo "📦 Pulling latest code..."
 git pull
 
-# 2. Build and Deploy
+# 2. Build and Deploy bbbdd
 echo "🐳 Building and Starting Containers..."
 docker compose -f docker-compose.prod.yml up -d --build
 
