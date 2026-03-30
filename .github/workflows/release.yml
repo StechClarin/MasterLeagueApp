@@ -75,15 +75,30 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           if [ "$VERSION" = "$GITHUB_REF" ]; then VERSION="latest"; fi
           
+          # 1. Déterminer l'OS cible pour éviter l'écrasement
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            OS_SUFFIX="win"
+          else
+            OS_SUFFIX="linux"
+          fi
           
-          # Hash calculation of the ARCHIVE (as expected by the Hub)
+          ARCHIVE_NAME="schoolmanage-${OS_SUFFIX}.tar.gz"
+          META_NAME="metadata-${OS_SUFFIX}.json"
+          
+          # 2. Archiver le dossier (Mode OneDir)
+          echo "Packaging folder into $ARCHIVE_NAME..."
+          cd dist/schoolmanage
+          tar -czf "../../$ARCHIVE_NAME" .
+          cd ../..
+          
+          # 3. Hash calculation of the ARCHIVE (as expected by the Hub)
           HASH=$(sha256sum $ARCHIVE_NAME | awk '{ print $1 }')
           
-          # Prepare deploy directory
+          # 4. Prepare deploy directory
           mkdir -p deploy_dir
-          cp $ARCHIVE_NAME deploy_dir/
+          mv $ARCHIVE_NAME deploy_dir/
           
-          # Generate Metadata with ARCHIVE HASH
+          # 5. Generate Metadata with OS Specifier
           cat <<EOF > deploy_dir/$META_NAME
           {
             "app": "schoolmanage",
@@ -117,7 +132,7 @@ jobs:
         run: |
           mkdir -p final_deploy
           # Move all files from subdirectories to the root of final_deploy
-          find all-releases -type f -exec cp {} final_deploy/ \;
+          find all-releases -type f -exec mv {} final_deploy/ \;
 
       - name: Deploy to Server (SCP)
         uses: appleboy/scp-action@master
