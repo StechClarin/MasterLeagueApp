@@ -2,8 +2,6 @@ name: Release Build
 
 on:
   push:
-    branches:
-      - schoolmanage_prod_test
     tags:
       - 'v*' # Trigger on any version tag like v1.0.0
 
@@ -67,6 +65,10 @@ jobs:
           
           # 2. Run PyInstaller
           pyinstaller app.spec
+          
+          # 3. Forcer le manifest et le script bash à la racine (PyInstaller le cache parfois dans _internal)
+          cp ethernanos.json dist/schoolmanage/
+          if [ -f hub_start.sh ]; then cp hub_start.sh dist/schoolmanage/; fi
 
       - name: Prepare Artifact
         shell: bash
@@ -120,7 +122,7 @@ jobs:
     name: Deploy to Server
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/schoolmanage_prod_test'
+    if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Download all build artifacts
@@ -144,3 +146,4 @@ jobs:
           source: "final_deploy/*"
           target: "${{ secrets.SERVER_PATH }}/${{ github.ref_name }}"
           strip_components: 1
+          rm: true
