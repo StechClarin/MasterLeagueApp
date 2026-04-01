@@ -4,6 +4,23 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
 
+# Découverte dynamique de toutes vos applications Django et forçage de l'inclusion de `apps.py` (essentiel pour INSTALLED_APPS)
+internal_apps_hidden = []
+apps_dir = os.path.join(os.path.abspath('.'), 'apps')
+if os.path.exists(apps_dir):
+    for app_name in os.listdir(apps_dir):
+        if os.path.isdir(os.path.join(apps_dir, app_name)) and not app_name.startswith('__'):
+            base = f'apps.{app_name}'
+            internal_apps_hidden.extend([
+                base,
+                f'{base}.apps',
+                f'{base}.models',
+                f'{base}.views',
+                f'{base}.urls',
+                f'{base}.admin',
+                f'{base}.serializers',
+            ])
+
 # Analysis of the main entry point (manage.py)
 a = Analysis(
     ['manage.py'],
@@ -30,20 +47,10 @@ a = Analysis(
         'psycopg2',
         'environ',
         'psutil',
-        # Our internal apps
-        'apps.core',
-        'apps.profilmanagement',
-        'apps.structure',
-        'apps.students',
-        'apps.hr',
-        'apps.pedagogy',
-        'apps.documents',
-        'apps.evaluations',
-        'apps.finance',
         'config.settings',
         'config.urls',
         'config.wsgi',
-    ] + collect_submodules('apps'),
+    ] + internal_apps_hidden + collect_submodules('apps'),
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
