@@ -35,6 +35,28 @@ def main():
             
     sys.argv = new_argv
 
+    # --- DATABASE_URL AUTO-CONSTRUCTION ---
+    # If the Hub passed DB parameters, we build the DATABASE_URL string for Django
+    db_host = os.environ.get('ETHER_DB_HOST')
+    db_port = os.environ.get('ETHER_DB_PORT')
+    db_name = os.environ.get('ETHER_DB_NAME')
+    db_user = os.environ.get('ETHER_DB_USER')
+    db_pass = os.environ.get('ETHER_DB_PASS')
+
+    if db_host and db_port and db_name:
+        # Build PostgreSQL URL
+        os.environ['DATABASE_URL'] = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+    elif not os.environ.get('DATABASE_URL'):
+        # Fallback to local SQLite with ABSOLUTE path
+        # This prevents the app from creating db.sqlite3 in temp folders
+        db_path = os.path.join(os.path.abspath(os.curdir), 'db.sqlite3')
+        os.environ['DATABASE_URL'] = f"sqlite:///{db_path}"
+
+    # --- ETHER_HUB_API_KEY (Sync Handshake) ---
+    # We ensure the API Key is also in environment even if not using postgres
+    if not os.environ.get('ETHER_HUB_API_KEY'):
+         os.environ['ETHER_HUB_API_KEY'] = 'ethernanos-hub-secret-2026'
+
     # --- ETHER-SETUP (Maintenance) ---
     # One-time setup task for SQLite initialization
     if "ether_setup" in sys.argv or "--ether-setup" in sys.argv:
@@ -42,7 +64,8 @@ def main():
         if "--ether-setup" in sys.argv:
             sys.argv = [sys.argv[0], 'ether_setup']
             
-        os.environ['DATABASE_URL'] = 'sqlite:///db.sqlite3'
+        db_path = os.path.join(os.path.abspath(os.curdir), 'db.sqlite3')
+        os.environ['DATABASE_URL'] = f"sqlite:///{db_path}"
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
         try:
             import django
