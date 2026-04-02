@@ -1,15 +1,15 @@
 import os
 import sys
 import json
+from urllib.parse import quote_plus
 
 def main():
     """Run administrative tasks."""
     
-    # --- INDUSTRIAL HUB ORCHESTRATION v2.0 ---
-    # If launched by the Hub, read encrypted/sensitive config from STDIN
+    # --- INDUSTRIAL HUB ORCHESTRATION v2.0/v2.1 ---
+    # Safe Config Injection from Stdin
     if os.environ.get("ETHER_HUB_PID"):
         try:
-            # We expect a JSON line on stdin immediately
             line = sys.stdin.readline()
             if line:
                 config = json.loads(line)
@@ -20,38 +20,34 @@ def main():
                 
                 db = config.get('db_config')
                 if db:
-                    os.environ['DATABASE_URL'] = f"postgres://{db['user']}:{db['pass']}@{db['host']}:{db['port']}/{db['name']}"
+                    # BLINDAGE: Encode password for URL safety (handles special chars like @ or :)
+                    safe_pass = quote_plus(db['pass'])
+                    os.environ['DATABASE_URL'] = f"postgres://{db['user']}:{safe_pass}@{db['host']}:{db['port']}/{db['name']}"
                 
                 print("[DEBUG] Hub Configuration received via STDIN.")
         except Exception as e:
             print(f"[DEBUG] Stdin config error: {e}")
 
-    # --- LEGACY ARG INTERCEPTION (For manual Dev mode) ---
-    hub_args = {
-        '--app-port': 'ETHER_APP_PORT',
-        '--tenant-id': 'ETHER_TENANT_ID',
-    }
-    new_argv = []
-    i = 0
-    argv = sys.argv
-    while i < len(argv):
-        arg = argv[i]
-        if arg in hub_args and i + 1 < len(argv):
-            os.environ[hub_args[arg]] = argv[i+1]
-            i += 2
-        else:
-            new_argv.append(arg)
-            i += 1
-    sys.argv = new_argv
+    # Legacy args...
+    hub_args = {'--app-port': 'ETHER_APP_PORT', '--tenant-id': 'ETHER_TENANT_ID'}
+    for arg_key, env_key in hub_args.items():
+        if arg_key in sys.argv:
+            idx = sys.argv.index(arg_key)
+            if idx + 1 < len(sys.argv):
+                os.environ[env_key] = sys.argv.pop(idx + 1)
+            sys.argv.remove(arg_key)
 
-    # --- DATABASE_URL FALLBACK (Absolute SQLite) ---
+    # --- DATABASE_URL FALLBACK ---
     if not os.environ.get('DATABASE_URL'):
         db_path = os.path.join(os.path.abspath(os.curdir), 'db.sqlite3')
         os.environ['DATABASE_URL'] = f"sqlite:///{db_path}"
 
-    # --- ETHER-SETUP (Maintenance) ---
-    if "ether_setup" in sys.argv:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    
+    # --- MAINTENANCE & SETUP ---
+    if "ether_setup" in sys.argv or "--ether-setup" in sys.argv:
+        if "--ether-setup" in sys.argv:
+            sys.argv = [sys.argv[0], 'ether_setup']
         try:
             import django
             django.setup()
@@ -62,21 +58,19 @@ def main():
             print(f"CRITICAL: Ether Setup Failure ({e}).")
             sys.exit(1)
 
-    # --- SECURITY HANDSHAKE (The Shield) ---
-    is_runserver = "runserver" in sys.argv or os.environ.get("ETHER_HUB_PID")
-    if is_runserver:
+    # --- SECURITY HANDSHAKE (Shield) ---
+    is_hub_mode = os.environ.get("ETHER_HUB_PID") is not None
+    if "runserver" in sys.argv or is_hub_mode:
         try:
             from hub_security import verify_hub_handshake
-            if verify_hub_handshake():
-                print("[DEBUG] Security Handshake: SUCCESS.")
+            verify_hub_handshake()
+            print("[DEBUG] Security Shield: ACTIVE.")
         except Exception as e:
-            print(f"CRITICAL: Security Subsystem Failure ({e}).")
+            print(f"CRITICAL: Security Failure ({e}).")
             sys.exit(1)
 
-    # --- PRODUCTION WSGI SERVER (Waitress) ---
-    # In Hub mode, we use Waitress instead of runserver
-    if os.environ.get("ETHER_HUB_PID"):
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    # --- PRODUCTION MODE (Waitress) ---
+    if is_hub_mode:
         try:
             import django
             django.setup()
@@ -84,31 +78,22 @@ def main():
             from waitress import serve
             
             port = int(os.environ.get('ETHER_APP_PORT', 8000))
-            print(f"[DEBUG] Starting Industrial WSGI Server (Waitress) on port {port}...")
-            
-            # THE REVOLUTION: The Ready Signal
-            # This line tells Rust to open the UI immediately
-            print("[HUB_SIGNAL:READY]")
+            print(f"[DEBUG] Starting Industrial WSGI Server on port {port}...")
+            print("[HUB_SIGNAL:READY]") # REW: Ready signal for Rust
             sys.stdout.flush()
             
             serve(application, host='127.0.0.1', port=port, threads=4)
             sys.exit(0)
         except Exception as e:
-            print(f"CRITICAL: WSGI Server Failure: {e}")
+            print(f"CRITICAL: WSGI Failure: {e}")
             sys.exit(1)
 
-    # --- DEVELOPMENT RELOAD MODE (Fallback for manual runserver) ---
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    # --- DEV MODE (Standard Django) ---
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
         raise ImportError("Couldn't import Django.") from exc
     execute_from_command_line(sys.argv)
-
-if __name__ == '__main__':
-    main()
-    execute_from_command_line(sys.argv)
-
 
 if __name__ == '__main__':
     main()
