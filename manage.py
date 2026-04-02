@@ -1,26 +1,36 @@
-#!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
 import os
 import sys
+import json
 
 def main():
     """Run administrative tasks."""
     
-    # --- HUB ARGUMENT INTERCEPTION ---
-    # The Hub passes custom flags like --app-port 8000.
-    # Standard Django management commands don't recognize these and will crash.
-    # We extract them here and put them in the environment for the app to use.
-    
+    # --- INDUSTRIAL HUB ORCHESTRATION v2.0 ---
+    # If launched by the Hub, read encrypted/sensitive config from STDIN
+    if os.environ.get("ETHER_HUB_PID"):
+        try:
+            # We expect a JSON line on stdin immediately
+            line = sys.stdin.readline()
+            if line:
+                config = json.loads(line)
+                os.environ['ETHER_SESSION_TOKEN'] = config.get('session_token', '')
+                os.environ['ETHER_APP_PORT'] = str(config.get('app_port', 8000))
+                os.environ['ETHER_TENANT_ID'] = config.get('tenant_id', '')
+                os.environ['ETHER_HUB_API_KEY'] = config.get('hub_api_key', 'ethernanos-hub-secret-2026')
+                
+                db = config.get('db_config')
+                if db:
+                    os.environ['DATABASE_URL'] = f"postgres://{db['user']}:{db['pass']}@{db['host']}:{db['port']}/{db['name']}"
+                
+                print("[DEBUG] Hub Configuration received via STDIN.")
+        except Exception as e:
+            print(f"[DEBUG] Stdin config error: {e}")
+
+    # --- LEGACY ARG INTERCEPTION (For manual Dev mode) ---
     hub_args = {
         '--app-port': 'ETHER_APP_PORT',
         '--tenant-id': 'ETHER_TENANT_ID',
-        '--db-host': 'ETHER_DB_HOST',
-        '--db-port': 'ETHER_DB_PORT',
-        '--db-name': 'ETHER_DB_NAME',
-        '--db-user': 'ETHER_DB_USER',
-        '--db-pass': 'ETHER_DB_PASS',
     }
-    
     new_argv = []
     i = 0
     argv = sys.argv
@@ -28,44 +38,19 @@ def main():
         arg = argv[i]
         if arg in hub_args and i + 1 < len(argv):
             os.environ[hub_args[arg]] = argv[i+1]
-            i += 2 # Skip flag and value
+            i += 2
         else:
             new_argv.append(arg)
             i += 1
-            
     sys.argv = new_argv
 
-    # --- DATABASE_URL AUTO-CONSTRUCTION ---
-    # If the Hub passed DB parameters, we build the DATABASE_URL string for Django
-    db_host = os.environ.get('ETHER_DB_HOST')
-    db_port = os.environ.get('ETHER_DB_PORT')
-    db_name = os.environ.get('ETHER_DB_NAME')
-    db_user = os.environ.get('ETHER_DB_USER')
-    db_pass = os.environ.get('ETHER_DB_PASS')
-
-    if db_host and db_port and db_name:
-        # Build PostgreSQL URL
-        os.environ['DATABASE_URL'] = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
-    elif not os.environ.get('DATABASE_URL'):
-        # Fallback to local SQLite with ABSOLUTE path
-        # This prevents the app from creating db.sqlite3 in temp folders
+    # --- DATABASE_URL FALLBACK (Absolute SQLite) ---
+    if not os.environ.get('DATABASE_URL'):
         db_path = os.path.join(os.path.abspath(os.curdir), 'db.sqlite3')
         os.environ['DATABASE_URL'] = f"sqlite:///{db_path}"
-
-    # --- ETHER_HUB_API_KEY (Sync Handshake) ---
-    # We ensure the API Key is also in environment even if not using postgres
-    if not os.environ.get('ETHER_HUB_API_KEY'):
-         os.environ['ETHER_HUB_API_KEY'] = 'ethernanos-hub-secret-2026'
 
     # --- ETHER-SETUP (Maintenance) ---
-    # One-time setup task for SQLite initialization
-    if "ether_setup" in sys.argv or "--ether-setup" in sys.argv:
-        # If launched via its dedicated --ether-setup flag, we normalize it to a Django command
-        if "--ether-setup" in sys.argv:
-            sys.argv = [sys.argv[0], 'ether_setup']
-            
-        db_path = os.path.join(os.path.abspath(os.curdir), 'db.sqlite3')
-        os.environ['DATABASE_URL'] = f"sqlite:///{db_path}"
+    if "ether_setup" in sys.argv:
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
         try:
             import django
@@ -74,43 +59,54 @@ def main():
             execute_from_command_line(sys.argv)
             sys.exit(0)
         except Exception as e:
-            print(f"CRITICAL: Ether Setup Failure ({e}). Installation Aborted.")
+            print(f"CRITICAL: Ether Setup Failure ({e}).")
             sys.exit(1)
 
-    # --- RUNSERVER PORT & RELOAD OVERRIDE ---
-    # If the Hub specified a port, we ensure 'runserver' uses it and disable reload
-    app_port = os.environ.get('ETHER_APP_PORT')
-    if "runserver" in sys.argv and app_port:
-        # 1. Force Address & Port
-        has_addr_port = any(':' in arg or arg.isdigit() for arg in sys.argv[2:])
-        if not has_addr_port:
-            sys.argv.append(f"127.0.0.1:{app_port}")
-            
-        # 2. Force No-Reload (Django's reloader creates a sub-process that loses Hub arguments)
-        if "--noreload" not in sys.argv:
-            sys.argv.append("--noreload")
-            print(f"[DEBUG] Hub Mode: Force --noreload for stability.")
-
     # --- SECURITY HANDSHAKE (The Shield) ---
-    if "runserver" in sys.argv:
+    is_runserver = "runserver" in sys.argv or os.environ.get("ETHER_HUB_PID")
+    if is_runserver:
         try:
             from hub_security import verify_hub_handshake
             if verify_hub_handshake():
                 print("[DEBUG] Security Handshake: SUCCESS.")
         except Exception as e:
-            print(f"CRITICAL: Security Subsystem Failure ({e}). Access Denied.")
+            print(f"CRITICAL: Security Subsystem Failure ({e}).")
             sys.exit(1)
 
-    print(f"[DEBUG] Final Command: {' '.join(sys.argv)}")
+    # --- PRODUCTION WSGI SERVER (Waitress) ---
+    # In Hub mode, we use Waitress instead of runserver
+    if os.environ.get("ETHER_HUB_PID"):
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+        try:
+            import django
+            django.setup()
+            from config.wsgi import application
+            from waitress import serve
+            
+            port = int(os.environ.get('ETHER_APP_PORT', 8000))
+            print(f"[DEBUG] Starting Industrial WSGI Server (Waitress) on port {port}...")
+            
+            # THE REVOLUTION: The Ready Signal
+            # This line tells Rust to open the UI immediately
+            print("[HUB_SIGNAL:READY]")
+            sys.stdout.flush()
+            
+            serve(application, host='127.0.0.1', port=port, threads=4)
+            sys.exit(0)
+        except Exception as e:
+            print(f"CRITICAL: WSGI Server Failure: {e}")
+            sys.exit(1)
+
+    # --- DEVELOPMENT RELOAD MODE (Fallback for manual runserver) ---
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
-        raise ImportError(
-            "Couldn't import Django. Are you sure it's installed and "
-            "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
-        ) from exc
+        raise ImportError("Couldn't import Django.") from exc
+    execute_from_command_line(sys.argv)
+
+if __name__ == '__main__':
+    main()
     execute_from_command_line(sys.argv)
 
 
