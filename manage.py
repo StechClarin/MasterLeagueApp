@@ -77,25 +77,31 @@ def main():
             print(f"CRITICAL: Ether Setup Failure ({e}). Installation Aborted.")
             sys.exit(1)
 
-    # --- RUNSERVER PORT OVERRIDE ---
-    # If the Hub specified a port, we ensure 'runserver' uses it
+    # --- RUNSERVER PORT & RELOAD OVERRIDE ---
+    # If the Hub specified a port, we ensure 'runserver' uses it and disable reload
     app_port = os.environ.get('ETHER_APP_PORT')
     if "runserver" in sys.argv and app_port:
-        # Check if port is already specified in the command (e.g. runserver 8080)
-        # If not, we append the Hub's port
+        # 1. Force Address & Port
         has_addr_port = any(':' in arg or arg.isdigit() for arg in sys.argv[2:])
         if not has_addr_port:
             sys.argv.append(f"127.0.0.1:{app_port}")
+            
+        # 2. Force No-Reload (Django's reloader creates a sub-process that loses Hub arguments)
+        if "--noreload" not in sys.argv:
+            sys.argv.append("--noreload")
+            print(f"[DEBUG] Hub Mode: Force --noreload for stability.")
 
     # --- SECURITY HANDSHAKE (The Shield) ---
     if "runserver" in sys.argv:
         try:
             from hub_security import verify_hub_handshake
-            verify_hub_handshake()
+            if verify_hub_handshake():
+                print("[DEBUG] Security Handshake: SUCCESS.")
         except Exception as e:
             print(f"CRITICAL: Security Subsystem Failure ({e}). Access Denied.")
             sys.exit(1)
 
+    print(f"[DEBUG] Final Command: {' '.join(sys.argv)}")
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line
