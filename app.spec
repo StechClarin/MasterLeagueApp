@@ -35,6 +35,11 @@ internal_apps_hidden.extend([
     'apps.finance.apps.FinanceConfig',
 ])
 
+# S'assurer que les dossiers nécessaires existent pour PyInstaller
+for d in ['media', 'frontend_build', 'staticfiles']:
+    if not os.path.exists(d):
+        os.makedirs(d)
+
 # Analysis of the main entry point (manage.py)
 a = Analysis(
     ['manage.py'],
@@ -44,12 +49,10 @@ a = Analysis(
         ('frontend_build', 'frontend_build'),
         ('ethernanos.json', '.'),
         ('hub_security.py', '.'),
-        # Create an empty media folder in the distribution
         ('media', 'media'), 
     ] + collect_data_files('django') + \
         collect_data_files('rest_framework') + \
         collect_data_files('graphene_django') + \
-        collect_data_files('whitenoise') + \
         collect_data_files('environ'),
     hiddenimports=[
         'django.contrib.admin',
