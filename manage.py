@@ -5,27 +5,67 @@ import sys
 
 def main():
     """Run administrative tasks."""
+    
+    # --- HUB ARGUMENT INTERCEPTION ---
+    # The Hub passes custom flags like --app-port 8000.
+    # Standard Django management commands don't recognize these and will crash.
+    # We extract them here and put them in the environment for the app to use.
+    
+    hub_args = {
+        '--app-port': 'ETHER_APP_PORT',
+        '--tenant-id': 'ETHER_TENANT_ID',
+        '--db-host': 'ETHER_DB_HOST',
+        '--db-port': 'ETHER_DB_PORT',
+        '--db-name': 'ETHER_DB_NAME',
+        '--db-user': 'ETHER_DB_USER',
+        '--db-pass': 'ETHER_DB_PASS',
+    }
+    
+    new_argv = []
+    i = 0
+    argv = sys.argv
+    while i < len(argv):
+        arg = argv[i]
+        if arg in hub_args and i + 1 < len(argv):
+            os.environ[hub_args[arg]] = argv[i+1]
+            i += 2 # Skip flag and value
+        else:
+            new_argv.append(arg)
+            i += 1
+            
+    sys.argv = new_argv
+
     # --- ETHER-SETUP (Maintenance) ---
     # One-time setup task for SQLite initialization
-    if "--ether-setup" in sys.argv:
+    if "ether_setup" in sys.argv or "--ether-setup" in sys.argv:
+        # If launched via its dedicated --ether-setup flag, we normalize it to a Django command
+        if "--ether-setup" in sys.argv:
+            sys.argv = [sys.argv[0], 'ether_setup']
+            
         os.environ['DATABASE_URL'] = 'sqlite:///db.sqlite3'
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
         try:
             import django
             django.setup()
             from django.core.management import execute_from_command_line
-            # Transform our flag into a real command call
-            sys.argv = [sys.argv[0], 'ether_setup']
             execute_from_command_line(sys.argv)
             sys.exit(0)
         except Exception as e:
             print(f"CRITICAL: Ether Setup Failure ({e}). Installation Aborted.")
             sys.exit(1)
 
+    # --- RUNSERVER PORT OVERRIDE ---
+    # If the Hub specified a port, we ensure 'runserver' uses it
+    app_port = os.environ.get('ETHER_APP_PORT')
+    if "runserver" in sys.argv and app_port:
+        # Check if port is already specified in the command (e.g. runserver 8080)
+        # If not, we append the Hub's port
+        has_addr_port = any(':' in arg or arg.isdigit() for arg in sys.argv[2:])
+        if not has_addr_port:
+            sys.argv.append(f"127.0.0.1:{app_port}")
+
     # --- SECURITY HANDSHAKE (The Shield) ---
-    # Skip security for migrations or help commands to avoid blocking dev/maintenance tasks,
-    # but enforce it for 'runserver' which is what the Hub uses for the web app.
-    if len(sys.argv) > 1 and sys.argv[1] == "runserver":
+    if "runserver" in sys.argv:
         try:
             from hub_security import verify_hub_handshake
             verify_hub_handshake()
