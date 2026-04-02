@@ -24,11 +24,11 @@ def verify_hub_handshake():
         sys.exit(1)
 
     try:
-        # 2. Verify Time Window (TTL: 10 seconds to allow for slow startup)
+        # 2. Verify Time Window (TTL: 30 seconds to allow for slow startup)
         now = int(time.time())
         ts_int = int(timestamp)
-        if abs(now - ts_int) > 10:
-            print("CRITICAL: Unauthorized Launch Attempt (Security Token Expired).")
+        if abs(now - ts_int) > 30:
+            print(f"CRITICAL: Unauthorized Launch Attempt (Security Token Expired - Diff: {abs(now - ts_int)}s).")
             sys.exit(1)
 
         # 3. Verify HMAC Signature
