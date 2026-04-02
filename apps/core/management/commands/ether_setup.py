@@ -20,9 +20,9 @@ class Command(BaseCommand):
         self.stdout.write('Step 1: Running Migrations...')
         try:
             call_command('migrate', interactive=False)
-            self.stdout.write(self.style.SUCCESS('✓ Migrations completed.'))
+            self.stdout.write(self.style.SUCCESS('[OK] Migrations completed.'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'✗ Migration failed: {e}'))
+            self.stdout.write(self.style.ERROR(f'[ERROR] Migration failed: {e}'))
             sys.exit(1)
 
         # 3. Seed Basic Data (Roles, Navigation, etc.)
@@ -32,13 +32,13 @@ class Command(BaseCommand):
             call_command('seed_roles')
             call_command('seed_navigation')
             call_command('seed_access')
-            self.stdout.write(self.style.SUCCESS('✓ System data seeded.'))
+            self.stdout.write(self.style.SUCCESS('[OK] System data seeded.'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'✗ Seeding failed: {e}'))
+            self.stdout.write(self.style.ERROR(f'[ERROR] Seeding failed: {e}'))
             # We don't exit here as basic data might already exist
         
         # 4. Pull Tenant Metadata (Future)
         # TODO: Implement a real pull from the Cloud Parent DB
         self.stdout.write('Step 3: Pulling Tenant Configuration (Simulation)...')
-        self.stdout.write(self.style.SUCCESS('✓ Setup finished successfully.'))
+        self.stdout.write(self.style.SUCCESS('[OK] Setup finished successfully.'))
         self.stdout.write(self.style.SUCCESS('--- ETHER-SETUP COMPLETE ---'))
