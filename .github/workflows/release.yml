@@ -147,3 +147,5 @@ jobs:
           target: "${{ secrets.SERVER_PATH }}/${{ github.ref_name }}"
           strip_components: 1
           rm: true
+          timeout: 600s
+          use_insecure_cipher: true

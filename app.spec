@@ -4,22 +4,36 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
 
-# Découverte dynamique de toutes vos applications Django et forçage de l'inclusion de `apps.py` (essentiel pour INSTALLED_APPS)
+# Découverte RECURSIVE et DYNAMIQUE de toutes vos applications Django internes
 internal_apps_hidden = []
-apps_dir = os.path.join(os.path.abspath('.'), 'apps')
-if os.path.exists(apps_dir):
-    for app_name in os.listdir(apps_dir):
-        if os.path.isdir(os.path.join(apps_dir, app_name)) and not app_name.startswith('__'):
-            base = f'apps.{app_name}'
-            internal_apps_hidden.extend([
-                base,
-                f'{base}.apps',
-                f'{base}.models',
-                f'{base}.views',
-                f'{base}.urls',
-                f'{base}.admin',
-                f'{base}.serializers',
-            ])
+apps_root = os.path.join(os.path.abspath('.'), 'apps')
+if os.path.exists(apps_root):
+    for root, dirs, files in os.walk(apps_root):
+        for file in files:
+            if file.endswith('.py') and not file.startswith('__'):
+                # Transformer le chemin du fichier en chemin de module Python
+                rel_path = os.path.relpath(os.path.join(root, file), os.path.abspath('.'))
+                module_path = rel_path.replace(os.sep, '.')[:-3]
+                internal_apps_hidden.append(module_path)
+        
+        for dir_name in dirs:
+            if not dir_name.startswith('__'):
+                rel_path = os.path.relpath(os.path.join(root, dir_name), os.path.abspath('.'))
+                module_path = rel_path.replace(os.sep, '.')
+                internal_apps_hidden.append(module_path)
+
+# Ajout des AppConfigs explicites (souvent oubliés par PyInstaller car cités en string dans INSTALLED_APPS)
+internal_apps_hidden.extend([
+    'apps.core.apps.CoreConfig',
+    'apps.profilmanagement.apps.ProfilmanagementConfig',
+    'apps.structure.apps.StructureConfig',
+    'apps.students.apps.StudentsConfig',
+    'apps.hr.apps.HrConfig',
+    'apps.pedagogy.apps.PedagogyConfig',
+    'apps.documents.apps.DocumentsConfig',
+    'apps.evaluations.apps.EvaluationsConfig',
+    'apps.finance.apps.FinanceConfig',
+])
 
 # Analysis of the main entry point (manage.py)
 a = Analysis(
@@ -30,8 +44,13 @@ a = Analysis(
         ('frontend_build', 'frontend_build'),
         ('ethernanos.json', '.'),
         ('hub_security.py', '.'),
-        # Include all apps explicitly if needed, but collect_submodules helps
-    ] + collect_data_files('django') + collect_data_files('rest_framework') + collect_data_files('graphene_django'),
+        # Create an empty media folder in the distribution
+        ('media', 'media'), 
+    ] + collect_data_files('django') + \
+        collect_data_files('rest_framework') + \
+        collect_data_files('graphene_django') + \
+        collect_data_files('whitenoise') + \
+        collect_data_files('environ'),
     hiddenimports=[
         'django.contrib.admin',
         'django.contrib.auth',
@@ -47,10 +66,30 @@ a = Analysis(
         'psycopg2',
         'environ',
         'psutil',
+        # Config and project setup
         'config.settings',
         'config.urls',
         'config.wsgi',
-    ] + internal_apps_hidden + collect_submodules('apps'),
+        'apps.core.graphql.schema',
+        # Middleware & Auth Backends (Strings in settings.py)
+        'django.middleware.security.SecurityMiddleware',
+        'whitenoise.middleware.WhiteNoiseMiddleware',
+        'corsheaders.middleware.CorsMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'apps.core.middleware.JWTMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'apps.core.middleware.EstablishmentMiddleware',
+        'apps.profilmanagement.backends.EmailOrUsernameModelBackend',
+        'django.contrib.auth.backends.ModelBackend',
+        # JWT Specifics
+        'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+        'rest_framework_simplejwt.tokens.AccessToken',
+        'rest_framework_simplejwt.models.TokenUser',
+    ] + internal_apps_hidden + collect_submodules('apps') + collect_submodules('rest_framework_simplejwt'),
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
