@@ -8,6 +8,7 @@ def main():
     # --- INDUSTRIAL ORCHESTRATION (v2.6) ---
     is_setup_mode = "--ether-setup" in sys.argv
     if is_setup_mode:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
         if "--ether-setup" in sys.argv:
             sys.argv = [sys.argv[0], 'ether_setup']
         try:
