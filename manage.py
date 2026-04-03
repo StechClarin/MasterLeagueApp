@@ -1,51 +1,13 @@
+#!/usr/bin/env python
 import os
 import sys
 import json
-from urllib.parse import quote_plus
 
 def main():
     """Run administrative tasks."""
-    
-    # --- INDUSTRIAL HUB ORCHESTRATION v2.0/v2.1 ---
-    # Safe Config Injection from Stdin
-    if os.environ.get("ETHER_HUB_PID"):
-        try:
-            line = sys.stdin.readline()
-            if line:
-                config = json.loads(line)
-                os.environ['ETHER_SESSION_TOKEN'] = config.get('session_token', '')
-                os.environ['ETHER_APP_PORT'] = str(config.get('app_port', 8000))
-                os.environ['ETHER_TENANT_ID'] = config.get('tenant_id', '')
-                os.environ['ETHER_HUB_API_KEY'] = config.get('hub_api_key', 'ethernanos-hub-secret-2026')
-                
-                db = config.get('db_config')
-                if db:
-                    # BLINDAGE: Encode password for URL safety (handles special chars like @ or :)
-                    safe_pass = quote_plus(db['pass'])
-                    os.environ['DATABASE_URL'] = f"postgres://{db['user']}:{safe_pass}@{db['host']}:{db['port']}/{db['name']}"
-                
-                print("[DEBUG] Hub Configuration received via STDIN.")
-        except Exception as e:
-            print(f"[DEBUG] Stdin config error: {e}")
-
-    # Legacy args...
-    hub_args = {'--app-port': 'ETHER_APP_PORT', '--tenant-id': 'ETHER_TENANT_ID'}
-    for arg_key, env_key in hub_args.items():
-        if arg_key in sys.argv:
-            idx = sys.argv.index(arg_key)
-            if idx + 1 < len(sys.argv):
-                os.environ[env_key] = sys.argv.pop(idx + 1)
-            sys.argv.remove(arg_key)
-
-    # --- DATABASE_URL FALLBACK ---
-    if not os.environ.get('DATABASE_URL'):
-        db_path = os.path.join(os.path.abspath(os.curdir), 'db.sqlite3')
-        os.environ['DATABASE_URL'] = f"sqlite:///{db_path}"
-
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-    
-    # --- MAINTENANCE & SETUP ---
-    if "ether_setup" in sys.argv or "--ether-setup" in sys.argv:
+    # --- INDUSTRIAL ORCHESTRATION (v2.6) ---
+    is_setup_mode = "--ether-setup" in sys.argv
+    if is_setup_mode:
         if "--ether-setup" in sys.argv:
             sys.argv = [sys.argv[0], 'ether_setup']
         try:
@@ -73,18 +35,16 @@ def main():
 
     # --- PRODUCTION MODE (Waitress Orchestration) ---
     if is_hub_mode:
-        import json
         config = {}
-        # Try to read full config from STDIN (Industrial Handshake)
         try:
-            # We use a timeout-like read or check if data is available
+            # Safer stdin detection
             if not sys.stdin.isatty():
                 line = sys.stdin.readline()
-                if line:
+                if line and line.strip():
                     config = json.loads(line)
                     print("[DEBUG] Hub Configuration received via STDIN.")
         except Exception as e:
-            print(f"[WARNING] STDIN config read failed: {e}. Falling back to ENV.")
+            print(f"[DEBUG] Stdin config error: {e}")
 
         try:
             import django
@@ -95,10 +55,12 @@ def main():
             # Priority: STDIN JSON > ENV > Default (8000)
             port = int(config.get("app_port", os.environ.get('ETHER_APP_PORT', 8000)))
             
-            # --- FIX: Ensure Static Files Directory exists to silencer PyInstaller warnings ---
-            # Use _internal/staticfiles if in bundle, or standard staticfiles
-            base_dir = os.path.dirname(os.path.abspath(__file__))
+            # --- FIX: Industrial Static Files Directory logic ---
+            # If running as PyInstaller bundle, use _MEIPASS, otherwise local path
+            base_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
             static_root = os.path.join(base_dir, "_internal", "staticfiles")
+            
+            # Fallback for OneDir mode
             if not os.path.exists(static_root):
                 try:
                     os.makedirs(static_root, exist_ok=True)
@@ -109,18 +71,23 @@ def main():
             print("[HUB_SIGNAL:READY]") 
             sys.stdout.flush()
             
-            # Explicit 127.0.0.1 for maximum Windows Loopback compatibility
-            serve(application, host='127.0.0.1', port=port, threads=4)
+            # Bind to 0.0.0.0 for maximum accessibility, with Hub contacting 127.0.0.1
+            serve(application, host='0.0.0.0', port=port, threads=4)
             sys.exit(0)
         except Exception as e:
             print(f"CRITICAL: WSGI Failure: {e}")
             sys.exit(1)
 
     # --- DEV MODE (Standard Django) ---
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
-        raise ImportError("Couldn't import Django.") from exc
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
     execute_from_command_line(sys.argv)
 
 if __name__ == '__main__':
