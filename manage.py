@@ -84,7 +84,7 @@ def main():
             print("[HUB_SIGNAL:READY]") # REW: Ready signal for Rust
             sys.stdout.flush()
             
-            serve(application, host='127.0.0.1', port=port, threads=4)
+            serve(application, host='0.0.0.0', port=port, threads=4)
             sys.exit(0)
         except Exception as e:
             print(f"CRITICAL: WSGI Failure: {e}")
