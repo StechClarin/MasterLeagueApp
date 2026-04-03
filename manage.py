@@ -71,20 +71,46 @@ def main():
     elif "runserver" in sys.argv:
         print("[WARNING] Local Dev Mode: Hub Security is BYPASSED.")
 
-    # --- PRODUCTION MODE (Waitress) ---
+    # --- PRODUCTION MODE (Waitress Orchestration) ---
     if is_hub_mode:
+        import json
+        config = {}
+        # Try to read full config from STDIN (Industrial Handshake)
+        try:
+            # We use a timeout-like read or check if data is available
+            if not sys.stdin.isatty():
+                line = sys.stdin.readline()
+                if line:
+                    config = json.loads(line)
+                    print("[DEBUG] Hub Configuration received via STDIN.")
+        except Exception as e:
+            print(f"[WARNING] STDIN config read failed: {e}. Falling back to ENV.")
+
         try:
             import django
             django.setup()
             from config.wsgi import application
             from waitress import serve
             
-            port = int(os.environ.get('ETHER_APP_PORT', 8000))
+            # Priority: STDIN JSON > ENV > Default (8000)
+            port = int(config.get("app_port", os.environ.get('ETHER_APP_PORT', 8000)))
+            
+            # --- FIX: Ensure Static Files Directory exists to silencer PyInstaller warnings ---
+            # Use _internal/staticfiles if in bundle, or standard staticfiles
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            static_root = os.path.join(base_dir, "_internal", "staticfiles")
+            if not os.path.exists(static_root):
+                try:
+                    os.makedirs(static_root, exist_ok=True)
+                except:
+                    pass
+
             print(f"[DEBUG] Starting Industrial WSGI Server on port {port}...")
-            print("[HUB_SIGNAL:READY]") # REW: Ready signal for Rust
+            print("[HUB_SIGNAL:READY]") 
             sys.stdout.flush()
             
-            serve(application, host='0.0.0.0', port=port, threads=4)
+            # Explicit 127.0.0.1 for maximum Windows Loopback compatibility
+            serve(application, host='127.0.0.1', port=port, threads=4)
             sys.exit(0)
         except Exception as e:
             print(f"CRITICAL: WSGI Failure: {e}")
