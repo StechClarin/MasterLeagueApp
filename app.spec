@@ -78,7 +78,7 @@ a = Analysis(
         'apps.core.graphql.schema',
         # Middleware & Auth Backends (Strings in settings.py)
         'django.middleware.security.SecurityMiddleware',
-        'whitenoise.middleware.WhiteNoiseMiddleware',
+        'whitenoise.middleware',
         'corsheaders.middleware.CorsMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',

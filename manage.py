@@ -60,7 +60,7 @@ def main():
 
     # --- SECURITY HANDSHAKE (Shield) ---
     is_hub_mode = os.environ.get("ETHER_HUB_PID") is not None
-    if "runserver" in sys.argv or is_hub_mode:
+    if is_hub_mode:
         try:
             from hub_security import verify_hub_handshake
             verify_hub_handshake()
@@ -68,6 +68,8 @@ def main():
         except Exception as e:
             print(f"CRITICAL: Security Failure ({e}).")
             sys.exit(1)
+    elif "runserver" in sys.argv:
+        print("[WARNING] Local Dev Mode: Hub Security is BYPASSED.")
 
     # --- PRODUCTION MODE (Waitress) ---
     if is_hub_mode:
