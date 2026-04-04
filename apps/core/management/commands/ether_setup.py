@@ -27,16 +27,23 @@ class Command(BaseCommand):
             sys.exit(1)
 
         # 3. Seed Basic Data (Roles, Navigation, etc.)
-        # We reuse existing seed commands
+        # We reuse existing seed commands in an atomic block for professional consistency
         self.stdout.write('Step 2: Seeding System Data...')
         try:
-            call_command('seed_roles')
-            call_command('seed_navigation')
-            call_command('seed_access')
-            self.stdout.write(self.style.SUCCESS('[OK] System data seeded.'))
+            from django.db import transaction
+            with transaction.atomic():
+                self.stdout.write('   -> Seeding Roles...')
+                call_command('seed_roles')
+                self.stdout.write('   -> Seeding Navigation...')
+                call_command('seed_navigation')
+                self.stdout.write('   -> Seeding Access...')
+                call_command('seed_access')
+                
+            self.stdout.write(self.style.SUCCESS('[OK] System data seeded atomically.'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'[ERROR] Seeding failed: {e}'))
-            # We don't exit here as basic data might already exist
+            self.stdout.write(self.style.ERROR(f'[ERROR] Seeding failed, rolled back: {e}'))
+            # During first setup, seeding failure is fatal for industrial consistency
+            sys.exit(1)
         
         # 4. Pull Tenant Metadata (Future)
         # TODO: Implement a real pull from the Cloud Parent DB
