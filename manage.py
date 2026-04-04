@@ -6,9 +6,12 @@ import json
 def main():
     """Run administrative tasks."""
     
+    # --- INDUSTRIAL CONFIGURATION: GLOBAL IDENTITY ---
+    # We set the settings module as early as possible to prevent "Requested setting LOGGING_CONFIG"
+    # errors in ALL modes (Setup, Hub Production, and Dev).
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    
     # --- HUB ORCHESTRATION: EARLY CONFIG CAPTURE (v2.7) ---
-    # We read the Hub configuration as early as possible to inject environment variables
-    # needed by both setup and production modes.
     is_hub_mode = os.environ.get("ETHER_HUB_PID") is not None
     is_setup_mode = "--ether-setup" in sys.argv
     
@@ -42,7 +45,6 @@ def main():
 
     # --- SETUP MODE (Database Initialization) ---
     if is_setup_mode:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
         # Map our custom flag to the real management command
         sys.argv = [sys.argv[0], 'ether_setup']
         try:
@@ -96,7 +98,6 @@ def main():
             sys.exit(1)
 
     # --- DEV MODE (Standard Django) ---
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
