@@ -43,9 +43,7 @@ class Command(BaseCommand):
         try:
             with open(output_path, 'w') as f:
                 f.write(ts_content)
-            self.stdout.write(self.style.SUCCESS(f"✔ Fichier généré avec succès : {output_path}"))
-            self.stdout.write(self.style.SUCCESS(f"✔ {routes_count} routes exportées."))
-            
-        except FileNotFoundError:
-             self.stdout.write(self.style.ERROR(f"❌ Erreur : Impossible de trouver le dossier '{output_path}'. Êtes-vous à la racine du projet ?"))
-
+            self.stdout.write(self.style.SUCCESS(f"[OK] Fichier genere avec succes : {output_path}"))
+            self.stdout.write(self.style.SUCCESS(f"[OK] {routes_count} routes exportees."))
+        except Exception as e:
+             self.stdout.write(self.style.ERROR(f"[ERROR] Erreur : Impossible de trouver le dossier '{output_path}'. Etes-vous a la racine du projet ?"))

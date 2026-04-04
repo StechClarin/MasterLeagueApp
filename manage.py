@@ -7,8 +7,15 @@ def main():
     """Run administrative tasks."""
     
     # --- INDUSTRIAL CONFIGURATION: GLOBAL IDENTITY ---
-    # We set the settings module as early as possible to prevent "Requested setting LOGGING_CONFIG"
-    # errors in ALL modes (Setup, Hub Production, and Dev).
+    # Force UTF-8 for Windows compatibility with Unicode log symbols
+    try:
+        if sys.stdout.encoding.lower() != 'utf-8':
+            sys.stdout.reconfigure(encoding='utf-8')
+        if sys.stderr.encoding.lower() != 'utf-8':
+            sys.stderr.reconfigure(encoding='utf-8')
+    except:
+        pass
+
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     
     # --- HUB ORCHESTRATION: EARLY CONFIG CAPTURE (v2.7) ---

@@ -59,7 +59,7 @@ class Command(BaseCommand):
             if group_names == "__ALL__":
                 role.groups.set(all_groups)
                 role.save()
-                self.stdout.write(f"    ✔ '{role_name}' a reçu TOUS les groupes ({len(all_groups)}).")
+                self.stdout.write(f"    [OK] '{role_name}' a reçu TOUS les groupes ({len(all_groups)}).")
             else:
                 count = 0
                 for g_name in group_names:
@@ -94,15 +94,16 @@ class Command(BaseCommand):
                 )
                 admin_user.roles.add(admin_role)
                 self.stdout.write(self.style.SUCCESS("  ✔ Utilisateur 'ethernanos' créé avec succès."))
+                self.stdout.write(self.style.SUCCESS("  [OK] Utilisateur 'ethernanos' cree avec succes."))
             else:
                 admin_user = User.objects.get(username='ethernanos')
                 admin_user.roles.add(admin_role)
                 admin_user.is_superuser = True
                 admin_user.is_staff = True
                 admin_user.save()
-                self.stdout.write(self.style.WARNING("  ✔ Utilisateur 'ethernanos' mis à jour (Rôle Admin confirmé)."))
+                self.stdout.write(self.style.WARNING("  [OK] Utilisateur 'ethernanos' mis a jour (Role Admin confirme)."))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"  [ERREUR] {e}"))
+            self.stdout.write(self.style.ERROR(f"  [ERROR] {e}"))
             
-        self.stdout.write(self.style.SUCCESS("--- Seeding Rôles terminé ---"))
+        self.stdout.write(self.style.SUCCESS("--- Seeding Roles termine ---"))

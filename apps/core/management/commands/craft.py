@@ -237,7 +237,7 @@ class {model_name}Query(graphene.ObjectType):
 
         if cmd == 'app:prepare':
             self._prepare_app_layout(app_name_simple)
-            self.stdout.write(self.style.SUCCESS(f"✔ Arborescence prête pour '{app_name_simple}'"))
+            self.stdout.write(self.style.SUCCESS(f"[OK] Arborescence prete pour '{app_name_simple}'"))
             return
 
         if cmd == 'model':
@@ -247,7 +247,7 @@ class {model_name}Query(graphene.ObjectType):
             if not file.exists():
                 file.write_text(self._tpl_model(model_name), encoding="utf-8")
                 append_unique_line(layout['models_dir'] / "__init__.py", self._tpl_init_import(model_name.lower(), model_name))
-                self.stdout.write(self.style.SUCCESS(f"✔ Modèle créé"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Modele cree"))
             return
 
         if cmd == 'serializer':
@@ -258,7 +258,7 @@ class {model_name}Query(graphene.ObjectType):
             if not file.exists():
                 file.write_text(self._tpl_serializer(model_name), encoding="utf-8")
                 append_unique_line(layout['api_serializers_dir'] / "__init__.py", self._tpl_init_import(f"{model_name.lower()}_serializer", f"{model_name}Serializer"))
-                self.stdout.write(self.style.SUCCESS(f"✔ Serializer créé"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Serializer cree"))
             return
 
         if cmd == 'controller':
@@ -268,7 +268,7 @@ class {model_name}Query(graphene.ObjectType):
             file = layout['api_controllers_dir'] / f"{model_name.lower()}_controller.py"
             if not file.exists():
                 file.write_text(self._tpl_controller(model_name), encoding="utf-8")
-                self.stdout.write(self.style.SUCCESS(f"✔ Controller créé"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Controller cree"))
             return
 
         if cmd == 'service':
@@ -277,7 +277,7 @@ class {model_name}Query(graphene.ObjectType):
             file = layout['services_dir'] / f"{model_name.lower()}_service.py"
             if not file.exists():
                 file.write_text(self._tpl_service(model_name), encoding="utf-8")
-                self.stdout.write(self.style.SUCCESS(f"✔ Service créé"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Service cree"))
             return
 
         if cmd == 'graphene:type':
@@ -288,7 +288,7 @@ class {model_name}Query(graphene.ObjectType):
             if not file.exists():
                 file.write_text(self._tpl_gql_type(model_name), encoding="utf-8")
                 append_unique_line(layout['gql_types_dir'] / "__init__.py", self._tpl_init_import(f"{model_name.lower()}_type", f"{model_name}Type"))
-                self.stdout.write(self.style.SUCCESS(f"✔ Graphene Type créé"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Graphene Type cree"))
             return
 
         if cmd == 'graphene:query':
@@ -299,7 +299,7 @@ class {model_name}Query(graphene.ObjectType):
             if not file.exists():
                 file.write_text(self._tpl_gql_query(model_name), encoding="utf-8")
                 append_unique_line(layout['gql_queries_dir'] / "__init__.py", self._tpl_init_import(f"{model_name.lower()}_query", f"{model_name}Query"))
-                self.stdout.write(self.style.SUCCESS(f"✔ Graphene Query créé"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Graphene Query cree"))
             return
 
         if cmd == 'scaffold':
@@ -317,10 +317,10 @@ class {model_name}Query(graphene.ObjectType):
             call_command('craft', 'graphene:query', model_name, app_name_simple)
             
             # 3. DB
-            self.stdout.write(self.style.NOTICE("• Migrations..."))
-            call_command('craft', 'automigrate', app_name_simple, '--name', f"create_{model_name.lower()}_model")
+            self.stdout.write(self.style.NOTICE("* Migrations..."))
+            self.automigrate(app_name_simple, f"create_{model_name.lower()}_model")
             
-            self.stdout.write(self.style.SUCCESS(f"✔ Scaffold terminé pour {model_name}"))
+            self.stdout.write(self.style.SUCCESS(f"[OK] Scaffold termine pour {model_name}"))
             return
 
         # ... (Commandes automigrate et fresh inchangées) ...
@@ -330,7 +330,7 @@ class {model_name}Query(graphene.ObjectType):
             if opt.get('name'): mk.extend(['--name', opt['name']])
             call_command(*mk)
             call_command('migrate', *( [app_name_simple] if app_name_simple else [] ))
-            self.stdout.write(self.style.SUCCESS("✔ Migrations OK."))
+            self.stdout.write(self.style.SUCCESS("[OK] Migrations OK."))
             return
             
         if cmd == 'fresh':
@@ -343,13 +343,13 @@ class {model_name}Query(graphene.ObjectType):
                 for f in mig_dir.iterdir():
                     if f.name != "__init__.py" and f.suffix.lower() in [".py", ".pyc"]:
                         f.unlink()
-                        self.stdout.write(f"  - supprimé: {f.name}")
+                        self.stdout.write(f"  - supprime: {f.name}")
             call_command('makemigrations', app_name_simple)
             call_command('migrate', app_name_simple)
-            self.stdout.write(self.style.SUCCESS(f"✔ Fresh migrations OK."))
+            self.stdout.write(self.style.SUCCESS("[OK] Fresh migrations OK."))
             return
 
         if cmd == 'migrate':
             call_command('migrate')
-            self.stdout.write(self.style.SUCCESS("✔ Migrations appliquées."))
+            self.stdout.write(self.style.SUCCESS("[OK] Migrations appliquees."))
             return
