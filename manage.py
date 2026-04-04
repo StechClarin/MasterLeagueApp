@@ -44,6 +44,23 @@ def main():
                 if line and line.strip():
                     config = json.loads(line)
                     print("[DEBUG] Hub Configuration received via STDIN.")
+                    
+                    # --- DYNAMIC ENV INJECTION ---
+                    # Inject configuration from Hub into os.environ so Django-environ can see it
+                    if "session_token" in config:
+                        os.environ["ETHER_SESSION_TOKEN"] = str(config["session_token"])
+                    if "tenant_id" in config:
+                        os.environ["ETHER_TENANT_ID"] = str(config["tenant_id"])
+                    if "hub_api_key" in config:
+                        os.environ["HUB_API_KEY"] = str(config["hub_api_key"])
+                        os.environ["ETHER_HUB_API_KEY"] = str(config["hub_api_key"])
+                    
+                    # --- DATABASE OVERRIDE ---
+                    db = config.get("db_config")
+                    if db:
+                        db_url = f"postgres://{db['user']}:{db['pass']}@{db['host']}:{db['port']}/{db['name']}"
+                        os.environ["DATABASE_URL"] = db_url
+                        print("[DEBUG] Dynamic Database Configuration injected.")
         except Exception as e:
             print(f"[DEBUG] Stdin config error: {e}")
 
