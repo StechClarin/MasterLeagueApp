@@ -9,12 +9,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('--- ETHER-SETUP STARTING ---'))
         
-        # 1. Ensure we are using SQLite for this local instance
-        # This is usually handled by environment variables, but we can double check
-        db_engine = os.environ.get('DATABASE_URL', '')
-        if 'sqlite' not in db_engine and not os.path.exists('db.sqlite3'):
-             self.stdout.write(self.style.WARNING('Note: DATABASE_URL is not set to SQLite. Forcing SQLite for local setup...'))
+        # 1. Verification of the Database Engine
+        db_url = os.environ.get('DATABASE_URL', '')
+        if not db_url:
+             self.stdout.write(self.style.WARNING('Note: DATABASE_URL is not set. Falling back to local SQLite...'))
              os.environ['DATABASE_URL'] = 'sqlite:///db.sqlite3'
+        else:
+             self.stdout.write(self.style.SUCCESS(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Local"}'))
 
         # 2. Run Migrations
         self.stdout.write('Step 1: Running Migrations...')
