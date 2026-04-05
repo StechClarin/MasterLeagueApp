@@ -8,7 +8,7 @@ import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- INDUSTRIAL PATHS (v4.4 WINDOWS NORMALIZATION) ---
+# --- INDUSTRIAL PATHS (v4.5 PATH REPAIR) ---
 def find_industrial_path(bundle_root, target_name):
     """Recursively searches for a specific directory name up to 2 levels deep."""
     checks = [
@@ -18,27 +18,28 @@ def find_industrial_path(bundle_root, target_name):
     ]
     for p in checks:
         if p.exists():
-            return os.path.normpath(str(p))
+            return p
     return None
 
 if getattr(sys, 'frozen', False):
     ROOT = Path(sys._MEIPASS)
     # Search targets independently because PyInstaller can split them
     found_frontend = find_industrial_path(ROOT, 'frontend_build')
-    FRONTEND_DIR = found_frontend if found_frontend else os.path.normpath(str(ROOT / '_internal' / 'frontend_build'))
+    FRONTEND_DIR = found_frontend if found_frontend else (ROOT / '_internal' / 'frontend_build')
     
     found_static = find_industrial_path(ROOT, 'staticfiles')
-    STATIC_ROOT_DIR = found_static if found_static else os.path.normpath(str(ROOT / '_internal' / 'staticfiles'))
+    STATIC_ROOT_DIR = found_static if found_static else (ROOT / '_internal' / 'staticfiles')
     
     found_media = find_industrial_path(ROOT, 'media')
-    PROJECT_DATA_DIR = os.path.dirname(found_media) if found_media else os.path.normpath(str(ROOT / '_internal'))
+    PROJECT_DATA_DIR = found_media.parent if found_media else (ROOT / '_internal')
 else:
-    FRONTEND_DIR = os.path.normpath(str(BASE_DIR / 'frontend_build'))
-    STATIC_ROOT_DIR = os.path.normpath(str(BASE_DIR / 'staticfiles'))
-    PROJECT_DATA_DIR = os.path.normpath(str(BASE_DIR))
+    FRONTEND_DIR = BASE_DIR / 'frontend_build'
+    STATIC_ROOT_DIR = BASE_DIR / 'staticfiles'
+    PROJECT_DATA_DIR = BASE_DIR
 
 # --- Configuration de django-environ ---
 env = environ.Env(DEBUG=(bool, False))
+# Now the / operator works again because PROJECT_DATA_DIR is a Path object!
 env_path = PROJECT_DATA_DIR / '.env'
 if env_path.exists():
     environ.Env.read_env(str(env_path))
