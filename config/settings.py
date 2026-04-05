@@ -8,24 +8,27 @@ import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- AUDITED INDUSTRIAL PATHS (v3.7) ---
-# Goal: Find the 'true' data directory, avoiding double '_internal' nesting.
-if getattr(sys, 'frozen', False):
-    # PyInstaller Root
-    bundle_root = Path(sys._MEIPASS)
-    # Check if we are already seeing the internal folder in MEIPASS
-    if (bundle_root / '_internal').exists():
-        PROJECT_DATA_DIR = bundle_root / '_internal'
-    else:
-        PROJECT_DATA_DIR = bundle_root
-else:
-    PROJECT_DATA_DIR = BASE_DIR
+# --- INDUSTRIAL PATHS (v3.8 RESILIENT SEARCH) ---
+# We look for the folder containing our data, checking for potential double nesting.
+bundle_root = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else BASE_DIR
+
+# Priority search for the actual data container
+possible_data_dirs = [
+    bundle_root / '_internal' / '_internal', # Deep Nesting Fix
+    bundle_root / '_internal',             # Standard OneDir
+    bundle_root                              # Dev or Custom
+]
+
+PROJECT_DATA_DIR = bundle_root # Fallback
+for p in possible_data_dirs:
+    if (p / 'staticfiles').exists() or (p / 'frontend_build').exists():
+        PROJECT_DATA_DIR = p
+        break
 
 # --- Configuration de django-environ ---
 env = environ.Env(
     DEBUG=(bool, False)
 )
-# Search for .env in the resolved data dir
 env_path = PROJECT_DATA_DIR / '.env'
 if env_path.exists():
     environ.Env.read_env(str(env_path))
@@ -166,6 +169,7 @@ STATIC_ROOT = os.path.join(PROJECT_DATA_DIR, 'staticfiles')
 
 # We use simple storage for now to avoid Manifest missing errors in multi-stage setup
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
+WHITENOISE_INDEX_FILE = True
 
 # Security: Allow being displayed in the Hub's iframe
 X_FRAME_OPTIONS = 'ALLOWALL'

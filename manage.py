@@ -52,12 +52,20 @@ def main():
         except Exception as e:
             print(f"[DEBUG] Stdin config error: {e}")
 
-    # --- AUDIT: PATH DIAGNOSTICS (v3.7) ---
+    # --- AUDIT: PATH DIAGNOSTICS (v3.8) ---
     # Trigger settings load ONLY AFTER environment injection
     from django.conf import settings
     if settings.DEBUG or os.environ.get('ETHER_HUB_PID'):
-        data_dir = getattr(settings, 'PROJECT_DATA_DIR', 'Unknown')
-        print(f"[DEBUG] PROJECT_DATA_DIR: {data_dir}")
+        data_dir = getattr(settings, 'PROJECT_DATA_DIR', str(BASE_DIR))
+        # FORCE WORKING DIRECTORY to avoid system path leaks (like Git Bash paths)
+        try:
+            os.chdir(data_dir)
+            print(f"[DEBUG] Working directory forced to: {os.getcwd()}")
+        except Exception as e:
+            print(f"[ERROR] Failed to force working directory: {e}")
+            
+        print(f"[DEBUG] INDUSTRIAL ROOT (_MEIPASS): {getattr(sys, '_MEIPASS', 'Not Frozen')}")
+        print(f"[DEBUG] PROJECT_DATA_DIR (Resolved): {data_dir}")
         print(f"[DEBUG] STATIC_ROOT: {settings.STATIC_ROOT}")
 
     # --- SETUP MODE (Database Initialization) ---
