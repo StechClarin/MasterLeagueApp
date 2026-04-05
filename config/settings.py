@@ -126,8 +126,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            str(FRONTEND_DIR),
-            str(STATIC_ROOT_DIR),
+            os.path.normpath(str(FRONTEND_DIR)),
+            os.path.normpath(str(STATIC_ROOT_DIR)),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -177,9 +177,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    str(FRONTEND_DIR),
+    os.path.normpath(str(FRONTEND_DIR)),
 ]
-STATIC_ROOT = str(STATIC_ROOT_DIR)
+STATIC_ROOT = os.path.normpath(str(STATIC_ROOT_DIR))
 
 # We use simple storage for now to avoid Manifest missing errors in multi-stage setup
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
@@ -190,7 +190,7 @@ X_FRAME_OPTIONS = 'ALLOWALL'
 
 # Media files (User uploaded content)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(PROJECT_DATA_DIR, 'media')
+MEDIA_ROOT = os.path.normpath(str(PROJECT_DATA_DIR / 'media'))
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
