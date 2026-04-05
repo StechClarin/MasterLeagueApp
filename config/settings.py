@@ -126,7 +126,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
-    'default': env.db()
+    # Default to an in-memory SQLite if DATABASE_URL is missing 
+    # to avoid ImproperlyConfigured errors during analysis/check phases.
+    'default': env.db('DATABASE_URL', default='sqlite:///:memory:')
 }
 CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=True)
 
