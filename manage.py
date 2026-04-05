@@ -75,6 +75,24 @@ def main():
         print(f"[DEBUG] INDUSTRIAL ROOT (_MEIPASS): {getattr(sys, '_MEIPASS', 'Not Frozen')}")
         print(f"[DEBUG] FRONTEND_DIR Found: {frontend_dir}")
         print(f"[DEBUG] STATIC_ROOT Resolved: {static_root}")
+        
+        # --- INDUSTRIAL AUTO-REPAIR: INDEX.HTML FIX (v4.6) ---
+        def repair_index(d):
+            if not d or d == 'Unknown': return
+            idx = os.path.join(d, 'index.html')
+            if os.path.exists(idx):
+                try:
+                    with open(idx, 'r', encoding='utf-8') as f: content = f.read()
+                    if 'base href="C:/' in content or 'base href="file:/' in content:
+                        import re
+                        new_content = re.sub(r'base href="[^"]+"', 'base href="/"', content)
+                        with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
+                        print(f"[DEBUG] index.html REPAIRED at {idx}")
+                except: pass
+        
+        repair_index(frontend_dir)
+        repair_index(static_root)
+
         print(f"[DEBUG] Security Shield: ACTIVE.")
 
     # --- SETUP MODE (Database Initialization) ---
