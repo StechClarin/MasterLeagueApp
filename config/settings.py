@@ -2,18 +2,26 @@
 Django settings for config project.
 """
 
-from pathlib import Path
-import environ
-import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# --- INDUSTRIAL PATHS (PyInstaller OneDir Support) ---
+# If running as a bundled executable, we need to point non-python resources to '_internal'
+if getattr(sys, 'frozen', False):
+    # In OneDir mode, sys._MEIPASS is the root (where the .exe is)
+    # Most data files are usually moved to _internal by our build script
+    BUNDLE_ROOT = Path(sys._MEIPASS)
+    PROJECT_DATA_DIR = BUNDLE_ROOT / '_internal'
+else:
+    PROJECT_DATA_DIR = BASE_DIR
 
 # --- Configuration de django-environ ---
 env = environ.Env(
     DEBUG=(bool, False)
 )
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(PROJECT_DATA_DIR, '.env'))
 # --- Fin de la configuration ---
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-ethernanos-hub-local-secret-key-2026')
@@ -141,10 +149,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend_build'),
+    os.path.join(PROJECT_DATA_DIR, 'frontend_build'),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = os.path.join(PROJECT_DATA_DIR, 'staticfiles')
+
+# We use simple storage for now to avoid Manifest missing errors in multi-stage setup
+STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
+
+# Security: Allow being displayed in the Hub's iframe
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 # Media files (User uploaded content)
 MEDIA_URL = '/media/'
