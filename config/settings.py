@@ -3,16 +3,21 @@ import sys
 from pathlib import Path
 import environ
 
+import sys
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- INDUSTRIAL PATHS (PyInstaller OneDir Support) ---
-# If running as a bundled executable, we need to point non-python resources to '_internal'
+# --- AUDITED INDUSTRIAL PATHS (v3.7) ---
+# Goal: Find the 'true' data directory, avoiding double '_internal' nesting.
 if getattr(sys, 'frozen', False):
-    # In OneDir mode, sys._MEIPASS is the root (where the .exe is)
-    # Most data files are usually moved to _internal by our build script
-    BUNDLE_ROOT = Path(sys._MEIPASS)
-    PROJECT_DATA_DIR = BUNDLE_ROOT / '_internal'
+    # PyInstaller Root
+    bundle_root = Path(sys._MEIPASS)
+    # Check if we are already seeing the internal folder in MEIPASS
+    if (bundle_root / '_internal').exists():
+        PROJECT_DATA_DIR = bundle_root / '_internal'
+    else:
+        PROJECT_DATA_DIR = bundle_root
 else:
     PROJECT_DATA_DIR = BASE_DIR
 
@@ -20,7 +25,10 @@ else:
 env = environ.Env(
     DEBUG=(bool, False)
 )
-environ.Env.read_env(os.path.join(PROJECT_DATA_DIR, '.env'))
+# Search for .env in the resolved data dir
+env_path = PROJECT_DATA_DIR / '.env'
+if env_path.exists():
+    environ.Env.read_env(str(env_path))
 # --- Fin de la configuration ---
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-ethernanos-hub-local-secret-key-2026')
@@ -103,7 +111,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'frontend_build')],
+        'DIRS': [os.path.join(PROJECT_DATA_DIR, 'frontend_build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -146,7 +154,9 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+# AUDIT: Leading slash is VITAL to prevent 'file:///' resolution errors on Windows
+STATIC_URL = '/static/'
+
 STATICFILES_DIRS = [
     os.path.join(PROJECT_DATA_DIR, 'frontend_build'),
 ]
@@ -160,7 +170,7 @@ X_FRAME_OPTIONS = 'ALLOWALL'
 
 # Media files (User uploaded content)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(PROJECT_DATA_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

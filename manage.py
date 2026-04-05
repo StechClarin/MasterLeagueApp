@@ -18,6 +18,13 @@ def main():
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     
+    # --- AUDIT: PATH DIAGNOSTICS (v3.7) ---
+    from django.conf import settings
+    if settings.DEBUG or os.environ.get('ETHER_HUB_PID'):
+        data_dir = getattr(settings, 'PROJECT_DATA_DIR', 'Unknown')
+        print(f"[DEBUG] PROJECT_DATA_DIR: {data_dir}")
+        print(f"[DEBUG] STATIC_ROOT: {settings.STATIC_ROOT}")
+
     # --- HUB ORCHESTRATION: EARLY CONFIG CAPTURE (v2.7) ---
     is_hub_mode = os.environ.get("ETHER_HUB_PID") is not None
     is_setup_mode = "--ether-setup" in sys.argv
