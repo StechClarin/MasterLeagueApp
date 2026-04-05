@@ -8,33 +8,32 @@ import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- INDUSTRIAL PATHS (v4.0 HOLISTIC DETECTIVE) ---
-def find_industrial_data_root(bundle_root):
-    """Physically scans the filesystem to find where the data files actually live."""
-    # Priority order: deepest nesting first to avoid false positives
-    potential_paths = [
-        bundle_root / '_internal' / '_internal',
-        bundle_root / '_internal',
-        bundle_root
+# --- INDUSTRIAL PATHS (v4.3 MULTI-LEVEL DETECTIVE) ---
+def find_industrial_path(bundle_root, target_name):
+    """Recursively searches for a specific directory name up to 2 levels deep."""
+    checks = [
+        bundle_root / '_internal' / '_internal' / target_name,
+        bundle_root / '_internal' / target_name,
+        bundle_root / target_name
     ]
-    for path in potential_paths:
-        # We look for markers that tell us 'This is the real data folder'
-        if (path / 'staticfiles').exists() or (path / 'frontend_build').exists():
-            return path
-    return bundle_root # Final fallback
+    for p in checks:
+        if p.exists():
+            return p
+    return None
 
 if getattr(sys, 'frozen', False):
-    # PyInstaller root (where the .exe is)
-    ROOT_PATH = Path(sys._MEIPASS)
-    PROJECT_DATA_DIR = find_industrial_data_root(ROOT_PATH)
+    ROOT = Path(sys._MEIPASS)
+    # Search targets independently because PyInstaller can split them
+    FRONTEND_DIR = find_industrial_path(ROOT, 'frontend_build') or (ROOT / '_internal' / 'frontend_build')
+    STATIC_ROOT_DIR = find_industrial_path(ROOT, 'staticfiles') or (ROOT / '_internal' / 'staticfiles')
+    PROJECT_DATA_DIR = find_industrial_path(ROOT, 'media') or (ROOT / '_internal') # Base for media/env
 else:
+    FRONTEND_DIR = BASE_DIR / 'frontend_build'
+    STATIC_ROOT_DIR = BASE_DIR / 'staticfiles'
     PROJECT_DATA_DIR = BASE_DIR
 
 # --- Configuration de django-environ ---
-env = environ.Env(
-    DEBUG=(bool, False)
-)
-# Search for .env in the resolved data dir
+env = environ.Env(DEBUG=(bool, False))
 env_path = PROJECT_DATA_DIR / '.env'
 if env_path.exists():
     environ.Env.read_env(str(env_path))
@@ -120,7 +119,10 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(PROJECT_DATA_DIR, 'frontend_build')],
+        'DIRS': [
+            str(FRONTEND_DIR),
+            str(STATIC_ROOT_DIR),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -169,9 +171,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(PROJECT_DATA_DIR, 'frontend_build'),
+    str(FRONTEND_DIR),
 ]
-STATIC_ROOT = os.path.join(PROJECT_DATA_DIR, 'staticfiles')
+STATIC_ROOT = str(STATIC_ROOT_DIR)
 
 # We use simple storage for now to avoid Manifest missing errors in multi-stage setup
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
