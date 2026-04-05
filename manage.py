@@ -5,6 +5,8 @@ import json
 
 def main():
     """Run administrative tasks."""
+    from pathlib import Path
+    BASE_DIR = Path(__file__).resolve().parent
     
     # --- INDUSTRIAL CONFIGURATION: GLOBAL IDENTITY ---
     # Force UTF-8 for Windows compatibility with Unicode log symbols
