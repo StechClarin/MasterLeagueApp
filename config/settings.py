@@ -8,27 +8,33 @@ import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- INDUSTRIAL PATHS (v3.8 RESILIENT SEARCH) ---
-# We look for the folder containing our data, checking for potential double nesting.
-bundle_root = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else BASE_DIR
+# --- INDUSTRIAL PATHS (v4.0 HOLISTIC DETECTIVE) ---
+def find_industrial_data_root(bundle_root):
+    """Physically scans the filesystem to find where the data files actually live."""
+    # Priority order: deepest nesting first to avoid false positives
+    potential_paths = [
+        bundle_root / '_internal' / '_internal',
+        bundle_root / '_internal',
+        bundle_root
+    ]
+    for path in potential_paths:
+        # We look for markers that tell us 'This is the real data folder'
+        if (path / 'staticfiles').exists() or (path / 'frontend_build').exists():
+            return path
+    return bundle_root # Final fallback
 
-# Priority search for the actual data container
-possible_data_dirs = [
-    bundle_root / '_internal' / '_internal', # Deep Nesting Fix
-    bundle_root / '_internal',             # Standard OneDir
-    bundle_root                              # Dev or Custom
-]
-
-PROJECT_DATA_DIR = bundle_root # Fallback
-for p in possible_data_dirs:
-    if (p / 'staticfiles').exists() or (p / 'frontend_build').exists():
-        PROJECT_DATA_DIR = p
-        break
+if getattr(sys, 'frozen', False):
+    # PyInstaller root (where the .exe is)
+    ROOT_PATH = Path(sys._MEIPASS)
+    PROJECT_DATA_DIR = find_industrial_data_root(ROOT_PATH)
+else:
+    PROJECT_DATA_DIR = BASE_DIR
 
 # --- Configuration de django-environ ---
 env = environ.Env(
     DEBUG=(bool, False)
 )
+# Search for .env in the resolved data dir
 env_path = PROJECT_DATA_DIR / '.env'
 if env_path.exists():
     environ.Env.read_env(str(env_path))
