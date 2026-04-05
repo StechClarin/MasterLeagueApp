@@ -54,7 +54,7 @@ def main():
         except Exception as e:
             print(f"[DEBUG] Stdin config error: {e}")
 
-    # --- AUDIT: PATH DIAGNOSTICS (v4.3 DECOUPLED) ---
+    # --- AUDIT: PATH DIAGNOSTICS (v4.4 WINDOWS) ---
     # Trigger settings load ONLY AFTER environment injection
     from django.conf import settings
     if settings.DEBUG or os.environ.get('ETHER_HUB_PID'):
@@ -63,8 +63,12 @@ def main():
         
         # FORCE WORKING DIRECTORY to the core data folder
         try:
-            os.chdir(getattr(settings, 'PROJECT_DATA_DIR', str(BASE_DIR)))
-            print(f"[DEBUG] Working directory forced to: {os.getcwd()}")
+            target_dir = os.path.abspath(getattr(settings, 'PROJECT_DATA_DIR', str(BASE_DIR)))
+            if os.path.exists(target_dir):
+                os.chdir(target_dir)
+                print(f"[DEBUG] Working directory forced to: {os.getcwd()}")
+            else:
+                print(f"[WARNING] target_dir DOES NOT EXIST: {target_dir}")
         except Exception as e:
             print(f"[ERROR] Failed to force working directory: {e}")
             
