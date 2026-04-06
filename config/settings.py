@@ -158,6 +158,14 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ])
+
+# INDUSTRIAL HUB SECURITY (v5.3)
+# Allows cookies to be sent even when the app is in an iframe
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False  # Allows Angular to read the cookie if needed
+CSRF_COOKIE_SECURE = False    # Must be False for local HTTP development
+SESSION_COOKIE_SECURE = False
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
     { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
