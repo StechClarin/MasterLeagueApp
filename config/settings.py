@@ -27,14 +27,10 @@ if getattr(sys, 'frozen', False):
     found_frontend = find_industrial_path(ROOT, 'frontend_build')
     FRONTEND_DIR = found_frontend if found_frontend else (ROOT / '_internal' / 'frontend_build')
     
-    found_static = find_industrial_path(ROOT, 'staticfiles')
-    STATIC_ROOT_DIR = found_static if found_static else (ROOT / '_internal' / 'staticfiles')
-    
-    found_media = find_industrial_path(ROOT, 'media')
-    PROJECT_DATA_DIR = found_media.parent if found_media else (ROOT / '_internal')
+    # We use FRONTEND_DIR as the primary data source for EVERYTHING static
+    PROJECT_DATA_DIR = found_frontend.parent if found_frontend else (ROOT / '_internal')
 else:
     FRONTEND_DIR = BASE_DIR / 'frontend_build'
-    STATIC_ROOT_DIR = BASE_DIR / 'staticfiles'
     PROJECT_DATA_DIR = BASE_DIR
 
 # --- Configuration de django-environ ---
@@ -127,7 +123,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.normpath(str(FRONTEND_DIR)),
-            os.path.normpath(str(STATIC_ROOT_DIR)),
+            os.path.normpath(str(FRONTEND_DIR)), # On unifie sur le même dossier
         ],
         'APP_DIRS': True,
         'OPTIONS': {

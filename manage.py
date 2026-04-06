@@ -58,8 +58,8 @@ def main():
     # Trigger settings load ONLY AFTER environment injection
     from django.conf import settings
     if settings.DEBUG or os.environ.get('ETHER_HUB_PID'):
-        frontend_dir = getattr(settings, 'FRONTEND_DIR', 'Unknown')
-        static_root = getattr(settings, 'STATIC_ROOT_DIR', settings.STATIC_ROOT)
+        frontend_dir = os.path.normpath(str(getattr(settings, 'FRONTEND_DIR', 'Unknown')))
+        active_static_root = os.path.normpath(str(settings.STATIC_ROOT))
         
         # FORCE WORKING DIRECTORY to the core data folder
         try:
@@ -73,28 +73,39 @@ def main():
             print(f"[ERROR] Failed to force working directory: {e}")
             
         print(f"[DEBUG] INDUSTRIAL ROOT (_MEIPASS): {getattr(sys, '_MEIPASS', 'Not Frozen')}")
-        print(f"[DEBUG] FRONTEND_DIR (Root Source): {frontend_dir}")
-        print(f"[DEBUG] STATIC_ROOT (Active): {static_root}")
+        print(f"[DEBUG] FRONTEND_SOURCE: {frontend_dir}")
+        print(f"[DEBUG] STATIC_ROOT (Used by Django): {active_static_root}")
         
-        # --- INDUSTRIAL AUTO-REPAIR: INDEX.HTML FIX (v4.8) ---
+        # --- INDUSTRIAL AUTO-REPAIR: BULLETPROOF INDEX FIX (v5.0) ---
         def repair_index(d):
             if not d or d == 'Unknown': return
             idx = os.path.join(d, 'index.html')
             if os.path.exists(idx):
                 try:
+                    import re
                     with open(idx, 'r', encoding='utf-8') as f: content = f.read()
-                    # Check if repair is needed (C:/ Git leak or missing /static/ path)
-                    if 'base href="C:/' in content or 'base href="file:/' in content or 'base href="/"' in content:
-                        import re
-                        # On force base href="/static/" pour que les liens relatifs JS/CSS fonctionnent
-                        new_content = re.sub(r'base href="[^"]+"', 'base href="/static/"', content)
+                    
+                    # Pattern robuste pour détecter <base href="...">
+                    pattern = r'<base\s+href=["\'][^"\']*["\']'
+                    
+                    if re.search(pattern, content, re.IGNORECASE):
+                        # Force le remplacement sur /static/
+                        new_content = re.sub(pattern, '<base href="/static/"', content, flags=re.IGNORECASE)
+                        
+                        if new_content != content:
+                            with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
+                            print(f"[DEBUG] SUCCESS: index.html REPAIRED at {idx}")
+                        else:
+                            print(f"[DEBUG] OK: index.html already clean at {idx}")
+                    else:
+                        new_content = content.replace('<head>', '<head><base href="/static/">')
                         with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
-                        print(f"[DEBUG] index.html REPAIRED with base href='/static/' at {idx}")
+                        print(f"[DEBUG] OK: base href INJECTED at {idx}")
                 except Exception as e:
                     print(f"[ERROR] Failed to repair index.html: {e}")
         
-        # We repair the active source directly
-        repair_index(static_root)
+        # On répare la source unifiée
+        repair_index(active_static_root)
 
         print(f"[DEBUG] Security Shield: ACTIVE.")
 
