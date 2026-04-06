@@ -73,25 +73,27 @@ def main():
             print(f"[ERROR] Failed to force working directory: {e}")
             
         print(f"[DEBUG] INDUSTRIAL ROOT (_MEIPASS): {getattr(sys, '_MEIPASS', 'Not Frozen')}")
-        print(f"[DEBUG] FRONTEND_DIR Found: {frontend_dir}")
-        print(f"[DEBUG] STATIC_ROOT Resolved: {static_root}")
+        print(f"[DEBUG] FRONTEND_DIR (Root Source): {frontend_dir}")
+        print(f"[DEBUG] STATIC_ROOT (Active): {static_root}")
         
-        # --- INDUSTRIAL AUTO-REPAIR: INDEX.HTML FIX (v4.6) ---
+        # --- INDUSTRIAL AUTO-REPAIR: INDEX.HTML FIX (v4.8) ---
         def repair_index(d):
             if not d or d == 'Unknown': return
             idx = os.path.join(d, 'index.html')
             if os.path.exists(idx):
                 try:
                     with open(idx, 'r', encoding='utf-8') as f: content = f.read()
+                    # Check if repair is needed (C:/ Git leak or missing /static/ path)
                     if 'base href="C:/' in content or 'base href="file:/' in content or 'base href="/"' in content:
                         import re
                         # On force base href="/static/" pour que les liens relatifs JS/CSS fonctionnent
                         new_content = re.sub(r'base href="[^"]+"', 'base href="/static/"', content)
                         with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
                         print(f"[DEBUG] index.html REPAIRED with base href='/static/' at {idx}")
-                except: pass
+                except Exception as e:
+                    print(f"[ERROR] Failed to repair index.html: {e}")
         
-        repair_index(frontend_dir)
+        # We repair the active source directly
         repair_index(static_root)
 
         print(f"[DEBUG] Security Shield: ACTIVE.")

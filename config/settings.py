@@ -173,13 +173,13 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# AUDIT: Leading slash is VITAL to prevent 'file:///' resolution errors on Windows
+# AUDIT v4.8: We point EVERYTHING to FRONTEND_DIR since the user says staticfiles is empty.
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.normpath(str(FRONTEND_DIR)),
-]
-STATIC_ROOT = os.path.normpath(str(STATIC_ROOT_DIR))
+STATICFILES_DIRS = [] # Since we serve from STATIC_ROOT in production
+
+# The 'Source of Truth' is the folder containing index.html (frontend_build)
+STATIC_ROOT = os.path.normpath(str(FRONTEND_DIR))
 
 # We use simple storage for now to avoid Manifest missing errors in multi-stage setup
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
