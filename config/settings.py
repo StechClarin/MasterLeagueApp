@@ -152,6 +152,12 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'x-hub-launch-token',
 ]
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = ['*']
+
+# --- IFRAME & CSRF STABILIZATION (v5.3) ---
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     "http://localhost:4200",
     "http://127.0.0.1:4200",
@@ -159,13 +165,10 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     "http://localhost:8000",
 ])
 
-# INDUSTRIAL HUB SECURITY (v5.3)
-# Allows cookies to be sent even when the app is in an iframe
+# Allows the Hub Iframe to send cookies back to Django
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_HTTPONLY = False  # Allows Angular to read the cookie if needed
-CSRF_COOKIE_SECURE = False    # Must be False for local HTTP development
-SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False  # Allows frontend to read tag if needed
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
     { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },

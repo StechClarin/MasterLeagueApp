@@ -76,40 +76,45 @@ def main():
         print(f"[DEBUG] FRONTEND_SOURCE: {frontend_dir}")
         print(f"[DEBUG] STATIC_ROOT (Used by Django): {active_static_root}")
         
-        # --- INDUSTRIAL AUTO-REPAIR: BULLETPROOF INDEX FIX (v5.0) ---
-        def repair_index(d):
-            if not d or d == 'Unknown': return
-            idx = os.path.join(d, 'index.html')
-            if os.path.exists(idx):
-                try:
-                    import re
-                    with open(idx, 'r', encoding='utf-8') as f: content = f.read()
-                    
-                    # Pattern robuste pour détecter <base href="...">
-                    pattern = r'<base\s+href=["\'][^"\']*["\']'
-                    
-                    if re.search(pattern, content, re.IGNORECASE):
-                        # On rétablit base href="/" pour le routeur Angular
-                        new_content = re.sub(pattern, '<base href="/"', content, flags=re.IGNORECASE)
+        # --- INDUSTRIAL AUTO-REPAIR: BULLETPROOF INDEX FIX (v5.3) ---
+        # NOTE: We ONLY repair if we are NOT in the StatReloader child process 
+        # to avoid infinite restart loops!
+        if os.environ.get('RUN_MAIN') != 'true':
+            def repair_index(d):
+                if not d or d == 'Unknown': return
+                idx = os.path.join(d, 'index.html')
+                if os.path.exists(idx):
+                    try:
+                        import re
+                        with open(idx, 'r', encoding='utf-8') as f: content = f.read()
                         
-                        # ASTUCE : Pour que les fichiers chargent sans changer la base, 
-                        # on préfixe les scripts et links par /static/
-                        new_content = re.sub(r'(src|href)=["\'](styles|main|polyfills|runtime|chunk-)', r'\1="/static/\2', new_content)
+                        # Pattern robuste pour détecter <base href="...">
+                        pattern = r'<base\s+href=["\'][^"\']*["\']'
                         
-                        if new_content != content:
-                            with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
-                            print(f"[DEBUG] SUCCESS: index.html STABILIZED at {idx}")
+                        if re.search(pattern, content, re.IGNORECASE):
+                            # On rétablit base href="/" pour le routeur Angular
+                            new_content = re.sub(pattern, '<base href="/"', content, flags=re.IGNORECASE)
+                            
+                            # ASTUCE : Pour que les fichiers chargent sans changer la base, 
+                            # on préfixe les scripts et links par /static/
+                            new_content = re.sub(r'(src|href)=["\'](styles|main|polyfills|runtime|chunk-)', r'\1="/static/\2', new_content)
+                            
+                            if new_content != content:
+                                with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
+                                print(f"[DEBUG] SUCCESS: index.html STABILIZED at {idx}")
+                            else:
+                                print(f"[DEBUG] OK: index.html already clean at {idx}")
                         else:
-                            print(f"[DEBUG] OK: index.html already clean at {idx}")
-                    else:
-                        new_content = content.replace('<head>', '<head><base href="/">')
-                        with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
-                        print(f"[DEBUG] OK: base href INJECTED at {idx}")
-                except Exception as e:
-                    print(f"[ERROR] Failed to repair index.html: {e}")
-        
-        # On répare la source unifiée
-        repair_index(active_static_root)
+                            new_content = content.replace('<head>', '<head><base href="/">')
+                            with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
+                            print(f"[DEBUG] OK: base href INJECTED at {idx}")
+                    except Exception as e:
+                        print(f"[ERROR] Failed to repair index.html: {e}")
+            
+            # On répare la source unifiée (parent process only)
+            repair_index(active_static_root)
+        else:
+            print(f"[DEBUG] Skipping index repair (Reloader Active).")
 
         print(f"[DEBUG] Security Shield: ACTIVE.")
 
