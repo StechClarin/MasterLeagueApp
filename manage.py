@@ -83,11 +83,12 @@ def main():
             if os.path.exists(idx):
                 try:
                     with open(idx, 'r', encoding='utf-8') as f: content = f.read()
-                    if 'base href="C:/' in content or 'base href="file:/' in content:
+                    if 'base href="C:/' in content or 'base href="file:/' in content or 'base href="/"' in content:
                         import re
-                        new_content = re.sub(r'base href="[^"]+"', 'base href="/"', content)
+                        # On force base href="/static/" pour que les liens relatifs JS/CSS fonctionnent
+                        new_content = re.sub(r'base href="[^"]+"', 'base href="/static/"', content)
                         with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
-                        print(f"[DEBUG] index.html REPAIRED at {idx}")
+                        print(f"[DEBUG] index.html REPAIRED with base href='/static/' at {idx}")
                 except: pass
         
         repair_index(frontend_dir)
