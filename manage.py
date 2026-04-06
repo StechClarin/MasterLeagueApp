@@ -89,16 +89,20 @@ def main():
                     pattern = r'<base\s+href=["\'][^"\']*["\']'
                     
                     if re.search(pattern, content, re.IGNORECASE):
-                        # Force le remplacement sur /static/
-                        new_content = re.sub(pattern, '<base href="/static/"', content, flags=re.IGNORECASE)
+                        # On rétablit base href="/" pour le routeur Angular
+                        new_content = re.sub(pattern, '<base href="/"', content, flags=re.IGNORECASE)
+                        
+                        # ASTUCE : Pour que les fichiers chargent sans changer la base, 
+                        # on préfixe les scripts et links par /static/
+                        new_content = re.sub(r'(src|href)=["\'](styles|main|polyfills|runtime|chunk-)', r'\1="/static/\2', new_content)
                         
                         if new_content != content:
                             with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
-                            print(f"[DEBUG] SUCCESS: index.html REPAIRED at {idx}")
+                            print(f"[DEBUG] SUCCESS: index.html STABILIZED at {idx}")
                         else:
                             print(f"[DEBUG] OK: index.html already clean at {idx}")
                     else:
-                        new_content = content.replace('<head>', '<head><base href="/static/">')
+                        new_content = content.replace('<head>', '<head><base href="/">')
                         with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
                         print(f"[DEBUG] OK: base href INJECTED at {idx}")
                 except Exception as e:
