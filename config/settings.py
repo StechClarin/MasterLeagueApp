@@ -157,7 +157,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-# --- IFRAME & CSRF STABILIZATION (v5.3) ---
+# --- IFRAME & CSRF STABILIZATION (v5.4) ---
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     "http://localhost:4200",
     "http://127.0.0.1:4200",
@@ -165,10 +165,17 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     "http://localhost:8000",
 ])
 
-# Allows the Hub Iframe to send cookies back to Django
+# INDUSTRIAL HUB MODE: We store CSRF in session to avoid cookie blocking in Iframes
+CSRF_USE_SESSIONS = True
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_HTTPONLY = False  # Allows frontend to read tag if needed
+
+# VITAL: Disable secure flags for local HTTP (otherwise cookies are ignored)
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
+X_FRAME_OPTIONS = 'ALLOWALL'
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
     { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },

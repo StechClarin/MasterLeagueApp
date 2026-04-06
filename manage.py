@@ -163,10 +163,12 @@ def main():
                 except: pass
 
             print(f"[DEBUG] Starting Industrial WSGI Server on port {port}...")
+            # Send signal as soon as Waitress starts
             print("[HUB_SIGNAL:READY]") 
             sys.stdout.flush()
             
-            serve(application, host='0.0.0.0', port=port, threads=4)
+            # Use high-concurrency mode (32 threads) to avoid Hub-side timeouts
+            serve(application, host='0.0.0.0', port=port, threads=32)
             sys.exit(0)
         except Exception as e:
             print(f"CRITICAL: WSGI Failure: {e}")
