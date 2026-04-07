@@ -15,6 +15,10 @@ class HubHandshakeMiddleware:
         # 1. On autorise l'admin Django et le login REST sans handshake (optionnel pour le boot)
         # Adaptatif : on cherche la présence de la route n'importe où dans l'URL
         if '/admin/' in request.path or '/api/auth/login/' in request.path:
+            # EXEMPTION CSRF FORCÉE SUR LOGIN (v18.1)
+            # Puisque c'est le point d'entrée, on lève la barrière CSRF ici
+            request._dont_enforce_csrf_checks = True
+            setattr(request, '_csrf_processing_done', True)
             return self.get_response(request)
 
         # 2. Récupération du Jeton Hub et du Secret attendu
