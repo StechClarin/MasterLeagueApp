@@ -99,6 +99,13 @@ def main():
                             # on préfixe les scripts et links par /static/
                             new_content = re.sub(r'(src|href)=["\'](styles|main|polyfills|runtime|chunk-)', r'\1="/static/\2', new_content)
                             
+                            # --- HUB HANDSHAKE INJECTION (v20.3) ---
+                            session_token = os.environ.get("ETHER_SESSION_TOKEN")
+                            if session_token and 'name="ether-session-token"' not in new_content:
+                                meta_tag = f'<meta name="ether-session-token" content="{session_token}">'
+                                new_content = new_content.replace('<head>', f'<head>{meta_tag}')
+                                print(f"[DEBUG] SECURITY: session token INJECTED into {idx}")
+
                             if new_content != content:
                                 with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
                                 print(f"[DEBUG] SUCCESS: index.html STABILIZED at {idx}")

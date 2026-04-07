@@ -6,7 +6,7 @@ DEBUG = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication', # <--- ACTIVÉ en Dev pour le navigateur
+        # 'rest_framework.authentication.SessionAuthentication', # <--- DÉSACTIVÉ pour le Hub (v20.1)
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
