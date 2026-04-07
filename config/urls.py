@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
 
 # Nos Contrôleurs
 from apps.core.api.controllers.RouterController import RouterView
@@ -19,7 +20,8 @@ urlpatterns = [
     path('api/', include('apps.core.api.urls')),
 
     # 2. Authentification (Publique)
-    path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # L'exemption CSRF est nécessaire pour les APIs JWT car on n'utilise pas encore de session/cookie
+    path('api/auth/login/', csrf_exempt(TokenObtainPairView.as_view()), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # 3. API CUD (REST - Écriture)

@@ -1,1 +1,0 @@
-import"./chunk-EQDQRRRY.js";var o=[{path:"personnels",loadComponent:()=>import("./chunk-YSFVFV23.js").then(t=>t.PersonnelListComponent)},{path:"contract-types",loadComponent:()=>import("./chunk-EBG5RPTP.js").then(t=>t.ContractTypeListComponent)},{path:"",redirectTo:"personnels",pathMatch:"full"}];export{o as HR_ROUTES};

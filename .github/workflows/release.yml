@@ -44,6 +44,12 @@ jobs:
           mkdir -p frontend_build
           cp -R frontend/dist/frontend/browser/* frontend_build/
 
+      - name: Arm Hub Settings
+        shell: bash
+        run: |
+          echo "Switching to Hub Production Settings (v7.6)..."
+          cp config/settings_hub.py config/settings.py
+
       - name: Compile Backend (PyInstaller)
         shell: bash
         run: |

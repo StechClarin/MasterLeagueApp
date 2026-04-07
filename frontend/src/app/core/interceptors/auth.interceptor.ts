@@ -6,16 +6,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Si on a un token, on clone la requête pour ajouter le Header
+  // HEURE DE VERITE (v6.0) : On injecte le Token de Handshake du Hub
+  // Dans une installation industrielle, on le récupèrerait dynamiquement.
+  const hubHandshakeToken = 'ethernanos-hub-secret-2026';
+
+  let headers = req.headers.set('X-Hub-Session-Token', hubHandshakeToken);
+
   if (token) {
-    const clonedRequest = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    return next(clonedRequest);
+    headers = headers.set('Authorization', `Bearer ${token}`);
   }
 
-  // Sinon on laisse passer tel quel (pour le login par exemple)
-  return next(req);
+  const clonedRequest = req.clone({
+    headers,
+    withCredentials: true // Fondamental pour le passage des sessions en Iframe
+  });
+
+  return next(clonedRequest);
 };
