@@ -45,6 +45,15 @@ def main():
                         os.environ["HUB_API_KEY"] = str(config["hub_api_key"])
                         os.environ["ETHER_HUB_API_KEY"] = str(config["hub_api_key"])
                     
+                    # --- ROUTING SYNC (v22.2) ---
+                    # On capture le préfixe envoyé par le Launcher (ex: /schoolmanage/test/)
+                    if "url_prefix" in config:
+                        prefix = str(config["url_prefix"])
+                        # On assure les slashes avant/après
+                        if not prefix.startswith('/'): prefix = '/' + prefix
+                        if not prefix.endswith('/'): prefix = prefix + '/'
+                        os.environ["ETHER_APP_PREFIX"] = prefix
+                    
                     # --- DATABASE OVERRIDE ---
                     db = config.get("db_config")
                     if db:

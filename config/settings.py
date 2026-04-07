@@ -3,6 +3,12 @@ from .settings_base import *
 # --- CONFIGURATION DÉVELOPPEMENT NAVIGATEUR (v7.1) ---
 DEBUG = True
 
+# --- SYNCHRONISATION DES CHEMINS (v22.1) ---
+# Si un préfixe d'application est détecté (ex: /schoolmanage/test/), on force Django à l'utiliser
+FORCE_SCRIPT_NAME = os.environ.get('ETHER_APP_PREFIX', None)
+if FORCE_SCRIPT_NAME:
+    print(f"[DEBUG] ROUTING: Django is now anchored to prefix '{FORCE_SCRIPT_NAME}'")
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
