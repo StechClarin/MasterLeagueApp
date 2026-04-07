@@ -20,6 +20,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'apps.core.middleware.HubPrefixMiddleware.HubPrefixMiddleware', # <--- NETTOYEUR PRÉFIXE (v23.2)
     'apps.core.middleware.HubHandshakeMiddleware.HubHandshakeMiddleware', # <--- BOUCLIER HUB (v17.5)
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
