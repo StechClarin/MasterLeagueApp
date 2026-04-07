@@ -16,15 +16,18 @@ class HubHandshakeMiddleware:
         if request.path.startswith('/admin/') or request.path.startswith('/api/auth/login/'):
             return self.get_response(request)
 
-        # 2. Récupération du Jeton Hub (Injecté via STDIN par le Launcher)
-        # On utilise ETHER_HUB_PID ou un token dédié si présent
+        # 2. Récupération du Jeton Hub et du Secret attendu
         hub_token = request.headers.get('X-Hub-Session-Token')
         expected_token = os.environ.get('ETHER_HUB_SECRET_KEY', 'ethernanos-hub-secret-2026')
 
-        # 3. Vérification de sécurité (Shield v6.0)
-        # Si on est dans le Hub, le token DOIT correspondre.
+        # 3. Vérification de sécurité (Shield v6.1)
+        # Si nous sommes lancés par le Hub (ETHER_HUB_PID présent)
         if os.environ.get('ETHER_HUB_PID'):
-            if hub_token != expected_token:
+            # On n'exige le handshake QUE pour les appels d'API (GraphQL / REST)
+            # car le navigateur n'envoie pas de headers sur le chargement initial de l'iframe
+            is_api_call = request.path.startswith('/graphql/') or request.path.startswith('/api/')
+            
+            if is_api_call and hub_token != expected_token:
                 return JsonResponse({
                     'error': 'Unauthorized Hub Handshake Failed',
                     'detail': 'Cette application ne peut être accédée qu\'à travers le Launcher Ethernanos.'
