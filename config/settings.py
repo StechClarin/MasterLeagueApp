@@ -14,6 +14,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'apps.core.middleware.HubHandshakeMiddleware.HubHandshakeMiddleware', # <--- BOUCLIER HUB (v17.5)
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware', 
