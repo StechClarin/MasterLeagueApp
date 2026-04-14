@@ -4,6 +4,11 @@ from .settings_base import *
 # Ce fichier est activé lors du push / empaquetage du Hub.
 DEBUG = env.bool('DEBUG', default=False)
 
+# --- SYNCHRONISATION DES CHEMINS HUB ---
+FORCE_SCRIPT_NAME = os.environ.get('ETHER_APP_PREFIX', None)
+if FORCE_SCRIPT_NAME:
+    print(f"[DEBUG] ROUTING: Hub settings anchored to prefix '{FORCE_SCRIPT_NAME}'")
+
 # 1. SÉCURITÉ PURE JWT (Pas de sessions sur l'API)
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -17,7 +22,8 @@ REST_FRAMEWORK = {
 
 # 2. HANDSHAKE HUB & MIDDLEWARE
 MIDDLEWARE = [
-    'apps.core.middleware.HubHandshakeMiddleware', # <--- HANDSHAKE HUB OBLIGATOIRE
+    'apps.core.middleware.HubPrefixMiddleware.HubPrefixMiddleware',
+    'apps.core.middleware.HubHandshakeMiddleware.HubHandshakeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware', 
