@@ -26,7 +26,15 @@ if getattr(sys, 'frozen', False):
     FRONTEND_DIR = found_frontend if found_frontend else (ROOT / '_internal' / 'frontend_build')
     PROJECT_DATA_DIR = found_frontend.parent if found_frontend else (ROOT / '_internal')
 else:
-    FRONTEND_DIR = BASE_DIR / 'frontend_build'
+    candidate_frontend_build = BASE_DIR / 'frontend_build'
+    candidate_angular_dist = BASE_DIR / 'frontend' / 'dist' / 'frontend'
+    if candidate_frontend_build.exists():
+        FRONTEND_DIR = candidate_frontend_build
+    elif candidate_angular_dist.exists():
+        candidate_angular_browser = candidate_angular_dist / 'browser'
+        FRONTEND_DIR = candidate_angular_browser if candidate_angular_browser.exists() else candidate_angular_dist
+    else:
+        FRONTEND_DIR = candidate_frontend_build
     PROJECT_DATA_DIR = BASE_DIR
 
 # --- Configuration de django-environ ---
