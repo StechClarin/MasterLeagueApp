@@ -26,6 +26,10 @@ class HubHandshakeMiddleware:
             expected_token = os.environ.get('ETHER_SESSION_TOKEN')
 
             # 4. SÉCURISATION API & GRAPHQL
+            if request.path.startswith('/api/external/'):
+                # Les endpoints /api/external/* ont leur propre sécurité via X-Hub-Api-Key.
+                return self.get_response(request)
+
             if '/api/' in request.path or '/graphql/' in request.path:
                 if not hub_token or hub_token != expected_token:
                     print(f"[HUB] Handshake FAILED: path={request.path}, token={hub_token}, expected={'SET' if expected_token else 'NONE'}")
