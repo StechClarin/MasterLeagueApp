@@ -16,6 +16,7 @@ class HubHandshakeMiddleware:
         # 2. EXEMPTIONS CRITIQUES (Login & Admin)
         # Adaptatif : on supporte les préfixes de production
         if '/api/auth/login/' in request.path or '/admin/' in request.path:
+            print(f"[HUB] CSRF BYPASS for public route: {request.path}")
             return self.bypass_csrf(request)
 
         if is_hub_mode:
@@ -27,11 +28,12 @@ class HubHandshakeMiddleware:
             # 4. SÉCURISATION API & GRAPHQL
             if '/api/' in request.path or '/graphql/' in request.path:
                 if not hub_token or hub_token != expected_token:
+                    print(f"[HUB] Handshake FAILED: path={request.path}, token={hub_token}, expected={'SET' if expected_token else 'NONE'}")
                     return JsonResponse({
                         'error': 'Unauthorized Hub Handshake Failed',
                         'detail': 'Access denied: Invalid or missing Hub Session Token.'
                     }, status=403)
-                
+                print(f"[HUB] Handshake OK: path={request.path}")
                 # Handshake Validé -> Immunité CSRF automatique
                 return self.bypass_csrf(request)
 
