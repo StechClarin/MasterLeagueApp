@@ -32,12 +32,12 @@ class Command(BaseCommand):
         try:
             from django.db import transaction
             with transaction.atomic():
+                self.stdout.write('   -> Seeding Access...')
+                call_command('seed_access')
                 self.stdout.write('   -> Seeding Roles...')
                 call_command('seed_roles')
                 self.stdout.write('   -> Seeding Navigation...')
                 call_command('seed_navigation')
-                self.stdout.write('   -> Seeding Access...')
-                call_command('seed_access')
                 
             self.stdout.write(self.style.SUCCESS('[OK] System data seeded atomically.'))
         except Exception as e:

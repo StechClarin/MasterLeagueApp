@@ -1,7 +1,9 @@
 # Fichier: apps/core/management/commands/seed_roles.py
 
 import os
-from django.core.management.base import BaseCommand
+from pathlib import Path
+import environ
+from django.core.management.base import BaseCommand, CommandError
 from apps.profilmanagement.models import Role, User
 from apps.core.models import Group 
 from django.db import IntegrityError
@@ -81,8 +83,17 @@ class Command(BaseCommand):
         
         admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
         if not admin_pass or admin_pass == "admin":
-            self.stdout.write(self.style.ERROR("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini ou trop faible."))
-            return
+            # Tentative de lecture du fichier .env local si l'environnement n'a pas été injecté
+            env_path = Path(os.getcwd()) / '.env'
+            if env_path.exists():
+                try:
+                    environ.Env.read_env(str(env_path))
+                    admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
+                except Exception:
+                    pass
+
+        if not admin_pass or admin_pass == "admin":
+            raise CommandError("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini ou trop faible. Définissez cette variable d'environnement avant l'installation.")
 
         try:
             admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus
