@@ -19,7 +19,7 @@ if found_queries:
         pass
 else:
     # Fallback de sécurité : Si aucune app n'est installée ou détectée
-    # On crée une Query vide pour éviter que Graphene ne plante au démarrage
+    # On crée une Query vide pour éviter que Graphene ne plante au démarrage ...
     class Query(graphene.ObjectType):
         debug_message = graphene.String()
         

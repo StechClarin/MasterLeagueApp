@@ -28,7 +28,7 @@ export const appConfig: ApplicationConfig = {
       authInterceptor,      // 1. Token
       establishmentInterceptor, // 2. Establishment Context
       graphqlNameInterceptor, // 3. URL renaming
-      errorInterceptor      // 4. Global Error Handling
+      errorInterceptor      // 4. Global Error Handling ...
     ])),
 
     {
