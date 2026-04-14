@@ -32,6 +32,12 @@ export const STRUCTURE_ROUTES: Routes = [
         data: { title: 'Classes' }
     },
     {
+        path: 'options',
+        loadComponent: () => import('./components/option-list/option-list.component')
+            .then(m => m.OptionListComponent),
+        data: { title: 'Options & Filières' }
+    },
+    {
         path: 'tree',
         loadComponent: () => import('./components/structure-tree/structure-tree.component')
             .then(m => m.StructureTreeComponent),

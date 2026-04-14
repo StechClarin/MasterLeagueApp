@@ -3,7 +3,7 @@ import { Router, Routes, Route } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { gql } from 'apollo-angular';
 import { map, tap } from 'rxjs/operators';
-import { firstValueFrom } from 'rxjs';
+import { ModuleStateService } from '../services/module-state.service';
 import { COMPONENT_REGISTRY } from './component.registry';
 
 // Routes de secours si le Backend ne répond pas
@@ -14,13 +14,13 @@ const FALLBACK_ROUTES = [
   { link: '/establishments' } // Minimum vital
 ];
 
-// La Query pour récupérer juste les liens
-import { GET_SIDEBAR_MODULES } from '../../layout/components/sidebar/sidebar.queries';
+// Registry
 
 @Injectable({ providedIn: 'root' })
 export class DynamicRouterService {
   private apollo = inject(Apollo);
   private router = inject(Router);
+  private moduleState = inject(ModuleStateService);
 
   async loadDynamicRoutes(): Promise<void> {
     console.log('🔄 Chargement des routes dynamiques...');
@@ -33,17 +33,12 @@ export class DynamicRouterService {
         return;
       }
 
-      // 1. On récupère la structure depuis Django
-      console.log('Fetching modules from GraphQL...');
-      const result: any = await firstValueFrom(
-        this.apollo.query({
-          query: GET_SIDEBAR_MODULES,
-          fetchPolicy: 'network-only' // On force le réseau pour avoir les dernières routes après login
-        })
-      );
-      console.log('Modules fetched:', result);
-
-      const modules = result.data.modules;
+      // 1. On récupère la structure via le service central (Evite doublon avec Sidebar)
+      console.log('[DynamicRouter] Chargement via ModuleStateService...');
+      await this.moduleState.fetchModules();
+      
+      const modules = this.moduleState.modules();
+      console.log('Modules structure ready:', modules.length);
       const dynamicRoutes: Routes = [];
 
       // 2. On parcourt chaque module et chaque page

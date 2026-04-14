@@ -52,9 +52,14 @@ export abstract class BaseFormComponent implements OnInit {
                     this.formErrors = FormUtils.setErrors(this.form, err, this.fieldLabels);
                     
                     if (this.formErrors.length > 0) {
-                        this.toastService.error('Veuillez corriger les erreurs indiquées.');
+                        // On construit un message riche et explicite pour le Toast
+                        const richMessage = this.formErrors
+                            .map(e => `${e.field} : ${e.message}`)
+                            .join('\n');
+                        
+                        this.toastService.error(richMessage);
                     } else {
-                        this.toastService.error('Une erreur est survenue lors de l\'enregistrement.');
+                        this.toastService.error(FormUtils.getError(err));
                     }
                 }
             });
@@ -107,5 +112,27 @@ export abstract class BaseFormComponent implements OnInit {
         this.logger.logAction(this.componentName, 'Click Cancel');
         this.form.reset(); // [GLOBAL RESET] On vide le formulaire lors de l'annulation
         this.cancel.emit();
+    }
+
+    /**
+     * Résout une URL de média en tenant compte de l'origine dynamique du navigateur.
+     * Indispensable pour que les images s'affichent correctement sur le VPS sans dépendre de 127.0.0.1.
+     */
+    resolveMediaUrl(path: string | null | undefined): string {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('data:')) return path;
+        
+        // Nettoyage du path
+        let cleanPath = path.startsWith('/') ? path.substring(1) : path;
+        
+        // On récupère l'origine dynamique (protocole + hôte + port)
+        const host = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
+        
+        // S'assurer qu'on a /media/ au début si ce n'est pas déjà le cas
+        if (!cleanPath.startsWith('media/')) {
+            cleanPath = 'media/' + cleanPath;
+        }
+        
+        return `${host}/${cleanPath}`;
     }
 }

@@ -1,10 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { Apollo } from 'apollo-angular';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { GET_SIDEBAR_MODULES } from './sidebar.queries';
+import { ModuleStateService } from '@core/services/module-state.service';
 
 // Interface locale pour typer les données
 interface SidebarPage {
@@ -53,7 +50,7 @@ interface SidebarModule {
       <!-- Navigation -->
       <nav class="flex-1 overflow-y-auto py-8 px-4 space-y-2 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
         
-        <div *ngIf="loading" class="flex flex-col items-center justify-center py-12 space-y-4">
+        <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-12 space-y-4">
           <div class="relative">
             <div class="w-10 h-10 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
             <div class="absolute inset-0 flex items-center justify-center">
@@ -63,7 +60,7 @@ interface SidebarModule {
           <span class="text-slate-500 text-xs font-medium tracking-wide animate-pulse">CHARGEMENT...</span>
         </div>
 
-        <div *ngFor="let module of modules$ | async" class="mb-2">
+        <div *ngFor="let module of modules()" class="mb-2">
           
           <button 
             (click)="toggleModule(module.id)"
@@ -141,36 +138,26 @@ interface SidebarModule {
   `
 })
 export class SidebarComponent implements OnInit {
-  private apollo = inject(Apollo);
-
-  modules$!: Observable<SidebarModule[]>;
-  loading = true;
-  expandedModules: Record<string, boolean> = {};
-
+  private moduleState = inject(ModuleStateService);
   private router = inject(Router);
 
-  ngOnInit() {
-    this.modules$ = this.apollo.watchQuery<any>({
-      query: GET_SIDEBAR_MODULES,
-      fetchPolicy: 'cache-and-network' // Feedback immédiat + refresh auto
-    }).valueChanges.pipe(
-      tap(() => this.loading = false),
-      map(result => {
-        const modules = result.data.modules;
+  // Signaux pour le template
+  modules = this.moduleState.modules;
+  isLoading = this.moduleState.isLoading;
 
-        // Auto-expand module based on current route
-        if (modules) {
-          const currentUrl = this.router.url;
-          modules.forEach((module: SidebarModule) => {
-            if (module.pages.some(page => currentUrl.includes(page.link))) {
-              this.expandedModules[module.id] = true;
-            }
-          });
-        }
+  expandedModules: Record<string, boolean> = {};
 
-        return modules;
-      })
-    );
+  async ngOnInit() {
+    // On charge les modules via le service central
+    await this.moduleState.fetchModules();
+    
+    // Auto-expand basé sur la route actuelle
+    const currentUrl = this.router.url;
+    this.modules().forEach((module: SidebarModule) => {
+      if (module.pages.some(page => currentUrl.includes(page.link))) {
+        this.expandedModules[module.id] = true;
+      }
+    });
   }
 
   toggleModule(moduleId: string) {

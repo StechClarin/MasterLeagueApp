@@ -53,13 +53,17 @@ class StudentService(BaseService):
         return student, created
 
     def after_save(self, instance, created):
+        """
+        Gère les relations après la sauvegarde de l'étudiant.
+        Les données relationnelles ont été validées au préalable par le Serializer.
+        """
         related_data = getattr(self, '_temp_related_data', {})
         health_data = related_data.get('health_data')
         parents_data = related_data.get('parents_data', [])
         enrollment_data = related_data.get('enrollment_data')
         student = instance
 
-        # 1. Handle Health Record
+        # 1. Santé
         if health_data:
             StudentHealth.objects.update_or_create(
                 student=student,
@@ -69,32 +73,21 @@ class StudentService(BaseService):
                 }
             )
 
-        # 2. Handle Enrollment
+        # 2. Inscription
         if enrollment_data:
-            year_id = enrollment_data.get('academic_year_id')
-            classroom_id = enrollment_data.get('classroom_id')
-            
-            if not year_id or not classroom_id:
-                raise ValidationError({
-                    "enrollment_input": {
-                        "academic_year_id": ["Ce champ est requis."] if not year_id else [],
-                        "classroom_id": ["Ce champ est requis."] if not classroom_id else [],
-                    }
-                })
-
-            # Check if enrollment already exists for this year
+            # academic_year_id et classroom_id sont garantis par le Serializer
             Enrollment.objects.update_or_create(
                 student=student,
-                academic_year_id=year_id,
+                academic_year_id=enrollment_data.get('academic_year_id'),
                 defaults={
                     'establishment': student.establishment,
-                    'classroom_id': classroom_id,
+                    'classroom_id': enrollment_data.get('classroom_id'),
                     'is_repeater': enrollment_data.get('is_repeater', False),
                     'status': 'REGISTERED'
                 }
             )
 
-        # 3. Handle Guardians
+        # 3. Parents / Tuteurs
         if parents_data:
             current_guardians = list(student.guardians.all()) if not created else []
             
@@ -102,7 +95,7 @@ class StudentService(BaseService):
                 phone = p_data.get('phone_number')
                 if not phone: continue
                 
-                guardian, created_g = Guardian.objects.get_or_create(
+                guardian, _ = Guardian.objects.get_or_create(
                     phone_number=phone,
                     defaults={
                         'establishment': student.establishment,
@@ -115,109 +108,38 @@ class StudentService(BaseService):
                 if guardian not in current_guardians:
                     student.guardians.add(guardian)
         
-        # 4. Profile Photo (Sync with Documents app pattern if used)
+        # 4. Synchronisation Photo de profil
         if instance.photo:
             try:
                 from django.contrib.contenttypes.models import ContentType
                 from apps.documents.models.document import Document
                 
                 ct = ContentType.objects.get_for_model(instance)
-                Document.objects.update_or_create(
-                    content_type=ct,
-                    object_id=instance.id,
-                    document_type='PHOTO',
-                    defaults={
-                        'title': f"Photo de profil - {instance.first_name} {instance.last_name}",
-                        'file': instance.photo
-                    }
-                )
-            except ImportError:
-                pass # Documents app might not be installed or configured
-
-        # Cleanup
-        self._temp_related_data = {}
-
-    def after_save(self, instance, created):
-        # Retrieve data from temp storage
-        related_data = getattr(self, '_temp_related_data', {})
-        health_data = related_data.get('health_data')
-        parents_data = related_data.get('parents_data', [])
-        enrollment_data = related_data.get('enrollment_data')
-        student = instance
-
-        # 1. Handle Health Record
-        if health_data:
-            StudentHealth.objects.update_or_create(
-                student=student,
-                defaults={
-                    'establishment': student.establishment,
-                    **health_data
-                }
-            )
-
-        # 2. Handle Enrollment
-        if enrollment_data:
-            year_id = enrollment_data.get('academic_year_id')
-            if year_id:
-                Enrollment.objects.update_or_create(
-                    student=student,
-                    academic_year_id=year_id,
-                    defaults={
-                        'establishment': student.establishment,
-                        'classroom_id': enrollment_data['classroom_id'],
-                        'is_repeater': enrollment_data.get('is_repeater', False),
-                        'status': 'REGISTERED'
-                    }
-                )
-
-        # 3. Handle Guardians
-        if parents_data:
-            current_guardians = list(student.guardians.all()) if not created else []
-            
-            for p_data in parents_data:
-                phone = p_data.get('phone_number')
-                if not phone: continue
                 
-                guardian, created_g = Guardian.objects.get_or_create(
-                    phone_number=phone,
-                    defaults={
-                        'establishment': student.establishment,
-                        'first_name': p_data.get('first_name', ''),
-                        'last_name': p_data.get('last_name', ''),
-                        'profession': p_data.get('profession', ''),
-                    }
-                )
-                
-                if guardian not in current_guardians:
-                    student.guardians.add(guardian)
-        
-        # 4. Sync Photo to Document
-        if instance.photo:
-            from django.contrib.contenttypes.models import ContentType
-            from apps.documents.models.document import Document
-            
-            ct = ContentType.objects.get_for_model(instance)
-            
-            doc = Document.objects.filter(
-                content_type=ct, 
-                object_id=instance.id, 
-                document_type='PHOTO'
-            ).first()
+                doc = Document.objects.filter(
+                    content_type=ct, 
+                    object_id=instance.id, 
+                    document_type='PHOTO'
+                ).first()
 
-            if not doc:
-                doc = Document(
-                    content_type=ct,
-                    object_id=instance.id,
-                    document_type='PHOTO',
-                    title=f"Photo de profil - {instance.first_name} {instance.last_name}"
-                )
-                doc.file.name = instance.photo.name
-                doc.save()
-            else:
-                if doc.file.name != instance.photo.name:
+                if not doc:
+                    doc = Document(
+                        content_type=ct,
+                        object_id=instance.id,
+                        document_type='PHOTO',
+                        title=f"Photo de profil - {instance.first_name} {instance.last_name}"
+                    )
                     doc.file.name = instance.photo.name
-                    doc.title = f"Photo de profil - {instance.first_name} {instance.last_name}"
                     doc.save()
+                else:
+                    if doc.file.name != instance.photo.name:
+                        doc.file.name = instance.photo.name
+                        doc.title = f"Photo de profil - {instance.first_name} {instance.last_name}"
+                        doc.save()
+            except (ImportError, Exception):
+                pass 
 
-        # Cleanup
+        # Nettoyage de la mémoire temporaire
         self._temp_related_data = {}
+
+

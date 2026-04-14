@@ -6,36 +6,9 @@ from ..models import Personnel
 class PersonnelService(BaseService):
     model = Personnel
 
-    def before_save(self, data, instance=None):
-        # 1. Capture nested user data to handle in after_save
-        # We remove it from data so it doesn't cause issues in save_process
-        self.nested_user_data = data.pop('user', None)
-
-        # 2. Auto-generate Matricule
-        # If matricule not set in data/instance
-        current_matricule = data.get('matricule')
-        if not current_matricule and instance:
-            current_matricule = instance.matricule
-            
-        # Get Establishment (from context or data)
-        establishment = data.get('establishment') 
-        est_id = establishment.id if establishment else getattr(self, 'establishment_id', None)
-
-        if not current_matricule and est_id:
-            year = timezone.now().year
-            # Count existing personnels in this establishment for this year
-            count = self.model.objects.filter(
-                establishment_id=est_id,
-                matricule__startswith=f"RH-{est_id}-{year}-"
-            ).count()
-            
-            data['matricule'] = f"RH-{est_id}-{year}-{count + 1:04d}"
-
-        return data
-
     def after_save(self, instance, created):
-        # 3. User Provisioning / Linking (Post-creation)
-        user_source = getattr(self, 'nested_user_data', None)
+        # 1. Capture nested user data from initial request (as it's read_only in serializer)
+        user_source = getattr(self, 'initial_data', {}).get('user')
         email_pro = instance.email_pro
         
         user = None

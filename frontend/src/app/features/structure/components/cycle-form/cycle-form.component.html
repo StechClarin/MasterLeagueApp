@@ -5,6 +5,12 @@
 
     <div class="grid grid-cols-1 gap-6 mb-6">
         <app-ui-input label="Nom du cycle" [control]="form.controls.name" [required]="true"></app-ui-input>
+
+        <app-ui-select label="Ce cycle utilise-t-il des options (Filières/Séries) ?" [control]="form.controls.hasOptions"
+            [options]="[{value: true, label: 'Oui'}, {value: false, label: 'Non'}]" [required]="true"
+            hint="Activez ceci pour les cycles comme le Lycée ou l'Université.">
+        </app-ui-select>
+
         <app-ui-input label="Ordre d'affichage" type="number" [control]="form.controls.order"
             [required]="true"></app-ui-input>
     </div>

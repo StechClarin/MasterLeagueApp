@@ -6,11 +6,12 @@ import { CycleService } from '../../services/cycle.service';
 import { CycleType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
+import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
 
 @Component({
     selector: 'app-cycle-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent],
+    imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent, UiSelectComponent],
     templateUrl: './cycle-form.component.html'
 })
 export class CycleFormComponent extends BaseFormComponent implements OnChanges {
@@ -21,6 +22,7 @@ export class CycleFormComponent extends BaseFormComponent implements OnChanges {
 
     override form = this.fb.nonNullable.group({
         name: ['', [Validators.required]],
+        hasOptions: [false, [Validators.required]],
         order: [0, [Validators.required]]
     });
 
@@ -30,11 +32,12 @@ export class CycleFormComponent extends BaseFormComponent implements OnChanges {
                 const patch = {
                     ...this.cycle,
                     name: this.cycle.name || '',
+                    hasOptions: this.cycle.hasOptions || false,
                     order: this.cycle.order || 0
                 };
-                this.form.patchValue(patch);
+                this.form.patchValue(patch as any);
             } else {
-                this.form.reset({ order: 0 });
+                this.form.reset({ order: 0, hasOptions: false });
             }
         }
     }

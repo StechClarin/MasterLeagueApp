@@ -61,7 +61,10 @@ export class DashboardComponent implements OnInit {
     // Re-fetch data whenever the establishment changes
     effect(() => {
       const id = this.structureState.currentEstablishmentId();
-      this.fetchData();
+      if (id) {
+        console.log('[Dashboard] Etablissement détecté, chargement des données:', id);
+        this.fetchData();
+      }
     }, { allowSignalWrites: true });
   }
 

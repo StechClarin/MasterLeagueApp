@@ -2,11 +2,19 @@ from django.db import models
 from django.conf import settings
 from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 from .level import Level
+from .option import Option
 from .academic_year import AcademicYear
 
 class ClassRoom(EstablishmentAwareModel):
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='classrooms')
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='classrooms')
+    option = models.ForeignKey(
+        Option, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='classrooms'
+    )
     main_teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 

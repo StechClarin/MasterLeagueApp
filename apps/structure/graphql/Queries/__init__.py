@@ -4,6 +4,8 @@ from .level_query import LevelQuery
 from .classroom_query import ClassRoomQuery
 from .subject_query import SubjectQuery
 from .structure_query import StructureQuery
+from .room_query import RoomQuery
+from .option_query import OptionQuery
 
 __all__ = [
     'AcademicYearQuery', 
@@ -11,6 +13,7 @@ __all__ = [
     'LevelQuery', 
     'ClassRoomQuery', 
     'SubjectQuery', 
-    'StructureQuery'
+    'StructureQuery',
+    'RoomQuery',
+    'OptionQuery'
 ]
-from .room_query import RoomQuery

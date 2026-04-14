@@ -8,6 +8,8 @@ from django.apps import apps
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import NotFound
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 class RouterView(APIView):
     """
@@ -18,6 +20,7 @@ class RouterView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         if 'export_data' in request.path:
              return Response({"debug": "RouterView hit!", "path": request.path}, status=200)

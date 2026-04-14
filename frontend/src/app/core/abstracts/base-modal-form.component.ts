@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Input } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { BaseFormComponent } from './base-form.component';
 import { environment } from 'src/environments/environment';
@@ -7,6 +7,8 @@ import { environment } from 'src/environments/environment';
 export abstract class BaseModalFormComponent extends BaseFormComponent implements OnInit {
     protected fb = inject(FormBuilder);
     private _data: any = null;
+
+    @Output() close = new EventEmitter<void>();
 
     getControl(name: string): FormControl {
         return this.form.get(name) as FormControl;
@@ -42,13 +44,6 @@ export abstract class BaseModalFormComponent extends BaseFormComponent implement
     }
 
     getPhotoUrl(path: string): string {
-        if (!path) return '';
-        if (path.startsWith('http') || path.startsWith('data:')) return path;
-        const baseUrl = environment.apiUrl.replace('/api', '');
-        const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-        if (cleanPath.startsWith('media/')) {
-            return `${baseUrl}/${cleanPath}`;
-        }
-        return `${baseUrl}/media/${cleanPath}`;
+        return this.resolveMediaUrl(path);
     }
 }

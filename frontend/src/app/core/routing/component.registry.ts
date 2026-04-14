@@ -24,13 +24,14 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/evaluations': () => import('@features/evaluations/components/evaluation-list/evaluation-list.component').then(m => m.EvaluationListComponent),
   '/grade-entry': () => import('@features/evaluations/components/grade-entry-list/grade-entry-list.component').then(m => m.GradeEntryListComponent),
   '/enrollments': () => import('@features/students/components/enrollment-list/enrollment-list.component').then(m => m.EnrollmentListComponent),
+  '/options': () => import('@features/structure/components/option-list/option-list.component').then(m => m.OptionListComponent),
 
-  [AppRoutes.PLANNINGS_PEDAGOGIQUES]: () => import('@features/pedagogy/components/planning-list/planning-list.component').then(m => m.PlanningListComponent),
+  '/plannings': () => import('@features/pedagogy/components/planning-list/planning-list.component').then(m => m.PlanningListComponent),
   '/timetable': () => import('@features/students/components/student-timetable/student-timetable.component').then(m => m.StudentTimetableComponent),
 
   // Finance
-  [AppRoutes.CONFIGURATION_TARIFS]: () => import('@features/finance/components/fee-list/fee-list.component').then(m => m.FeeListComponent),
-  [AppRoutes.FACTURATION]: () => import('@features/finance/components/invoice-list/invoice-list.component').then(m => m.InvoiceListComponent),
-  [AppRoutes.ENCAISSEMENTS]: () => import('@features/finance/components/payment-list/payment-list.component').then(m => m.PaymentListComponent),
-  [AppRoutes.ETAT_DE_RECOUVREMENT]: () => import('@features/finance/components/collection-report/collection-report.component').then(m => m.CollectionReportComponent),
+  '/fees': () => import('@features/finance/components/fee-list/fee-list.component').then(m => m.FeeListComponent),
+  '/invoices': () => import('@features/finance/components/invoice-list/invoice-list.component').then(m => m.InvoiceListComponent),
+  '/payments': () => import('@features/finance/components/payment-list/payment-list.component').then(m => m.PaymentListComponent),
+  '/collection-report': () => import('@features/finance/components/collection-report/collection-report.component').then(m => m.CollectionReportComponent),
 };

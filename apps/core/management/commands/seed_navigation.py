@@ -33,9 +33,16 @@ MODULE_STRUCTURE = [
                 "tags": ["level"]
             },
             {
+                "title": "Options / Filières",
+                "icon": "subject-icon",
+                "order": 3,
+                "link": "/options",
+                "tags": ["option"]
+            },
+            {
                 "title": "Classes",
                 "icon": "class-icon",
-                "order": 3,
+                "order": 4,
                 "link": "/classes",
                 "tags": ["classroom"]
             },
@@ -189,28 +196,28 @@ MODULE_STRUCTURE = [
                 "title": "Configuration Tarifs",
                 "icon": "settings-icon",
                 "order": 0,
-                "link": "/finance/fees",
+                "link": "/fees",
                 "tags": ["feedefinition"]
             },
             {
                 "title": "Facturation",
                 "icon": "edit-icon",
                 "order": 1,
-                "link": "/finance/invoices",
+                "link": "/invoices",
                 "tags": ["invoice"]
             },
             {
                 "title": "Encaissements",
                 "icon": "exam-icon",
                 "order": 2,
-                "link": "/finance/payments",
+                "link": "/payments",
                 "tags": ["payment"]
             },
             {
                 "title": "État de Recouvrement",
                 "icon": "clipboard-icon",
                 "order": 3,
-                "link": "/finance/collection-report",
+                "link": "/collection-report",
                 "tags": ["payment"]
             },
         ]

@@ -3,7 +3,7 @@
   <app-ui-form-header
     [title]="(isEditMode ? 'Modifier' : 'Ajouter') + ' un élève'"
     description="Gérez les inscriptions et données élèves avec précision."
-    (close)="close()">
+    (close)="close.emit()">
   </app-ui-form-header>
 
   <!-- Error Panel -->
@@ -200,7 +200,7 @@
       <span *ngIf="isEditMode">Dernière mise à jour : {{ data?.updatedAt | date:'short':'':'fr' }}</span>
     </div>
     <div class="flex gap-4">
-      <button (click)="close()" [disabled]="isSubmitting" 
+      <button type="button" (click)="close.emit()" [disabled]="isSubmitting" 
               class="px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all">
         Annuler
       </button>

@@ -12,7 +12,7 @@ class AcademicYearType(DjangoObjectType):
     class Meta:
         model = AcademicYear
         # On exclut les champs automatiques pour éviter que Graphene génère startDate/endDate
-        exclude = ('start_date', 'end_date')
+        exclude = () # Les champs custom ci-dessus priment déjà
 
     def resolve_cycle_configs(parent, info):
         return list(parent.cycle_configs.all())

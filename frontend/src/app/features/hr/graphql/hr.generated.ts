@@ -15,26 +15,26 @@ export type GetAllPersonnelsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, username: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: string, name: string } } | null> | null } | null };
+export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: any, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, username: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
 
 export type GetPersonnelQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: string, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string }>, establishment: { __typename?: 'EstablishmentType', id: string, name: string }, contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string } | null } | null };
+export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: any, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string }, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null } | null };
 
 export type GetAllContractTypesQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetAllContractTypesQuery = { __typename?: 'Query', contractTypes?: { __typename?: 'ContractTypeTypePaginated', items?: Array<{ __typename?: 'ContractTypeType', id: string, designation: string, code: string, description?: string | null } | null> | null } | null };
+export type GetAllContractTypesQuery = { __typename?: 'Query', contractTypes?: { __typename?: 'ContractTypeTypePaginated', items?: Array<{ __typename?: 'ContractTypeType', id: any, designation: string, code: string, description?: string | null } | null> | null } | null };
 
 export type GetContractTypeQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetContractTypeQuery = { __typename?: 'Query', contractType?: { __typename?: 'ContractTypeType', id: string, designation: string, code: string, description?: string | null } | null };
+export type GetContractTypeQuery = { __typename?: 'Query', contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string, description?: string | null } | null };
 
 export const GetAllPersonnelsDocument = gql`
     query GetAllPersonnels($search: String, $establishment: ID, $contractType: ID, $role: ID, $roleName: String, $jobTitle: String, $page: Int, $pageSize: Int) {

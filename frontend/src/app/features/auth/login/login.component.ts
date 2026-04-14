@@ -7,6 +7,7 @@ import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { Observable } from 'rxjs';
 import { DynamicRouterService } from '@core/routing/dynamic-router.service';
+import { StructureStateService } from '@core/services/structure-state.service';
 
 @Component({
   selector: 'app-login',
@@ -223,6 +224,7 @@ export class LoginComponent extends BaseFormComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   private dynamicRouter = inject(DynamicRouterService);
+  private structureState = inject(StructureStateService);
 
   // Typage strict du formulaire
   override form = this.fb.nonNullable.group({
@@ -292,9 +294,13 @@ export class LoginComponent extends BaseFormComponent {
   override submit() {
     // On s'abonne à l'événement success émis par BaseFormComponent
     this.success.subscribe(async () => {
-      // 1. Recharger les routes dynamiques maintenant qu'on est authentifié
+      // 1. Recharger les établissements (PRÉ-REQUIS pour l'overlay du layout)
+      this.structureState.fetchEstablishments();
+      
+      // 2. Recharger les routes dynamiques
       await this.dynamicRouter.loadDynamicRoutes();
-      // 2. Rediriger
+      
+      // 3. Rediriger
       this.router.navigate(['/dashboard']);
     });
     super.submit();

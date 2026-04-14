@@ -8,9 +8,6 @@
 
     <!-- Tabs & Content -->
     <div class="flex-1 min-h-0 flex flex-col relative w-full">
-        <div class="px-6 pt-4">
-            <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
-        </div>
         <app-ui-tabs [tabs]="tabs" [currentTab]="currentTab()" (tabChange)="currentTab.set($event)" layout="vertical">
 
             <form [formGroup]="form" (ngSubmit)="submit()" class="h-full overflow-y-auto pr-4 custom-scrollbar p-8">

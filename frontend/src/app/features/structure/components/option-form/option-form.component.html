@@ -1,0 +1,17 @@
+<app-ui-form [formErrors]="formErrors" [title]="option ? 'Modifier l\'Option' : 'Nouvelle Option'" [formGroup]="form"
+    [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="option ? 'Modifier' : 'Créer'"
+    description="Configurez les filières et spécialités de votre établissement." (submitForm)="submit()"
+    (cancel)="onCancel()">
+
+    <div class="grid grid-cols-1 gap-6 mb-6">
+        <app-ui-input label="Nom de l'option / filière" [control]="form.controls.name" [required]="true"
+            placeholder="ex: Informatique ou Cyber-sécurité"></app-ui-input>
+
+        <app-ui-input label="Code / Abréviation" [control]="form.controls.code" [required]="true"
+            placeholder="ex: INFO or CYBER"></app-ui-input>
+
+        <app-ui-select label="Option Parente (Filière)" [control]="form.controls.parentId" [options]="parentOptions"
+            placeholder="Aucune (C'est une filière principale)" hint="À remplir uniquement s'il s'agit d'une spécialité.">
+        </app-ui-select>
+    </div>
+</app-ui-form>

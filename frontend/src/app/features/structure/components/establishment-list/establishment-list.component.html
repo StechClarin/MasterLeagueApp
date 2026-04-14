@@ -95,7 +95,7 @@
 </app-ui-list-page>
 
 <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-5xl">
         <ng-container [ngSwitch]="modalMode()">
             <!-- Delete Mode -->
             <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer l'établissement ?"
@@ -105,7 +105,7 @@
 
             <!-- Create/Edit Mode -->
             <app-establishment-form *ngSwitchDefault [establishment]="selectedItem()" (success)="onSave()"
-                (cancel)="closeModal()">
+                (close)="closeModal()">
             </app-establishment-form>
         </ng-container>
     </app-ui-modal>

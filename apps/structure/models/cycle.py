@@ -3,6 +3,7 @@ from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 
 class Cycle(EstablishmentAwareModel):
     name = models.CharField(max_length=100)
+    has_options = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

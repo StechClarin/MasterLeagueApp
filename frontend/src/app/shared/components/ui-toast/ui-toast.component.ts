@@ -47,7 +47,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
           <svg *ngIf="toast.type === 'info'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9 5h2v2H9V5Zm0 4h2v6H9V9Z"/></svg>
           <svg *ngIf="toast.type === 'warning'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM10 15a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v5Z"/></svg>
         </div>
-        <div class="ml-3 text-sm font-normal">{{ toast.message }}</div>
+        <div class="ml-3 text-sm font-normal whitespace-pre-line">{{ toast.message }}</div>
         <button (click)="toastService.remove(toast.id)" type="button" class="ml-auto -mx-1.5 -my-1.5 bg-transparent text-gray-400 hover:text-gray-100 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-700 inline-flex h-8 w-8" aria-label="Close">
           <span class="sr-only">Close</span>
           <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">

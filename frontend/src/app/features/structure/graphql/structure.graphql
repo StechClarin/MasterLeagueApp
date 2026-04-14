@@ -24,6 +24,12 @@ fragment EstablishmentFields on EstablishmentType {
   # Branding
   printHeader
   printFooter
+  
+  # Owner
+  user {
+    id
+    username
+  }
 }
 
 fragment AcademicYearFields on AcademicYearType {
@@ -47,9 +53,24 @@ fragment CycleFields on CycleType {
   name
   order
   isActive
+  hasOptions
   establishment {
     id
     name
+  }
+}
+
+fragment OptionFields on OptionType {
+  id
+  name
+  code
+  isActive
+  parent {
+    id
+    name
+  }
+  establishment {
+    id
   }
 }
 
@@ -62,6 +83,7 @@ fragment LevelFields on LevelType {
   cycle {
     id
     name
+    hasOptions
     establishment {
         id
         name
@@ -77,11 +99,13 @@ fragment ClassRoomFields on ClassRoomType {
   level {
     ...LevelFields
   }
+  option {
+    ...OptionFields
+  }
   academicYear {
     id
     name
   }
-  # mainTeacher removed because likely not in Type yet or causing issues
 }
 
 fragment LevelSubjectFields on LevelSubjectType {
@@ -89,6 +113,10 @@ fragment LevelSubjectFields on LevelSubjectType {
   coefficient
   hourlyQuota
   level {
+    id
+    name
+  }
+  option {
     id
     name
   }
@@ -145,8 +173,8 @@ fragment StructureResponse on StructureResponseType {
 #Matches backend: academicyears -> [AcademicYearType]
 # ==============================================================================
 
-query GetAllEstablishments($search: String, $city: String, $phone: String, $isActive: Boolean, $page: Int, $pageSize: Int) {
-  establishments(search: $search, city: $city, phone: $phone, isActive: $isActive, page: $page, pageSize: $pageSize) {
+query GetAllEstablishments($search: String, $city: String, $phone: String, $userId: ID, $isActive: Boolean, $page: Int, $pageSize: Int) {
+  establishments(search: $search, city: $city, phone: $phone, userId: $userId, isActive: $isActive, page: $page, pageSize: $pageSize) {
     items {
       ...EstablishmentFields
     }
@@ -248,6 +276,23 @@ query GetAllRooms($search: String, $page: Int, $pageSize: Int) {
     totalCount
     numPages
     currentPage
+  }
+}
+
+query GetAllOptions($search: String, $parentId: ID, $establishmentId: ID, $page: Int, $pageSize: Int) {
+  options(search: $search, parentId: $parentId, establishmentId: $establishmentId, page: $page, pageSize: $pageSize) {
+    items {
+      ...OptionFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetOptionById($id: ID!) {
+  option(id: $id) {
+    ...OptionFields
   }
 }
 

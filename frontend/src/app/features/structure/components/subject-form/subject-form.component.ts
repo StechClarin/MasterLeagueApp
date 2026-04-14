@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { SubjectService } from '../../services/subject.service';
+import { OptionService } from '../../services/option.service';
 import { SubjectType, LevelType, LevelSubjectType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
@@ -34,6 +35,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     private fb = inject(FormBuilder);
     private service = inject(SubjectService);
     private levelService = inject(LevelService);
+    private optionService = inject(OptionService);
     private structureState = inject(StructureStateService);
     private cdr = inject(ChangeDetectorRef);
     private destroyRef = inject(DestroyRef);
@@ -58,13 +60,14 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
 
     // Data
     allLevels = signal<LevelType[]>([]);
+    levelOptions = signal<any[]>([]);
     isLoadingLevels = signal(false);
 
     override form = this.fb.group({
         name: ['', [Validators.required]],
         code: ['', [Validators.required]],
         isOptional: [false],
-        levelSubjects: this.fb.array([]) // FormArray for Level assignments
+        levelSubjects: this.fb.array([]) // FormArray for dynamic assignments
     });
 
     get levelSubjectsArray() {
@@ -97,6 +100,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             next: (res: any) => {
                 const levels = (res.data?.levels?.items as LevelType[]) || [];
                 this.allLevels.set(levels);
+                this.levelOptions.set(levels.map(l => ({ value: l.id, label: l.name })));
                 this.initLevelControls();
                 this.isLoadingLevels.set(false);
                 this.cdr.markForCheck();
@@ -109,50 +113,68 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
         });
     }
 
-    // Initialize controls for ALL levels (ViewModel pattern)
+    // Initialize controls from existing assignments
     initLevelControls() {
-        const levels = this.allLevels();
-        if (levels.length === 0) return;
-
         this.levelSubjectsArray.clear();
-
-        // Map existing assignments for easy lookup
-        const existingAssignments = new Map<string, LevelSubjectType>();
+        
         if (this.subject && this.subject.levelSubjects) {
             this.subject.levelSubjects.forEach((ls: any) => {
-                if (ls.level) existingAssignments.set(ls.level.id, ls);
+                this.addAssignment(ls);
             });
+        } else if (this.allLevels().length > 0 && !this.subject) {
+            // Optionnel: Ajouter une ligne vide par défaut ou laisser vide
+        }
+    }
+
+    addAssignment(data: any = null) {
+        const group = this.fb.group({
+            levelId: [data?.level?.id || '', [Validators.required]],
+            optionId: [data?.option?.id || null],
+            coefficient: [data?.coefficient || 1, [Validators.required, Validators.min(0)]],
+            hourlyQuota: [data?.hourlyQuota || 0, [Validators.required, Validators.min(0)]],
+            // UI Helpers
+            availableOptions: [ [] as any[] ]
+        });
+
+        // If levelId exists, load its options
+        if (group.get('levelId')?.value) {
+            this.updateAvailableOptions(group);
         }
 
-        levels.forEach(level => {
-            const assignment = existingAssignments.get(level.id);
-            const isSelected = !!assignment;
-
-            const group = this.fb.group({
-                levelId: [level.id],
-                levelName: [level.name],
-                isSelected: [isSelected],
-                coefficient: [{ value: assignment?.coefficient || 1, disabled: !isSelected }, [Validators.min(0)]],
-                hourlyQuota: [{ value: assignment?.hourlyQuota || 0, disabled: !isSelected }, [Validators.min(0)]]
-            });
-
-            // Enable/Disable inputs based on selection
-            group.get('isSelected')?.valueChanges
-                .pipe(takeUntilDestroyed(this.destroyRef)) // Ensure cleanup of these subscriptions too!
-                .subscribe(checked => {
-                    const coeff = group.get('coefficient');
-                    const quota = group.get('hourlyQuota');
-                    if (checked) {
-                        coeff?.enable();
-                        quota?.enable();
-                    } else {
-                        coeff?.disable();
-                        quota?.disable();
-                    }
-                });
-
-            this.levelSubjectsArray.push(group);
+        // Watch level changes to update options
+        group.get('levelId')?.valueChanges.subscribe(() => {
+            group.patchValue({ optionId: null });
+            this.updateAvailableOptions(group);
         });
+
+        this.levelSubjectsArray.push(group);
+        this.cdr.markForCheck();
+    }
+
+    removeAssignment(index: number) {
+        this.levelSubjectsArray.removeAt(index);
+        this.cdr.markForCheck();
+    }
+
+    private updateAvailableOptions(group: any) {
+        const levelId = group.get('levelId')?.value;
+        const level = this.allLevels().find(l => l.id === levelId);
+        
+        if (level?.cycle?.hasOptions) {
+            // Load options for this level's establishment
+            const estId = this.structureState.currentEstablishmentId() ?? undefined;
+             this.optionService.getAll(undefined, "", estId).subscribe((res: any) => {
+                const options = (res.data.options?.items || []).map((o: any) => ({
+                    value: o.id,
+                    label: o.name
+                }));
+                group.patchValue({ availableOptions: options });
+                this.cdr.markForCheck();
+            });
+        } else {
+            group.patchValue({ availableOptions: [] });
+            this.cdr.markForCheck();
+        }
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -183,20 +205,18 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     save() {
         const formValue = this.form.getRawValue();
 
-        // Filter selected levels and unnecessary fields
-        const selectedLevels = formValue.levelSubjects
-            .filter((ls: any) => ls.isSelected)
-            .map((ls: any) => ({
-                level: ls.levelId,
-                coefficient: ls.coefficient,
-                hourly_quota: ls.hourlyQuota
-            }));
+        const assignments = formValue.levelSubjects.map((ls: any) => ({
+            level: ls.levelId,
+            option: ls.optionId,
+            coefficient: ls.coefficient,
+            hourly_quota: ls.hourlyQuota
+        }));
 
         const payload: any = {
             name: formValue.name,
             code: formValue.code,
             is_optional: formValue.isOptional,
-            level_subjects: selectedLevels
+            level_subjects: assignments
         };
 
         if (this.subject && this.subject.id) {

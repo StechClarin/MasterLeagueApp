@@ -123,6 +123,7 @@ jobs:
         with:
           name: release-${{ matrix.os }}
           path: deploy_dir/*
+          retention-days: 1
 
   deploy:
     name: Deploy to Server

@@ -2,10 +2,9 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from ..utils import document_upload_path
+from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 
-from apps.core.models.user_audit_model import UserAuditModel
-
-class Document(UserAuditModel):
+class Document(EstablishmentAwareModel):
     TYPE_CHOICES = [
         ('CV', 'CV'),
         ('CONTRAT', 'Contrat de Travail'),

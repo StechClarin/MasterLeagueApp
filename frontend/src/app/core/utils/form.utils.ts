@@ -118,9 +118,11 @@ export class FormUtils {
      * Parcourt récursivement un objet pour convertir toutes ses clés en snake_case.
      */
     static convertPayloadToSnakeCase(obj: any): any {
+        if (!obj) return obj; // Handle null/undefined
+
         if (Array.isArray(obj)) {
             return obj.map(v => this.convertPayloadToSnakeCase(v));
-        } else if (obj !== null && obj.constructor === Object) {
+        } else if (typeof obj === 'object' && obj.constructor === Object) {
             return Object.keys(obj).reduce(
                 (result, key) => ({
                     ...result,

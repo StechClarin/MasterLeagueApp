@@ -30,30 +30,38 @@ class SubjectService(BaseService):
 
             # 2. Création avec injection du contexte
             new_links = []
+            import uuid
+            
             for item in self._level_subjects_payload:
-                # Injection automatique de l'établissement et du subject
                 establishment_id = self.establishment_id if hasattr(self, 'establishment_id') else None
                 
-                # Attention: item peut être un dict brutes (si bypass serializer) ou OrderedDict
-                # On s'assure d'avoir les données minimale
                 level_val = item.get('level') or item.get('level_id')
+                option_val = item.get('option') or item.get('option_id')
+                
                 if level_val and establishment_id:
-                     # Préparez les arguments de base
-                     kwargs = {
-                         'subject': instance,
-                         'establishment_id': establishment_id,
-                         'coefficient': item.get('coefficient', 1),
-                         'hourly_quota': item.get('hourly_quota') or item.get('weekly_hours', 0)
-                     }
-                     
-                     # Gestion polymorphe : Instance vs ID
-                     # Si le serializer a validé, 'level' est une instance de Level
-                     if hasattr(level_val, 'pk'):
-                         kwargs['level'] = level_val
-                     else:
-                         kwargs['level_id'] = level_val
+                     # Validation UUID basique pour éviter les erreurs "Id is not a valid UUID"
+                     try:
+                         # Si c'est déjà une instance, on récupère le PK
+                         actual_level_id = level_val.pk if hasattr(level_val, 'pk') else level_val
+                         actual_option_id = option_val.pk if hasattr(option_val, 'pk') else option_val
                          
-                     new_links.append(LevelSubject(**kwargs))
+                         # On vérifie si c'est un UUID valide
+                         if actual_level_id: uuid.UUID(str(actual_level_id))
+                         if actual_option_id: uuid.UUID(str(actual_option_id))
+                         
+                         kwargs = {
+                             'subject': instance,
+                             'establishment_id': establishment_id,
+                             'level_id': actual_level_id,
+                             'option_id': actual_option_id if actual_option_id else None,
+                             'coefficient': item.get('coefficient', 1),
+                             'hourly_quota': item.get('hourly_quota') or item.get('weekly_hours', 0)
+                         }
+                         new_links.append(LevelSubject(**kwargs))
+                     except (ValueError, TypeError):
+                         # On ignore les lignes invalides (labels au lieu d'ID, etc.)
+                         print(f"DEBUG: Skipping invalid LevelSubject assignment (level={level_val}, option={option_val})")
+                         continue
             
             if new_links:
                 LevelSubject.objects.bulk_create(new_links)

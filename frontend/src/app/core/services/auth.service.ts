@@ -58,13 +58,23 @@ export class AuthService {
   isTokenExpired(): boolean {
     const token = this.getToken();
     if (!token) return true;
-
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expiry = payload.exp;
       return (Math.floor((new Date).getTime() / 1000)) >= expiry;
     } catch (e) {
-      return true; // Token invalide = expiré/inutilisable
+      return true;
+    }
+  }
+
+  getUserId(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.user_id || null;
+    } catch (e) {
+      return null;
     }
   }
 

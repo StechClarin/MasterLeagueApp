@@ -15,7 +15,7 @@ class UserNestedSerializer(UserSerializer):
         }
 
 class PersonnelSerializer(BaseSerializer):
-    user = UserNestedSerializer(required=False)
+    user = UserNestedSerializer(read_only=True)
 
     class Meta:
         model = Personnel

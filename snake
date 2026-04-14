@@ -63,6 +63,14 @@ case "$COMMAND" in
         echo "--- Tous les seeders sont terminés ---"
         ;;
 
+    doctor)
+        $PYTHON_EXEC manage.py doctor
+        ;;
+
+    finance:backfill)
+        $PYTHON_EXEC manage.py backfill_finance
+        ;;
+
     updategql)
         echo "--- Génération du code Frontend (GraphQL Codegen) ---"
         

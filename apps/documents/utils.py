@@ -31,13 +31,14 @@ def document_upload_path(instance, filename):
         if hasattr(instance.content_object, 'get_document_upload_path'):
             return instance.content_object.get_document_upload_path(filename, category)
         
-        app_label = instance.content_type.app_label
+        # Surcharge du nom du dossier (Module)
+        app_label = getattr(instance.content_object, 'upload_folder_name', instance.content_type.app_label)
         return f"{app_label}/{category}/{final_filename}"
     
     # CASE 2: Instance is a direct model (e.g., User, Personnel)
-    # We can detect app_label from the instance's meta
     if hasattr(instance, '_meta'):
-        app_label = instance._meta.app_label
+        # Surcharge du nom du dossier (Module)
+        app_label = getattr(instance, 'upload_folder_name', instance._meta.app_label)
         return f"{app_label}/{category}/{final_filename}"
 
     # Fallback

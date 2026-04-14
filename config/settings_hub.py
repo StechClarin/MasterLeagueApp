@@ -35,8 +35,8 @@ MIDDLEWARE = [
 # Indispensable car le Webview2 bloque les cookies tiers
 CSRF_USE_SESSIONS = True
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 
@@ -61,4 +61,6 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     "tauri://localhost",      # Tauri Production Host
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "http://localhost:4200",  # Angular Dev Host
+    "http://127.0.0.1:4200",
 ])

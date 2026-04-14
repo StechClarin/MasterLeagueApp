@@ -13,6 +13,7 @@ class EstablishmentQuery(graphene.ObjectType):
         city=graphene.String(),
         phone=graphene.String(),
         is_active=graphene.Boolean(),
+        user_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -23,7 +24,12 @@ class EstablishmentQuery(graphene.ObjectType):
         if not user.is_authenticated:
             return None # Or an empty paginated response, depending on the error handling policy
             
-        queryset = Establishment.objects.filter(user=user).order_by('name')
+        # 0. Base Filter (Default to current user if no user_id provided)
+        user_id = kwargs.get('user_id')
+        if user_id:
+            queryset = Establishment.objects.filter(user_id=user_id).order_by('name')
+        else:
+            queryset = Establishment.objects.filter(user=user).order_by('name')
         
         # 1. Global Search "FIND" (OR conditions)
         if search:

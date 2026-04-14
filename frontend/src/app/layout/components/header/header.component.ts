@@ -4,14 +4,13 @@ import { Router } from '@angular/router';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Apollo } from 'apollo-angular';
 import { Observable, Subject, combineLatest } from 'rxjs';
-import { map, startWith, takeUntil } from 'rxjs/operators';
+import { map, startWith, takeUntil, tap } from 'rxjs/operators';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 // ✅ On utilise l'alias @core pour l'import propre
 import { AuthService } from '@core/services/auth.service';
 import { StructureStateService } from '@core/services/structure-state.service';
-import { EstablishmentType } from '@app/graphql/types';
-import { GetAllEstablishmentsGQL } from '../../../features/structure/graphql/structure.generated';
-import { GET_SIDEBAR_MODULES } from '../sidebar/sidebar.queries';
+import { ModuleStateService } from '@core/services/module-state.service';
 
 interface Page {
   id: string;
@@ -58,7 +57,7 @@ interface Page {
                 (ngModelChange)="structureState.setEstablishment($event || null)"
                 class="pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full appearance-none hover:bg-white hover:border-indigo-300 transition-all cursor-pointer font-medium">
                 <option [ngValue]="null">Tous les établissements</option>
-                <option *ngFor="let ets of establishments$ | async" [ngValue]="ets?.id">
+                <option *ngFor="let ets of structureState.establishments()" [ngValue]="ets?.id">
                     {{ ets?.name }}
                 </option>
             </select>
@@ -164,67 +163,41 @@ interface Page {
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
-  private apollo = inject(Apollo);
+  private moduleState = inject(ModuleStateService);
   private router = inject(Router);
   public structureState = inject(StructureStateService);
-  private getAllEstablishmentsGQL = inject(GetAllEstablishmentsGQL);
-
-  establishments$ = this.getAllEstablishmentsGQL.watch({}, { fetchPolicy: 'cache-and-network' }).valueChanges.pipe(
-    map(res => res.data.establishments?.items || [])
-  );
-
-  onEstablishmentChange() {
-    // With ngModel, the signal is updated directly via the setter or we read the control
-    // But since we bind directly to the signal in the template (not quite right with signals), 
-    // let's use a robust approach: read the value from the event or control.
-    // Actually, simpler: keep the (change) event but use proper value binding.
-    // Best way with Signal Service:
-    // The Select value is driven by structureState.currentEstablishmentId()
-    // The Change updates structureState.setEstablishment()
-  }
-
-  // Handled in template directly now via (change) passing value
-  onEstablishmentSelect(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const val = select.value || null;
-    console.log('[Header] Selection changed to:', val);
-    this.structureState.setEstablishment(val);
-  }
 
   searchControl = new FormControl('');
-  filteredPages$!: Observable<Page[]>;
   showResults = false;
   isProfileOpen = false;
   private destroy$ = new Subject<void>();
 
-  ngOnInit() {
-    // 1. Récupérer toutes les pages (aplaties)
-    const allPages$ = this.apollo.watchQuery<any>({
-      query: GET_SIDEBAR_MODULES,
-      fetchPolicy: 'network-only'
-    }).valueChanges.pipe(
-      map(result => {
-        const modules = result.data.modules;
-        const pages: Page[] = [];
-        modules.forEach((mod: any) => {
-          if (mod.pages) {
-            mod.pages.forEach((p: any) => {
-              pages.push({ ...p, moduleName: mod.name });
-            });
-          }
-        });
-        return pages;
-      })
-    );
+  // ✅ toObservable doit être déclaré dans un contexte d'injection (initialiseur de champ ou constructeur)
+  private allPages$ = toObservable(this.moduleState.modules).pipe(
+    map(modules => {
+      const pages: Page[] = [];
+      modules.forEach((mod: any) => {
+        if (mod.pages) {
+          mod.pages.forEach((p: any) => {
+            pages.push({ ...p, moduleName: mod.name });
+          });
+        }
+      });
+      return pages;
+    })
+  );
 
+  filteredPages$!: Observable<Page[]>;
+
+  ngOnInit() {
     // 2. Filtrer en fonction de la saisie
     this.filteredPages$ = combineLatest([
-      allPages$,
+      this.allPages$,
       this.searchControl.valueChanges.pipe(startWith(''))
     ]).pipe(
       map(([pages, searchTerm]) => {
         const term = (searchTerm || '').toLowerCase();
-        this.showResults = term.length > 0; // Afficher les résultats seulement si on tape quelque chose
+        this.showResults = term.length > 0;
         if (!term) return [];
         return pages.filter(p => p.title.toLowerCase().includes(term));
       })
@@ -236,14 +209,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  onEstablishmentSelect(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const val = select.value || null;
+    console.log('[Header] Selection changed to:', val);
+    this.structureState.setEstablishment(val);
+  }
+
   navigateTo(link: string) {
     this.showResults = false;
-    this.searchControl.setValue(''); // Reset search
+    this.searchControl.setValue('');
     this.router.navigateByUrl(link);
   }
 
   onBlur() {
-    // Petit délai pour permettre le clic sur le résultat avant de fermer
     setTimeout(() => {
       this.showResults = false;
     }, 200);

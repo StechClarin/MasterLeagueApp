@@ -268,7 +268,7 @@
 
         <app-student-form *ngSwitchDefault
              [data]="selectedItem()" 
-             (cancel)="closeModal()"
+             (close)="closeModal()"
              (success)="onSave()">
         </app-student-form>
       </ng-container>

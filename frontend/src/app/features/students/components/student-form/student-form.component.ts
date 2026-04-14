@@ -135,7 +135,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
             // 3. Enrollment (Nested)
             enrollment_input: this.fb.group({
                 classroom_id: [null, Validators.required],
-                academic_year_id: [1, Validators.required],
+                academic_year_id: [null, Validators.required],
                 is_repeater: [false]
             }),
 
@@ -288,10 +288,6 @@ export class StudentFormComponent extends BaseModalFormComponent {
         }
 
         return this.service.save(formData);
-    }
-
-    close() {
-        this.onCancel();
     }
 
     getInitials(name: string): string {

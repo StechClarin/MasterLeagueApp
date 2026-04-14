@@ -18,6 +18,7 @@ export class LevelService extends BaseService {
         // We use fetch() for a direct observable that completes
         // and network-only to ensure we have fresh data on each form open
         return this.generatedGQL.fetch({
+            establishmentId,
             page: 1,
             pageSize: 100
         }, { fetchPolicy: 'network-only' });

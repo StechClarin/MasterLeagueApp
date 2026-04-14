@@ -33,7 +33,7 @@ export class LevelFormComponent extends BaseFormComponent implements OnChanges, 
         name: ['', [Validators.required]],
         shortName: ['', [Validators.required]],
         order: [0, [Validators.required]],
-        cycleId: ['', [Validators.required]]
+        cycleId: [null as string | null, [Validators.required]]
     });
 
     constructor() {
@@ -99,6 +99,12 @@ export class LevelFormComponent extends BaseFormComponent implements OnChanges, 
                     value: c.id,
                     label: c.name
                 }));
+
+                // [FIX] Si c'est une création et qu'aucun cycle n'est sélectionné, on prend le premier par défaut
+                if (!this.level && this.cycles.length > 0 && !this.form.controls.cycleId.value) {
+                    this.form.controls.cycleId.setValue(this.cycles[0].value);
+                }
+
                 this.cdr.markForCheck();
             });
     }
@@ -110,16 +116,16 @@ export class LevelFormComponent extends BaseFormComponent implements OnChanges, 
                     name: this.level.name || '',
                     shortName: this.level.shortName || '',
                     order: this.level.order || 0,
-                    cycleId: this.level.cycle?.id || ''
+                    cycleId: this.level.cycle?.id || null
                 };
 
-                this.form.patchValue(patch);
+                this.form.patchValue(patch as any);
 
                 // Reload cycles based on the edited level's context
                 this.loadCyclesForContext();
 
             } else {
-                this.form.reset({ order: 0 });
+                this.form.reset({ order: 0, cycleId: null });
                 // Reload cycles based on global context (default)
                 this.loadCyclesForContext();
             }

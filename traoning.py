@@ -1,1 +1,0 @@
-print('lucas est un escro')

@@ -55,39 +55,72 @@
                         <p class="text-slate-500 text-sm animate-pulse font-medium">Chargement des niveaux...</p>
                     </div>
 
-                    <div *ngIf="!isLoadingLevels()" class="overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm">
-                        <table class="min-w-full divide-y divide-slate-100">
-                            <thead class="bg-slate-50/80">
-                                <tr>
-                                    <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest w-10">#</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">Niveau</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest w-40">Coefficient</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest w-40">Vol. Horaire</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100" formArrayName="levelSubjects">
-                                <tr *ngFor="let control of levelSubjectsArray.controls; let i = index" [formGroupName]="i" 
-                                    class="hover:bg-indigo-50/30 transition-colors group">
-                                    <td class="px-6 py-4">
-                                        <input type="checkbox" formControlName="isSelected"
-                                            class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all">
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="text-sm font-bold text-slate-700">{{ control.get('levelName')?.value }}</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <input type="number" formControlName="coefficient" min="0" step="0.5"
-                                            class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all disabled:opacity-30 disabled:grayscale">
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <input type="number" formControlName="hourlyQuota" min="0"
-                                            class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all disabled:opacity-30 disabled:grayscale">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div *ngIf="levelSubjectsArray.length === 0" class="p-12 text-center text-slate-400 font-medium italic">
-                            Aucun niveau disponible.
+                    <div *ngIf="!isLoadingLevels()" class="space-y-4">
+                        <div class="flex justify-end">
+                            <button type="button" (click)="addAssignment()"
+                                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-sm text-sm font-bold">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                Ajouter une affectation
+                            </button>
+                        </div>
+
+                        <div class="overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm">
+                            <table class="min-w-full divide-y divide-slate-100">
+                                <thead class="bg-slate-50/80">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">Niveau</th>
+                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">Filière / Spécialité</th>
+                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest w-40">Coeff.</th>
+                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest w-44">Vol. Horaire</th>
+                                        <th scope="col" class="px-6 py-4 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest w-16"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100" formArrayName="levelSubjects">
+                                    <tr *ngFor="let control of levelSubjectsArray.controls; let i = index" [formGroupName]="i" 
+                                        class="hover:bg-indigo-50/30 transition-colors group">
+                                        <td class="px-6 py-4">
+                                            <select formControlName="levelId" 
+                                                class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                                <option value="" disabled>Sélectionner un niveau</option>
+                                                <option *ngFor="let level of allLevels()" [value]="level.id">{{ level.name }}</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <ng-container *ngIf="control.get('availableOptions')?.value?.length > 0; else noOptions">
+                                                <select formControlName="optionId" 
+                                                    class="block w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                                    <option [ngValue]="null">Tronc Commun (Tous)</option>
+                                                    <option *ngFor="let opt of control.get('availableOptions')?.value" [value]="opt.value">{{ opt.label }}</option>
+                                                </select>
+                                            </ng-container>
+                                            <ng-template #noOptions>
+                                                <span class="text-xs text-slate-400 italic">Aucune option (Tronc Commun)</span>
+                                            </ng-template>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <input type="number" formControlName="coefficient" min="1" step="0.5"
+                                                class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <input type="number" formControlName="hourlyQuota" min="0"
+                                                class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button type="button" (click)="removeAssignment(i)"
+                                                class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div *ngIf="levelSubjectsArray.length === 0" class="p-12 text-center">
+                                <div class="inline-flex p-4 rounded-full bg-slate-50 text-slate-300 mb-4">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                </div>
+                                <p class="text-slate-400 font-medium italic">Aucune affectation configurée.</p>
+                                <p class="text-[10px] text-slate-300 uppercase tracking-widest mt-2">Cliquez sur le bouton ci-dessus pour commencer</p>
+                            </div>
                         </div>
                     </div>
                 </div>
