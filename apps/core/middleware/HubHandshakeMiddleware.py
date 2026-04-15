@@ -25,8 +25,14 @@ class HubHandshakeMiddleware:
             hub_token = request.headers.get('X-Hub-Session-Token')
             expected_token = os.environ.get('ETHER_SESSION_TOKEN')
 
-            # 4. SÉCURISATION API & GRAPHQL
-            if request.path_info.startswith('/api/external/'):
+            # 4. NORMALISATION DES CHEMINS HUB
+            effective_path = request.path_info
+            prefix = os.environ.get('ETHER_APP_PREFIX', '')
+            if prefix and effective_path.startswith(prefix):
+                effective_path = effective_path[len(prefix):] or '/'
+
+            # 5. SÉCURISATION API & GRAPHQL
+            if effective_path.startswith('/api/external/'):
                 # Les endpoints /api/external/* ont leur propre sécurité via X-Hub-Api-Key.
                 return self.get_response(request)
 
@@ -35,14 +41,14 @@ class HubHandshakeMiddleware:
                 # Le header X-Hub-Session-Token sera vérifié sur la requête réelle.
                 return self.bypass_csrf(request)
 
-            if '/api/' in request.path_info or request.path_info.startswith('/graphql'):
+            if '/api/' in effective_path or effective_path.startswith('/graphql'):
                 if not hub_token or hub_token != expected_token:
-                    print(f"[HUB] Handshake FAILED: path={request.path_info}, token={hub_token}, expected={'SET' if expected_token else 'NONE'}")
+                    print(f"[HUB] Handshake FAILED: path={request.path_info}, effective_path={effective_path}, token={hub_token}, expected={'SET' if expected_token else 'NONE'}")
                     return JsonResponse({
                         'error': 'Unauthorized Hub Handshake Failed',
                         'detail': 'Access denied: Invalid or missing Hub Session Token.'
                     }, status=403)
-                print(f"[HUB] Handshake OK: path={request.path_info}")
+                print(f"[HUB] Handshake OK: path={request.path_info}, effective_path={effective_path}")
                 # Handshake Validé -> Immunité CSRF automatique
                 return self.bypass_csrf(request)
 

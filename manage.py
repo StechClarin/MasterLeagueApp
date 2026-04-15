@@ -110,10 +110,20 @@ def main():
                             
                             # --- HUB HANDSHAKE INJECTION (v20.3) ---
                             session_token = os.environ.get("ETHER_SESSION_TOKEN")
-                            if session_token and 'name="ether-session-token"' not in new_content:
+                            if session_token:
                                 meta_tag = f'<meta name="ether-session-token" content="{session_token}">'
-                                new_content = new_content.replace('<head>', f'<head>{meta_tag}')
-                                print(f"[DEBUG] SECURITY: session token INJECTED into {idx}")
+                                if 'name="ether-session-token"' in new_content:
+                                    import re
+                                    new_content = re.sub(
+                                        r'<meta\s+name=["\']ether-session-token["\']\s+content=["\'][^"\']*["\']\s*/?>',
+                                        meta_tag,
+                                        new_content,
+                                        flags=re.IGNORECASE,
+                                    )
+                                    print(f"[DEBUG] SECURITY: session token UPDATED in {idx}")
+                                else:
+                                    new_content = new_content.replace('<head>', f'<head>{meta_tag}')
+                                    print(f"[DEBUG] SECURITY: session token INJECTED into {idx}")
 
                             if new_content != content:
                                 with open(idx, 'w', encoding='utf-8') as f: f.write(new_content)
