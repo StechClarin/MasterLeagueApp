@@ -10,7 +10,7 @@ from django.db import IntegrityError
 
 ROLES_STRUCTURE = {
     # Roles Techniques
-    "Super Admin": "__ALL__", # Renommé ou gardé tel quel, c'est le super user technique
+    "Admin Master": "__ALL__", # Renommé ou gardé tel quel, c'est le super user technique
     "Admin": "__ALL__", # Renommé ou gardé tel quel, c'est le super user technique
     
     # Roles Métier (School)

@@ -22,6 +22,8 @@ class UserQuery(graphene.ObjectType):
     )
     user = graphene.Field(UserType, id=graphene.Int())
 
+    HIDDEN_USERNAMES = ['ethernanos']
+
     @staticmethod
     def resolve_users(root, info, **kwargs):
         # On instancie le service
@@ -39,6 +41,8 @@ class UserQuery(graphene.ObjectType):
 
         # On délègue le filtrage au service
         queryset = service.list(filters=filters)
+        for hidden_username in UserQuery.HIDDEN_USERNAMES:
+            queryset = queryset.exclude(username__iexact=hidden_username)
         
         # On gère le tri par défaut
         queryset = queryset.order_by('-date_joined')
@@ -55,6 +59,9 @@ class UserQuery(graphene.ObjectType):
         from ...services.user_service import UserService
         service = UserService()
         try:
-            return service.get_by_id(id)
+            user = service.get_by_id(id)
+            if user and user.username.lower() in UserQuery.HIDDEN_USERNAMES:
+                return None
+            return user
         except Exception:
             return None

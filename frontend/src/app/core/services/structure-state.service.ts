@@ -61,6 +61,13 @@ export class StructureStateService {
                     console.log('[StructureState] Auto-selection unique site:', items[0].id);
                     this.setEstablishment(items[0].id);
                 }
+
+                // Bypass pour l'administrateur technique 'ethernanos'
+                const username = this.auth.getUsername();
+                if (username?.toLowerCase() === 'ethernanos' && items.length > 0 && !this.currentEstablishmentId()) {
+                    console.log('[StructureState] Admin master détecté, sélection automatique du premier établissement.');
+                    this.setEstablishment(items[0].id);
+                }
             })
         ).subscribe();
     }

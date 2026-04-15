@@ -6,11 +6,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // HEURE DE VERITE (v6.0) : On injecte le Token de Handshake du Hub
-  // Dans une installation industrielle, on le récupèrerait dynamiquement.
-  const hubHandshakeToken = 'ethernanos-hub-secret-2026';
+  // HEURE DE VERITE (v6.0) : On récupère le token de Handshake injecté par Django
+  const hubHandshakeToken = document
+    .querySelector<HTMLMetaElement>('meta[name="ether-session-token"]')
+    ?.content
+    ?.trim() ?? '';
 
-  let headers = req.headers.set('X-Hub-Session-Token', hubHandshakeToken);
+  let headers = req.headers;
+  if (hubHandshakeToken) {
+    headers = headers.set('X-Hub-Session-Token', hubHandshakeToken);
+  }
 
   if (token) {
     headers = headers.set('Authorization', `Bearer ${token}`);

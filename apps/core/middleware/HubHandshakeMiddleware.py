@@ -30,7 +30,7 @@ class HubHandshakeMiddleware:
                 # Les endpoints /api/external/* ont leur propre sécurité via X-Hub-Api-Key.
                 return self.get_response(request)
 
-            if '/api/' in request.path_info or '/graphql/' in request.path_info:
+            if '/api/' in request.path_info or request.path_info.startswith('/graphql'):
                 if not hub_token or hub_token != expected_token:
                     print(f"[HUB] Handshake FAILED: path={request.path_info}, token={hub_token}, expected={'SET' if expected_token else 'NONE'}")
                     return JsonResponse({

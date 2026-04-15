@@ -17,11 +17,16 @@ class RoleQuery(graphene.ObjectType):
         page_size=graphene.Int(default_value=10)
     )
 
+    HIDDEN_ROLE_NAMES = ['Admin Master']
+
     def resolve_role(root, info, id):
         from ...services.role_service import RoleService
         service = RoleService()
         try:
-            return service.get_by_id(id)
+            role = service.get_by_id(id)
+            if role and role.name.lower() in [n.lower() for n in RoleQuery.HIDDEN_ROLE_NAMES]:
+                return None
+            return role
         except Exception:
             return None
 
@@ -35,6 +40,8 @@ class RoleQuery(graphene.ObjectType):
             filters['name__icontains'] = name
             
         queryset = service.list(filters=filters)
+        for hidden_role in RoleQuery.HIDDEN_ROLE_NAMES:
+            queryset = queryset.exclude(name__iexact=hidden_role)
         
         paginated_data = paginate_queryset(queryset, page, page_size)
         return RolePaginatedType(**paginated_data)
