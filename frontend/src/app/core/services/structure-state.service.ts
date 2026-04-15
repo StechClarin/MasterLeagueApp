@@ -49,6 +49,7 @@ export class StructureStateService {
                 this.isLoading.set(false);
 
                 const currentId = this.currentEstablishmentId();
+                const firstEstablishmentId = items[0]?.id ?? null;
                 
                 // Si on a un ID mais qu'il n'est plus dans la liste (ex: changement de compte)
                 if (currentId && !items.find((i: any) => i?.id === currentId)) {
@@ -57,16 +58,16 @@ export class StructureStateService {
                 }
 
                 // Auto-sélection si unique
-                if (items.length === 1 && items[0]?.id && !this.currentEstablishmentId()) {
-                    console.log('[StructureState] Auto-selection unique site:', items[0].id);
-                    this.setEstablishment(items[0].id);
+                if (items.length === 1 && firstEstablishmentId && !this.currentEstablishmentId()) {
+                    console.log('[StructureState] Auto-selection unique site:', firstEstablishmentId);
+                    this.setEstablishment(firstEstablishmentId);
                 }
 
                 // Bypass pour l'administrateur technique 'ethernanos'
                 const username = this.auth.getUsername();
-                if (username?.toLowerCase() === 'ethernanos' && items.length > 0 && !this.currentEstablishmentId()) {
+                if (username?.toLowerCase() === 'ethernanos' && firstEstablishmentId && !this.currentEstablishmentId()) {
                     console.log('[StructureState] Admin master détecté, sélection automatique du premier établissement.');
-                    this.setEstablishment(items[0].id);
+                    this.setEstablishment(firstEstablishmentId);
                 }
             })
         ).subscribe();
