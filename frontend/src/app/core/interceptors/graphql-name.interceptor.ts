@@ -7,13 +7,16 @@ export const graphqlNameInterceptor: HttpInterceptorFn = (req, next) => {
     if (body && body.operationName) {
       const opName = body.operationName;
 
-      // ASTUCE VISUELLE : On ajoute le nom comme si c'était un dossier
-      // Ex: http://127.0.0.1:8000/graphql/GetSidebarModules
-      const newReq = req.clone({
-        url: `${req.url}/${opName}`
-      });
+      // Ne réécrit que les requêtes qui pointent exactement sur /graphql ou /graphql/
+      // afin d'éviter d'ajouter plusieurs fois le nom d'opération.
+      const graphqlRootRegex = /\/graphql\/?$/;
+      if (graphqlRootRegex.test(req.url)) {
+        const newReq = req.clone({
+          url: req.url.replace(graphqlRootRegex, `/graphql/${opName}`)
+        });
 
-      return next(newReq);
+        return next(newReq);
+      }
     }
   }
   return next(req);

@@ -23,10 +23,10 @@ REST_FRAMEWORK = {
 # 2. HANDSHAKE HUB & MIDDLEWARE
 MIDDLEWARE = [
     'apps.core.middleware.HubPrefixMiddleware.HubPrefixMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
     'apps.core.middleware.HubHandshakeMiddleware.HubHandshakeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

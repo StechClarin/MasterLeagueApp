@@ -21,10 +21,10 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'apps.core.middleware.HubPrefixMiddleware.HubPrefixMiddleware', # <--- NETTOYEUR PRÉFIXE (v23.2)
+    'corsheaders.middleware.CorsMiddleware', 
     'apps.core.middleware.HubHandshakeMiddleware.HubHandshakeMiddleware', # <--- BOUCLIER HUB (v17.5)
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
