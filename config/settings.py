@@ -43,6 +43,7 @@ from corsheaders.defaults import default_headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'x-establishment-id',
     'x-hub-launch-token',
+    'x-hub-api-key',
     'X-Hub-Session-Token', # <--- AJOUTÉ pour le confort Dev (v9.1)
 ]
 

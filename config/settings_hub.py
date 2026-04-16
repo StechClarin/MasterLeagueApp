@@ -56,6 +56,7 @@ from corsheaders.defaults import default_headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'X-Hub-Session-Token',
     'X-Hub-Launch-Token',
+    'X-Hub-Api-Key',
     'X-Tenant-Id',
 ]
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
