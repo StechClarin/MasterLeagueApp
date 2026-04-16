@@ -14,7 +14,7 @@ class ProvisioningService:
     """
 
     @staticmethod
-    def provision_tenant(tenant_id, tenant_name, admin_email=None, password='admin1234', send_welcome_email=True):
+    def provision_tenant(tenant_id, tenant_name, hub_id=None, admin_email=None, password='admin1234', send_welcome_email=True):
         """
         Orchestre le provisioning complet d'un nouveau site.
         """
@@ -63,7 +63,13 @@ class ProvisioningService:
                 admin_role, _ = Role.objects.get_or_create(name='admin')
                 user.roles.add(admin_role)
 
-                # 4. Définition de l'établissement actif
+                # 4. Liaison Hub / Tenant
+                if hub_id:
+                    user.hub_id = hub_id
+                else:
+                    user.hub_id = tenant_id
+
+                # 5. Définition de l'établissement actif
                 user.establishment = establishment
                 user.save()
 

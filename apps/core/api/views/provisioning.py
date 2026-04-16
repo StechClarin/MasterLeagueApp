@@ -26,6 +26,7 @@ class ProvisionTenantView(APIView):
         tenant_id = request.data.get('tenant_id')
         tenant_name = request.data.get('tenant_name')
         admin_email = request.data.get('admin_email')
+        hub_id = request.data.get('hub_id')
 
         if not tenant_id or not tenant_name:
             return Response({"error": "Missing required fields (tenant_id, tenant_name)"}, status=status.HTTP_400_BAD_REQUEST)
@@ -35,6 +36,7 @@ class ProvisionTenantView(APIView):
             result = ProvisioningService.provision_tenant(
                 tenant_id=tenant_id,
                 tenant_name=tenant_name,
+                hub_id=hub_id,
                 admin_email=admin_email
             )
             

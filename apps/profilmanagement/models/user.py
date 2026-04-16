@@ -18,11 +18,10 @@ class User(UserAuditModel, AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name="Téléphone")
+    hub_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Hub ID", db_index=True)
 
     photo = models.ImageField(upload_to=document_upload_path, blank=True, null=True)
 
-    # --- CHANGEMENT ICI ---
-    # On passe en ManyToMany. Plus de on_delete, car c'est une table de liaison.
     roles = models.ManyToManyField(
         Role,
         blank=True,
