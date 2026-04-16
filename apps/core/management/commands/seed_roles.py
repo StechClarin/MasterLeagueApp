@@ -5,7 +5,7 @@ from pathlib import Path
 import environ
 from django.core.management.base import BaseCommand, CommandError
 from apps.profilmanagement.models import Role, User
-from apps.core.models import Group 
+from apps.core.models import Group, Establishment
 from django.db import IntegrityError
 
 ROLES_STRUCTURE = {
@@ -98,22 +98,44 @@ class Command(BaseCommand):
         try:
             admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus
             
+            establishment_code = 'ETH-NANOS-SPA001'
+            establishment_name = 'Ethernanos'
+
             if not User.objects.filter(username='ethernanos').exists():
                 admin_user = User.objects.create_superuser(
                     username='ethernanos',
                     email='ethernanos@gmail.com',
                     password=admin_pass
                 )
-                admin_user.roles.add(admin_role)
                 self.stdout.write(self.style.SUCCESS("  ✔ Utilisateur 'ethernanos' créé avec succès."))
-                self.stdout.write(self.style.SUCCESS("  [OK] Utilisateur 'ethernanos' cree avec succes."))
             else:
                 admin_user = User.objects.get(username='ethernanos')
-                admin_user.roles.add(admin_role)
-                admin_user.is_superuser = True
-                admin_user.is_staff = True
-                admin_user.save()
-                self.stdout.write(self.style.WARNING("  [OK] Utilisateur 'ethernanos' mis a jour (Role Admin confirme)."))
+                self.stdout.write(self.style.WARNING("  [OK] Utilisateur 'ethernanos' existant mis à jour."))
+
+            admin_user.roles.add(admin_role)
+            admin_user.is_superuser = True
+            admin_user.is_staff = True
+            admin_user.hub_id = establishment_code
+
+            establishment, est_created = Establishment.objects.get_or_create(
+                code=establishment_code,
+                defaults={
+                    'name': establishment_name,
+                    'user': admin_user
+                }
+            )
+
+            if not est_created:
+                establishment.name = establishment_name
+                establishment.user = admin_user
+                establishment.save()
+                self.stdout.write(self.style.NOTICE(f"  [OK] Etablissement existant '{establishment_code}' mis à jour."))
+            else:
+                self.stdout.write(self.style.SUCCESS(f"  ✔ Etablissement '{establishment_name}' créé pour {establishment_code}."))
+
+            admin_user.establishment = establishment
+            admin_user.save()
+            self.stdout.write(self.style.SUCCESS("  [OK] Utilisateur 'ethernanos' lié à l'établissement dédié et au hub_id."))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"  [ERROR] {e}"))
