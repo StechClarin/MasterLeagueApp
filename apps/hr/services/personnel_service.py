@@ -80,14 +80,37 @@ class PersonnelService(BaseService):
         if user:
             if instance.user != user:
                 instance.user = user
-                instance.save()
+                instance.save(update_fields=['user'])
             
-            # Sync Roles from Personnel to User
-            if instance.pk:
-                for role in instance.roles.all():
-                    user.roles.add(role)
+            # Roles are now managed contextually via Membership, not globally on User.
+            # We skip: user.roles.add(*instance.roles.all())
+
+            # Sync or create the establishment membership for this user
+            self._sync_establishment_membership(instance, user)
             
             # Sync Phone
             if instance.phone_number and instance.phone_number != user.phone:
                 user.phone = instance.phone_number
                 user.save(update_fields=['phone'])
+
+    def _sync_establishment_membership(self, instance, user):
+        """
+        Crée ou met à jour le membership établissement lié au Personnel.
+        """
+        if not instance.establishment or not user:
+            return
+
+        from apps.core.services.establishment_membership_service import EstablishmentMembershipService
+
+        membership_service = EstablishmentMembershipService()
+        membership, created = membership_service.get_or_create(
+            user=user,
+            establishment=instance.establishment,
+            defaults={
+                'is_owner': False,
+                'status': 'active' if instance.is_active else 'inactive',
+                'created_by_user': getattr(self, 'user', None),
+                'updated_by_user': getattr(self, 'user', None),
+            }
+        )
+        membership_service.sync_roles_from_personnel(membership, instance)

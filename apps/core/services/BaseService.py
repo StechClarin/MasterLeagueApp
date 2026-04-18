@@ -376,6 +376,10 @@ class BaseService:
         if hasattr(instance, 'is_active'):
             instance.is_active = not instance.is_active
             instance.save()
+            
+            # [CRITICAL] On déclenche le hook after_save pour synchroniser les impacts (ex: Membership)
+            if hasattr(self, 'after_save'):
+                self.after_save(instance, False) 
         else:
             raise ValidationError(f"Le modèle {self.model.__name__} n'a pas de champ 'is_active'.")
             

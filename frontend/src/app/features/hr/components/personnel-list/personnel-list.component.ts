@@ -233,4 +233,26 @@ export class PersonnelListComponent extends BaseModalListComponent<any> implemen
             ]
         };
     }
+
+    /**
+     * Bascule le statut actif/inactif d'un membre du personnel.
+     * Déclenche automatiquement la mise à jour des accès (Membership).
+     */
+    toggleStatus(item: any) {
+        const action = item.isActive ? 'désactivation' : 'activation';
+        this.isLoading.set(true);
+
+        this.service.status(item.id).subscribe({
+            next: (response) => {
+                this.toastService.success(`La ${action} du personnel a été effectuée avec succès.`);
+                this.refresh();
+                this.isLoading.set(false);
+            },
+            error: (err) => {
+                console.error(`Erreur lors de la ${action}`, err);
+                this.toastService.error(`Impossible de changer le statut.`);
+                this.isLoading.set(false);
+            }
+        });
+    }
 }

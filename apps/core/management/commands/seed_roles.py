@@ -112,7 +112,6 @@ class Command(BaseCommand):
                 admin_user = User.objects.get(username='ethernanos')
                 self.stdout.write(self.style.WARNING("  [OK] Utilisateur 'ethernanos' existant mis à jour."))
 
-            admin_user.roles.add(admin_role)
             admin_user.is_superuser = True
             admin_user.is_staff = True
             admin_user.hub_id = establishment_code
@@ -133,9 +132,19 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.SUCCESS(f"  ✔ Etablissement '{establishment_name}' créé pour {establishment_code}."))
 
-            admin_user.establishment = establishment
-            admin_user.save()
-            self.stdout.write(self.style.SUCCESS("  [OK] Utilisateur 'ethernanos' lié à l'établissement dédié et au hub_id."))
+            # 4. Création du Membership (Contextual Access)
+            from apps.core.services.establishment_membership_service import EstablishmentMembershipService
+            membership_service = EstablishmentMembershipService()
+            
+            membership_service.create_or_update_with_roles(
+                user=admin_user,
+                establishment=establishment,
+                roles=[admin_role],
+                is_owner=True, # Hub admin = Owner
+                status='active'
+            )
+            
+            self.stdout.write(self.style.SUCCESS("  [OK] Utilisateur 'ethernanos' lié à l'établissement via Membership (is_owner=True)."))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"  [ERROR] {e}"))

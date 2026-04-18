@@ -39,6 +39,54 @@ class BaseController(APIView):
             est_id = getattr(request, 'establishment_id', None)
             self.service.set_context(request.user, est_id)
 
+    # --- SÉCURITÉ : RBAC CONTEXTUEL ---
+    def check_membership_permissions(self, request, permission_type):
+        """
+        Vérifie si l'utilisateur possède la permission requise au sein de son Membership actuel.
+        permission_type: 'view', 'add', 'change', 'delete'
+        """
+        # 1. Superuser bypass (Maintenance)
+        if request.user.is_superuser:
+            return True
+
+        # 2. Récupération du contexte établissement
+        est_id = getattr(request, 'establishment_id', None)
+        if not est_id:
+            raise exceptions.PermissionDenied("Aucun établissement sélectionné ou accès refusé.")
+
+        # 3. Construction du Codename (ex: view_personnel, add_student)
+        model_name = self.service.model._meta.model_name
+        codename = f"{permission_type}_{model_name}"
+
+        # 4. Vérification dans la table de jonction Membership
+        from apps.core.models.establishment_membership import EstablishmentMembership
+        from django.db.models import Q
+        
+        # On vérifie si l'un des rôles de l'utilisateur dans cet établissement possède le codename
+        # soit via les permissions directes du rôle, soit via les groupes attachés au rôle.
+        has_permission = EstablishmentMembership.objects.filter(
+            Q(user=request.user),
+            Q(establishment_id=est_id),
+            Q(status='active'),
+            Q(roles__permissions__codename=codename) | Q(roles__groups__permissions__codename=codename)
+        ).exists()
+
+        if not has_permission:
+            # Sécurité supplémentaire : si l'utilisateur est le PROPRIÉTAIRE, il a tous les droits
+            is_owner = EstablishmentMembership.objects.filter(
+                user=request.user,
+                establishment_id=est_id,
+                status='active',
+                is_owner=True
+            ).exists()
+            
+            if is_owner:
+                return True
+
+            raise exceptions.PermissionDenied(f"Vous n'avez pas la permission '{codename}' dans cet établissement.")
+
+        return True
+
     # --- HELPER POUR RÉPONSE STANDARD ---
     def success_response(self, data, message, status_code):
         return Response({
@@ -55,6 +103,9 @@ class BaseController(APIView):
         """
         Expose la méthode list du service (READ) avec Pagination.
         """
+        # Vérification Permission : VIEW
+        self.check_membership_permissions(request, 'view')
+
         # 1. Filtres (Optionnel: on pourrait parser request.query_params)
         filters = {} 
         
@@ -95,7 +146,12 @@ class BaseController(APIView):
         
         if object_id:
             instance = self.service.get_by_id(object_id)
-        
+            # Vérification Permission : CHANGE
+            self.check_membership_permissions(request, 'change')
+        else:
+            # Vérification Permission : ADD
+            self.check_membership_permissions(request, 'add')
+
         # 1. PRÉPARATION (Service)
         # On laisse le service nettoyer les données brutes (ex: trim, upper, formatage)
         # On utilise .copy() pour éviter de modifier la request.data immuable
@@ -143,6 +199,9 @@ class BaseController(APIView):
 
     def delete(self, request, pk, *args, **kwargs):
         """ Logique pour la suppression """
+        # Vérification Permission : DELETE
+        self.check_membership_permissions(request, 'delete')
+        
         instance = self.service.get_by_id(pk)
         
         try:
@@ -154,6 +213,9 @@ class BaseController(APIView):
 
     def status(self, request, pk, *args, **kwargs):
         """ Logique pour le changement de statut """
+        # Le changement de statut nécessite la permission 'change'
+        self.check_membership_permissions(request, 'change')
+
         try:
             result = self.service.status(pk)
         except Exception as e:
@@ -168,6 +230,9 @@ class BaseController(APIView):
         Export des données au format CSV ou Excel
         GET /api/{endpoint}/export/?format=csv|excel
         """
+        # Vérification Permission : VIEW (L'export est une lecture de masse)
+        self.check_membership_permissions(request, 'view')
+
         format_type = request.GET.get('format', 'excel')
         
         if format_type not in ['csv', 'excel']:
@@ -187,6 +252,9 @@ class BaseController(APIView):
         Import des données depuis un fichier CSV ou Excel
         POST /api/{endpoint}/import/
         """
+        # Vérification Permission : ADD (L'import est une création de masse)
+        self.check_membership_permissions(request, 'add')
+
         if 'file' not in request.FILES:
             return Response(
                 {"detail": "Aucun fichier fourni. Utilisez la clé 'file'."},

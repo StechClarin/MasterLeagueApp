@@ -59,19 +59,27 @@ class ProvisioningService:
                     establishment.save()
                     logger.info(f"Mise à jour de l'établissement existant : {tenant_id}")
 
-                # 3. Gestion du Rôle 'admin'
-                admin_role, _ = Role.objects.get_or_create(name='admin')
-                user.roles.add(admin_role)
-
-                # 4. Liaison Hub / Tenant
+                # 4. Liaison Hub / Tenant (Règle Métier : hub_id = owner)
                 if hub_id:
                     user.hub_id = hub_id
                 else:
                     user.hub_id = tenant_id
-
-                # 5. Définition de l'établissement actif
-                user.establishment = establishment
                 user.save()
+
+                # 5. Création du Membership (Contextual Access)
+                from apps.core.services.establishment_membership_service import EstablishmentMembershipService
+                membership_service = EstablishmentMembershipService()
+                
+                # On récupère le rôle admin pour le membership
+                admin_role, _ = Role.objects.get_or_create(name='admin')
+                
+                membership_service.create_or_update_with_roles(
+                    user=user,
+                    establishment=establishment,
+                    roles=[admin_role],
+                    is_owner=True, # Provisioning d'un tenant = Ownership
+                    status='active'
+                )
 
                 # 5. Envoi de l'email de bienvenue (si activé et nouvel utilisateur)
                 if send_welcome_email and results["user_created"]:

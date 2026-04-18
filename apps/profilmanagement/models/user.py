@@ -22,21 +22,8 @@ class User(UserAuditModel, AbstractBaseUser, PermissionsMixin):
 
     photo = models.ImageField(upload_to=document_upload_path, blank=True, null=True)
 
-    roles = models.ManyToManyField(
-        Role,
-        blank=True,
-        verbose_name="Rôles",
-        related_name="users"
-    )
-
-    establishment = models.ForeignKey(
-        'core.Establishment',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='users',
-        verbose_name="Établissement"
-    )
+    # roles = models.ManyToManyField(Role, ...) -> Déplacé vers EstablishmentMembership
+    # establishment = models.ForeignKey(...)   -> Déplacé vers EstablishmentMembership
 
     objects = UserManager()
 

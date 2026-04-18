@@ -7,11 +7,7 @@ class UserSerializer(BaseSerializer):
     # 1. RELATION INTELLIGENTE
     # - Envoi (POST) : [1, 5]
     # - Reçu (GET)  : ["Admin", "Comptable"]
-    roles = SmartRelatedField(
-        queryset=Role.objects.all(), 
-        many=True,
-        required=False
-    )
+    # roles = SmartRelatedField(...) -> Déplacé vers EstablishmentMembership
 
     # 2. SÉCURITÉ MOT DE PASSE (Dans le même fichier)
     # write_only=True est la clé : le mot de passe entre, mais ne sort JAMAIS.
@@ -23,7 +19,7 @@ class UserSerializer(BaseSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 
             'password', 'password2', # Disponibles en écriture
-            'roles', 'photo',
+            'photo',
             'is_active', 'date_joined'
         ]
         read_only_fields = ['id', 'date_joined']

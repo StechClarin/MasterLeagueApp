@@ -40,7 +40,7 @@ class JWTMiddleware:
 
 class EstablishmentMiddleware:
     """
-    Middleware pour extraire l'ID de l'établissement du Header custom.
+    Middleware pour extraire et valider l'ID de l'établissement du Header custom.
     X-Establishment-ID -> request.establishment_id
     """
     def __init__(self, get_response):
@@ -48,5 +48,26 @@ class EstablishmentMiddleware:
 
     def __call__(self, request):
         est_id = request.headers.get('x-establishment-id') or request.headers.get('X-Establishment-ID')
+        
+        # Sécurité : Si l'utilisateur est connecté, on vérifie qu'il a le droit d'être là
+        if est_id and request.user.is_authenticated and not request.user.is_superuser:
+            from apps.core.models.establishment_membership import EstablishmentMembership
+            from django.core.exceptions import ValidationError
+            
+            try:
+                # On vérifie l'existence d'un membership actif
+                exists = EstablishmentMembership.objects.filter(
+                    user=request.user, 
+                    establishment_id=est_id,
+                    status='active'
+                ).exists()
+                
+                if not exists:
+                    # Si pas de membership, on ignore le header (empêche le "hop" entre établissements)
+                    est_id = None
+            except (ValidationError, ValueError):
+                # ID malformé -> On ignore
+                est_id = None
+
         request.establishment_id = est_id if est_id else None
         return self.get_response(request)

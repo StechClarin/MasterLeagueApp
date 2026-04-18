@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
@@ -11,6 +12,17 @@ def pluralize(word: str) -> str:
 # ----------------------------
 # Helpers
 # ----------------------------
+def snake_case(name: str) -> str:
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def normalize_model_name(name: str) -> str:
+    if not name:
+        return name
+    return name[0].upper() + name[1:]
+
+
 def ensure_dir(p: Path):
     p.mkdir(parents=True, exist_ok=True)
 
@@ -227,6 +239,14 @@ class {model_name}Query(graphene.ObjectType):
         return {model_name}PaginatedType(**paginated_data)
 """
 
+    def automigrate(self, app_name_simple=None, name=None):
+        mk = ['makemigrations']
+        if app_name_simple: mk.append(app_name_simple)
+        if name: mk.extend(['--name', name])
+        call_command(*mk)
+        call_command('migrate', *( [app_name_simple] if app_name_simple else [] ))
+        self.stdout.write(self.style.SUCCESS("[OK] Migrations OK."))
+
     # ----------------------------
     # Handle
     # ----------------------------
@@ -241,40 +261,44 @@ class {model_name}Query(graphene.ObjectType):
             return
 
         if cmd == 'model':
-            model_name = opt['model_name'].capitalize()
+            model_name = normalize_model_name(opt['model_name'])
+            file_basename = snake_case(model_name)
             layout = self._prepare_app_layout(app_name_simple)
-            file = layout['models_dir'] / f"{model_name.lower()}.py"
+            file = layout['models_dir'] / f"{file_basename}.py"
             if not file.exists():
                 file.write_text(self._tpl_model(model_name), encoding="utf-8")
-                append_unique_line(layout['models_dir'] / "__init__.py", self._tpl_init_import(model_name.lower(), model_name))
+                append_unique_line(layout['models_dir'] / "__init__.py", self._tpl_init_import(file_basename, model_name))
                 self.stdout.write(self.style.SUCCESS(f"[OK] Modele cree"))
             return
 
         if cmd == 'serializer':
             self._check_dependencies()
-            model_name = opt['model_name'].capitalize()
+            model_name = normalize_model_name(opt['model_name'])
+            file_basename = snake_case(model_name)
             layout = self._prepare_app_layout(app_name_simple, create_bridge=False)
-            file = layout['api_serializers_dir'] / f"{model_name.lower()}_serializer.py"
+            file = layout['api_serializers_dir'] / f"{file_basename}_serializer.py"
             if not file.exists():
                 file.write_text(self._tpl_serializer(model_name), encoding="utf-8")
-                append_unique_line(layout['api_serializers_dir'] / "__init__.py", self._tpl_init_import(f"{model_name.lower()}_serializer", f"{model_name}Serializer"))
+                append_unique_line(layout['api_serializers_dir'] / "__init__.py", self._tpl_init_import(f"{file_basename}_serializer", f"{model_name}Serializer"))
                 self.stdout.write(self.style.SUCCESS(f"[OK] Serializer cree"))
             return
 
         if cmd == 'controller':
             self._check_dependencies()
-            model_name = opt['model_name'].capitalize()
+            model_name = normalize_model_name(opt['model_name'])
+            file_basename = snake_case(model_name)
             layout = self._prepare_app_layout(app_name_simple, create_bridge=False)
-            file = layout['api_controllers_dir'] / f"{model_name.lower()}_controller.py"
+            file = layout['api_controllers_dir'] / f"{file_basename}_controller.py"
             if not file.exists():
                 file.write_text(self._tpl_controller(model_name), encoding="utf-8")
                 self.stdout.write(self.style.SUCCESS(f"[OK] Controller cree"))
             return
 
         if cmd == 'service':
-            model_name = opt['model_name'].capitalize()
+            model_name = normalize_model_name(opt['model_name'])
+            file_basename = snake_case(model_name)
             layout = self._prepare_app_layout(app_name_simple, create_bridge=False)
-            file = layout['services_dir'] / f"{model_name.lower()}_service.py"
+            file = layout['services_dir'] / f"{file_basename}_service.py"
             if not file.exists():
                 file.write_text(self._tpl_service(model_name), encoding="utf-8")
                 self.stdout.write(self.style.SUCCESS(f"[OK] Service cree"))
@@ -282,28 +306,31 @@ class {model_name}Query(graphene.ObjectType):
 
         if cmd == 'graphene:type':
             self._check_dependencies()
-            model_name = opt['model_name'].capitalize()
+            model_name = normalize_model_name(opt['model_name'])
+            file_basename = snake_case(model_name)
             layout = self._prepare_app_layout(app_name_simple, create_bridge=False)
-            file = layout['gql_types_dir'] / f"{model_name.lower()}_type.py"
+            file = layout['gql_types_dir'] / f"{file_basename}_type.py"
             if not file.exists():
                 file.write_text(self._tpl_gql_type(model_name), encoding="utf-8")
-                append_unique_line(layout['gql_types_dir'] / "__init__.py", self._tpl_init_import(f"{model_name.lower()}_type", f"{model_name}Type"))
+                append_unique_line(layout['gql_types_dir'] / "__init__.py", self._tpl_init_import(f"{file_basename}_type", f"{model_name}Type"))
                 self.stdout.write(self.style.SUCCESS(f"[OK] Graphene Type cree"))
             return
 
         if cmd == 'graphene:query':
             self._check_dependencies()
-            model_name = opt['model_name'].capitalize()
+            model_name = normalize_model_name(opt['model_name'])
+            file_basename = snake_case(model_name)
             layout = self._prepare_app_layout(app_name_simple, create_bridge=False)
-            file = layout['gql_queries_dir'] / f"{model_name.lower()}_query.py"
+            file = layout['gql_queries_dir'] / f"{file_basename}_query.py"
             if not file.exists():
                 file.write_text(self._tpl_gql_query(model_name), encoding="utf-8")
-                append_unique_line(layout['gql_queries_dir'] / "__init__.py", self._tpl_init_import(f"{model_name.lower()}_query", f"{model_name}Query"))
+                append_unique_line(layout['gql_queries_dir'] / "__init__.py", self._tpl_init_import(f"{file_basename}_query", f"{model_name}Query"))
                 self.stdout.write(self.style.SUCCESS(f"[OK] Graphene Query cree"))
             return
 
         if cmd == 'scaffold':
-            model_name = opt['model_name'].capitalize()
+            model_name = normalize_model_name(opt['model_name'])
+            file_basename = snake_case(model_name)
             self.stdout.write(self.style.NOTICE(f"--- Scaffold : {model_name} ---"))
             
             # 1. REST
@@ -318,7 +345,7 @@ class {model_name}Query(graphene.ObjectType):
             
             # 3. DB
             self.stdout.write(self.style.NOTICE("* Migrations..."))
-            self.automigrate(app_name_simple, f"create_{model_name.lower()}_model")
+            self.automigrate(app_name_simple, f"create_{file_basename}_model")
             
             self.stdout.write(self.style.SUCCESS(f"[OK] Scaffold termine pour {model_name}"))
             return

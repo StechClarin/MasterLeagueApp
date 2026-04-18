@@ -1,5 +1,6 @@
 from .establishment import Establishment
 from .establishment_aware_model import EstablishmentAwareModel
+from .establishment_membership import EstablishmentMembership
 from .module import Module
 from .page import Page
 from .permission import Permission
