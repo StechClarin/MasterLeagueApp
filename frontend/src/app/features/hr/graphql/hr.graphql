@@ -15,6 +15,7 @@ query GetAllPersonnels($search: String, $establishment: ID, $contractType: ID, $
         name
       }
       matricule
+      gender
       jobTitle
       contractType {
         id
@@ -55,8 +56,9 @@ query GetPersonnel($id: ID!) {
       id
       name
     }
-    matricule
-    jobTitle
+      matricule
+      gender
+      jobTitle
     contractType {
       id
       designation

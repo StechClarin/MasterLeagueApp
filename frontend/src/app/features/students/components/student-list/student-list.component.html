@@ -244,7 +244,7 @@
 
   <!-- Modals -->
   <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-5xl">
+    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
       <ng-container [ngSwitch]="true">
         <app-ui-confirm-modal *ngSwitchCase="isMode('delete')" 
            title="Supprimer l'élève ?" 
@@ -256,10 +256,35 @@
            [message]="'Cette action marquera l\'inscription actuelle comme Renvoyée.'"
            (confirm)="confirmExpel()" (cancel)="closeModal()"></app-ui-confirm-modal>
 
-        <app-ui-confirm-modal *ngSwitchCase="isMode('transfer')" 
-           title="Enregistrer le départ ?" 
-           [message]="'Cette action marquera l\'inscription actuelle comme Partie (Transfert).'"
-           (confirm)="confirmTransfer()" (cancel)="closeModal()"></app-ui-confirm-modal>
+        <div *ngSwitchCase="isMode('transfer')" class="p-8">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Transfert d'élève</h3>
+                    <p class="text-sm text-gray-500">Enregistrez le départ vers un autre établissement</p>
+                </div>
+            </div>
+
+            <div [formGroup]="transferForm" class="space-y-6">
+                <app-ui-input label="École de destination" formControlName="targetSchoolName" placeholder="Ex: Collège Saphir"></app-ui-input>
+                <app-ui-input label="Adresse / Ville" formControlName="targetSchoolAddress" placeholder="Ex: Douala, Akwa"></app-ui-input>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-3">
+                <button (click)="closeModal()" class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
+                    Annuler
+                </button>
+                <button (click)="confirmTransfer()" 
+                    [disabled]="transferForm.invalid"
+                    class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-200">
+                    Confirmer & Imprimer
+                </button>
+            </div>
+        </div>
         
         <app-student-detail *ngSwitchCase="isMode('detail')"
            [data]="selectedItem()"

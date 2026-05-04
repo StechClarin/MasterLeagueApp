@@ -29,8 +29,11 @@ class PersonnelQuery(graphene.ObjectType):
     def resolve_personnels(root, info, search=None, establishment=None, contract_type=None, role=None, role_name=None, job_title=None, page=1, page_size=10, **kwargs):
         queryset = Personnel.objects.all().select_related('user', 'contract_type', 'establishment').prefetch_related('roles').order_by('-created_at')
 
-        if establishment:
-            queryset = queryset.filter(establishment_id=establishment)
+        # 2. Context Filtering (Establishment Isolation)
+        if hasattr(info.context, 'establishment_id') and info.context.establishment_id:
+             queryset = queryset.filter(establishment_id=info.context.establishment_id)
+        elif establishment:
+             queryset = queryset.filter(establishment_id=establishment)
 
         if contract_type:
             queryset = queryset.filter(contract_type_id=contract_type)

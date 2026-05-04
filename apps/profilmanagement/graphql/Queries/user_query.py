@@ -37,10 +37,16 @@ class UserQuery(graphene.ObjectType):
         if kwargs.get('email'):
             filters['email__icontains'] = kwargs['email']
         if kwargs.get('role'):
-            filters['roles__name__iexact'] = kwargs['role']
+            filters['memberships__roles__name__iexact'] = kwargs['role']
 
         # On délègue le filtrage au service
         queryset = service.list(filters=filters)
+        
+        # Isolation multi-tenant (EstablishmentMembership)
+        est_id = getattr(info.context, 'establishment_id', None)
+        if est_id:
+            queryset = queryset.filter(memberships__establishment_id=est_id, memberships__status='active').distinct()
+
         for hidden_username in UserQuery.HIDDEN_USERNAMES:
             queryset = queryset.exclude(username__iexact=hidden_username)
         
@@ -62,6 +68,14 @@ class UserQuery(graphene.ObjectType):
             user = service.get_by_id(id)
             if user and user.username.lower() in UserQuery.HIDDEN_USERNAMES:
                 return None
+                
+            # Isolation multi-tenant
+            est_id = getattr(info.context, 'establishment_id', None)
+            if est_id and user:
+                has_access = user.memberships.filter(establishment_id=est_id, status='active').exists()
+                if not has_access:
+                    return None
+                    
             return user
         except Exception:
             return None

@@ -39,6 +39,11 @@ case "$COMMAND" in
         $PYTHON_EXEC manage.py runserver
         ;;
 
+    remote)
+        echo "--- Lancement du serveur sur toutes les interfaces (0.0.0.0:8000) ---"
+        $PYTHON_EXEC manage.py runserver 0.0.0.0:8000
+        ;;
+
     config-server)
         echo "--- Configuration du serveur (automigrate) ---"
         $PYTHON_EXEC manage.py craft automigrate
@@ -48,7 +53,8 @@ case "$COMMAND" in
     help)
         echo "Commandes personnalisées de 'snake' :"
         echo "  \033[36minstall\033[0m        Installe les dépendances (requirements.txt)"
-        echo "  \033[36mrun\033[0m            Lance le serveur de développement"
+        echo "  \033[36mrun\033[0m            Lance le serveur de développement (Local)"
+        echo "  \033[36mremote\033[0m         Lance le serveur sur le réseau (Public)"
         echo "  \033[36mconfig-server\033[0m  Configure le serveur (automigrate)"
         echo ""
         echo "Toute autre commande (ex: 'craft ...', 'migrate', 'createsuperuser') est passée à manage.py."

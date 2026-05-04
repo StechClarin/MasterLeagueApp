@@ -98,6 +98,7 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
             establishment: [null, Validators.required],
             address: [''], // Moved to root (Personnel has address, User does not)
             date_hired: [null],
+            gender: ['M', Validators.required],
             user: this.fb.group({
                 first_name: ['', Validators.required],
                 last_name: ['', Validators.required],
@@ -117,7 +118,8 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
         last_name: 'Nom',
         email: 'Email personnel',
         address: 'Adresse',
-        date_hired: 'Date de recrutement'
+        date_hired: 'Date de recrutement',
+        gender: 'Genre'
     };
 
     save(): Observable<any> {
@@ -142,7 +144,8 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
             email_pro: user.emailPro || user.email, // Use existing emailPro or fallback
             phone_number: user.phoneNumber,
             address: user.address,
-            date_hired: user.dateHired // If personnel exists
+            date_hired: user.dateHired, // If personnel exists
+            gender: user.gender || 'M'
         });
 
         // Clear search via control update which triggers the pipe to return []
@@ -163,6 +166,7 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
             establishment: data.establishment?.id,
             contract_type: data.contractType?.id,
             address: data.address, // Address is on Personnel
+            gender: data.gender || 'M',
             user: {
                 first_name: data.user?.firstName,
                 last_name: data.user?.lastName,

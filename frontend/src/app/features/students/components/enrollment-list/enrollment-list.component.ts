@@ -39,39 +39,56 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
     template: `
     <app-ui-list-page title="Gestion des Inscriptions" description="Consultez et gérez les inscriptions des élèves par année et par classe."
       [isLoading]="isLoading()" [isEmpty]="(items$ | async)?.length === 0">
-
+ 
       <!-- Header Actions -->
       <ng-container header-actions>
         <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher un élève...">
-          <button (click)="toggleFilters()"
-            class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 flex items-center shadow-sm font-medium text-sm">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-            Filtres
-          </button>
         </app-ui-toolbar>
       </ng-container>
-
+ 
       <!-- Filters Panel -->
       <ng-container filters>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div class="flex items-center gap-2">
+            <button (click)="toggleFilters()"
+              class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-gray-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
+              <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filtres Avancés
+              <svg class="w-4 h-4 ml-2 text-gray-400 transform transition-transform duration-200"
+                [class.rotate-180]="isFiltersOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
         <app-ui-filter-panel [isOpen]="isFiltersOpen()" [form]="filterForm" (reset)="resetFilters()">
           <div [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Classe</label>
-              <select formControlName="classroomId" class="block w-full border-gray-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <option [ngValue]="null">Toutes les classes</option>
-                <ng-container *ngIf="classrooms$ | async as classrooms">
-                    <option *ngFor="let c of classrooms" [value]="c?.id">{{ c?.name }}</option>
-                </ng-container>
-              </select>
+              <div class="relative">
+                <select formControlName="classroomId" 
+                  class="block w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+                  <option [ngValue]="null">Toutes les classes</option>
+                  <ng-container *ngIf="classrooms$ | async as classrooms">
+                      <option *ngFor="let c of classrooms" [value]="c?.id">{{ c?.name }}</option>
+                  </ng-container>
+                </select>
+              </div>
             </div>
             <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Année Académique</label>
-              <select formControlName="academicYearId" class="block w-full border-gray-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <option [ngValue]="null">Toutes les années</option>
-                <ng-container *ngIf="academicYears$ | async as years">
-                    <option *ngFor="let y of years" [value]="y?.id">{{ y?.name }}</option>
-                </ng-container>
-              </select>
+              <div class="relative">
+                <select formControlName="academicYearId" 
+                  class="block w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+                  <option [ngValue]="null">Toutes les années</option>
+                  <ng-container *ngIf="academicYears$ | async as years">
+                      <option *ngFor="let y of years" [value]="y?.id">{{ y?.name }}</option>
+                  </ng-container>
+                </select>
+              </div>
             </div>
           </div>
         </app-ui-filter-panel>

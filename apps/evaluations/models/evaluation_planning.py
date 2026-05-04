@@ -25,6 +25,12 @@ class EvaluationPlanning(EstablishmentAwareModel):
         blank=True,
         verbose_name="Classes concernées"
     )
+    rooms = models.ManyToManyField(
+        Room,
+        related_name='evaluation_plannings',
+        blank=True,
+        verbose_name="Salles physiques"
+    )
     date = models.DateField()
     start_time = models.TimeField(null=True, blank=True)
     duration_minutes = models.PositiveIntegerField(

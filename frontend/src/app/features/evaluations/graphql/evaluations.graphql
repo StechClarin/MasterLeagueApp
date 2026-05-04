@@ -69,12 +69,16 @@ fragment EvaluationPlanningFields on EvaluationPlanningType {
       id
     }
   }
+  rooms {
+    id
+    name
+  }
 }
 
 fragment EvaluationSupervisionFields on EvaluationSupervisionType {
   id
   date
-  classroom {
+  room {
     id
     name
   }
@@ -127,7 +131,7 @@ query GetAllEvaluationTypes($search: String, $page: Int, $pageSize: Int) {
   }
 }
 
-query GetAllEvaluationSessions($search: String, $classroomId: Int, $levelId: Int, $periodId: Int, $subjectId: Int, $evaluationTypeId: Int, $page: Int, $pageSize: Int) {
+query GetAllEvaluationSessions($search: String, $classroomId: ID, $levelId: ID, $periodId: ID, $subjectId: ID, $evaluationTypeId: ID, $page: Int, $pageSize: Int) {
   evaluationSessions(search: $search, classroomId: $classroomId, levelId: $levelId, periodId: $periodId, subjectId: $subjectId, evaluationTypeId: $evaluationTypeId, page: $page, pageSize: $pageSize) {
     items {
       ...EvaluationSessionFields
@@ -141,7 +145,7 @@ query GetAllEvaluationSessions($search: String, $classroomId: Int, $levelId: Int
   }
 }
 
-query GetAllGrades($evaluationSubjectId: Int, $evaluationSessionId: Int, $studentId: Int, $academicPeriodId: Int, $classroomId: Int, $page: Int, $pageSize: Int) {
+query GetAllGrades($evaluationSubjectId: ID, $evaluationSessionId: ID, $studentId: ID, $academicPeriodId: ID, $classroomId: ID, $page: Int, $pageSize: Int) {
   grades(evaluationSubjectId: $evaluationSubjectId, evaluationSessionId: $evaluationSessionId, studentId: $studentId, academicPeriodId: $academicPeriodId, classroomId: $classroomId, page: $page, pageSize: $pageSize) {
     items {
       ...GradeFields

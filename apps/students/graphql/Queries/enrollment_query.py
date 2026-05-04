@@ -20,12 +20,18 @@ class EnrollmentQuery(graphene.ObjectType):
 
     def resolve_enrollment(root, info, id):
         try:
-            return Enrollment.objects.get(pk=id, is_active=True)
+            queryset = Enrollment.objects.filter(pk=id, is_active=True)
+            if hasattr(info.context, 'establishment_id') and info.context.establishment_id:
+                queryset = queryset.filter(establishment_id=info.context.establishment_id)
+            return queryset.get()
         except Enrollment.DoesNotExist:
             return None
 
     def resolve_enrollments(root, info, search=None, classroom_id=None, academic_year_id=None, page=1, page_size=10, **kwargs):
         queryset = Enrollment.objects.filter(is_active=True).order_by('-created_at')
+
+        if hasattr(info.context, 'establishment_id') and info.context.establishment_id:
+             queryset = queryset.filter(establishment_id=info.context.establishment_id)
 
         if search:
             queryset = queryset.filter(

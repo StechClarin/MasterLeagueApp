@@ -233,9 +233,9 @@ export class StudentFormComponent extends BaseModalFormComponent {
         if (data.enrollments && data.enrollments.length > 0) {
             const current = data.enrollments[0];
             this.enrollmentGroup.patchValue({
-                classroom_id: current.classroom?.id,
-                academic_year_id: current.academicYear?.id,
-                is_repeater: current.isRepeater
+                classroom_id: current.classroom_id || current.classroom?.id,
+                academic_year_id: current.academic_year_id || current.academicYear?.id || current.academic_year?.id,
+                is_repeater: current.isRepeater || current.is_repeater
             });
         }
 

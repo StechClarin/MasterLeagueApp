@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { InvoiceService } from '../../services/invoice.service';
 import { PaymentFormComponent } from '../payment-form/payment-form.component';
@@ -126,14 +127,26 @@ import { ClassRoomService } from '@features/structure/services/classroom.service
        <div class="flex justify-end gap-2">
           <button *ngIf="item.status !== 'PAID'" 
                   class="px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 border border-green-200" 
-                  (click)="openPaymentModal(item)">
+                  (click)="openPaymentModal(item)"
+                  title="Encaisser un paiement">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
             </svg>
             Encaisser
           </button>
+          
+          <button *ngIf="item.paidAmount > 0" 
+                  class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 border border-indigo-200" 
+                  (click)="printInvoice(item)"
+                  title="Imprimer le reçu/relevé">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            Imprimer
+          </button>
        </div>
     </ng-template>
+
   `
 })
 export class InvoiceListComponent extends BaseModalListComponent<any> implements OnInit, AfterViewInit, OnDestroy {
@@ -144,6 +157,7 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
   private destroy$ = new Subject<void>();
   private cdr = inject(ChangeDetectorRef);
   private classroomService = inject(ClassRoomService);
+  router = inject(Router);
 
   dynamicCategories: any[] = [];
   classroomOptions: any[] = [];
@@ -269,5 +283,11 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
       'CANCELLED': base + 'bg-gray-50 text-gray-700 border-gray-100'
     };
     return classes[status] || base + 'bg-gray-50 text-gray-400 border-gray-100';
+  }
+
+  printInvoice(invoice: any) {
+    if (this.router) {
+      this.router.navigate(['/print/invoice', invoice.id]);
+    }
   }
 }

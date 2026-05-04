@@ -17,12 +17,16 @@ class RoomQuery(graphene.ObjectType):
 
     def resolve_room(root, info, id):
         try:
-            return Room.objects.get(pk=id)
+            queryset = Room.objects.filter(pk=id)
+            if hasattr(info.context, 'establishment_id') and info.context.establishment_id:
+                queryset = queryset.filter(establishment_id=info.context.establishment_id)
+            return queryset.get()
         except Room.DoesNotExist:
             return None
 
     def resolve_rooms(root, info, search=None, page=1, page_size=10, **kwargs):
-        queryset = Room.objects.all().order_by('-created_at')
+        from apps.core.graphql.utils.queryset_filter import get_context_filtered_queryset
+        queryset = get_context_filtered_queryset(Room, info, order_by='-created_at')
 
         if search:
             queryset = queryset.filter(name__icontains=search)

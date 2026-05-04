@@ -39,9 +39,14 @@ class FeeDefinition(EstablishmentAwareModel):
         default=InstallmentPeriod.MONTHLY,
         null=True, blank=True
     )
+    custom_installments = models.JSONField(
+        null=True, blank=True,
+        help_text="Format: [{'tranche': 1, 'amount': 50000}, {'tranche': 2, 'amount': 25000}]"
+    )
 
     # Relation avec le niveau (Level) de l'app 'structure'
     level = models.ForeignKey('structure.Level', on_delete=models.CASCADE, verbose_name="Niveau", related_name="fees")
+    option = models.ForeignKey('structure.Option', on_delete=models.CASCADE, null=True, blank=True, verbose_name="Option/Filière", related_name="fees")
     students = models.ManyToManyField('students.Student', blank=True, verbose_name="Élèves Spécifiques", related_name="special_fees")
     classroom = models.ForeignKey('structure.Classroom', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Classe Spécifique", related_name="group_fees")
     academic_year = models.ForeignKey('structure.AcademicYear', on_delete=models.CASCADE, verbose_name="Année Académique")
@@ -52,7 +57,7 @@ class FeeDefinition(EstablishmentAwareModel):
     class Meta:
         verbose_name = "Définition de Frais"
         verbose_name_plural = "Définitions de Frais"
-        unique_together = ['level', 'category', 'academic_year', 'establishment']
+        unique_together = ['level', 'option', 'category', 'academic_year', 'establishment']
 
     def __str__(self):
         return f"{self.name} - {self.level.name} ({self.amount} FCFA)"

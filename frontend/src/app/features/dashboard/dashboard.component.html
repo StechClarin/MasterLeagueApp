@@ -1,133 +1,196 @@
 <div class="p-6 min-h-screen bg-slate-50">
   
   <!-- Header -->
-  <div class="flex justify-between items-center mb-8">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
     <div>
-      <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Système Dashboard</h1>
-      <p class="text-slate-500 mt-1">Analyse globale de l'établissement en temps réel</p>
+      <h1 class="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+        <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 12a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" />
+        </svg>
+        Pilotage Stratégique
+      </h1>
+      <p class="text-slate-500 mt-1">Analyse multidimensionnelle de l'établissement</p>
     </div>
     <div class="flex gap-3">
-      <button (click)="fetchData()" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
-        <span class="material-icons text-sm">refresh</span>
-        Actualiser
+      <button (click)="fetchData()" class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 shadow-sm font-medium">
+        <svg class="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Actualiser les données
+      </button>
+      <button class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-md font-medium">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Exporter Rapport
       </button>
     </div>
   </div>
 
-  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center h-64 space-y-4">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-    <p class="text-slate-500 animate-pulse">Extraction des données en cours...</p>
+  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center h-96 space-y-4">
+    <div class="relative">
+        <div class="h-16 w-16 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+            <svg class="w-8 h-8 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+        </div>
+    </div>
+    <p class="text-slate-500 font-medium animate-pulse">Consolidation des indicateurs en cours...</p>
   </div>
 
-  <div *ngIf="!isLoading()" class="space-y-8 animate-in fade-in duration-700">
+  <div *ngIf="!isLoading()" class="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
     
-    <!-- KPI Widgets -->
+    <!-- KPI Widgets - Académique -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       
-      <!-- Students -->
-      <div class="stat-card group">
+      <div class="stat-card group hover:scale-[1.02] transition-transform">
         <div class="flex justify-between items-start">
           <div>
-            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Élèves Totaux</p>
-            <h3 class="text-3xl font-bold text-slate-900 mt-1">{{ dashboardData()?.totalStudents | number }}</h3>
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Effectif Global</p>
+            <h3 class="text-3xl font-black text-slate-900 mt-2">{{ dashboardData()?.totalStudents | number }}</h3>
+            <p class="text-xs text-slate-500 mt-1">Élèves inscrits</p>
           </div>
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-            <span class="material-icons">groups</span>
-          </div>
-        </div>
-        <div class="mt-4 flex items-center text-sm">
-          <span class="text-emerald-500 font-bold flex items-center mr-2">
-            <span class="material-icons text-xs mr-1">trending_up</span> 12%
-          </span>
-          <span class="text-slate-400">vs année passée</span>
-        </div>
-      </div>
-
-      <!-- Personnel -->
-      <div class="stat-card group">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Personnel / Staff</p>
-            <h3 class="text-3xl font-bold text-slate-900 mt-1">{{ dashboardData()?.totalStaff | number }}</h3>
-          </div>
-          <div class="p-3 bg-cyan-50 text-cyan-600 rounded-xl group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300">
-            <span class="material-icons">badge</span>
-          </div>
-        </div>
-        <div class="mt-4 flex items-center text-sm">
-          <span class="text-slate-400">Secteur académique & admin</span>
-        </div>
-      </div>
-
-      <!-- Average -->
-      <div class="stat-card group">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Moyenne Générale</p>
-            <h3 class="text-3xl font-bold text-indigo-600 mt-1">{{ dashboardData()?.averageGrade | number:'1.2-2' }}/20</h3>
-          </div>
-          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
-            <span class="material-icons">auto_graph</span>
-          </div>
-        </div>
-        <div class="mt-4 flex items-center text-sm">
-          <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div class="bg-indigo-500 h-full rounded-full" [style.width]="(dashboardData()?.averageGrade / 20 * 100) + '%'"></div>
+          <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
           </div>
         </div>
       </div>
 
-      <!-- Active Evals -->
-      <div class="stat-card group">
+      <div class="stat-card group hover:scale-[1.02] transition-transform">
         <div class="flex justify-between items-start">
           <div>
-            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Évaluations Actives</p>
-            <h3 class="text-3xl font-bold text-slate-900 mt-1">{{ dashboardData()?.totalActiveEvaluations }}</h3>
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Moyenne Établissement</p>
+            <h3 class="text-3xl font-black text-indigo-600 mt-2">{{ dashboardData()?.averageGrade | number:'1.2-2' }}</h3>
+            <p class="text-xs text-slate-500 mt-1">Sur 20 points</p>
           </div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-            <span class="material-icons">assignment_turned_in</span>
+          <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
           </div>
         </div>
-        <div class="mt-4 flex items-center text-sm">
-            <span class="flex items-center text-emerald-600">
-                <span class="relative flex h-2 w-2 mr-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                Saisie en cours
-            </span>
+      </div>
+
+      <div class="stat-card group hover:scale-[1.02] transition-transform">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Recettes Totales</p>
+            <h3 class="text-3xl font-black text-emerald-600 mt-2">{{ dashboardData()?.totalRevenue | number }} FCFA</h3>
+            <p class="text-xs text-slate-500 mt-1">Encaissements validés</p>
+          </div>
+          <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card group hover:scale-[1.02] transition-transform border-l-4 border-l-red-500">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Restant à Recouvrer</p>
+            <h3 class="text-3xl font-black text-red-600 mt-2">{{ dashboardData()?.totalPending | number }} FCFA</h3>
+            <p class="text-xs text-slate-500 mt-1">Arriérés de paiement</p>
+          </div>
+          <div class="p-4 bg-red-50 text-red-600 rounded-2xl group-hover:bg-red-600 group-hover:text-white transition-all duration-500 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Analytics Row -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
       
-      <!-- Evolution Chart -->
-      <div class="lg:col-span-2 chart-container">
-        <div class="flex justify-between items-center mb-6">
-          <h4 class="text-lg font-bold text-slate-800">Évolution des Résultats</h4>
-          <span class="px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-500 uppercase">Moyenne par Période</span>
+      <!-- Revenue Evolution Chart -->
+      <div class="xl:col-span-2 chart-container">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h4 class="text-xl font-bold text-slate-800">Performance Financière</h4>
+            <p class="text-sm text-slate-500">Évolution mensuelle des recettes</p>
+          </div>
+          <div class="flex gap-2">
+              <span class="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                  <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Trésorerie
+              </span>
+          </div>
+        </div>
+        <apx-chart
+          *ngIf="revenueChartOptions"
+          [series]="revenueChartOptions.series!"
+          [chart]="revenueChartOptions.chart!"
+          [xaxis]="revenueChartOptions.xaxis!"
+          [stroke]="revenueChartOptions.stroke!"
+          [fill]="revenueChartOptions.fill!"
+          [colors]="revenueChartOptions.colors!"
+        ></apx-chart>
+      </div>
+
+      <!-- Top Students List -->
+      <div class="chart-container overflow-hidden">
+        <div class="flex justify-between items-center mb-8">
+            <h4 class="text-xl font-bold text-slate-800">Top Excellence</h4>
+            <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+            </svg>
+        </div>
+        <div class="space-y-5">
+            <div *ngFor="let student of dashboardData()?.topStudents; let i = index" 
+                 class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-md transition-shadow group">
+                <div class="flex items-center gap-4">
+                    <div class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        #{{ i + 1 }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{{ student.studentName }}</p>
+                        <p class="text-xs text-slate-400">{{ student.matricule }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-black text-indigo-600">{{ student.averageGrade | number:'1.2-2' }}</p>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Moyenne</p>
+                </div>
+            </div>
+            <div *ngIf="!dashboardData()?.topStudents?.length" class="text-center py-10">
+                <p class="text-slate-400 italic">Aucun résultat disponible</p>
+            </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Secondary Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Results Evolution -->
+      <div class="lg:col-span-1 chart-container">
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-slate-800">Succès Académique</h4>
+          <p class="text-xs text-slate-500">Moyenne par période d'évaluation</p>
         </div>
         <apx-chart
           *ngIf="evolutionChartOptions"
           [series]="evolutionChartOptions.series!"
           [chart]="evolutionChartOptions.chart!"
           [xaxis]="evolutionChartOptions.xaxis!"
-          [dataLabels]="evolutionChartOptions.dataLabels!"
-          [grid]="evolutionChartOptions.grid!"
           [stroke]="evolutionChartOptions.stroke!"
           [fill]="evolutionChartOptions.fill!"
-          [tooltip]="evolutionChartOptions.tooltip!"
           [colors]="evolutionChartOptions.colors!"
         ></apx-chart>
       </div>
 
-      <!-- Distribution Chart -->
+      <!-- Student Distribution -->
       <div class="chart-container">
-        <div class="flex justify-between items-center mb-6">
-          <h4 class="text-lg font-bold text-slate-800">Distribution Élèves</h4>
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-slate-800">Répartition par Classe</h4>
+          <p class="text-xs text-slate-500">Top 5 des classes les plus denses</p>
         </div>
         <apx-chart
           *ngIf="distributionChartOptions"
@@ -140,22 +203,51 @@
         ></apx-chart>
       </div>
 
+      <!-- Payment Methods -->
+      <div class="chart-container">
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-slate-800">Canaux d'Encaissement</h4>
+          <p class="text-xs text-slate-500">Volume par mode de paiement</p>
+        </div>
+        <apx-chart
+          *ngIf="paymentMethodsChartOptions"
+          [series]="paymentMethodsChartOptions.series!"
+          [chart]="paymentMethodsChartOptions.chart!"
+          [labels]="paymentMethodsChartOptions.labels!"
+          [colors]="paymentMethodsChartOptions.colors!"
+          [legend]="paymentMethodsChartOptions.legend!"
+        ></apx-chart>
+      </div>
+
     </div>
 
-    <!-- Footer Info -->
-    <div class="bg-indigo-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
-        <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-                <h3 class="text-2xl font-bold">Optimisez votre gestion académique</h3>
-                <p class="text-indigo-200 mt-2 max-w-md">Utilisez les rapports détaillés pour identifier les points d'amélioration et booster l'excellence de vos élèves.</p>
+    <!-- Action Callout -->
+    <div class="relative group">
+        <div class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+        <div class="relative bg-white border border-slate-200 rounded-3xl p-10 shadow-sm overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-10">
+                <div class="flex-1">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-widest mb-4">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Intelligence Scolaire
+                    </div>
+                    <h3 class="text-3xl font-black text-slate-900 leading-tight">Prêt pour une analyse encore plus profonde ?</h3>
+                    <p class="text-slate-500 mt-4 text-lg">Générez des rapports PDF personnalisés pour vos conseils de classe ou vos bilans financiers annuels en un clic.</p>
+                </div>
+                <div class="flex gap-4">
+                    <button class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 hover:shadow-xl transition-all flex items-center gap-3">
+                        Rapports Avancés
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <button class="px-8 py-3 bg-white text-indigo-900 font-bold rounded-xl hover:bg-opacity-90 transition-all shadow-lg">
-                Générer un rapport complet
-            </button>
+            <!-- Abstract shapes -->
+            <div class="absolute -right-10 -bottom-10 h-40 w-40 bg-indigo-50 rounded-full opacity-50"></div>
         </div>
-        <!-- Background decorative elements -->
-        <div class="absolute -right-20 -top-20 w-64 h-64 bg-indigo-500 rounded-full opacity-20 blur-3xl"></div>
-        <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-purple-500 rounded-full opacity-10 blur-3xl"></div>
     </div>
 
   </div>

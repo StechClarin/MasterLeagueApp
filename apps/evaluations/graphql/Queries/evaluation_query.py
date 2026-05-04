@@ -13,11 +13,11 @@ class EvaluationSessionQuery(graphene.ObjectType):
     evaluation_sessions = graphene.Field(
         EvaluationSessionPaginatedType,
         search=graphene.String(),
-        classroom_id=graphene.Int(),
-        level_id=graphene.Int(),
-        period_id=graphene.Int(),
-        subject_id=graphene.Int(),
-        evaluation_type_id=graphene.Int(),
+        classroom_id=graphene.ID(),
+        level_id=graphene.ID(),
+        period_id=graphene.ID(),
+        subject_id=graphene.ID(),
+        evaluation_type_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )

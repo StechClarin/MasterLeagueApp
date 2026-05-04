@@ -74,7 +74,10 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                        <app-ui-select label="Genre" formControlName="gender" [options]="[{value: 'M', label: 'Masculin'}, {value: 'F', label: 'Féminin'}]" bindLabel="label" bindValue="value"></app-ui-select>
                         <app-ui-input label="Téléphone" formControlName="phone_number" placeholder="ex: 77 000 00 00"></app-ui-input>
+                    </div>
+                    <div class="pt-2">
                         <app-ui-input label="Adresse" formControlName="address" placeholder="ex: Dakar, Sénégal"></app-ui-input>
                     </div>
                 </div>

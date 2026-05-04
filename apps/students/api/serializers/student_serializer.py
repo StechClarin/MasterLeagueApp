@@ -78,7 +78,7 @@ class StudentSerializer(BaseSerializer):
     class Meta:
         model = Student
         fields = '__all__'
-        read_only_fields = ['matricule']
+        read_only_fields = []
         error_messages = {
             'first_name': {'required': "Le prénom de l'élève est obligatoire."},
             'last_name': {'required': "Le nom de l'élève est obligatoire."},
@@ -117,6 +117,8 @@ class StudentSerializer(BaseSerializer):
             return {
                 "id": enrollment.id,
                 "classroom": enrollment.classroom.name,
+                "classroom_id": enrollment.classroom.id,
+                "academic_year_id": enrollment.academic_year.id,
                 "status": enrollment.status
             }
         return None

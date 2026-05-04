@@ -152,7 +152,7 @@
 </app-ui-list-page>
 
 <!-- Edit/Create Modal -->
-<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-4xl">
+<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
   <ng-container [ngSwitch]="modalMode()">
       <app-ui-confirm-modal *ngSwitchCase="'delete'"
           title="Supprimer le planning ?"

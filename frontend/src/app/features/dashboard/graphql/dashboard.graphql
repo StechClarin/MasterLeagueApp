@@ -5,6 +5,8 @@ query GetDashboardData {
     totalClassrooms
     totalActiveEvaluations
     averageGrade
+    totalRevenue
+    totalPending
     gradeEvolution {
       label
       value
@@ -12,6 +14,19 @@ query GetDashboardData {
     studentDistribution {
       category
       count
+    }
+    revenueEvolution {
+      label
+      value
+    }
+    paymentMethodsDistribution {
+      category
+      count
+    }
+    topStudents {
+      studentName
+      averageGrade
+      matricule
     }
   }
 }

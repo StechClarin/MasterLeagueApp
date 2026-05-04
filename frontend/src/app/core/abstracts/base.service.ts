@@ -42,7 +42,7 @@ export abstract class BaseService {
         );
     }
     get_by_id(id: number | string): Observable<any> {
-        const url = `${this.apiUrl}/${id}/`;
+        const url = `${this.apiUrl}/get_by_id/${id}/`;
         this.logger.logApi('GET', url, 'START');
         return this.http.get(url).pipe(
             tap(res => this.logger.logApi('GET', url, 'SUCCESS', res)),

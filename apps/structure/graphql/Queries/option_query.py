@@ -24,15 +24,19 @@ class OptionQuery(graphene.ObjectType):
             return None
 
     def resolve_options(root, info, search=None, parentId=None, establishmentId=None, page=1, page_size=10, **kwargs):
+        # Multi-tenant filter (Priorité au middleware)
+        context_est_id = getattr(info.context, 'establishment_id', None)
+        active_est_id = context_est_id or establishmentId
+
         queryset = Option.objects.all().order_by('-created_at')
 
-        # Multi-tenant filter
-        if establishmentId:
-            queryset = queryset.filter(establishment_id=establishmentId)
+        if active_est_id:
+            queryset = queryset.filter(establishment_id=active_est_id)
         elif hasattr(info.context, 'user') and info.context.user.is_authenticated:
-            # Fallback to current user's establishments if possible, 
-            # or just rely on explicit establishmentId from frontend
-            pass 
+            # Fallback de sécurité : on ne montre rien si pas d'établissement identifié
+            # Sauf pour les super-utilisateurs (optionnel)
+            if not info.context.user.is_superuser:
+                queryset = queryset.none()
 
         if search:
             queryset = queryset.filter(name__icontains=search)

@@ -7,11 +7,12 @@ import { CycleType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
+import { UiToggleComponent } from '@shared/components/ui-toggle/ui-toggle.component';
 
 @Component({
     selector: 'app-cycle-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent, UiSelectComponent],
+    imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent, UiSelectComponent, UiToggleComponent],
     templateUrl: './cycle-form.component.html'
 })
 export class CycleFormComponent extends BaseFormComponent implements OnChanges {
@@ -22,28 +23,34 @@ export class CycleFormComponent extends BaseFormComponent implements OnChanges {
 
     override form = this.fb.nonNullable.group({
         name: ['', [Validators.required]],
-        hasOptions: [false, [Validators.required]],
+        code: ['', [Validators.required]],
+        description: [''],
+        hasOptions: [false],
         order: [0, [Validators.required]]
     });
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['cycle']) {
             if (this.cycle) {
-                const patch = {
-                    ...this.cycle,
+                this.form.patchValue({
                     name: this.cycle.name || '',
+                    code: this.cycle.code || '',
+                    description: this.cycle.description || '',
                     hasOptions: this.cycle.hasOptions || false,
                     order: this.cycle.order || 0
-                };
-                this.form.patchValue(patch as any);
+                });
             } else {
-                this.form.reset({ order: 0, hasOptions: false });
+                this.form.reset({ order: 0, hasOptions: false, code: '', description: '' });
             }
         }
     }
 
     save() {
-        const payload: any = { ...this.form.value };
+        const rawValue = this.form.getRawValue();
+        const payload: any = { 
+            ...rawValue,
+            code: rawValue.code?.toUpperCase() // Force uppercase for industrial consistency
+        };
         if (this.cycle && this.cycle.id) {
             payload.id = this.cycle.id;
         }

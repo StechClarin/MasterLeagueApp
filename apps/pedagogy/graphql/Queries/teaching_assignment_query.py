@@ -18,13 +18,17 @@ class TeachingAssignmentQuery(graphene.ObjectType):
 
     def resolve_teaching_assignment(root, info, id):
         try:
-            return TeachingAssignment.objects.get(pk=id)
+            queryset = TeachingAssignment.objects.filter(pk=id)
+            if hasattr(info.context, 'establishment_id') and info.context.establishment_id:
+                queryset = queryset.filter(establishment_id=info.context.establishment_id)
+            return queryset.get()
         except TeachingAssignment.DoesNotExist:
             return None
 
     def resolve_teaching_assignments(root, info, search=None, page=1, page_size=10, **kwargs):
-        # Default ordering by academic year (desc) and classroom
-        queryset = TeachingAssignment.objects.all().order_by('-academic_year__start_date', 'classroom__name')
+        from apps.core.graphql.utils.queryset_filter import get_context_filtered_queryset
+        queryset = get_context_filtered_queryset(TeachingAssignment, info, order_by='-academic_year__start_date')
+        queryset = queryset.order_by('-academic_year__start_date', 'classroom__name')
 
         if search:
             queryset = queryset.filter(

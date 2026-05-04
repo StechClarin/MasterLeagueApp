@@ -25,7 +25,7 @@ import { CommonModule } from '@angular/common';
 })
 export class UiModalComponent {
   @Input() isOpen = false;
-  @Input() maxWidth = 'sm:max-w-lg';
+  @Input() maxWidth = 'sm:max-w-5xl'; // Centralisé pour tous les formulaires
   @Output() close = new EventEmitter<void>();
 
   onClose() {

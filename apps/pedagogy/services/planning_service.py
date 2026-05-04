@@ -1,5 +1,6 @@
 from apps.core.services.BaseService import BaseService
 from ..models import Planning
+from uuid import UUID
 
 class PlanningService(BaseService):
     model = Planning
@@ -20,21 +21,40 @@ class PlanningService(BaseService):
                 
                 # Classe
                 if 'classe_id' in detail:
-                    detail['classe'] = detail.pop('classe_id')
+                    from apps.structure.models.classroom import ClassRoom
+                    val = detail.pop('classe_id')
+                    if isinstance(val, (str, UUID)):
+                        detail['classe'] = ClassRoom.objects.get(id=val)
+                    else:
+                        detail['classe'] = val
                 
                 # Matiere
                 if 'matiere_id' in detail:
-                    detail['matiere'] = detail.pop('matiere_id')
+                    from apps.structure.models.subject import Subject
+                    val = detail.pop('matiere_id')
+                    if isinstance(val, (str, UUID)):
+                        detail['matiere'] = Subject.objects.get(id=val)
+                    else:
+                        detail['matiere'] = val
                 
                 # Enseignant
                 if 'enseignant_id' in detail:
-                    detail['enseignant'] = detail.pop('enseignant_id')
+                    from apps.hr.models.personnel import Personnel
+                    val = detail.pop('enseignant_id')
+                    if isinstance(val, (str, UUID)):
+                        detail['enseignant'] = Personnel.objects.get(id=val)
+                    else:
+                        detail['enseignant'] = val
                     
                 # Salle (Optionnel)
                 if 'salle_id' in detail:
+                    from apps.structure.models.room import Room
                     val = detail.pop('salle_id')
-                    if val: # Seulement si non null
-                        detail['salle'] = val
+                    if val:
+                        if isinstance(val, (str, UUID)):
+                            detail['salle'] = Room.objects.get(id=val)
+                        else:
+                            detail['salle'] = val
 
         return data
 

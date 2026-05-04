@@ -21,6 +21,10 @@ fragment FeeDefinitionFields on FeeDefinitionType {
     lastName
     matricule
   }
+  option {
+    id
+    name
+  }
   classroom {
     id
     name
@@ -74,7 +78,7 @@ fragment PaymentFields on PaymentType {
   }
 }
 
-query GetFeeDefinitions($search: String, $levelId: Int, $page: Int, $pageSize: Int) {
+query GetFeeDefinitions($search: String, $levelId: ID, $page: Int, $pageSize: Int) {
   feeDefinitions(search: $search, levelId: $levelId, page: $page, pageSize: $pageSize) {
     totalCount
     numPages
@@ -86,7 +90,7 @@ query GetFeeDefinitions($search: String, $levelId: Int, $page: Int, $pageSize: I
   }
 }
 
-query GetInvoices($search: String, $studentId: Int, $status: String, $category: String, $classroomId: Int, $page: Int, $pageSize: Int) {
+query GetInvoices($search: String, $studentId: ID, $status: String, $category: String, $classroomId: ID, $page: Int, $pageSize: Int) {
   invoices(search: $search, studentId: $studentId, status: $status, category: $category, classroomId: $classroomId, page: $page, pageSize: $pageSize) {
     totalCount
     numPages
@@ -98,7 +102,7 @@ query GetInvoices($search: String, $studentId: Int, $status: String, $category: 
   }
 }
 
-query GetPayments($invoiceId: Int, $page: Int, $pageSize: Int) {
+query GetPayments($invoiceId: ID, $page: Int, $pageSize: Int) {
   payments(invoiceId: $invoiceId, page: $page, pageSize: $pageSize) {
     totalCount
     numPages

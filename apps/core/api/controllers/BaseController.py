@@ -25,7 +25,20 @@ class BaseController(APIView):
         if not self.service_class or not self.serializer_class:
             raise NotImplementedError("Les attributs 'service_class' et 'serializer_class' doivent être définis.")
         self.service = self.service_class()
-        self.serializer = self.serializer_class
+
+    def get_serializer_class(self, action='read'):
+        """
+        Retourne la classe du serializer à utiliser.
+        Peut être surchargé par les enfants pour utiliser des serializers différents
+        selon l'action (read vs write).
+        """
+        return self.serializer_class
+
+    @property
+    def serializer(self):
+        # On détermine si on est en lecture ou écriture
+        action = 'write' if self.request.method in ['POST', 'PUT', 'PATCH'] else 'read'
+        return self.get_serializer_class(action)
 
     def initial(self, request, *args, **kwargs):
         """
@@ -119,6 +132,13 @@ class BaseController(APIView):
         
         page = paginator.paginate_queryset(queryset, request, view=self)
         
+        # 2. Pagination
+        from rest_framework.pagination import PageNumberPagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 10 # Défaut, peut être surchargé via settings
+        
+        page = paginator.paginate_queryset(queryset, request, view=self)
+        
         if page is not None:
             serializer = self.serializer(page, many=True)
             # On conserve notre structure de réponse standard "Envelope"
@@ -132,6 +152,25 @@ class BaseController(APIView):
         # Fallback si pagination désactivée (peu probable ici)
         data = self.serializer(queryset, many=True).data
         return self.success_response(data, "Liste récupérée avec succès.", status.HTTP_200_OK)
+
+    def get_by_id(self, request, pk, *args, **kwargs):
+        """
+        Récupère un objet par son ID.
+        """
+        # Vérification Permission : VIEW
+        self.check_membership_permissions(request, 'view')
+
+        try:
+            instance = self.service.get_by_id(pk)
+            # On utilise le serializer de lecture
+            read_serializer_class = self.get_serializer_class(action='read')
+            data = read_serializer_class(instance).data
+            return self.success_response(data, "Objet récupéré avec succès.", status.HTTP_200_OK)
+        except Exception as e:
+            from django.http import Http404
+            if isinstance(e, Http404):
+                return Response({"detail": "Objet non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def save(self, request, pk=None, *args, **kwargs):
         """
@@ -194,7 +233,9 @@ class BaseController(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         # 4. RÉPONSE
-        data = self.serializer(result).data
+        # On utilise le serializer de lecture pour la réponse
+        read_serializer_class = self.get_serializer_class(action='read')
+        data = read_serializer_class(result).data
         return self.success_response(data, message, status_code)
 
     def delete(self, request, pk, *args, **kwargs):

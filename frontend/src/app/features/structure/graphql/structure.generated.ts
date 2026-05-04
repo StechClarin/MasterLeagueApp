@@ -7,13 +7,13 @@ export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id
 
 export type AcademicYearFieldsFragment = { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: any, startDate?: any | null, cycle: { __typename?: 'CycleType', id: any } } | null> | null };
 
-export type CycleFieldsFragment = { __typename?: 'CycleType', id: any, name: string, order: number, isActive: boolean, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } };
+export type CycleFieldsFragment = { __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } };
 
-export type OptionFieldsFragment = { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } };
+export type OptionFieldsFragment = { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } };
 
 export type LevelFieldsFragment = { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } };
 
-export type ClassRoomFieldsFragment = { __typename?: 'ClassRoomType', id: any, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }, option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } };
+export type ClassRoomFieldsFragment = { __typename?: 'ClassRoomType', id: any, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }, option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } };
 
 export type LevelSubjectFieldsFragment = { __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null };
 
@@ -23,7 +23,7 @@ export type AcademicPeriodFieldsFragment = { __typename?: 'AcademicPeriodType', 
 
 export type RoomFieldsFragment = { __typename?: 'RoomType', id: any, name: string, capacity?: number | null };
 
-export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: any, name: string, order: number, isActive: boolean, hasOptions: boolean, levels: Array<{ __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null };
+export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, levels: Array<{ __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null };
 
 export type GetAllEstablishmentsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -71,7 +71,7 @@ export type GetAllCyclesQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllCyclesQuery = { __typename?: 'Query', cycles?: { __typename?: 'CycleTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'CycleType', id: any, name: string, order: number, isActive: boolean, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
+export type GetAllCyclesQuery = { __typename?: 'Query', cycles?: { __typename?: 'CycleTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
 
 export type GetAllLevelsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -93,14 +93,14 @@ export type GetAllClassRoomsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllClassRoomsQuery = { __typename?: 'Query', classrooms?: { __typename?: 'ClassRoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'ClassRoomType', id: any, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }, option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } } | null> | null } | null };
+export type GetAllClassRoomsQuery = { __typename?: 'Query', classrooms?: { __typename?: 'ClassRoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'ClassRoomType', id: any, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }, option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } } | null> | null } | null };
 
 export type GetClassRoomByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetClassRoomByIdQuery = { __typename?: 'Query', classroom?: { __typename?: 'ClassRoomType', id: any, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }, option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } } | null };
+export type GetClassRoomByIdQuery = { __typename?: 'Query', classroom?: { __typename?: 'ClassRoomType', id: any, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }, option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } } | null };
 
 export type GetAllSubjectsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -140,19 +140,19 @@ export type GetAllOptionsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllOptionsQuery = { __typename?: 'Query', options?: { __typename?: 'OptionTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null> | null } | null };
+export type GetAllOptionsQuery = { __typename?: 'Query', options?: { __typename?: 'OptionTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null> | null } | null };
 
 export type GetOptionByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetOptionByIdQuery = { __typename?: 'Query', option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null };
+export type GetOptionByIdQuery = { __typename?: 'Query', option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null };
 
 export type GetActiveStructureQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetActiveStructureQuery = { __typename?: 'Query', activeStructure?: { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: any, name: string, order: number, isActive: boolean, hasOptions: boolean, levels: Array<{ __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
+export type GetActiveStructureQuery = { __typename?: 'Query', activeStructure?: { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, levels: Array<{ __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
 
 export const EstablishmentFieldsFragmentDoc = gql`
     fragment EstablishmentFields on EstablishmentType {
@@ -217,6 +217,10 @@ export const OptionFieldsFragmentDoc = gql`
   name
   code
   isActive
+  cycle {
+    id
+    name
+  }
   parent {
     id
     name
@@ -296,6 +300,8 @@ export const CycleFieldsFragmentDoc = gql`
     fragment CycleFields on CycleType {
   id
   name
+  code
+  description
   order
   isActive
   hasOptions

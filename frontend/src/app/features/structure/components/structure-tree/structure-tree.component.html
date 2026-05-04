@@ -35,6 +35,25 @@
             [isOpen]="isFiltersOpen()"
             [form]="(activeTab() === 'cycles' ? cycleList?.filterForm : levelList?.filterForm) || fallbackForm"
             (reset)="activeTab() === 'cycles' ? cycleList?.resetFilters() : levelList?.resetFilters()">
+            
+            <ng-container *ngIf="activeTab() === 'levels' && levelList?.filterForm as levelFilterForm">
+                <div [formGroup]="levelFilterForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    <div class="space-y-1.5">
+                        <label for="filter-cycle" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Cycle</label>
+                        <select id="filter-cycle" formControlName="cycleId"
+                            class="block w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                            <option value="">Tous les cycles</option>
+                            <option *ngFor="let cycle of (levelList!.cycles$ | async) || []" [value]="cycle?.id">{{ cycle?.name }}</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="filter-abrev" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Abréviation</label>
+                        <input type="text" id="filter-abrev" formControlName="shortName" placeholder="Ex: 6ème"
+                            class="block w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                    </div>
+                </div>
+            </ng-container>
+
         </app-ui-filter-panel>
     </ng-container>
 

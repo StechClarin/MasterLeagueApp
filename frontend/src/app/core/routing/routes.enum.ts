@@ -3,12 +3,13 @@
 
 export enum AppRoutes {
   ETABLISSEMENTS = '/establishments',
-  ANNEES_SCOLAIRES = '/years',
   CYCLES_AND_NIVEAUX = '/tree',
+  ANNEES_SCOLAIRES = '/years',
   OPTIONS__FILIERES = '/options',
   CLASSES = '/classes',
   MATIERES = '/subjects',
   PERIODES_ACADEMIQUES = '/academic-periods',
+  SALLES = '/rooms',
   APPRENANTS_ELEVES = '/students',
   INSCRIPTIONS = '/enrollments',
   EMPLOI_DU_TEMPS = '/timetable',

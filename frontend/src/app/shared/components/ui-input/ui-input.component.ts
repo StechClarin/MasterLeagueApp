@@ -15,16 +15,31 @@ import { AbstractControl, ControlValueAccessor, FormControl, NgControl, Reactive
       <!-- Description -->
       <p *ngIf="description" class="text-xs text-gray-500 mb-2" [ngClass]="{'text-slate-400': theme === 'dark'}">{{ description }}</p>
 
-      <input
-        [id]="'input-' + label"
-        [type]="type"
-        [formControl]="control"
-        [placeholder]="placeholder"
-        [min]="min"
-        [readOnly]="readonly"
-        [ngClass]="inputClasses"
-        (blur)="onBlur()"
-      />
+      <!-- Input or Textarea -->
+      <ng-container *ngIf="type !== 'textarea'; else textareaTmpl">
+        <input
+          [id]="'input-' + label"
+          [type]="type"
+          [formControl]="control"
+          [placeholder]="placeholder"
+          [min]="min"
+          [readOnly]="readonly"
+          [ngClass]="inputClasses"
+          (blur)="onBlur()"
+        />
+      </ng-container>
+
+      <ng-template #textareaTmpl>
+        <textarea
+          [id]="'input-' + label"
+          [formControl]="control"
+          [placeholder]="placeholder"
+          [readOnly]="readonly"
+          [rows]="rows"
+          [ngClass]="inputClasses"
+          (blur)="onBlur()"
+        ></textarea>
+      </ng-template>
       
       <!-- Helper Text -->
       <p *ngIf="helper" class="mt-1 text-xs text-gray-500" [ngClass]="{'text-slate-400': theme === 'dark'}">{{ helper }}</p>
@@ -52,16 +67,17 @@ export class UiInputComponent implements ControlValueAccessor, OnInit {
   @Input() helper: string = '';
   @Input() description: string = '';
   @Input() min: string = '';
+  @Input() rows: number = 3;
 
   get labelClasses(): string {
     return this.theme === 'dark' ? 'text-slate-300' : 'text-gray-700';
   }
 
   get inputClasses(): string {
-    const base = 'block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors read-only:cursor-default read-only:opacity-75';
+    const base = 'block w-full px-4 py-2.5 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm transition-all read-only:cursor-default read-only:opacity-75';
     return this.theme === 'dark'
       ? base + ' bg-slate-800 border-slate-700 text-white placeholder-slate-500 read-only:bg-slate-900'
-      : base + ' border-gray-300 text-gray-900 placeholder-gray-400 read-only:bg-gray-100';
+      : base + ' border-gray-200 text-gray-900 placeholder-gray-400 read-only:bg-gray-50';
   }
 
 

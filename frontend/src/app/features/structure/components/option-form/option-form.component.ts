@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { OptionService } from '../../services/option.service';
+import { CycleService } from '../../services/cycle.service';
 import { OptionType } from '@app/graphql/types';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
@@ -24,11 +25,13 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
     @Input() option: OptionType | null = null;
     @Input() isReadOnly = false;
 
+    cycles: any[] = [];
     parentOptions: any[] = [];
 
     override form = this.fb.nonNullable.group({
         name: ['', [Validators.required]],
         code: ['', [Validators.required]],
+        cycleId: [null as string | null],
         parentId: [null as string | null]
     });
 
@@ -38,7 +41,29 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
 
     override ngOnInit() {
         super.ngOnInit();
-        this.loadParentOptions();
+        this.loadCycles();
+        
+        // Réagir au changement de cycle pour filtrer les parents
+        this.form.controls.cycleId.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            this.loadParentOptions();
+            // Reset parent if cycle changes to avoid cross-cycle parents
+            this.form.controls.parentId.setValue(null);
+        });
+    }
+
+    private loadCycles() {
+        const cycleService = inject(CycleService);
+        cycleService.getAllCycles().valueChanges.pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+            const items = res.data.cycles?.items || [];
+            this.cycles = items
+                .filter((c: any) => !!c && c.hasOptions) // On ne montre que les cycles qui acceptent des options
+                .map((c: any) => ({
+                    value: c!.id,
+                    label: c!.name
+                }));
+            this.cdr.markForCheck();
+            this.loadParentOptions(); // Load initial parents
+        });
     }
 
     ngOnDestroy() {
@@ -47,11 +72,14 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
     }
 
     private loadParentOptions() {
-        // Obtenir toutes les options qui n'ont pas de parent (filières principales)
-        this.service.getAll(undefined, undefined).pipe(takeUntil(this.destroy$)).subscribe(res => {
+        const selectedCycleId = this.form.controls.cycleId.value;
+        
+        // Obtenir toutes les filières qui pourraient être parentes
+        // On filtre par cycle pour garder une hiérarchie cohérente
+        this.service.getAll(undefined, selectedCycleId || undefined).pipe(takeUntil(this.destroy$)).subscribe(res => {
             const items = res.data.options?.items || [];
             this.parentOptions = items
-                .filter(o => !!o && !o.parent && o.id !== this.option?.id) // Exclure les sous-options et soi-même
+                .filter(o => !!o && !o.parent && o.id !== this.option?.id) 
                 .map(o => ({
                     value: o!.id,
                     label: o!.name
@@ -65,10 +93,11 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
             this.form.patchValue({
                 name: this.option.name || '',
                 code: this.option.code || '',
+                cycleId: this.option.cycle?.id || null,
                 parentId: this.option.parent?.id || null
             } as any);
         } else if (changes['option'] && !this.option) {
-            this.form.reset({ parentId: null });
+            this.form.reset({ parentId: null, cycleId: null });
         }
 
         if (changes['isReadOnly']) {
@@ -81,10 +110,12 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
     }
 
     save() {
+        const rawValues = this.form.getRawValue();
         const payload: any = {
-            name: this.form.getRawValue().name,
-            code: this.form.getRawValue().code,
-            parent: this.form.getRawValue().parentId
+            name: rawValues.name,
+            code: rawValues.code?.toUpperCase(),
+            cycle: rawValues.cycleId,
+            parent: rawValues.parentId
         };
 
         if (this.option?.id) {

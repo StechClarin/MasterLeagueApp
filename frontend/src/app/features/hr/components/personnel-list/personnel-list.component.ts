@@ -69,6 +69,7 @@ export class PersonnelListComponent extends BaseModalListComponent<any> implemen
             this.tableColumns = [
                 { header: 'Utilisateur', template: this.userCell, key: 'user', sortable: true },
                 { header: 'Matricule', key: 'matricule', sortable: true },
+                { header: 'Genre', key: 'gender', sortable: true },
                 { header: 'Poste', key: 'jobTitle', sortable: true },
                 { header: 'Contrat', key: 'contractType', format: (row: any) => row.contractType?.code || '-' },
                 { header: 'Email Pro', key: 'emailPro' },
@@ -238,7 +239,7 @@ export class PersonnelListComponent extends BaseModalListComponent<any> implemen
      * Bascule le statut actif/inactif d'un membre du personnel.
      * Déclenche automatiquement la mise à jour des accès (Membership).
      */
-    toggleStatus(item: any) {
+    override toggleStatus(item: any) {
         const action = item.isActive ? 'désactivation' : 'activation';
         this.isLoading.set(true);
 

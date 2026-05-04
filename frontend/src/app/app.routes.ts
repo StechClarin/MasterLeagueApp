@@ -17,6 +17,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/evaluations/components/evaluation-planning-print/evaluation-planning-print.component')
       .then(m => m.EvaluationPlanningPrintComponent)
   },
+  {
+    path: 'print/receipt/:id',
+    loadComponent: () => import('@features/finance/components/payment-receipt/payment-receipt.component')
+      .then(m => m.PaymentReceiptComponent)
+  },
+  {
+    path: 'print/invoice/:id',
+    loadComponent: () => import('@features/finance/components/invoice-receipt/invoice-receipt.component')
+      .then(m => m.InvoiceReceiptComponent)
+  },
 
   // --- ZONE PROTÉGÉE (Layout Admin) ---
   {

@@ -59,7 +59,8 @@ export class OptionListComponent extends BaseModalListComponent<OptionType> impl
             this.tableColumns = [
                 { header: 'Nom / Spécialité', template: this.nameCell },
                 { header: 'Code', key: 'code' },
-                { header: 'Filière Parente', template: this.parentCell }
+                { header: 'Cycle', template: this.parentCell }, 
+                { header: 'Statut', key: 'isActive' }
             ];
             this.cdr.detectChanges();
         });
@@ -119,5 +120,22 @@ export class OptionListComponent extends BaseModalListComponent<OptionType> impl
     resetFilters() {
         this.searchControl.setValue('');
         this.filterForm.reset();
+    }
+
+    /**
+     * Bascule le statut actif/inactif d'une filière.
+     */
+    override toggleStatus(item: any) {
+        this.isLoading.set(true);
+        this.service.status(item.id).subscribe({
+            next: () => {
+                this.refresh();
+                this.toastService.success('Statut de la filière mis à jour.');
+            },
+            error: () => {
+                this.isLoading.set(false);
+                this.toastService.error('Erreur lors du changement de statut.');
+            }
+        });
     }
 }

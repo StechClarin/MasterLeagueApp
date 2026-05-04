@@ -25,7 +25,9 @@ export type AcademicCycleConfigType = {
   academicYear: AcademicYearType;
   createdByUser?: Maybe<UserType>;
   cycle: CycleType;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['UUID']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   /** Date de rentrée spécifique pour ce cycle. Si vide, utilise la date de l'année. */
   startDate?: Maybe<Scalars['Date']['output']>;
   updatedByUser?: Maybe<UserType>;
@@ -36,12 +38,14 @@ export type AcademicPeriodType = {
   academicYear: AcademicYearType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   endDate: Scalars['Date']['output'];
   establishment: EstablishmentType;
   evaluationSessions: Array<EvaluationSessionType>;
   id: Scalars['UUID']['output'];
   /** Définit si c'est la période de saisie actuelle */
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   startDate: Scalars['Date']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -63,6 +67,7 @@ export type AcademicYearType = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   cycleConfigs?: Maybe<Array<Maybe<AcademicCycleConfigType>>>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   end_date?: Maybe<Scalars['Date']['output']>;
   enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
@@ -71,6 +76,7 @@ export type AcademicYearType = {
   /** L'année en cours */
   isActive: Scalars['Boolean']['output'];
   isArchived: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   pedagogyAssignments: Array<TeachingAssignmentType>;
   periods: Array<AcademicPeriodType>;
@@ -94,19 +100,21 @@ export type ClassRoomType = {
   capacity: Scalars['Int']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
   evaluationPlannings: Array<EvaluationPlanningType>;
+  evaluationSubjects: Array<EvaluationSubjectType>;
   groupFees: Array<FeeDefinitionType>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   level: LevelType;
   mainTeacher?: Maybe<UserType>;
   name: Scalars['String']['output'];
   option?: Maybe<OptionType>;
   pedagogyAssignments: Array<TeachingAssignmentType>;
   planningDetails: Array<PlanningDetailType>;
-  supervisions: Array<EvaluationSupervisionType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
 };
@@ -124,9 +132,11 @@ export type ContractTypeType = {
   __typename?: 'ContractTypeType';
   code: Scalars['String']['output'];
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   designation: Scalars['String']['output'];
   id: Scalars['UUID']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   personnels: Array<PersonnelType>;
   updatedByUser?: Maybe<UserType>;
 };
@@ -140,17 +150,34 @@ export type ContractTypeTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+/** An enumeration. */
+export enum CoreEstablishmentMembershipStatusChoices {
+  /** Actif */
+  Active = 'ACTIVE',
+  /** Inactif */
+  Inactive = 'INACTIVE',
+  /** Invité */
+  Invited = 'INVITED',
+  /** Révoqué */
+  Revoked = 'REVOKED'
+}
+
 export type CycleType = {
   __typename?: 'CycleType';
   academicConfigs: Array<AcademicCycleConfigType>;
+  code?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
   hasOptions: Scalars['Boolean']['output'];
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   levels: Array<LevelType>;
   name: Scalars['String']['output'];
+  options: Array<OptionType>;
   order: Scalars['Int']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
@@ -169,9 +196,14 @@ export type DashboardType = {
   __typename?: 'DashboardType';
   averageGrade?: Maybe<Scalars['Float']['output']>;
   gradeEvolution?: Maybe<Array<Maybe<EvolutionPointType>>>;
+  paymentMethodsDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
+  revenueEvolution?: Maybe<Array<Maybe<EvolutionPointType>>>;
   studentDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
+  topStudents?: Maybe<Array<Maybe<StudentPerformanceType>>>;
   totalActiveEvaluations?: Maybe<Scalars['Int']['output']>;
   totalClassrooms?: Maybe<Scalars['Int']['output']>;
+  totalPending?: Maybe<Scalars['Float']['output']>;
+  totalRevenue?: Maybe<Scalars['Float']['output']>;
   totalStaff?: Maybe<Scalars['Int']['output']>;
   totalStudents?: Maybe<Scalars['Int']['output']>;
 };
@@ -179,20 +211,22 @@ export type DashboardType = {
 export type DistributionPointType = {
   __typename?: 'DistributionPointType';
   category?: Maybe<Scalars['String']['output']>;
-  count?: Maybe<Scalars['Int']['output']>;
+  count?: Maybe<Scalars['Float']['output']>;
 };
 
 export type DocumentType = {
   __typename?: 'DocumentType';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   documentType: DocumentsDocumentDocumentTypeChoices;
   establishment: EstablishmentType;
   file: Scalars['String']['output'];
   fileUrl?: Maybe<Scalars['String']['output']>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
-  objectId: Scalars['Int']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  objectId: Scalars['String']['output'];
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
   updatedByUser?: Maybe<UserType>;
@@ -221,11 +255,13 @@ export type EnrollmentType = {
   classroom: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   enrollmentDate: Scalars['Date']['output'];
   establishment: EstablishmentType;
   id: Scalars['UUID']['output'];
   invoices: Array<InvoiceType>;
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   isRepeater: Scalars['Boolean']['output'];
   status: StudentsEnrollmentStatusChoices;
   student: StudentType;
@@ -237,6 +273,30 @@ export type EnrollmentTypePaginated = {
   __typename?: 'EnrollmentTypePaginated';
   currentPage?: Maybe<Scalars['Int']['output']>;
   items?: Maybe<Array<Maybe<EnrollmentType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type EstablishmentMembershipType = {
+  __typename?: 'EstablishmentMembershipType';
+  createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  establishment: EstablishmentType;
+  id: Scalars['UUID']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  /** Le propriétaire a tous les droits sur l'établissement */
+  isOwner: Scalars['Boolean']['output'];
+  roles: Array<RoleType>;
+  status: CoreEstablishmentMembershipStatusChoices;
+  updatedByUser?: Maybe<UserType>;
+  user: UserType;
+};
+
+export type EstablishmentMembershipTypePaginated = {
+  __typename?: 'EstablishmentMembershipTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<EstablishmentMembershipType>>>;
   numPages?: Maybe<Scalars['Int']['output']>;
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
@@ -254,6 +314,7 @@ export type EstablishmentType = {
   createdAt: Scalars['DateTime']['output'];
   createdByUser?: Maybe<UserType>;
   cycleSet: Array<CycleType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   documentSet: Array<DocumentType>;
   email?: Maybe<Scalars['String']['output']>;
   enrollmentSet: Array<EnrollmentType>;
@@ -268,9 +329,11 @@ export type EstablishmentType = {
   id: Scalars['UUID']['output'];
   invoiceSet: Array<InvoiceType>;
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   levelSet: Array<LevelType>;
   levelsubjectSet: Array<LevelSubjectType>;
   logo?: Maybe<Scalars['String']['output']>;
+  memberships: Array<EstablishmentMembershipType>;
   name: Scalars['String']['output'];
   optionSet: Array<OptionType>;
   paymentSet: Array<PaymentType>;
@@ -291,7 +354,6 @@ export type EstablishmentType = {
   updatedAt: Scalars['DateTime']['output'];
   updatedByUser?: Maybe<UserType>;
   user?: Maybe<UserType>;
-  users: Array<UserType>;
   website?: Maybe<Scalars['String']['output']>;
 };
 
@@ -310,14 +372,17 @@ export type EvaluationPlanningType = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   date: Scalars['Date']['output'];
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   /** Durée de l'épreuve en minutes */
   durationMinutes?: Maybe<Scalars['Int']['output']>;
   establishment: EstablishmentType;
   evaluationSubject: EvaluationSubjectType;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   /** Niveaux concernés par cette planification */
   levels: Array<LevelType>;
+  rooms: Array<RoomType>;
   startTime?: Maybe<Scalars['Time']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
@@ -337,10 +402,12 @@ export type EvaluationSessionType = {
   academicPeriod: AcademicPeriodType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   evaluationType: EvaluationTypeType;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   scope: EvaluationsEvaluationSessionScopeChoices;
   status: EvaluationsEvaluationSessionStatusChoices;
   subjects: Array<EvaluationSubjectType>;
@@ -361,13 +428,16 @@ export type EvaluationSessionTypePaginated = {
 
 export type EvaluationSubjectType = {
   __typename?: 'EvaluationSubjectType';
+  classrooms: Array<ClassRoomType>;
   coefficient?: Maybe<Scalars['Decimal']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   grades: Array<GradeType>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   levelCoefficients?: Maybe<Array<Maybe<LevelCoefficientType>>>;
   /** Niveaux concernés par cette épreuve */
   levels: Array<LevelType>;
@@ -383,13 +453,15 @@ export type EvaluationSubjectType = {
 
 export type EvaluationSupervisionType = {
   __typename?: 'EvaluationSupervisionType';
-  classroom: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   date: Scalars['Date']['output'];
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  room?: Maybe<RoomType>;
   session: EvaluationSessionType;
   supervisors: Array<PersonnelType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -402,11 +474,13 @@ export type EvaluationTypeType = {
   code?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
   evaluationSessions: Array<EvaluationSessionType>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
@@ -461,15 +535,20 @@ export type FeeDefinitionType = {
   classroom?: Maybe<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  /** Format: [{'tranche': 1, 'amount': 50000}, {'tranche': 2, 'amount': 25000}] */
+  customInstallments?: Maybe<Scalars['JSONString']['output']>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   id: Scalars['UUID']['output'];
   /** Nombre de tranches si applicable */
   installmentCount: Scalars['Int']['output'];
   installmentPeriod?: Maybe<FinanceFeeDefinitionInstallmentPeriodChoices>;
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   isRequired: Scalars['Boolean']['output'];
   level: LevelType;
   name: Scalars['String']['output'];
+  option?: Maybe<OptionType>;
   paymentModality: FinanceFeeDefinitionPaymentModalityChoices;
   students: Array<StudentType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -560,12 +639,14 @@ export type GradeType = {
   comment?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   evaluationSubject?: Maybe<EvaluationSubjectType>;
   id: Scalars['UUID']['output'];
   /** Marquer si l'élève était absent à l'évaluation */
   isAbsent: Scalars['Boolean']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   student: StudentType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
@@ -586,10 +667,12 @@ export type GuardianType = {
   __typename?: 'GuardianType';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   firstName?: Maybe<Scalars['String']['output']>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   lastName?: Maybe<Scalars['String']['output']>;
   phoneNumber: Scalars['String']['output'];
   profession?: Maybe<Scalars['String']['output']>;
@@ -608,11 +691,20 @@ export type GuardianTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+/** An enumeration. */
+export enum HrPersonnelGenderChoices {
+  /** Féminin */
+  F = 'F',
+  /** Masculin */
+  M = 'M'
+}
+
 export type InvoiceType = {
   __typename?: 'InvoiceType';
   category: FinanceInvoiceCategoryChoices;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   dueDate?: Maybe<Scalars['Date']['output']>;
   enrollment?: Maybe<EnrollmentType>;
   establishment: EstablishmentType;
@@ -620,8 +712,11 @@ export type InvoiceType = {
   /** Nombre de tranches prévu pour ce frais */
   installmentCount: Scalars['Int']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   paidAmount: Scalars['Decimal']['output'];
   payments: Array<PaymentType>;
+  /** Nombre de fois que la facture/reçu a été imprimée */
+  printCount: Scalars['Int']['output'];
   reference?: Maybe<Scalars['String']['output']>;
   remainingAmount?: Maybe<Scalars['Decimal']['output']>;
   status: FinanceInvoiceStatusChoices;
@@ -652,11 +747,13 @@ export type LevelSubjectType = {
   coefficient: Scalars['Decimal']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   /** Volume horaire annuel */
   hourlyQuota: Scalars['Int']['output'];
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   level: LevelType;
   option?: Maybe<OptionType>;
   subject: SubjectType;
@@ -671,6 +768,7 @@ export type LevelType = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   cycle: CycleType;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   /** Niveaux concernés par cette planification */
   evaluationPlannings: Array<EvaluationPlanningType>;
@@ -679,6 +777,7 @@ export type LevelType = {
   fees: Array<FeeDefinitionType>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   levelSubjects: Array<LevelSubjectType>;
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
@@ -704,11 +803,13 @@ export type LevelTypePaginated = {
 export type ModuleType = {
   __typename?: 'ModuleType';
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   /** ex: card-view, list-view */
   displayMod: Scalars['String']['output'];
   /** Nom de l'icône (ex: pascal-icon-dashboard) */
   icon: Scalars['String']['output'];
   id: Scalars['UUID']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
   pages?: Maybe<Array<Maybe<PageType>>>;
@@ -722,9 +823,13 @@ export type OptionType = {
   code?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  cycle?: Maybe<CycleType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
+  fees: Array<FeeDefinitionType>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   levelSubjects: Array<LevelSubjectType>;
   name: Scalars['String']['output'];
   parent?: Maybe<OptionType>;
@@ -744,9 +849,11 @@ export type OptionTypePaginated = {
 export type PageType = {
   __typename?: 'PageType';
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   /** Nom de l'icône (ex: client-icon) */
   icon: Scalars['String']['output'];
   id: Scalars['UUID']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   /** Lien React (ex: /clients) */
   link: Scalars['String']['output'];
   module: ModuleType;
@@ -762,10 +869,12 @@ export type PaymentType = {
   amount: Scalars['Decimal']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   id: Scalars['UUID']['output'];
   invoice: InvoiceType;
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   note: Scalars['String']['output'];
   paymentDate: Scalars['DateTime']['output'];
   paymentMethod: FinancePaymentPaymentMethodChoices;
@@ -789,7 +898,9 @@ export type PermissionType = {
   __typename?: 'PermissionType';
   codename: Scalars['String']['output'];
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['UUID']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   roles: Array<RoleType>;
   tag: Scalars['String']['output'];
@@ -803,10 +914,13 @@ export type PersonnelType = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   dateHired?: Maybe<Scalars['Date']['output']>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   emailPro?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
+  gender: HrPersonnelGenderChoices;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   jobTitle: Scalars['String']['output'];
   matricule: Scalars['String']['output'];
   paymentSet: Array<PaymentType>;
@@ -835,12 +949,14 @@ export type PlanningDetailType = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   date: Scalars['Date']['output'];
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   enseignant: PersonnelType;
   establishment: EstablishmentType;
   heureDebut: Scalars['Time']['output'];
   heureFin: Scalars['Time']['output'];
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   matiere: SubjectType;
   planning: PlanningType;
   salle?: Maybe<RoomType>;
@@ -863,10 +979,12 @@ export type PlanningType = {
   createdByUser?: Maybe<UserType>;
   dateEnd?: Maybe<Scalars['Date']['output']>;
   dateStart?: Maybe<Scalars['Date']['output']>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   details: Array<PlanningDetailType>;
   establishment: EstablishmentType;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   isTemplate: Scalars['Boolean']['output'];
   nom: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -911,6 +1029,8 @@ export type Query = {
   invoices?: Maybe<InvoiceTypePaginated>;
   level?: Maybe<LevelType>;
   levels?: Maybe<LevelTypePaginated>;
+  membership?: Maybe<EstablishmentMembershipType>;
+  memberships?: Maybe<EstablishmentMembershipTypePaginated>;
   modules?: Maybe<Array<Maybe<ModuleType>>>;
   option?: Maybe<OptionType>;
   options?: Maybe<OptionTypePaginated>;
@@ -1051,14 +1171,14 @@ export type QueryEvaluationSessionArgs = {
 
 
 export type QueryEvaluationSessionsArgs = {
-  classroomId?: InputMaybe<Scalars['Int']['input']>;
-  evaluationTypeId?: InputMaybe<Scalars['Int']['input']>;
-  levelId?: InputMaybe<Scalars['Int']['input']>;
+  classroomId?: InputMaybe<Scalars['ID']['input']>;
+  evaluationTypeId?: InputMaybe<Scalars['ID']['input']>;
+  levelId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
-  periodId?: InputMaybe<Scalars['Int']['input']>;
+  periodId?: InputMaybe<Scalars['ID']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-  subjectId?: InputMaybe<Scalars['Int']['input']>;
+  subjectId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -1070,7 +1190,7 @@ export type QueryEvaluationTypesArgs = {
 
 
 export type QueryFeeDefinitionsArgs = {
-  levelId?: InputMaybe<Scalars['Int']['input']>;
+  levelId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -1078,13 +1198,13 @@ export type QueryFeeDefinitionsArgs = {
 
 
 export type QueryGradesArgs = {
-  academicPeriodId?: InputMaybe<Scalars['Int']['input']>;
-  classroomId?: InputMaybe<Scalars['Int']['input']>;
-  evaluationSessionId?: InputMaybe<Scalars['Int']['input']>;
-  evaluationSubjectId?: InputMaybe<Scalars['Int']['input']>;
+  academicPeriodId?: InputMaybe<Scalars['ID']['input']>;
+  classroomId?: InputMaybe<Scalars['ID']['input']>;
+  evaluationSessionId?: InputMaybe<Scalars['ID']['input']>;
+  evaluationSubjectId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
-  studentId?: InputMaybe<Scalars['Int']['input']>;
+  studentId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -1102,12 +1222,12 @@ export type QueryGuardiansArgs = {
 
 export type QueryInvoicesArgs = {
   category?: InputMaybe<Scalars['String']['input']>;
-  classroomId?: InputMaybe<Scalars['Int']['input']>;
+  classroomId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
-  studentId?: InputMaybe<Scalars['Int']['input']>;
+  studentId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -1122,6 +1242,20 @@ export type QueryLevelsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryMembershipArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryMembershipsArgs = {
+  establishmentId?: InputMaybe<Scalars['ID']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
+  userId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -1140,7 +1274,7 @@ export type QueryOptionsArgs = {
 
 
 export type QueryPaymentsArgs = {
-  invoiceId?: InputMaybe<Scalars['Int']['input']>;
+  invoiceId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -1273,12 +1407,14 @@ export type QueryUsersArgs = {
 export type RoleType = {
   __typename?: 'RoleType';
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['UUID']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  memberships: Array<EstablishmentMembershipType>;
   name: Scalars['String']['output'];
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
   personnels: Array<PersonnelType>;
   updatedByUser?: Maybe<UserType>;
-  users: Array<UserType>;
 };
 
 export type RoleTypePaginated = {
@@ -1295,11 +1431,15 @@ export type RoomType = {
   capacity?: Maybe<Scalars['Int']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
+  evaluationPlannings: Array<EvaluationPlanningType>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   planningDetails: Array<PlanningDetailType>;
+  supervisions: Array<EvaluationSupervisionType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
 };
@@ -1326,12 +1466,14 @@ export type StudentHealthType = {
   bloodGroup?: Maybe<StudentsStudentHealthBloodGroupChoices>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   emergencyContactName?: Maybe<Scalars['String']['output']>;
   emergencyContactPhone?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
   heightCm?: Maybe<Scalars['Int']['output']>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   /** Conditions médicales chroniques */
   medicalConditions?: Maybe<Scalars['String']['output']>;
   student: StudentType;
@@ -1340,12 +1482,20 @@ export type StudentHealthType = {
   weightKg?: Maybe<Scalars['Int']['output']>;
 };
 
+export type StudentPerformanceType = {
+  __typename?: 'StudentPerformanceType';
+  averageGrade?: Maybe<Scalars['Float']['output']>;
+  matricule?: Maybe<Scalars['String']['output']>;
+  studentName?: Maybe<Scalars['String']['output']>;
+};
+
 export type StudentType = {
   __typename?: 'StudentType';
   address?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   dateOfBirth?: Maybe<Scalars['Date']['output']>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   enrollments: Array<EnrollmentType>;
   establishment: EstablishmentType;
   firstName: Scalars['String']['output'];
@@ -1356,6 +1506,7 @@ export type StudentType = {
   id: Scalars['UUID']['output'];
   invoices: Array<InvoiceType>;
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   lastName: Scalars['String']['output'];
   matricule: Scalars['String']['output'];
   photo?: Maybe<Scalars['String']['output']>;
@@ -1419,10 +1570,12 @@ export type SubjectType = {
   code: Scalars['String']['output'];
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   evaluationSubjects: Array<EvaluationSubjectType>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   isOptional: Scalars['Boolean']['output'];
   levelSubjects?: Maybe<Array<Maybe<LevelSubjectType>>>;
   name: Scalars['String']['output'];
@@ -1447,6 +1600,7 @@ export type TeachingAssignmentType = {
   classroom: ClassRoomType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   /** Date de fin d'intervention. Si vide, correspond à la fin de l'année scolaire. */
   endDate?: Maybe<Scalars['Date']['output']>;
   establishment: EstablishmentType;
@@ -1454,6 +1608,7 @@ export type TeachingAssignmentType = {
   hoursScheduled: Scalars['Int']['output'];
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   personnel: PersonnelType;
   /** Date de début d'intervention. Si vide, correspond au début de l'année scolaire. */
   startDate?: Maybe<Scalars['Date']['output']>;
@@ -1483,6 +1638,7 @@ export type UserType = {
   createdDocumentSet: Array<DocumentType>;
   createdEnrollmentSet: Array<EnrollmentType>;
   createdEstablishmentSet: Array<EstablishmentType>;
+  createdEstablishmentmembershipSet: Array<EstablishmentMembershipType>;
   createdEvaluationplanningSet: Array<EvaluationPlanningType>;
   createdEvaluationsessionSet: Array<EvaluationSessionType>;
   createdEvaluationsubjectSet: Array<EvaluationSubjectType>;
@@ -1510,23 +1666,26 @@ export type UserType = {
   createdTeachingassignmentSet: Array<TeachingAssignmentType>;
   createdUserSet: Array<UserType>;
   dateJoined: Scalars['DateTime']['output'];
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
   email: Scalars['String']['output'];
   employments: Array<PersonnelType>;
-  establishment?: Maybe<EstablishmentType>;
   establishmentsOwned: Array<EstablishmentType>;
   firstName: Scalars['String']['output'];
   guardianProfile?: Maybe<GuardianType>;
+  hubId?: Maybe<Scalars['String']['output']>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
   isStaff: Scalars['Boolean']['output'];
   /** Designates that this user has all permissions without explicitly assigning them. */
   isSuperuser: Scalars['Boolean']['output'];
   lastLogin?: Maybe<Scalars['DateTime']['output']>;
   lastName: Scalars['String']['output'];
   mainClassrooms: Array<ClassRoomType>;
+  memberships: Array<EstablishmentMembershipType>;
   phone?: Maybe<Scalars['String']['output']>;
   photo?: Maybe<Scalars['String']['output']>;
-  roles: Array<RoleType>;
+  roles?: Maybe<Array<Maybe<RoleType>>>;
   studentProfile?: Maybe<StudentType>;
   updatedAcademiccycleconfigSet: Array<AcademicCycleConfigType>;
   updatedAcademicperiodSet: Array<AcademicPeriodType>;
@@ -1538,6 +1697,7 @@ export type UserType = {
   updatedDocumentSet: Array<DocumentType>;
   updatedEnrollmentSet: Array<EnrollmentType>;
   updatedEstablishmentSet: Array<EstablishmentType>;
+  updatedEstablishmentmembershipSet: Array<EstablishmentMembershipType>;
   updatedEvaluationplanningSet: Array<EvaluationPlanningType>;
   updatedEvaluationsessionSet: Array<EvaluationSessionType>;
   updatedEvaluationsubjectSet: Array<EvaluationSubjectType>;

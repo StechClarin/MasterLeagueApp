@@ -49,6 +49,8 @@ query GetAllStudents($search: String, $classroomId: ID, $academicYearId: ID, $st
         }
       }
     }
+    totalCount
+    numPages
   }
 }
 

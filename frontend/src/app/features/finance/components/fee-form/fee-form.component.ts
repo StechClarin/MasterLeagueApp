@@ -1,17 +1,23 @@
+import { computed } from '@angular/core';
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, Validators, FormBuilder, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, Validators, FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { FeeService } from '../../services/fee.service';
 import { LevelService } from '@features/structure/services/level.service';
 import { AcademicYearService } from '@features/structure/services/academic_year.service';
 import { ClassRoomService } from '@features/structure/services/classroom.service';
 import { StudentService } from '@features/students/services/student.service';
+import { OptionService } from '@features/structure/services/option.service';
 
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
 import { UiMultiSelectComponent } from '@shared/components/ui-multi-select/ui-multi-select.component';
+import { UiTabsComponent, Tab } from '@shared/components/ui-tabs/ui-tabs.component';
+import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
+import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
+import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
 
 @Component({
   selector: 'app-fee-form',
@@ -19,144 +25,15 @@ import { UiMultiSelectComponent } from '@shared/components/ui-multi-select/ui-mu
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
-    UiFormComponent,
+    UiTabsComponent,
+    UiFormHeaderComponent,
+    UiFormActionsComponent,
+    UiFormErrorsComponent,
     UiInputComponent,
     UiSelectComponent,
     UiMultiSelectComponent
   ],
-  template: `
-    <app-ui-form [formErrors]="formErrors" 
-      [title]="(item?.id ? 'Modifier' : 'Ajouter') + ' un tarif'"
-      [description]="'Gérez les paramètres financiers de l\\'établissement.'"
-      [formGroup]="form" 
-      (submitForm)="submit()" 
-      (cancel)="onCancel()"
-      [isLoading]="isSubmitting"
-     >
-      
-      <div class="grid grid-cols-2 gap-4">
-        <app-ui-input 
-          label="Libellé du frais" 
-          formControlName="name" 
-          [required]="true">
-        </app-ui-input>
-
-        <app-ui-select 
-          label="Catégorie" 
-          formControlName="category" 
-          [options]="categories"
-          [required]="true">
-        </app-ui-select>
-
-        <app-ui-input 
-          label="Montant (FCFA)" 
-          type="number"
-          formControlName="amount" 
-          [required]="true">
-        </app-ui-input>
-
-        <app-ui-select 
-          label="Statut" 
-          formControlName="isActive" 
-          [options]="statusOptions"
-          [required]="true">
-        </app-ui-select>
-
-        <div class="flex items-center px-4 h-11 bg-slate-50 border border-slate-200 rounded-xl">
-          <label class="flex items-center cursor-pointer w-full group">
-            <input type="checkbox" formControlName="isRequired" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all duration-200">
-            <span class="ml-3 text-sm font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">Frais Obligatoire (Facturé à l'inscription)</span>
-          </label>
-        </div>
-
-        <div class="flex items-center px-4 h-11 bg-indigo-50 border border-indigo-100 rounded-xl" *ngIf="!item?.id">
-          <label class="flex items-center cursor-pointer w-full group">
-            <input type="checkbox" formControlName="applyToExisting" class="w-5 h-5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 transition-all duration-200">
-            <span class="ml-3 text-sm font-semibold text-indigo-900 group-hover:text-indigo-700 transition-colors">Appliquer aux déjà inscrits 🚀</span>
-          </label>
-        </div>
-
-        <app-ui-select 
-          label="Niveau Scolaire" 
-          formControlName="level" 
-          [options]="levels()"
-          [required]="true">
-        </app-ui-select>
-
-        <app-ui-select 
-          label="Année Académique" 
-          formControlName="academicYear" 
-          [options]="academicYears()"
-          [required]="true">
-        </app-ui-select>
-
-        <app-ui-select 
-          label="Modalité de Paiement" 
-          formControlName="paymentModality" 
-          [options]="modalities"
-          [required]="true">
-        </app-ui-select>
-
-        <div class="col-span-2 grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300" 
-             *ngIf="form.get('paymentModality')?.value === 'INSTALLMENTS'">
-          <app-ui-input 
-            label="Nombre de tranches" 
-            type="number"
-            formControlName="installmentCount" 
-            [required]="true">
-          </app-ui-input>
-
-          <app-ui-select 
-            label="Périodicité" 
-            formControlName="installmentPeriod" 
-            [options]="periods"
-            [required]="true">
-          </app-ui-select>
-        </div>
-
-        <div class="col-span-2 border-t border-slate-100 mt-4 pt-6">
-          <h4 class="text-indigo-900 font-bold mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            Configuration du Ciblage (Optionnel)
-          </h4>
-          
-          <div class="grid grid-cols-2 gap-4">
-            <app-ui-select 
-              label="Type de Ciblage" 
-              formControlName="targetType" 
-              [options]="targetTypes">
-            </app-ui-select>
-
-            <app-ui-select 
-              *ngIf="form.get('targetType')?.value === 'CLASSROOM'"
-              label="Classe Spécifique" 
-              formControlName="classroom" 
-              [options]="classrooms()"
-              [required]="true">
-            </app-ui-select>
-
-            <app-ui-multi-select 
-              *ngIf="form.get('targetType')?.value === 'STUDENT'"
-              label="Élèves Spécifiques" 
-              formControlName="students" 
-              [options]="students()"
-              [isSearchable]="true"
-              [isLoading]="isSearchingStudents()"
-              bindLabel="label"
-              bindValue="value"
-              bindSubLabel="matricule"
-              placeholder="Rechercher par nom ou matricule..."
-              (search)="onStudentSearch($event)"
-              [required]="true">
-            </app-ui-multi-select>
-          </div>
-          <p class="mt-2 text-[11px] text-slate-500 italic">
-            Par défaut, le tarif s'applique à tout le niveau scolaire. Utilisez ces champs pour restreindre à une classe ou un élève particulier.
-          </p>
-        </div>
-      </div>
-    </app-ui-form>
-  `
+  templateUrl: './fee-form.component.html'
 })
 export class FeeFormComponent extends BaseFormComponent implements OnInit {
   @Input() item: any;
@@ -166,13 +43,54 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
   yearService = inject(AcademicYearService);
   classroomService = inject(ClassRoomService);
   studentService = inject(StudentService);
+  optionService = inject(OptionService);
   
   form!: FormGroup;
   levels = signal<any[]>([]);
+  rawLevels = signal<any[]>([]); // To keep original objects with cycle info
   academicYears = signal<any[]>([]);
   classrooms = signal<any[]>([]);
+  allOptions = signal<any[]>([]);
   students = signal<any[]>([]);
   isSearchingStudents = signal<boolean>(false);
+  tranchesError = signal<string | null>(null);
+
+  tabs: Tab[] = [
+      { 
+          id: 'info', 
+          label: 'Informations Générales',
+          icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+      },
+      { 
+          id: 'payment', 
+          label: 'Paiement et Tranches',
+          icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+      },
+      { 
+          id: 'targeting', 
+          label: 'Ciblage Spécifique',
+          icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>`
+      }
+  ];
+  currentTab = signal('info');
+
+  get customInstallments(): FormArray {
+    return this.form.get('customInstallments') as FormArray;
+  }
+
+  // Computed signal for filtered options - Robust & Surgical
+  filteredOptions = computed(() => {
+    const levelId = this.form?.get('level')?.value;
+    const levels = this.rawLevels();
+    const options = this.allOptions();
+    
+    const selectedLevel = levels.find(l => l.id === levelId);
+    if (selectedLevel?.cycle?.id) {
+        return options.filter(o => o.cycleId === selectedLevel.cycle.id);
+    }
+    return options;
+  });
+
   modalities = [
     { label: 'Paiement Unique', value: 'UNIQUE' },
     { label: 'Paiement par Tranches', value: 'INSTALLMENTS' }
@@ -202,6 +120,7 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
 
   targetTypes = [
     { label: 'Tout le niveau scolaire', value: 'GLOBAL' },
+    { label: 'Une filière spécifique', value: 'OPTION' },
     { label: 'Une classe spécifique', value: 'CLASSROOM' },
     { label: 'Un élève spécifique', value: 'STUDENT' }
   ];
@@ -227,6 +146,7 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
 
   loadData() {
     this.levelService.list().subscribe(items => {
+       this.rawLevels.set(items);
        this.levels.set(items.map((i: any) => ({ label: i.name, value: i.id })));
     });
     this.yearService.list().subscribe((items: any[]) => {
@@ -234,6 +154,9 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
     });
     this.classroomService.list().subscribe((items: any[]) => {
        this.classrooms.set(items.map((i: any) => ({ label: i.name, value: i.id })));
+    });
+    this.optionService.list().subscribe((items: any[]) => {
+       this.allOptions.set(items.map((i: any) => ({ label: i.name, value: i.id, cycleId: i.cycle?.id })));
     });
     // Initial load empty or recent
     this.onStudentSearch('');
@@ -265,24 +188,202 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
       level: [this.item?.level?.id || null, Validators.required],
       academicYear: [this.item?.academicYear?.id || null, Validators.required],
       paymentModality: [this.item?.paymentModality || 'UNIQUE', Validators.required],
-      installmentCount: [this.item?.installmentCount || 1, [Validators.required, Validators.min(1)]],
+      installmentCount: [this.item?.installmentCount || 1],
       installmentPeriod: [this.item?.installmentPeriod || 'MONTHLY'],
-      targetType: [this.item?.students?.length > 0 ? 'STUDENT' : (this.item?.classroom ? 'CLASSROOM' : 'GLOBAL')],
-      students: [this.item?.students?.map((s: any) => s.id) || []],
+      targetType: [this.item?.students?.length > 0 ? 'STUDENT' : (this.item?.classroom ? 'CLASSROOM' : (this.item?.option ? 'OPTION' : 'GLOBAL'))],
       classroom: [this.item?.classroom?.id || null],
-      applyToExisting: [false]
+      option: [this.item?.option?.id || null],
+      students: [this.item?.students?.map((s: any) => s.id) || []],
+      applyToExisting: [false],
+      customInstallments: this.fb.array([])
     });
 
-    // Handle clearing targets when type changes
+    this.initCustomInstallments(this.item?.custom_installments);
+
+    // Handle clearing targets and dynamic validators when type changes
     this.form.get('targetType')?.valueChanges.subscribe(type => {
-      if (type === 'GLOBAL') {
-        this.form.patchValue({ students: [], classroom: null });
-      } else if (type === 'CLASSROOM') {
-        this.form.patchValue({ students: [] });
+      // Clear values
+      this.form.patchValue({ students: [], classroom: null, option: null }, { emitEvent: false });
+      
+      // Clear validators
+      this.form.get('classroom')?.clearValidators();
+      this.form.get('option')?.clearValidators();
+      this.form.get('students')?.clearValidators();
+
+      // Set specific validators
+      if (type === 'CLASSROOM') {
+        this.form.get('classroom')?.setValidators([Validators.required]);
+      } else if (type === 'OPTION') {
+        this.form.get('option')?.setValidators([Validators.required]);
       } else if (type === 'STUDENT') {
-        this.form.patchValue({ classroom: null });
+        this.form.get('students')?.setValidators([Validators.required]);
       }
+
+      this.form.get('classroom')?.updateValueAndValidity();
+      this.form.get('option')?.updateValueAndValidity();
+      this.form.get('students')?.updateValueAndValidity();
     });
+
+    // Handle dynamic validators for installmentCount based on paymentModality
+    this.form.get('paymentModality')?.valueChanges.subscribe(modality => {
+      const countCtrl = this.form.get('installmentCount');
+      const periodCtrl = this.form.get('installmentPeriod');
+
+      if (modality === 'UNIQUE') {
+        countCtrl?.clearValidators();
+        countCtrl?.setValue(1); // Default for unique
+        periodCtrl?.clearValidators();
+      } else {
+        countCtrl?.setValidators([Validators.required, Validators.min(1)]);
+        periodCtrl?.setValidators([Validators.required]);
+      }
+      
+      countCtrl?.updateValueAndValidity();
+      periodCtrl?.updateValueAndValidity();
+    });
+
+    this.form.get('installmentCount')?.valueChanges.subscribe(count => {
+       if (this.form.get('paymentModality')?.value === 'INSTALLMENTS') {
+           this.adjustInstallmentControls(count || 1);
+       }
+    });
+
+    this.form.get('amount')?.valueChanges.subscribe(amount => {
+       if (this.form.get('paymentModality')?.value === 'INSTALLMENTS') {
+           this.recalculateInstallmentsFromAmount(amount || 0);
+       }
+    });
+    
+    // Trigger initial check for modalities
+    this.form.get('paymentModality')?.updateValueAndValidity();
+  }
+
+  initCustomInstallments(existingTranches: any[] | null) {
+      const count = this.form.get('installmentCount')?.value || 1;
+      const amount = this.form.get('amount')?.value || 0;
+      
+      this.customInstallments.clear();
+      
+      if (existingTranches && existingTranches.length === count) {
+          // Charger les tranches existantes
+          const sorted = [...existingTranches].sort((a, b) => a.tranche - b.tranche);
+          sorted.forEach(t => {
+              const ctrl = this.fb.control(t.amount, [Validators.required, Validators.min(0)]);
+              ctrl.markAsDirty(); // On les marque dirty pour qu'ils soient verrouillés par défaut
+              this.customInstallments.push(ctrl);
+          });
+      } else {
+          // Créer de nouvelles tranches équitables
+          this.adjustInstallmentControls(count);
+      }
+  }
+
+  adjustInstallmentControls(count: number) {
+      const amount = this.form.get('amount')?.value || 0;
+      const currentCount = this.customInstallments.length;
+      
+      if (count > currentCount) {
+          for (let i = currentCount; i < count; i++) {
+              this.customInstallments.push(this.fb.control(0, [Validators.required, Validators.min(0)]));
+          }
+      } else if (count < currentCount) {
+          for (let i = currentCount - 1; i >= count; i--) {
+              this.customInstallments.removeAt(i);
+          }
+      }
+
+      this.recalculateInstallmentsFromAmount(amount, true);
+  }
+
+  recalculateInstallmentsFromAmount(totalAmount: number, forceReset = false) {
+      const tranches = this.customInstallments.controls;
+      if (tranches.length === 0) return;
+
+      if (forceReset) {
+          const perTranche = totalAmount / tranches.length;
+          tranches.forEach(c => {
+              c.setValue(Number(perTranche.toFixed(2)), { emitEvent: false });
+              c.markAsPristine();
+          });
+      } else {
+          // Si le montant global change, on recalcule seulement sur les champs non modifiés
+          const cleanControls = tranches.filter(c => !c.dirty);
+          const dirtySum = tranches.filter(c => c.dirty).reduce((sum, c) => sum + (c.value || 0), 0);
+          
+          if (cleanControls.length > 0) {
+              const remaining = Math.max(0, totalAmount - dirtySum);
+              const perClean = remaining / cleanControls.length;
+              cleanControls.forEach(c => c.setValue(Number(perClean.toFixed(2)), { emitEvent: false }));
+          } else {
+              // Tous les champs ont été modifiés manuellement, on force un reset car le total a changé
+              const perTranche = totalAmount / tranches.length;
+              tranches.forEach(c => {
+                  c.setValue(Number(perTranche.toFixed(2)), { emitEvent: false });
+                  c.markAsPristine();
+              });
+          }
+      }
+      this.validateTranchesSum();
+  }
+
+  onTrancheChange(index: number) {
+      const totalAmount = this.form.get('amount')?.value || 0;
+      const tranches = this.customInstallments.controls;
+      
+      tranches[index].markAsDirty();
+
+      const cleanControls = tranches.filter(c => !c.dirty);
+      if (cleanControls.length === 0) {
+          this.validateTranchesSum();
+          return;
+      }
+
+      const dirtySum = tranches.filter(c => c.dirty).reduce((sum, c) => sum + (c.value || 0), 0);
+      const remaining = Math.max(0, totalAmount - dirtySum);
+      const perClean = remaining / cleanControls.length;
+
+      cleanControls.forEach(c => {
+          c.setValue(Number(perClean.toFixed(2)), { emitEvent: false });
+      });
+      
+      this.validateTranchesSum();
+  }
+
+  validateTranchesSum() {
+      if (this.form.get('paymentModality')?.value !== 'INSTALLMENTS') {
+          this.tranchesError.set(null);
+          return true;
+      }
+      const totalAmount = this.form.get('amount')?.value || 0;
+      const sum = this.customInstallments.controls.reduce((s, c) => s + (c.value || 0), 0);
+      
+      // On tolère une petite différence due aux arrondis (ex: 33.33 * 3 = 99.99)
+      if (Math.abs(sum - totalAmount) > 1) {
+          this.tranchesError.set(`Attention: La somme des tranches (${sum}) ne correspond pas au montant global (${totalAmount}).`);
+          return false;
+      } else {
+          this.tranchesError.set(null);
+          return true;
+      }
+  }
+
+  override submit() {
+      // Validate depending on tab
+      if (this.form.invalid) {
+          if (this.form.get('name')?.invalid || this.form.get('category')?.invalid || this.form.get('amount')?.invalid || this.form.get('level')?.invalid || this.form.get('academicYear')?.invalid) {
+              this.currentTab.set('info');
+          } else if (this.form.get('paymentModality')?.invalid || this.form.get('installmentCount')?.invalid || this.form.get('installmentPeriod')?.invalid || this.tranchesError() !== null) {
+              this.currentTab.set('payment');
+          } else if (this.form.get('classroom')?.invalid || this.form.get('option')?.invalid || this.form.get('students')?.invalid) {
+              this.currentTab.set('targeting');
+          }
+      }
+
+      if (!this.validateTranchesSum()) {
+          this.currentTab.set('payment');
+          return;
+      }
+      super.submit();
   }
 
   save() {
@@ -298,7 +399,11 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
       academic_year: val.academicYear,
       students_ids: val.targetType === 'STUDENT' ? val.students : [],
       classroom_id: val.targetType === 'CLASSROOM' ? val.classroom : null,
-      apply_to_existing: val.applyToExisting
+      option_id: val.targetType === 'OPTION' ? val.option : null,
+      apply_to_existing: val.applyToExisting,
+      custom_installments: val.paymentModality === 'INSTALLMENTS' ? 
+          val.customInstallments.map((amount: number, index: number) => ({ tranche: index + 1, amount: Number(amount) })) 
+          : null
     };
     return this.service.save(payload);
   }

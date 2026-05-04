@@ -17,7 +17,13 @@ class Personnel(EstablishmentAwareModel):
         verbose_name="Rôles dans l'établissement",
         blank=True
     )
+    GENDER_CHOICES = [
+        ('M', 'Masculin'),
+        ('F', 'Féminin'),
+    ]
+
     matricule = models.CharField(max_length=50, blank=True) # Unique per establishment via Constraint
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='M', verbose_name="Genre")
     
     job_title = models.CharField(max_length=150, verbose_name="Intitulé du poste")
     
@@ -44,7 +50,7 @@ class Personnel(EstablishmentAwareModel):
             models.UniqueConstraint(fields=['matricule', 'establishment'], name='unique_personnel_matricule_per_establishment')
         ]
 
-    # save() logic moved to PersonnelService.before_save()
+    # Logique métier (matricule) déplacée vers PersonnelService
     
     def __str__(self):
         if self.user:

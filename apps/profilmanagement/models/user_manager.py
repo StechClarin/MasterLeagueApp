@@ -1,10 +1,15 @@
 # apps/profilmanagement/models/user_manager.py
 from django.contrib.auth.models import BaseUserManager
+from apps.core.models.user_audit_model import SoftDeleteQuerySet
 
 class UserManager(BaseUserManager):
     """
     Manager personnalisé pour notre modèle User.
+    Intègre la logique de suppression logique (Soft Delete).
     """
+    def get_queryset(self):
+        return SoftDeleteQuerySet(self.model, using=self._db).filter(is_deleted=False)
+
     def create_user(self, username, email, password=None, **extra_fields):
         """
         Crée et sauvegarde un utilisateur avec un email et un mot de passe.

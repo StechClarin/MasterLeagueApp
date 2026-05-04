@@ -19,18 +19,18 @@ MODULE_STRUCTURE = [
                 "tags": ["establishment"]
             },
             {
-                "title": "Années Scolaires",
-                "icon": "calendar-icon",
-                "order": 1,
-                "link": "/years",
-                "tags": ["academic_year"]
-            },
-            {
                 "title": "Cycles & Niveaux",
                 "icon": "tree-icon",
-                "order": 2,
+                "order": 1,
                 "link": "/tree",
                 "tags": ["level"]
+            },
+            {
+                "title": "Années Scolaires",
+                "icon": "calendar-icon",
+                "order": 2,
+                "link": "/years",
+                "tags": ["academic_year"]
             },
             {
                 "title": "Options / Filières",
@@ -59,6 +59,13 @@ MODULE_STRUCTURE = [
                 "order": 5,
                 "link": "/academic-periods",
                 "tags": ["academicperiod"]
+            },
+            {
+                "title": "Salles",
+                "icon": "home-icon",
+                "order": 6,
+                "link": "/rooms",
+                "tags": ["room"]
             },
         ]
     },

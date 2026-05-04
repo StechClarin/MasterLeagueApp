@@ -51,6 +51,8 @@ fragment AcademicYearFields on AcademicYearType {
 fragment CycleFields on CycleType {
   id
   name
+  code
+  description
   order
   isActive
   hasOptions
@@ -65,6 +67,10 @@ fragment OptionFields on OptionType {
   name
   code
   isActive
+  cycle {
+    id
+    name
+  }
   parent {
     id
     name

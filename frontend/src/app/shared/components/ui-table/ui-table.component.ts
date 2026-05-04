@@ -8,7 +8,7 @@ export interface UiTableColumn {
   className?: string;
   format?: (row: any) => string;
   sortable?: boolean;
-  type?: 'text' | 'actions';
+  type?: 'text' | 'actions' | 'boolean';
 }
 
 @Component({
@@ -39,7 +39,9 @@ export interface UiTableColumn {
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-100">
-          <tr *ngFor="let item of data" class="hover:bg-indigo-50/30 transition-colors group">
+          <tr *ngFor="let item of data; let i = index" 
+              class="hover:bg-indigo-50/30 transition-colors group animate-in fade-in slide-in-from-bottom-1 duration-300"
+              [style.animation-delay]="(i % 10) * 30 + 'ms'">
             
             <td *ngFor="let col of columns" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               

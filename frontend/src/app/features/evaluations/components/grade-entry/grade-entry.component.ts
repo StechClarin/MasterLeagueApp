@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GradeService } from '../../services/grade.service';
 import { GetEvaluationSessionGQL, GradeFieldsFragment, EvaluationSubjectFieldsFragment } from '../../graphql/evaluations.generated';
@@ -77,13 +77,6 @@ export class GradeEntryComponent implements OnInit {
 
     // NEW: All classrooms belonging to the levels involved in this session
     availableClassrooms = computed<any[]>(() => {
-        const mapping = this.classroomToLevelMap();
-        // We might want to list them alphabetically or by level
-        const classrooms: any[] = [];
-        mapping.forEach((levelId, classroomId) => {
-            // We need names here, so we might need a separate signal for classroom details
-            // For now, let's assume we have them in a state
-        });
         return this._availClassrooms();
     });
 
@@ -199,7 +192,7 @@ export class GradeEntryComponent implements OnInit {
             // 3. Fetch Students & Existing Grades
             const [students, existingGrades] = await Promise.all([
                 this.loadStudents(classroomMetadata),
-                firstValueFrom(this.gradeService.list(Number(evalId)))
+                firstValueFrom(this.gradeService.list(evalId))
             ]);
 
             this.buildGrid(students, existingGrades as any[]);
@@ -255,7 +248,7 @@ export class GradeEntryComponent implements OnInit {
                 const absentControl = this.fb.nonNullable.control(grade?.isAbsent ?? false);
 
                 // Listen for changes to update average and clamp values
-                control.valueChanges.subscribe(val => {
+                control.valueChanges.subscribe((val: any) => {
                     if (val !== null && val > maxVal) {
                         control.setValue(maxVal, { emitEvent: false });
                     }
@@ -555,7 +548,7 @@ export class GradeEntryComponent implements OnInit {
 
         try {
             const periodId = session.academicPeriod.id;
-            const grades = await firstValueFrom(this.gradeService.listByPeriodAndClass(Number(periodId), Number(classroomId)));
+            const grades = await firstValueFrom(this.gradeService.listByPeriodAndClass(periodId, classroomId));
             this.periodGrades.set(grades as GradeFieldsFragment[]);
         } catch (err) {
             console.error('Failed to fetch period grades', err);

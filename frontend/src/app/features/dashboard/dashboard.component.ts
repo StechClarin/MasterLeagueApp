@@ -56,6 +56,8 @@ export class DashboardComponent implements OnInit {
   // Chart configs
   public evolutionChartOptions!: Partial<ChartOptions>;
   public distributionChartOptions!: Partial<ChartOptions>;
+  public revenueChartOptions!: Partial<ChartOptions>;
+  public paymentMethodsChartOptions!: Partial<ChartOptions>;
 
   constructor() {
     // Re-fetch data whenever the establishment changes
@@ -91,7 +93,7 @@ export class DashboardComponent implements OnInit {
   }
 
   initCharts(data: any) {
-    // 1. Evolution Chart (Area/Line)
+    // 1. Evolution Chart (Area/Line) - Grades
     this.evolutionChartOptions = {
       series: [
         {
@@ -100,7 +102,7 @@ export class DashboardComponent implements OnInit {
         }
       ],
       chart: {
-        height: 350,
+        height: 300,
         type: "area",
         toolbar: { show: false },
         animations: { enabled: true, speed: 800 }
@@ -113,10 +115,7 @@ export class DashboardComponent implements OnInit {
         axisBorder: { show: false },
         axisTicks: { show: false }
       },
-      tooltip: {
-        theme: 'dark',
-        x: { show: true }
-      },
+      tooltip: { theme: 'dark' },
       fill: {
         type: "gradient",
         gradient: {
@@ -126,41 +125,70 @@ export class DashboardComponent implements OnInit {
           stops: [20, 100, 100, 100]
         }
       },
-      grid: {
-        borderColor: "#f1f5f9",
-        row: { colors: ["transparent", "transparent"], opacity: 0.5 }
+      grid: { borderColor: "#f1f5f9" }
+    };
+
+    // 2. Revenue Evolution (Area)
+    this.revenueChartOptions = {
+      series: [
+        {
+          name: "Recettes",
+          data: data.revenueEvolution.map((p: any) => p.value)
+        }
+      ],
+      chart: {
+        height: 300,
+        type: "area",
+        toolbar: { show: false }
+      },
+      colors: ["#10b981"], // emerald-500
+      stroke: { curve: "smooth", width: 3 },
+      xaxis: {
+        categories: data.revenueEvolution.map((p: any) => p.label)
+      },
+      fill: {
+        type: "gradient",
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.45,
+          opacityTo: 0.05
+        }
       }
     };
 
-    // 2. Distribution Chart (Donut)
+    // 3. Distribution Chart (Donut) - Students
     this.distributionChartOptions = {
       series: data.studentDistribution.map((p: any) => p.count),
       labels: data.studentDistribution.map((p: any) => p.category),
       chart: {
         type: "donut",
-        height: 350,
-        animations: { enabled: true }
+        height: 300
       },
       colors: ["#6366f1", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"],
-      legend: {
-        position: "bottom",
-        fontFamily: "Inter, sans-serif"
-      },
+      legend: { position: "bottom" },
       plotOptions: {
         pie: {
           donut: {
-            size: "70%",
+            size: "75%",
             labels: {
               show: true,
-              total: {
-                show: true,
-                label: 'TOTAL',
-                color: '#64748b'
-              }
+              total: { show: true, label: 'TOTAL', color: '#64748b' }
             }
           }
         }
       }
+    };
+
+    // 4. Payment Methods Distribution (Pie/Donut)
+    this.paymentMethodsChartOptions = {
+      series: data.paymentMethodsDistribution.map((p: any) => p.count),
+      labels: data.paymentMethodsDistribution.map((p: any) => p.category),
+      chart: {
+        type: "pie",
+        height: 300
+      },
+      colors: ["#8b5cf6", "#ec4899", "#f43f5e", "#fb923c"],
+      legend: { position: "bottom" }
     };
   }
 }

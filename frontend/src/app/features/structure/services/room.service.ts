@@ -10,6 +10,10 @@ export class RoomService extends BaseService {
     override endpoint = 'room';
     private generatedGQL = inject(GetAllRoomsGQL);
 
+    getQuery() {
+        return this.generatedGQL.document;
+    }
+
     override list() {
         return this.generatedGQL.fetch({ page: 1, pageSize: 100 }, { fetchPolicy: 'network-only' }).pipe(
             map((res: any) => res.data.rooms?.items || [])

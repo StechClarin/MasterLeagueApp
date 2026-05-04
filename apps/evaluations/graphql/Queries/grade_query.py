@@ -10,11 +10,11 @@ GradePaginatedType = get_paginated_type(GradeType)
 class GradeQuery(graphene.ObjectType):
     grades = graphene.Field(
         GradePaginatedType,
-        evaluation_subject_id=graphene.Int(),
-        evaluation_session_id=graphene.Int(),
-        student_id=graphene.Int(),
-        academic_period_id=graphene.Int(),
-        classroom_id=graphene.Int(),
+        evaluation_subject_id=graphene.ID(),
+        evaluation_session_id=graphene.ID(),
+        student_id=graphene.ID(),
+        academic_period_id=graphene.ID(),
+        classroom_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )

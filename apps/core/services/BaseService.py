@@ -26,6 +26,10 @@ class BaseService:
     # ex: ['name', {'category': {'model': Category, 'search_field': 'name'}}]
     import_fields = []
 
+    def __init__(self):
+        self.user = None
+        self.establishment_id = None
+
     # ==========================================================================
     # 1. MÉTHODES DE LECTURE (Read)
     # ==========================================================================
@@ -122,7 +126,7 @@ class BaseService:
             
             if should_inject:
                 if 'establishment' not in data and 'establishment_id' not in data:
-                     data['establishment_id'] = self.establishment_id
+                     data['establishment'] = self.establishment_id
 
         # [AUDIT] Injection automatique de l'utilisateur (Pattern Global)
         if hasattr(self, 'user') and self.user:

@@ -25,7 +25,8 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/grade-entry': () => import('@features/evaluations/components/grade-entry-list/grade-entry-list.component').then(m => m.GradeEntryListComponent),
   '/enrollments': () => import('@features/students/components/enrollment-list/enrollment-list.component').then(m => m.EnrollmentListComponent),
   '/options': () => import('@features/structure/components/option-list/option-list.component').then(m => m.OptionListComponent),
-
+  '/rooms': () => import('@features/structure/components/room-list/room-list.component').then(m => m.RoomListComponent),
+  
   '/plannings': () => import('@features/pedagogy/components/planning-list/planning-list.component').then(m => m.PlanningListComponent),
   '/timetable': () => import('@features/students/components/student-timetable/student-timetable.component').then(m => m.StudentTimetableComponent),
 

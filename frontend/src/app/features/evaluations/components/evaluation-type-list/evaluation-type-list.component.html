@@ -27,7 +27,7 @@
 </app-ui-list-page>
 
 <!-- Modale de formulaire -->
-<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" maxWidth="sm:max-w-2xl w-full">
+<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
     <ng-container [ngSwitch]="modalMode()">
         <!-- Suppression -->
         <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer le type"
@@ -42,5 +42,5 @@
 
 <!-- Cell Templates -->
 <ng-template #nameCell let-item>
-    <div class="font-medium text-gray-900 dark:text-white">{{ item.name }}</div>
+    <div class="font-medium text-slate-900">{{ item.name }}</div>
 </ng-template>

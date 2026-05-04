@@ -15,14 +15,14 @@ export type GetAllPersonnelsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: any, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, username: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
+export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: any, matricule: string, gender: Types.HrPersonnelGenderChoices, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, username: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
 
 export type GetPersonnelQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: any, matricule: string, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string }, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null } | null };
+export type GetPersonnelQuery = { __typename?: 'Query', personnel?: { __typename?: 'PersonnelType', id: any, matricule: string, gender: Types.HrPersonnelGenderChoices, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string }, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null } | null };
 
 export type GetAllContractTypesQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
@@ -63,6 +63,7 @@ export const GetAllPersonnelsDocument = gql`
         name
       }
       matricule
+      gender
       jobTitle
       contractType {
         id
@@ -116,6 +117,7 @@ export const GetPersonnelDocument = gql`
       name
     }
     matricule
+    gender
     jobTitle
     contractType {
       id

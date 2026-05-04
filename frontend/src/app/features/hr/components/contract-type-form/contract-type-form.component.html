@@ -9,7 +9,7 @@
     <!-- Main Content -->
     <div class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white relative">
         <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
-        <form  (ngSubmit)="submit()" class="space-y-6">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
             
             <!-- Row 1: Code & Designation -->
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">

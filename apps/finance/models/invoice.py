@@ -25,6 +25,9 @@ class Invoice(EstablishmentAwareModel):
     # Suivi des tranches pour la facture
     installment_count = models.PositiveIntegerField(default=1, help_text="Nombre de tranches prévu pour ce frais")
     
+    # Suivi des impressions
+    print_count = models.PositiveIntegerField(default=0, help_text="Nombre de fois que la facture/reçu a été imprimée")
+    
     status = models.CharField(max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.UNPAID)
     
     category = models.CharField(max_length=50, choices=FeeCategory.choices, default=FeeCategory.TUITION)

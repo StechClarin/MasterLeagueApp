@@ -14,7 +14,7 @@ class FinanceQuery(graphene.ObjectType):
     fee_definitions = graphene.Field(
         FeeDefinitionPaginatedType,
         search=graphene.String(),
-        level_id=graphene.Int(),
+        level_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -23,10 +23,10 @@ class FinanceQuery(graphene.ObjectType):
     invoices = graphene.Field(
         InvoicePaginatedType,
         search=graphene.String(),
-        student_id=graphene.Int(),
+        student_id=graphene.ID(),
         status=graphene.String(),
         category=graphene.String(),
-        classroom_id=graphene.Int(),
+        classroom_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -34,7 +34,7 @@ class FinanceQuery(graphene.ObjectType):
     # Payments
     payments = graphene.Field(
         PaymentPaginatedType,
-        invoice_id=graphene.Int(),
+        invoice_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )

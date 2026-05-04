@@ -12,4 +12,8 @@ export class InvoiceService extends BaseService {
   getQuery() {
     return GetInvoicesDocument;
   }
+
+  markPrinted(id: string | number) {
+    return this.http.get(`${this.apiUrl}/mark_printed/${id}/`);
+  }
 }

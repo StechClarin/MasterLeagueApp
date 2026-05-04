@@ -16,12 +16,13 @@ export class PaymentService extends BaseService {
   }
 
   getFinancialStatus(studentId: string) {
-    return this.http.get<any>(`${environment.apiUrl}/payment/financial_status/${studentId}/`);
+    return this.http.get<any>(`${this.apiUrl}/financial_status/${studentId}/`);
   }
 
-  getCollectionReport(classroomId: string, date: string) {
-    return this.http.get<any>(`${environment.apiUrl}/payment/collection_report/`, {
-      params: { classroom_id: classroomId, date }
+  getCollectionReport(classroomId: string, startDate: string, endDate: string) {
+    const url = `${this.apiUrl}/collection_report/`;
+    return this.http.get<any>(url, {
+      params: { classroom_id: classroomId, start_date: startDate, end_date: endDate }
     });
   }
 }

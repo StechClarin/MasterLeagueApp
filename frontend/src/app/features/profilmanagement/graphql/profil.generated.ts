@@ -3,7 +3,7 @@ import * as Types from '../../../graphql/types';
 import { gql } from 'apollo-angular';
 import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
-export type UserFieldsFragment = { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }> };
+export type UserFieldsFragment = { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string } | null> | null };
 
 export type RoleFieldsFragment = { __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, name: string, codename: string } | null> | null };
 
@@ -18,14 +18,14 @@ export type GetAllUsersQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }> } | null> | null } | null };
+export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string } | null> | null } | null> | null } | null };
 
 export type GetUserByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['Int']['input'];
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }> } | null };
+export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string } | null> | null } | null };
 
 export type GetAllRolesQueryVariables = Types.Exact<{
   name?: Types.InputMaybe<Types.Scalars['String']['input']>;

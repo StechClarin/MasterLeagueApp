@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, SimpleChanges, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, Input, OnChanges, SimpleChanges, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators, FormGroup } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
@@ -73,12 +73,23 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
     periods$ = this.periodService.list().pipe(shareReplay(1));
     levels$ = this.levelService.list().pipe(shareReplay(1), tap(levels => this.allLevelsCache = levels));
     subjectsSource$ = this.subjectService.list().pipe(shareReplay(1), tap(subs => this.allSubjectsCache = subs));
-    rooms$ = this.roomService.list().pipe(shareReplay(1));
-    classrooms$ = this.classroomService.list().pipe(shareReplay(1), tap(classes => this.allClassroomsCache = classes));
+    rooms$ = (this.roomService.list() as Observable<any[]>).pipe(
+        tap(items => this.allRoomsCache = items),
+        shareReplay(1)
+    );
+    classrooms$ = (this.classroomService.list() as Observable<any[]>).pipe(
+        map(items => items.map(c => ({
+            ...c,
+            cycleName: c.level?.cycle?.name || 'Autre'
+        }))),
+        shareReplay(1), 
+        tap(classes => this.allClassroomsCache = classes)
+    );
 
     // Cached lookups for synchronous template access
     allLevelsCache: any[] = [];
     allClassroomsCache: any[] = [];
+    allRoomsCache: any[] = [];
     allSubjectsCache: any[] = [];
 
     override ngOnInit() {
@@ -86,6 +97,7 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         // Trigger subscriptions to populate caches
         this.levels$.pipe(take(1)).subscribe();
         this.classrooms$.pipe(take(1)).subscribe();
+        this.rooms$.pipe(take(1)).subscribe();
         this.subjectsSource$.pipe(take(1)).subscribe();
     }
 
@@ -120,7 +132,7 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
     ];
     activeTabId = signal<string>('general');
 
-    // Modal state for Subjec File Upload
+    // Modal state for Subject File Upload
     isSubjectFileModalOpen = signal<boolean>(false);
     currentSubjectFileIndex = signal<number | null>(null);
 
@@ -134,8 +146,6 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         scope: ['CLASS', [Validators.required]],
         academic_period: ['', [Validators.required]],
         evaluation_type: ['', [Validators.required]],
-        selectedLevels: [[] as string[]], // Global selection for Tab 2
-        selectedClassrooms: [[] as string[]], // Global selection for Tab 2
         subjects: this.fb.array([]),
         supervisions: this.fb.array([])
     });
@@ -152,9 +162,9 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         const subjectGroup = this.fb.group({
             id: [null as string | null],
             subject: ['', [Validators.required]],
-            levels: [[] as string[], [Validators.required]],
+            classrooms: [[] as string[], [Validators.required]],
             max_score: [20.0, [Validators.required, Validators.min(1)]],
-            subjectFiles: [{}] as any, // Dictionary of { [levelId]: File }
+            subjectFiles: [{}] as any, 
             plannings: this.fb.array([])
         });
 
@@ -164,14 +174,14 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
     addPlanningToSubject(subjectGroup: FormGroup) {
         const plannings = subjectGroup.get('plannings') as FormArray;
-        const currentLevels = subjectGroup.get('levels')?.value || [];
+        const currentClassrooms = subjectGroup.get('classrooms')?.value || [];
         const planningGroup = this.fb.group({
             id: [null as string | null],
             date: ['', [Validators.required]],
             start_time: ['', [Validators.required]],
             duration_minutes: [null as number | null, [Validators.required]],
-            levels_ids: [currentLevels, [Validators.required]],
-            classrooms_ids: [[] as string[], [Validators.required]]
+            classrooms_ids: [currentClassrooms, [Validators.required]],
+            rooms_ids: [[] as string[], [Validators.required]]
         });
         plannings.push(planningGroup);
     }
@@ -191,12 +201,12 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         this.subjects.removeAt(index);
     }
 
-    addSupervision(date: string = '', classroomId: string = '') {
+    addSupervision(date: string = '', roomId: string = '') {
         const supervisionGroup = this.fb.group({
             id: [null as string | null],
             date: [date, [Validators.required]],
-            classroom: [classroomId, [Validators.required]],
-            supervisors: [[] as string[], [Validators.required]]
+            room: [roomId, [Validators.required]],
+            supervisors: [[] as string[]] // Supervisors made optional for V1 saving
         });
         this.supervisions.push(supervisionGroup);
     }
@@ -204,8 +214,6 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
     removeSupervision(index: number) {
         this.supervisions.removeAt(index);
     }
-
-
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['isReadOnly']) {
@@ -217,33 +225,17 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         } else if (changes['item'] && !this.item) {
             this.form.reset();
             this.subjects.clear();
-            this.addSubject(); // Start with one empty subject
+            this.addSubject();
         }
     }
 
     private patchForm(item: EvaluationSessionFieldsFragment) {
-        const globalLevels = new Set<string>();
-        const globalClassrooms = new Set<string>();
-
-        (item as any).subjects?.forEach((s: any) => {
-            s.levels?.forEach((l: any) => globalLevels.add(l.id));
-            s.plannings?.forEach((p: any) => {
-                p.classrooms?.forEach((c: any) => globalClassrooms.add(c.id));
-            });
-        });
-
-        (item as any).supervisions?.forEach((sup: any) => {
-            if (sup.classroom) globalClassrooms.add(sup.classroom.id);
-        });
-
         this.form.patchValue({
             id: item.id,
             title: item.title,
             scope: item.scope,
             academic_period: item.academicPeriod?.id || '',
             evaluation_type: item.evaluationType?.id || '',
-            selectedLevels: Array.from(globalLevels),
-            selectedClassrooms: Array.from(globalClassrooms)
         });
 
         this.subjects.clear();
@@ -257,7 +249,7 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
                 groupedSubjects.set(subjectId, {
                     id: s.id,
                     subject: subjectId,
-                    levels: [],
+                    classrooms: [],
                     max_score: s.maxScore,
                     subjectFiles: {},
                     plannings: []
@@ -266,12 +258,12 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
             const group = groupedSubjects.get(subjectId);
 
-            s.levels?.forEach((l: any) => {
-                if (!group.levels.includes(l.id)) {
-                    group.levels.push(l.id);
+            s.classrooms?.forEach((c: any) => {
+                if (!group.classrooms.includes(c.id)) {
+                    group.classrooms.push(c.id);
                 }
                 if (s.subjectFile) {
-                    group.subjectFiles[l.id] = s.subjectFile;
+                    group.subjectFiles[c.id] = s.subjectFile;
                 }
             });
 
@@ -283,21 +275,22 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
             sGroup.plannings.forEach((p: any) => {
                 const classroomsSig = (p.classrooms?.map((c: any) => c.id) || []).sort().join('-');
+                const roomsSig = (p.rooms?.map((r: any) => r.id) || []).sort().join('-');
                 const startTimePrefix = p.startTime ? p.startTime.substring(0, 5) : '';
-                const signature = `${p.date}_${startTimePrefix}_${p.durationMinutes}_${classroomsSig}`;
+                const signature = `${p.date}_${startTimePrefix}_${p.durationMinutes}_${classroomsSig}_${roomsSig}`;
 
-                const pLevelsIds = p.levels?.map((l: any) => l.id) || [];
+                const pClassroomIds = p.classrooms?.map((c: any) => c.id) || [];
 
                 if (!deduplicatedPlannings.has(signature)) {
                     deduplicatedPlannings.set(signature, {
                         ...p,
-                        mappedLevels: [...pLevelsIds]
+                        mappedClassrooms: [...pClassroomIds]
                     });
                 } else {
                     const existingP = deduplicatedPlannings.get(signature);
-                    pLevelsIds.forEach((lid: string) => {
-                        if (!existingP.mappedLevels.includes(lid)) {
-                            existingP.mappedLevels.push(lid);
+                    pClassroomIds.forEach((cid: string) => {
+                        if (!existingP.mappedClassrooms.includes(cid)) {
+                            existingP.mappedClassrooms.push(cid);
                         }
                     });
                 }
@@ -308,7 +301,7 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
             const subjectGroup = this.fb.group({
                 id: [sGroup.id],
                 subject: [sGroup.subject, [Validators.required]],
-                levels: [sGroup.levels, [Validators.required]],
+                classrooms: [sGroup.classrooms, [Validators.required]],
                 max_score: [sGroup.max_score],
                 subjectFiles: Object.keys(sGroup.subjectFiles).length > 0 ? [sGroup.subjectFiles] : [{}],
                 plannings: this.fb.array(
@@ -317,8 +310,8 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
                         date: [p.date || '', [Validators.required]],
                         start_time: [p.startTime ? p.startTime.substring(0, 5) : '', [Validators.required]],
                         duration_minutes: [p.durationMinutes || null, [Validators.required]],
-                        levels_ids: [p.mappedLevels, [Validators.required]],
-                        classrooms_ids: [p.classrooms?.map((c: any) => c.id) || [], [Validators.required]]
+                        classrooms_ids: [p.classrooms?.map((c: any) => c.id) || [], [Validators.required]],
+                        rooms_ids: [p.rooms?.map((r: any) => r.id) || [], [Validators.required]]
                     }))
                 )
             });
@@ -335,8 +328,8 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
             const supervisionGroup = this.fb.group({
                 id: [sup.id],
                 date: [sup.date, [Validators.required]],
-                classroom: [sup.classroom?.id, [Validators.required]],
-                supervisors: [sup.supervisors?.map((s: any) => s.id) || [], [Validators.required]]
+                room: [sup.room?.id, [Validators.required]],
+                supervisors: [sup.supervisors?.map((s: any) => s.id) || []]
             });
             this.supervisions.push(supervisionGroup);
         });
@@ -351,7 +344,6 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         const data = this.form.getRawValue();
         const filesToUpload: { subjectIndex: number, file: File }[] = [];
 
-        // We will reconstruct the subjects array logic to split subjects if they have specific files
         const processedSubjects: any[] = [];
         let finalSubjectIndex = 0;
 
@@ -360,23 +352,20 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
             const keysWithFiles = Object.keys(filesObj).filter(k => filesObj[k] instanceof File);
 
             if (keysWithFiles.length > 0) {
-                // If files specific per level are present, split the subject into multiple rows for Django
                 let splitCount = 0;
-                subject.levels.forEach((levelId: string) => {
-                    const fileForLevel = filesObj[levelId];
-                    // IMPORTANT: Each split subject keeps ONLY its relevant plannings
+                subject.classrooms.forEach((classroomId: string) => {
+                    const fileForClassroom = filesObj[classroomId];
                     const relevantPlannings = (subject.plannings || []).filter((p: any) =>
-                        p.levels && (p.levels.includes(levelId) || p.levels.length === 0)
-                    ).map((p: any) => ({ ...p })); // Clone the plannings to avoid references
+                        p.classrooms_ids && (p.classrooms_ids.includes(classroomId) || p.classrooms_ids.length === 0)
+                    ).map((p: any) => ({ ...p }));
 
                     const splitSubject = {
                         ...subject,
-                        levels: [levelId],
+                        classrooms: [classroomId],
                         plannings: relevantPlannings
                     };
                     delete splitSubject.subjectFiles;
 
-                    // Nullify the ID for cloned rows to prevent Django from overwriting the single original ID 3 times
                     if (splitCount > 0) {
                         splitSubject.id = null;
                         splitSubject.plannings.forEach((p: any) => p.id = null);
@@ -385,13 +374,12 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
                     processedSubjects.push(splitSubject);
 
-                    if (fileForLevel instanceof File) {
-                        filesToUpload.push({ subjectIndex: finalSubjectIndex, file: fileForLevel });
+                    if (fileForClassroom instanceof File) {
+                        filesToUpload.push({ subjectIndex: finalSubjectIndex, file: fileForClassroom });
                     }
                     finalSubjectIndex++;
                 });
             } else {
-                // No files, keep original layout
                 delete subject.subjectFiles;
                 processedSubjects.push(subject);
                 finalSubjectIndex++;
@@ -429,55 +417,30 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         );
     }
 
-    private appendNestedToFormData(formData: FormData, data: any, prefix = '') {
-        Object.keys(data).forEach(key => {
-            const name = prefix ? `${prefix}[${key}]` : key;
-            const value = data[key];
-
-            if (value instanceof File) {
-                formData.append(name, value);
-            } else if (Array.isArray(value)) {
-                value.forEach((val, index) => {
-                    if (typeof val === 'object' && !(val instanceof File)) {
-                        this.appendNestedToFormData(formData, val, `${name}[${index}]`);
-                    } else {
-                        formData.append(`${name}[]`, val);
-                    }
-                });
-            } else if (typeof value === 'object' && value !== null) {
-                this.appendNestedToFormData(formData, value, name);
-            } else if (value !== null && value !== undefined) {
-                formData.append(name, value);
-            }
-        });
-    }
-
     onAddSubjectFile(subjectIndex: number) {
         const subjectGroup = this.subjects.at(subjectIndex);
-        const levels = subjectGroup.get('levels')?.value as string[];
+        const classrooms = subjectGroup.get('classrooms')?.value as string[];
 
-        if (!levels || levels.length === 0) {
-            this.toast.warning('Veuillez sélectionner au moins un niveau pour cette matière avant d\'ajouter un sujet.');
+        if (!classrooms || classrooms.length === 0) {
+            this.toast.warning('Veuillez sélectionner au moins une classe pour cette matière avant d\'ajouter un sujet.');
             return;
         }
 
-        if (levels.length > 1) {
-            // Open confirmation modal for multiple levels
+        if (classrooms.length > 1) {
             this.currentSubjectFileIndex.set(subjectIndex);
             this.isSubjectFileModalOpen.set(true);
         } else {
-            // Only 1 level, trigger file input directly
             this.triggerFileInput(subjectIndex);
         }
     }
 
-    triggerFileInput(subjectIndex: number, levelId: string = '') {
+    triggerFileInput(subjectIndex: number, classroomId: string = '') {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.pdf, .jpg, .jpeg, .png, .doc, .docx, .xls, .xlsx, .csv';
         input.onchange = (event: any) => {
             if (event.target.files && event.target.files.length > 0) {
-                this.onFileSelected(event, subjectIndex, levelId);
+                this.onFileSelected(event, subjectIndex, classroomId);
                 this.cdr.detectChanges();
             }
         };
@@ -489,20 +452,17 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         this.currentSubjectFileIndex.set(null);
     }
 
-    onFileSelected(event: any, subjectIndex: number, levelId: string = '') {
+    onFileSelected(event: any, subjectIndex: number, classroomId: string = '') {
         const file = event.target.files[0];
         if (file) {
             const subjectGroup = this.subjects.at(subjectIndex);
             const currentFiles = subjectGroup.get('subjectFiles')?.value || {};
+            const targetClassroom = classroomId || (subjectGroup.get('classrooms')?.value as string[])[0] || 'default';
 
-            // If it's a single file trigger (levelId is empty initially), we map it to the first level in the array
-            const targetLevel = levelId || (subjectGroup.get('levels')?.value as string[])[0] || 'default';
-
-            subjectGroup.patchValue({ subjectFiles: { ...currentFiles, [targetLevel]: file } });
+            subjectGroup.patchValue({ subjectFiles: { ...currentFiles, [targetClassroom]: file } });
         }
     }
 
-    // Checks if the subject group has any files attached
     hasFilesAttached(subjectIndex: number): boolean {
         const filesObj = this.subjects.at(subjectIndex)?.get('subjectFiles')?.value;
         if (!filesObj) return false;
@@ -515,56 +475,55 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
         return Object.entries(filesObj)
             .filter(([_, val]) => val !== null && val !== undefined)
-            .map(([levelId, val]: [string, any]) => {
+            .map(([classroomId, val]: [string, any]) => {
                 const fileName = val instanceof File ? val.name : (typeof val === 'string' ? val.split('/').pop() : 'Fichier existant');
-                if (levelId === 'default' || Object.keys(filesObj).length === 1) {
+                if (classroomId === 'default' || Object.keys(filesObj).length === 1) {
                     return fileName;
                 }
-                const levelName = this.getLevelName(levelId);
-                return `${levelName}: ${fileName}`;
+                const classroomName = this.getClassroomName(classroomId);
+                return `${classroomName}: ${fileName}`;
             }) as string[];
     }
 
-    getFilenameForLevel(subjectIndex: number, levelId: string): string | null {
+    getFilenameForClassroom(subjectIndex: number, classroomId: string): string | null {
         const filesObj = this.subjects.at(subjectIndex)?.get('subjectFiles')?.value;
-        if (!filesObj || !filesObj[levelId]) return null;
+        if (!filesObj || !filesObj[classroomId]) return null;
 
-        const val = filesObj[levelId];
+        const val = filesObj[classroomId];
         return val instanceof File ? val.name : (typeof val === 'string' ? val.split('/').pop() || val : 'Fichier existant');
     }
 
-    getLevelsForSubject(subjectIndex: number): { id: string, name: string }[] {
+    getClassroomsForSubject(subjectIndex: number, currentPlanningIndex: number = -1): any[] {
         const group = this.subjects.at(subjectIndex);
         if (!group) return [];
-        const levels = group.get('levels')?.value as string[] || [];
+        const selectedIds = group.get('classrooms')?.value as string[] || [];
+        
+        let classrooms = this.allClassroomsCache.filter(c => selectedIds.includes(c.id));
 
-        return levels.map(lId => {
-            const match = this.allLevelsCache.find(l => l.id === lId);
-            return { id: lId, name: match?.shortName || match?.code || match?.name || lId };
-        });
+        if (currentPlanningIndex !== -1) {
+            const plannings = group.get('plannings') as FormArray;
+            const alreadyPlannedIds = new Set<string>();
+            plannings.controls.forEach((p, idx) => {
+                if (idx !== currentPlanningIndex) {
+                    const ids = p.get('classrooms_ids')?.value as string[] || [];
+                    ids.forEach(id => alreadyPlannedIds.add(id));
+                }
+            });
+            classrooms = classrooms.filter(c => !alreadyPlannedIds.has(c.id));
+        }
+
+        return classrooms;
     }
 
-    getClassroomsForSubject(subjectIndex: number): any[] {
-        const group = this.subjects.at(subjectIndex);
-        if (!group) return [];
-        const selectedLevels = group.get('levels')?.value as string[] || [];
-        return this.allClassroomsCache.filter(c => selectedLevels.includes(c.level?.id));
-    }
-
-    getClassroomsForPlanning(subjectIndex: number, planningIndex: number): any[] {
-        // As requested: classrooms act as rooms, so we show all classrooms of the establishment
-        return this.allClassroomsCache;
+    getClassroomName(id: string) {
+        const match = this.allClassroomsCache.find(i => i.id === id);
+        return match?.name || 'Classe inconnue';
     }
 
     getSubjectName(id: string) {
         if (!id) return 'Nouvelle Matière';
         const match = this.allSubjectsCache.find(i => i.id === id);
         return match?.name || 'Matière inconnue';
-    }
-
-    getLevelName(id: string) {
-        const match = this.allLevelsCache.find(i => i.id === id);
-        return match?.name || match?.shortName || 'Niveau inconnu';
     }
 
     // --- SUPERVISION HELPERS ---
@@ -581,41 +540,38 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         return Array.from(dates).sort();
     }
 
-    getClassesNeedingSupervisionForDate(date: string): any[] {
-        const classroomsIds = new Set<string>();
+    getRoomsNeedingSupervisionForDate(date: string): any[] {
+        const roomsIds = new Set<string>();
         this.subjects.controls.forEach(sGroup => {
             const plannings = sGroup.get('plannings') as FormArray;
             plannings.controls.forEach(pGroup => {
                 if (pGroup.get('date')?.value === date) {
-                    const cls = pGroup.get('classrooms_ids')?.value as string[] || [];
-                    cls.forEach(id => classroomsIds.add(id));
+                    const rms = pGroup.get('rooms_ids')?.value as string[] || [];
+                    rms.forEach(id => roomsIds.add(id));
                 }
             });
         });
 
-        return this.allClassroomsCache.filter(c => classroomsIds.has(c.id));
+        return this.allRoomsCache.filter(r => roomsIds.has(r.id));
     }
 
-    getSupervisionControl(date: string, classroomId: string): FormGroup | null {
+    getSupervisionControl(date: string, roomId: string): FormGroup | null {
         return this.supervisions.controls.find(c =>
-            c.get('date')?.value === date && c.get('classroom')?.value === classroomId
+            c.get('date')?.value === date && c.get('room')?.value === roomId
         ) as FormGroup || null;
     }
 
-    ensureSupervisionExists(date: string, classroomId: string) {
-        if (!this.getSupervisionControl(date, classroomId)) {
-            this.addSupervision(date, classroomId);
+    ensureSupervisionExists(date: string, roomId: string) {
+        if (!this.getSupervisionControl(date, roomId)) {
+            this.addSupervision(date, roomId);
         }
     }
 
-    getSupervisorsForDisplay(date: string, classroomId: string): string {
-        const ctrl = this.getSupervisionControl(date, classroomId);
+    getSupervisorsForDisplay(date: string, roomId: string): string {
+        const ctrl = this.getSupervisionControl(date, roomId);
         if (!ctrl) return 'Aucun';
         const ids = ctrl.get('supervisors')?.value as string[] || [];
         if (ids.length === 0) return 'Aucun';
-
-        // This is a bit heavy for a template call, but okay for a small form
-        // In a real app we'd use a pipe or a pre-calculated map
         return `${ids.length} surveillant(s)`;
     }
 }

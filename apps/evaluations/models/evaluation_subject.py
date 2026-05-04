@@ -44,6 +44,12 @@ class EvaluationSubject(EstablishmentAwareModel):
         blank=True,
         help_text="Niveaux concernés par cette épreuve"
     )
+    classrooms = models.ManyToManyField(
+        'structure.ClassRoom',
+        related_name='evaluation_subjects',
+        blank=True,
+        verbose_name="Classes concernées"
+    )
     
     max_score = models.DecimalField(
         max_digits=5, 

@@ -3,7 +3,7 @@ import * as Types from '../../../graphql/types';
 import { gql } from 'apollo-angular';
 import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
-export type FeeDefinitionFieldsFragment = { __typename?: 'FeeDefinitionType', id: any, name: string, category: Types.FinanceFeeDefinitionCategoryChoices, amount: any, isActive: boolean, paymentModality: Types.FinanceFeeDefinitionPaymentModalityChoices, installmentCount: number, installmentPeriod?: Types.FinanceFeeDefinitionInstallmentPeriodChoices | null, level: { __typename?: 'LevelType', id: any, name: string }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string }, students: Array<{ __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string }>, classroom?: { __typename?: 'ClassRoomType', id: any, name: string } | null };
+export type FeeDefinitionFieldsFragment = { __typename?: 'FeeDefinitionType', id: any, name: string, category: Types.FinanceFeeDefinitionCategoryChoices, amount: any, isActive: boolean, paymentModality: Types.FinanceFeeDefinitionPaymentModalityChoices, installmentCount: number, installmentPeriod?: Types.FinanceFeeDefinitionInstallmentPeriodChoices | null, level: { __typename?: 'LevelType', id: any, name: string }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string }, students: Array<{ __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string }>, option?: { __typename?: 'OptionType', id: any, name: string } | null, classroom?: { __typename?: 'ClassRoomType', id: any, name: string } | null };
 
 export type InvoiceFieldsFragment = { __typename?: 'InvoiceType', id: any, title: string, totalAmount: any, paidAmount: any, remainingAmount?: any | null, dueDate?: any | null, status: Types.FinanceInvoiceStatusChoices, category: Types.FinanceInvoiceCategoryChoices, reference?: string | null, student: { __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string }, enrollment?: { __typename?: 'EnrollmentType', classroom: { __typename?: 'ClassRoomType', name: string } } | null };
 
@@ -11,20 +11,20 @@ export type PaymentFieldsFragment = { __typename?: 'PaymentType', id: any, amoun
 
 export type GetFeeDefinitionsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
-  levelId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  levelId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
 
 
-export type GetFeeDefinitionsQuery = { __typename?: 'Query', feeDefinitions?: { __typename?: 'FeeDefinitionTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, pageSize?: number | null, items?: Array<{ __typename?: 'FeeDefinitionType', id: any, name: string, category: Types.FinanceFeeDefinitionCategoryChoices, amount: any, isActive: boolean, paymentModality: Types.FinanceFeeDefinitionPaymentModalityChoices, installmentCount: number, installmentPeriod?: Types.FinanceFeeDefinitionInstallmentPeriodChoices | null, level: { __typename?: 'LevelType', id: any, name: string }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string }, students: Array<{ __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string }>, classroom?: { __typename?: 'ClassRoomType', id: any, name: string } | null } | null> | null } | null };
+export type GetFeeDefinitionsQuery = { __typename?: 'Query', feeDefinitions?: { __typename?: 'FeeDefinitionTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, pageSize?: number | null, items?: Array<{ __typename?: 'FeeDefinitionType', id: any, name: string, category: Types.FinanceFeeDefinitionCategoryChoices, amount: any, isActive: boolean, paymentModality: Types.FinanceFeeDefinitionPaymentModalityChoices, installmentCount: number, installmentPeriod?: Types.FinanceFeeDefinitionInstallmentPeriodChoices | null, level: { __typename?: 'LevelType', id: any, name: string }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string }, students: Array<{ __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string }>, option?: { __typename?: 'OptionType', id: any, name: string } | null, classroom?: { __typename?: 'ClassRoomType', id: any, name: string } | null } | null> | null } | null };
 
 export type GetInvoicesQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
-  studentId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  studentId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
   status?: Types.InputMaybe<Types.Scalars['String']['input']>;
   category?: Types.InputMaybe<Types.Scalars['String']['input']>;
-  classroomId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  classroomId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
@@ -33,7 +33,7 @@ export type GetInvoicesQueryVariables = Types.Exact<{
 export type GetInvoicesQuery = { __typename?: 'Query', invoices?: { __typename?: 'InvoiceTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, pageSize?: number | null, items?: Array<{ __typename?: 'InvoiceType', id: any, title: string, totalAmount: any, paidAmount: any, remainingAmount?: any | null, dueDate?: any | null, status: Types.FinanceInvoiceStatusChoices, category: Types.FinanceInvoiceCategoryChoices, reference?: string | null, student: { __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string }, enrollment?: { __typename?: 'EnrollmentType', classroom: { __typename?: 'ClassRoomType', name: string } } | null } | null> | null } | null };
 
 export type GetPaymentsQueryVariables = Types.Exact<{
-  invoiceId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  invoiceId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
@@ -69,6 +69,10 @@ export const FeeDefinitionFieldsFragmentDoc = gql`
     firstName
     lastName
     matricule
+  }
+  option {
+    id
+    name
   }
   classroom {
     id
@@ -126,7 +130,7 @@ export const PaymentFieldsFragmentDoc = gql`
 }
     `;
 export const GetFeeDefinitionsDocument = gql`
-    query GetFeeDefinitions($search: String, $levelId: Int, $page: Int, $pageSize: Int) {
+    query GetFeeDefinitions($search: String, $levelId: ID, $page: Int, $pageSize: Int) {
   feeDefinitions(
     search: $search
     levelId: $levelId
@@ -155,7 +159,7 @@ export const GetFeeDefinitionsDocument = gql`
     }
   }
 export const GetInvoicesDocument = gql`
-    query GetInvoices($search: String, $studentId: Int, $status: String, $category: String, $classroomId: Int, $page: Int, $pageSize: Int) {
+    query GetInvoices($search: String, $studentId: ID, $status: String, $category: String, $classroomId: ID, $page: Int, $pageSize: Int) {
   invoices(
     search: $search
     studentId: $studentId
@@ -187,7 +191,7 @@ export const GetInvoicesDocument = gql`
     }
   }
 export const GetPaymentsDocument = gql`
-    query GetPayments($invoiceId: Int, $page: Int, $pageSize: Int) {
+    query GetPayments($invoiceId: ID, $page: Int, $pageSize: Int) {
   payments(invoiceId: $invoiceId, page: $page, pageSize: $pageSize) {
     totalCount
     numPages

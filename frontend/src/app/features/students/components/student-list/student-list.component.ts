@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, OnDestroy, signal } from '@angular/core';
+import { Component, inject, ViewChild, TemplateRef, ChangeDetectorRef, signal, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormControl, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
@@ -67,6 +67,11 @@ export class StudentListComponent extends BaseModalListComponent<any> implements
     isFiltersOpen = signal(false);
     classrooms$ = this.classService.list();
     academicYears$ = this.academicYearService.list();
+    
+    transferForm = this.fb.group({
+        targetSchoolName: ['', [Validators.required]],
+        targetSchoolAddress: ['', [Validators.required]]
+    });
 
     private destroy$ = new Subject<void>();
     private cdr = inject(ChangeDetectorRef);
@@ -94,7 +99,7 @@ export class StudentListComponent extends BaseModalListComponent<any> implements
         // Sync Search
         this.searchControl.valueChanges.pipe(
             takeUntil(this.destroy$)
-        ).subscribe(val => {
+        ).subscribe((val: any) => {
             this.filterForm.patchValue({ search: val });
         });
 
@@ -138,7 +143,8 @@ export class StudentListComponent extends BaseModalListComponent<any> implements
             this.toastService.error('Aucune inscription active trouvée pour cet élève');
             return;
         }
-        this.selectedItem.set(enrollment);
+        this.selectedItem.set(item);
+        this.transferForm.reset();
         (this.modalMode as any).set('transfer');
         this.openModal();
     }
@@ -331,16 +337,97 @@ export class StudentListComponent extends BaseModalListComponent<any> implements
         });
     }
 
-    confirmTransfer() {
-        if (!this.selectedItem()) return;
-        this.enrollmentService.save({ id: this.selectedItem().id, status: 'LEFT' }).subscribe({
-            next: () => {
+    async confirmTransfer() {
+        if (!this.selectedItem() || this.transferForm.invalid) return;
+        
+        const enrollment = this.getCurrentEnrollment(this.selectedItem());
+        if (!enrollment) return;
+
+        this.isLoading.set(true);
+        this.enrollmentService.save({ 
+            id: enrollment.id, 
+            status: 'LEFT' 
+        }).subscribe({
+            next: async () => {
                 this.toastService.success('Départ enregistré avec succès');
+                const targetInfo = this.transferForm.value;
+                await this.printTransferApproval(this.selectedItem(), enrollment, targetInfo);
                 this.closeModal();
                 this.refresh();
             },
-            error: () => this.toastService.error('Erreur lors de l\'opération')
+            error: () => {
+                this.isLoading.set(false);
+                this.toastService.error('Erreur lors de l\'opération');
+            }
         });
+    }
+
+    async printTransferApproval(student: any, enrollment: any, target: any) {
+        try {
+            const [jsPDFModule] = await Promise.all([import('jspdf')]);
+            const JsPDF = (jsPDFModule as any).default || jsPDFModule;
+
+            // Fetch Establishment info
+            const estId = this.structureState.currentEstablishmentId();
+            let establishment: any = null;
+            if (estId) {
+                const ests = await firstValueFrom(this.establishmentService.getAll());
+                establishment = (ests.data as any)?.establishments?.items?.find((e: any) => e.id === estId);
+            }
+
+            const doc = new JsPDF();
+            this.generateTransferPDF(doc, student, enrollment, establishment, target);
+            doc.save(`transfert_${student.matricule}.pdf`);
+        } catch (err) {
+            console.error('Print Error:', err);
+            this.toastService.error('Erreur lors de l\'impression du transfert');
+        }
+    }
+
+    private generateTransferPDF(doc: any, student: any, enrollment: any, est: any, target: any) {
+        // Simple but clean PDF for transfer
+        const slate800 = [30, 41, 59];
+        const indigo600 = [79, 70, 229];
+
+        doc.setFillColor(...slate800);
+        doc.rect(0, 0, 210, 15, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text(est?.name?.toUpperCase() || 'ÉTABLISSEMENT SCOLAIRE', 105, 35, { align: 'center' });
+        
+        doc.setFontSize(16);
+        doc.setTextColor(...indigo600);
+        doc.text('CERTIFICAT DE TRANSFERT', 105, 55, { align: 'center' });
+
+        doc.setTextColor(...slate800);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        
+        const bodyY = 80;
+        doc.text(`Le Chef d'établissement de ${est?.name || 'l\'école'} certifie que l'élève :`, 20, bodyY);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${student.lastName.toUpperCase()} ${student.firstName}`, 20, bodyY + 10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Matricule: ${student.matricule}`, 20, bodyY + 15);
+        doc.text(`Classe: ${enrollment.classroom.name}`, 20, bodyY + 20);
+
+        doc.text(`Est autorisé(e) à être transféré(e) vers l'établissement suivant :`, 20, bodyY + 35);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text(target.targetSchoolName.toUpperCase(), 20, bodyY + 45);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Adresse: ${target.targetSchoolAddress}`, 20, bodyY + 50);
+
+        doc.text(`Le dossier scolaire de l'élève a été clôturé au sein de notre établissement.`, 20, bodyY + 70);
+
+        doc.text(`Fait à ${est?.city || 'Yaoundé'}, le ${new Date().toLocaleDateString('fr-FR')}`, 190, bodyY + 100, { align: 'right' });
+        doc.text('Le Directeur', 160, bodyY + 110);
+        
+        doc.setDrawColor(150);
+        doc.circle(170, bodyY + 130, 20);
+        doc.setFontSize(7);
+        doc.text('CACHET', 170, bodyY + 130, { align: 'center' });
     }
 
     getStatusLabel(status: string): string {

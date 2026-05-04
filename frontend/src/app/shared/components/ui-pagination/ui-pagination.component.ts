@@ -2,65 +2,149 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-ui-pagination',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
-    <div *ngIf="totalCount > 0" class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-b-2xl">
-      <!-- Mobile View -->
-      <div class="flex flex-1 justify-between sm:hidden">
-        <button 
-          (click)="onPrev()" 
-          [disabled]="currentPage === 1" 
-          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-          Précédent
-        </button>
-        <button 
-          (click)="onNext()" 
-          [disabled]="currentPage === numPages" 
-          class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-          Suivant
-        </button>
-      </div>
-
-      <!-- Desktop View -->
-      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <div>
-          <p class="text-sm text-gray-700">
-            Affichage de <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> à <span class="font-medium">{{ Math.min(currentPage * pageSize, totalCount) }}</span> sur <span class="font-medium">{{ totalCount }}</span> résultats
-          </p>
+  selector: 'app-ui-pagination',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div *ngIf="totalCount > 0" class="w-full select-none animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div class="w-full flex items-center bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-1.5 gap-2 group/pagination">
+        
+        <!-- Stats Integration -->
+        <div class="flex items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 gap-4">
+          <div class="flex flex-col min-w-[60px]">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Total</span>
+            <span class="text-xs font-bold text-slate-700">{{ totalCount }} <span class="text-[10px] font-medium text-slate-400 ml-0.5">items</span></span>
+          </div>
+          <div class="w-px h-6 bg-slate-200"></div>
+          <div class="flex flex-col min-w-[40px]">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Pages</span>
+            <span class="text-xs font-bold text-slate-700 text-center">{{ numPages }}</span>
+          </div>
         </div>
-        <div>
-          <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-            <button 
-              (click)="onPrev()" 
-              [disabled]="currentPage === 1" 
-              class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed">
-              <span class="sr-only">Précédent</span>
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
-              </svg>
-            </button>
-            
-            <!-- Current Page Indicator -->
-            <button class="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                {{ currentPage }}
-            </button>
 
-            <button 
-              (click)="onNext()" 
-              [disabled]="currentPage === numPages" 
-              class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed">
-              <span class="sr-only">Suivant</span>
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </nav>
+        <!-- Navigation Track (Centered) -->
+        <div class="flex-1 flex items-center justify-center gap-1">
+          <!-- Previous Button -->
+          <button (click)="onPrev()" [disabled]="currentPage === 1" 
+                  class="nav-trigger group/prev" [class.disabled]="currentPage === 1">
+            <svg class="w-4 h-4 transition-transform group-hover/prev:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <!-- Pages Container -->
+          <div class="flex items-center gap-1.5 px-4">
+            <ng-container *ngFor="let page of visiblePages">
+              <span *ngIf="page === -1" class="text-slate-300 font-bold px-1">...</span>
+              
+              <button *ngIf="page !== -1"
+                      (click)="onGoTo(page)"
+                      class="page-item"
+                      [class.active]="page === currentPage">
+                {{ page }}
+                <div *ngIf="page === currentPage" class="active-pill"></div>
+              </button>
+            </ng-container>
+          </div>
+
+          <!-- Next Button -->
+          <button (click)="onNext()" [disabled]="currentPage === numPages" 
+                  class="nav-trigger group/next" [class.disabled]="currentPage === numPages">
+            <svg class="w-4 h-4 transition-transform group-hover/next:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Current View Indicator -->
+        <div class="flex items-center pr-2">
+           <div class="page-indicator">
+             <span class="text-slate-400 mr-1 uppercase">Vue</span>
+             <span class="text-indigo-600 font-black">{{ currentPage }}</span>
+             <span class="text-slate-300 mx-1">/</span>
+             <span class="text-slate-500 font-bold">{{ numPages }}</span>
+           </div>
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .nav-trigger {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: white;
+      color: #64748b;
+      border: 1px solid #f1f5f9;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-trigger:hover:not(.disabled) {
+      background: #f8fafc;
+      color: #4f46e5;
+      border-color: #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .nav-trigger.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .page-item {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #94a3b8;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    .page-item:hover:not(.active) {
+      color: #4f46e5;
+      background: #f1f5f9;
+    }
+    .page-item.active {
+      color: white;
+      transform: translateY(-2px);
+      z-index: 2;
+    }
+
+    .active-pill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      border-radius: 10px;
+      z-index: -1;
+      box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.4);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .page-indicator {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 1rem;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #f1f5f9;
+      min-width: 100px;
+      text-align: center;
+    }
+  `]
 })
 export class UiPaginationComponent {
     @Input() currentPage = 1;
@@ -72,17 +156,20 @@ export class UiPaginationComponent {
     @Output() next = new EventEmitter<void>();
     @Output() goTo = new EventEmitter<number>();
 
-    protected Math = Math;
+    get visiblePages(): number[] {
+        const pages: number[] = [];
+        const delta = 1;
 
-    onPrev() {
-        if (this.currentPage > 1) {
-            this.prev.emit();
+        for (let i = 1; i <= this.numPages; i++) {
+            if (i === 1 || i === this.numPages || (i >= this.currentPage - delta && i <= this.currentPage + delta)) {
+                if (pages.length > 0 && i !== pages[pages.length - 1] + 1) pages.push(-1);
+                pages.push(i);
+            }
         }
+        return pages;
     }
 
-    onNext() {
-        if (this.currentPage < this.numPages) {
-            this.next.emit();
-        }
-    }
+    onPrev() { if (this.currentPage > 1) this.prev.emit(); }
+    onNext() { if (this.currentPage < this.numPages) this.next.emit(); }
+    onGoTo(page: number) { if (page !== this.currentPage && page > 0) this.goTo.emit(page); }
 }

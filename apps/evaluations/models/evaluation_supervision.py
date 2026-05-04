@@ -1,6 +1,5 @@
 from django.db import models
 from apps.core.models.establishment_aware_model import EstablishmentAwareModel
-from apps.structure.models import ClassRoom
 from .evaluation import EvaluationSession
 
 
@@ -15,11 +14,12 @@ class EvaluationSupervision(EstablishmentAwareModel):
         related_name='supervisions'
     )
     date = models.DateField()
-    classroom = models.ForeignKey(
-        ClassRoom, 
+    room = models.ForeignKey(
+        'structure.Room', 
         on_delete=models.CASCADE, 
         related_name='supervisions',
-        verbose_name="Classe (Salle)"
+        verbose_name="Salle",
+        null=True, blank=True
     )
     supervisors = models.ManyToManyField(
         'hr.Personnel', 
@@ -31,8 +31,8 @@ class EvaluationSupervision(EstablishmentAwareModel):
     class Meta:
         verbose_name = "Surveillance d'Évaluation"
         verbose_name_plural = "Surveillances d'Évaluation"
-        unique_together = ['session', 'date', 'classroom', 'establishment']
-        ordering = ['date', 'classroom']
+        unique_together = ['session', 'date', 'room', 'establishment']
+        ordering = ['date', 'room']
 
     def __str__(self):
-        return f"{self.date} - {self.classroom.name}"
+        return f"{self.date} - {self.room.name}"

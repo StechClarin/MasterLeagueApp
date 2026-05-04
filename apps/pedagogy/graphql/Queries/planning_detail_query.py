@@ -21,12 +21,17 @@ class PlanningDetailQuery(graphene.ObjectType):
 
     def resolve_planning_detail(root, info, id):
         try:
-            return PlanningDetail.objects.get(pk=id)
+            queryset = PlanningDetail.objects.filter(pk=id)
+            if hasattr(info.context, 'establishment_id') and info.context.establishment_id:
+                queryset = queryset.filter(establishment_id=info.context.establishment_id)
+            return queryset.get()
         except PlanningDetail.DoesNotExist:
             return None
 
     def resolve_planning_details(root, info, search=None, classe_id=None, min_date=None, max_date=None, page=1, page_size=10, **kwargs):
-        queryset = PlanningDetail.objects.filter(is_active=True).order_by('date', 'heure_debut')
+        from apps.core.graphql.utils.queryset_filter import get_context_filtered_queryset
+        queryset = get_context_filtered_queryset(PlanningDetail, info, order_by='date')
+        queryset = queryset.filter(is_active=True).order_by('date', 'heure_debut')
 
         if search:
             queryset = queryset.filter(

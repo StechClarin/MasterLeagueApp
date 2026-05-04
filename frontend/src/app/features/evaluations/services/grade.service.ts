@@ -14,7 +14,7 @@ export class GradeService extends BaseService {
         return this.generatedGQL.document;
     }
 
-    override list(evaluationSessionId?: number) {
+    override list(evaluationSessionId?: string) {
         return this.generatedGQL.fetch({
             evaluationSessionId,
             page: 1,
@@ -24,7 +24,7 @@ export class GradeService extends BaseService {
         );
     }
 
-    listByPeriodAndClass(academicPeriodId: number, classroomId: number) {
+    listByPeriodAndClass(academicPeriodId: string, classroomId: string) {
         return this.generatedGQL.fetch({
             academicPeriodId,
             classroomId,

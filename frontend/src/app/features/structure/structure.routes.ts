@@ -42,5 +42,11 @@ export const STRUCTURE_ROUTES: Routes = [
         loadComponent: () => import('./components/structure-tree/structure-tree.component')
             .then(m => m.StructureTreeComponent),
         data: { title: 'Cycles & Niveaux' }
+    },
+    {
+        path: 'rooms',
+        loadComponent: () => import('./components/room-list/room-list.component')
+            .then(m => m.RoomListComponent),
+        data: { title: 'Salles' }
     }
 ];

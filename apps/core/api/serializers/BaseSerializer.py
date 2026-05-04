@@ -25,6 +25,13 @@ class BaseSerializer(serializers.ModelSerializer):
     class Meta:
         abstract = True
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Injection automatique : 'establishment' est géré par le backend
+        if 'establishment' in self.fields:
+            self.fields['establishment'].required = False
+            self.fields['establishment'].allow_null = True
+
     def create(self, validated_data):
         """
         Surcharge de create pour injecter automatiquement l'établissement

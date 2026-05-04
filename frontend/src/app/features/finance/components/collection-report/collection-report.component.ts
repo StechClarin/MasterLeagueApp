@@ -5,6 +5,8 @@ import { PaymentService } from '../../services/payment.service';
 import { ClassRoomService } from '@features/structure/services/classroom.service';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
 
+import { StructureStateService } from '@core/services/structure-state.service';
+
 @Component({
   selector: 'app-collection-report',
   standalone: true,
@@ -29,10 +31,18 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
             </app-ui-select>
 
             <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium text-slate-700">Mois de situation</label>
+              <label class="text-sm font-medium text-slate-700">Du</label>
               <input 
-                type="month" 
-                formControlName="date" 
+                type="date" 
+                formControlName="startDate" 
+                class="h-[42px] px-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm">
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-medium text-slate-700">Au</label>
+              <input 
+                type="date" 
+                formControlName="endDate" 
                 class="h-[42px] px-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm">
             </div>
 
@@ -58,19 +68,19 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
       <!-- États des KPIs (Non imprimable) -->
       <div *ngIf="reportData() && !isLoading()" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 no-print">
          <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Encaissement Attendu</p>
-            <p class="text-2xl font-black text-slate-900">{{ reportData().totals.total_expected.toLocaleString() }} <span class="text-xs font-medium text-slate-400">FCFA</span></p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Attendu Période</p>
+            <p class="text-2xl font-black text-slate-900">{{ reportData().totals.total_expected_period.toLocaleString() }} <span class="text-xs font-medium text-slate-400">FCFA</span></p>
          </div>
-         <div class="bg-indigo-600 p-5 rounded-3xl shadow-xl shadow-indigo-100">
-            <p class="text-[10px] font-bold text-white/70 uppercase tracking-widest mb-1">Total Perçu</p>
-            <p class="text-2xl font-black text-white">{{ reportData().totals.total_paid.toLocaleString() }} <span class="text-xs font-medium text-white/50">FCFA</span></p>
+         <div class="bg-emerald-600 p-5 rounded-3xl shadow-xl shadow-emerald-100">
+            <p class="text-[10px] font-bold text-white/70 uppercase tracking-widest mb-1">Encaissé Période</p>
+            <p class="text-2xl font-black text-white">{{ reportData().totals.total_paid_period.toLocaleString() }} <span class="text-xs font-medium text-white/50">FCFA</span></p>
          </div>
          <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Reste à Recouvrer</p>
-            <p class="text-2xl font-black text-rose-600">{{ reportData().totals.total_due.toLocaleString() }} <span class="text-xs font-medium text-slate-400">FCFA</span></p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Reste à Recouvrer (Global)</p>
+            <p class="text-2xl font-black text-rose-600">{{ reportData().totals.total_remaining_global.toLocaleString() }} <span class="text-xs font-medium text-slate-400">FCFA</span></p>
          </div>
          <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Taux de Collecte</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Taux de Collecte (Période)</p>
             <p class="text-2xl font-black text-indigo-600">{{ reportData().totals.recovery_rate }}%</p>
             <div class="absolute bottom-0 left-0 h-1 bg-indigo-600 transition-all duration-1000" [style.width]="reportData().totals.recovery_rate + '%'"></div>
          </div>
@@ -78,71 +88,121 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
 
       <!-- Zone Imprimable -->
       <div id="print-area" *ngIf="reportData() && !isLoading()" class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100 print:shadow-none print:border-none print:p-0">
-        <!-- En-tête de l'impression -->
-        <div class="flex justify-between items-start mb-10">
+        <!-- En-tête Établissement (Pro) -->
+        <div class="flex justify-between items-start border-b-2 border-black pb-4 mb-6 relative z-10 hidden print:flex">
+           <div class="flex gap-4">
+              <img *ngIf="establishment()?.logo" [src]="establishment()?.logo" class="w-16 h-16 object-contain grayscale" alt="logo">
+              <div>
+                 <h1 class="text-xl font-black uppercase tracking-tight">{{ establishment()?.name }}</h1>
+                 <p class="text-[10px] uppercase font-bold text-gray-600 tracking-widest mt-0.5 mb-2" *ngIf="establishment()?.slogan">{{ establishment()?.slogan }}</p>
+                 <p class="text-xs font-medium">{{ establishment()?.address }} - {{ establishment()?.city }}</p>
+                 <p class="text-xs font-medium">Tél: {{ establishment()?.phone }}</p>
+                 <p class="text-xs font-medium" *ngIf="establishment()?.email">Email: {{ establishment()?.email }}</p>
+              </div>
+           </div>
+           <div class="text-right">
+              <h2 class="text-2xl font-black uppercase tracking-widest border-2 border-black px-4 py-1 inline-block bg-black text-white">ÉTAT DE RECOUVREMENT</h2>
+              <p class="text-xs font-bold mt-3">Édité le : {{ today | date:'dd/MM/yyyy HH:mm' }}</p>
+           </div>
+        </div>
+
+        <!-- En-tête de l'impression (Classique pour l'écran, fusionné en Pro) -->
+        <div class="flex justify-between items-start mb-6 print:hidden">
           <div>
             <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">État de Recouvrement</h2>
-            <div class="flex gap-4 mt-2">
-              <span class="text-sm font-bold text-indigo-600">Classe: {{ reportData().classroom_name }}</span>
-              <span class="text-sm font-bold text-slate-400 italic">Période de situation: {{ reportData().period }}</span>
-            </div>
           </div>
           <div class="text-right">
             <p class="text-xs font-bold text-slate-400 uppercase">Émis le</p>
             <p class="text-sm font-bold text-slate-900">{{ today | date:'dd/MM/yyyy HH:mm' }}</p>
           </div>
         </div>
+        
+        <!-- Info Classe et Période -->
+        <div class="flex flex-col gap-1 mb-6 border-2 border-black p-4 bg-gray-50 print:bg-white">
+           <div class="grid grid-cols-2 gap-4">
+               <div>
+                  <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Classe / Niveau</span>
+                  <p class="text-lg font-black text-black uppercase">{{ reportData().classroom_name }}</p>
+               </div>
+               <div class="text-right">
+                  <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Période analysée</span>
+                  <p class="text-lg font-black text-black">Du <span class="font-mono">{{ reportData().start_date }}</span> au <span class="font-mono">{{ reportData().end_date }}</span></p>
+               </div>
+           </div>
+        </div>
 
-        <!-- Tableau -->
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse">
-            <thead>
-              <tr class="border-b-2 border-slate-900">
-                <th class="py-4 text-left text-xs font-black text-slate-900 uppercase tracking-widest">Matricule</th>
-                <th class="py-4 text-left text-xs font-black text-slate-900 uppercase tracking-widest">Nom & Prénoms</th>
-                <th class="py-4 text-right text-xs font-black text-slate-900 uppercase tracking-widest">Montant à Payer</th>
-                <th class="py-4 text-right text-xs font-black text-slate-900 uppercase tracking-widest">Montant Payé</th>
-                <th class="py-4 text-right text-xs font-black text-slate-900 uppercase tracking-widest">Reste Dû</th>
-                <th class="py-4 text-center text-xs font-black text-slate-900 uppercase tracking-widest">Statut</th>
+        <!-- Tableau Professionnel -->
+        <div class="mb-8 overflow-x-auto">
+          <table class="w-full text-[11px] border-collapse border-2 border-black print:text-[9px]">
+            <thead class="bg-gray-100 text-gray-700 uppercase font-black">
+              <tr>
+                <th class="border border-black px-2 py-2 text-left" rowspan="2">Matricule</th>
+                <th class="border border-black px-2 py-2 text-left" rowspan="2">Nom & Prénoms</th>
+                <th class="border border-black px-2 py-1 text-center bg-gray-200" colspan="2">Annuel (Global)</th>
+                <th class="border border-black px-2 py-1 text-center bg-gray-50" colspan="3">Période Analysée</th>
+                <th class="border border-black px-2 py-2 text-right" rowspan="2">Reste Global</th>
+                <th class="border border-black px-2 py-2 text-center" rowspan="2">À Jour</th>
+              </tr>
+              <tr>
+                <th class="border border-black px-2 py-1 text-right bg-gray-200">Scolarité</th>
+                <th class="border border-black px-2 py-1 text-right bg-gray-200">Déjà Payé</th>
+                <th class="border border-black px-2 py-1 text-right bg-gray-50">Attendu</th>
+                <th class="border border-black px-2 py-1 text-right bg-gray-50">Encaissé</th>
+                <th class="border border-black px-2 py-1 text-right bg-gray-50">Reste (Pér.)</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of reportData().items" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td class="py-4 text-sm font-mono text-indigo-600 font-bold">{{ item.student.matricule }}</td>
-                <td class="py-4 text-sm font-bold text-slate-900 uppercase">{{ item.student.lastName }} {{ item.student.firstName }}</td>
-                <td class="py-4 text-sm font-bold text-right text-slate-700">{{ item.expected_amount.toLocaleString() }}</td>
-                <td class="py-4 text-sm font-bold text-right text-indigo-600">{{ item.paid_amount.toLocaleString() }}</td>
-                <td class="py-4 text-sm font-bold text-right" [class.text-rose-600]="item.due_amount > 0" [class.text-emerald-600]="item.due_amount === 0">
-                  {{ item.due_amount.toLocaleString() }}
+              <tr *ngFor="let item of reportData().items" class="font-medium hover:bg-slate-50 transition-colors">
+                <td class="border border-black px-2 py-1.5 font-mono text-gray-700 font-bold whitespace-nowrap">{{ item.student.matricule }}</td>
+                <td class="border border-black px-2 py-1.5 font-bold uppercase whitespace-nowrap">{{ item.student.lastName }} {{ item.student.firstName }}</td>
+                
+                <!-- Annuel -->
+                <td class="border border-black px-2 py-1.5 text-right font-bold text-gray-600 bg-gray-100/50">{{ item.total_expected_global.toLocaleString() }}</td>
+                <td class="border border-black px-2 py-1.5 text-right font-black text-emerald-700 bg-emerald-50/50">{{ item.total_paid_global.toLocaleString() }}</td>
+                
+                <!-- Période -->
+                <td class="border border-black px-2 py-1.5 text-right font-bold">{{ item.expected_period.toLocaleString() }}</td>
+                <td class="border border-black px-2 py-1.5 text-right font-black text-emerald-600">{{ item.paid_period.toLocaleString() }}</td>
+                <td class="border border-black px-2 py-1.5 text-right font-bold" [class.text-red-600]="item.due_balance > 0">
+                  {{ item.due_balance.toLocaleString() }}
                 </td>
-                <td class="py-4 text-center">
-                  <span 
-                    [class]="'text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest ' + (item.due_amount === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')">
-                    {{ item.due_amount === 0 ? 'En Règle' : 'Reliquat' }}
-                  </span>
+
+                <!-- Fin -->
+                <td class="border border-black px-2 py-1.5 text-right font-black bg-gray-100/50" [class.text-red-600]="item.remaining_global > 0">
+                  {{ item.remaining_global.toLocaleString() }}
+                </td>
+                <td class="border border-black px-2 py-1.5 text-center">
+                  <span *ngIf="item.is_up_to_date" class="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-[9px] uppercase rounded-sm print:bg-white print:border-none print:text-black">OUI</span>
+                  <span *ngIf="!item.is_up_to_date" class="px-2 py-0.5 bg-red-100 text-red-800 border border-red-300 font-bold text-[9px] uppercase rounded-sm print:bg-white print:border-none print:text-black">NON</span>
                 </td>
               </tr>
             </tbody>
             <tfoot>
-              <tr class="bg-slate-900 text-white font-bold">
-                <td colspan="2" class="py-4 px-6 text-sm uppercase tracking-widest">Totaux de la Classe</td>
-                <td class="py-4 text-right text-sm">{{ reportData().totals.total_expected.toLocaleString() }}</td>
-                <td class="py-4 text-right text-sm">{{ reportData().totals.total_paid.toLocaleString() }}</td>
-                <td class="py-4 text-right text-sm">{{ reportData().totals.total_due.toLocaleString() }}</td>
-                <td class="py-4 text-center text-sm">{{ reportData().totals.recovery_rate }}%</td>
+              <tr class="bg-black text-white font-black text-[12px] print:text-[10px]">
+                <td colspan="2" class="border border-black py-2 px-2 uppercase tracking-widest text-center">Totaux de la Classe</td>
+                <td class="border border-black py-2 px-2 text-right">{{ reportData().totals.total_expected_global.toLocaleString() }}</td>
+                <td class="border border-black py-2 px-2 text-right text-emerald-300">{{ reportData().totals.total_paid_global.toLocaleString() }}</td>
+                <td class="border border-black py-2 px-2 text-right">{{ reportData().totals.total_expected_period.toLocaleString() }}</td>
+                <td class="border border-black py-2 px-2 text-right text-emerald-300">{{ reportData().totals.total_paid_period.toLocaleString() }}</td>
+                <td class="border border-black py-2 px-2 text-right text-red-300">{{ reportData().totals.total_remaining_period.toLocaleString() }}</td>
+                <td class="border border-black py-2 px-2 text-right text-red-300">{{ reportData().totals.total_remaining_global.toLocaleString() }}</td>
+                <td class="border border-black py-2 px-2 text-center text-emerald-300">{{ reportData().totals.recovery_rate }}%</td>
               </tr>
             </tfoot>
           </table>
         </div>
 
         <!-- Pied de page Impression -->
-        <div class="mt-20 flex justify-between items-end print:mt-10">
-          <div class="text-slate-400 text-[10px] italic">
-            Document généré par le système de gestion scolaire ALPHA v1.0
-          </div>
-          <div class="border-t-2 border-slate-900 pt-2 w-64 text-center">
-            <p class="text-xs font-black uppercase tracking-widest text-slate-900">Cachet & Signature</p>
-          </div>
+        <div class="mt-12 pt-4 border-t border-dashed border-gray-400 text-center relative z-10 hidden print:block">
+           <div class="flex justify-between items-start mb-12 px-10">
+              <div class="text-center">
+                 <p class="text-xs font-black uppercase border-b border-black pb-8 mb-1 inline-block w-full max-w-[200px]">Visa Direction</p>
+              </div>
+              <div class="text-center">
+                 <p class="text-xs font-black uppercase border-b border-black pb-8 mb-1 inline-block w-full max-w-[200px]">L'Économe / Caisse</p>
+              </div>
+           </div>
+           <p class="text-[9px] text-gray-400 font-mono uppercase tracking-tighter">Généré par Yekola ERP • {{ today | date:'dd/MM/yyyy HH:mm' }} • Taux de recouvrement: {{ reportData().totals.recovery_rate }}%</p>
         </div>
       </div>
 
@@ -151,27 +211,38 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
          <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
             <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
          </div>
-         <p class="text-slate-900 font-bold">Sélectionnez une classe et un mois pour générer le bilan.</p>
-         <p class="text-slate-400 text-sm">Le calcul tiendra compte du prorata des tranches.</p>
+         <p class="text-slate-900 font-bold">Sélectionnez une classe et une période pour générer le bilan.</p>
+         <p class="text-slate-400 text-sm">Le calcul analyse les flux financiers entre les deux dates choisies (frais obligatoires uniquement).</p>
       </div>
     </div>
 
     <style>
       @media print {
+        /* Forcer l'impression des couleurs d'arrière-plan */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
         /* Masquer les éléments d'UI globaux */
         app-sidebar, app-header, .no-print, app-ui-toast, header, nav, aside {
           display: none !important;
         }
 
         /* Réinitialiser les conteneurs de layout pour l'impression */
-        body, .flex, .h-screen, .ml-72, .overflow-hidden, .overflow-y-auto, main {
+        body, main, app-layout, .h-screen, .min-h-screen, .ml-72, .overflow-hidden, .overflow-y-auto {
           display: block !important;
           height: auto !important;
+          min-height: 0 !important;
           width: auto !important;
           overflow: visible !important;
           margin: 0 !important;
           padding: 0 !important;
           position: static !important;
+        }
+
+        .p-6 {
+          padding: 0 !important;
         }
 
         /* Forcer le fond blanc et supprimer les ombres */
@@ -182,9 +253,9 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
         /* Ajuster la zone d'impression */
         #print-area {
           display: block !important;
-          margin: 0 !important;
-          padding: 1cm !important;
-          width: 100% !important;
+          margin: 0 auto !important;
+          padding: 0 !important;
+          width: 95% !important;
           box-shadow: none !important;
           border: none !important;
         }
@@ -201,8 +272,8 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
         }
 
         @page {
-          size: landscape;
-          margin: 0;
+          size: A4 portrait;
+          margin: 10mm;
         }
       }
     </style>
@@ -212,26 +283,49 @@ export class CollectionReportComponent implements OnInit {
   private fb = inject(FormBuilder);
   private paymentService = inject(PaymentService);
   private classroomService = inject(ClassRoomService);
+  private structureState = inject(StructureStateService);
   
   filterForm!: FormGroup;
   classrooms = signal<any[]>([]);
   reportData = signal<any>(null);
   isLoading = signal(false);
   today = new Date();
+  establishment = signal<any>(null);
 
   ngOnInit() {
     this.initForm();
     this.loadClassrooms();
+    
+    // Fetch establishment for print layout
+    if (this.structureState.establishments().length === 0) {
+        this.structureState.fetchEstablishments();
+    }
+    this.updateEstablishment();
   }
 
+  updateEstablishment() {
+    const estId = this.structureState.currentEstablishmentId();
+    const allEst = this.structureState.establishments();
+    const current = allEst.find((e: any) => e.id === estId);
+    if (current) {
+        this.establishment.set(current);
+    } else if (allEst.length > 0) {
+        this.establishment.set(allEst[0]);
+    }
+  }
+
+
   initForm() {
-    // Par défaut le mois actuel
     const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+    // Premier jour du mois
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    // Aujourd'hui
+    const today = now.toISOString().split('T')[0];
     
     this.filterForm = this.fb.group({
       classroomId: [null, Validators.required],
-      date: [currentMonth, Validators.required]
+      startDate: [firstDay, Validators.required],
+      endDate: [today, Validators.required]
     });
   }
 
@@ -242,20 +336,28 @@ export class CollectionReportComponent implements OnInit {
   }
 
   loadReport() {
-    if (this.filterForm.invalid) return;
+    console.log('Load Report Triggered');
+    console.log('Form Validity:', this.filterForm.valid);
+    console.log('Form Values:', this.filterForm.value);
+
+    if (this.filterForm.invalid) {
+      console.warn('Form is invalid, stopping loadReport');
+      return;
+    }
     
     this.isLoading.set(true);
     const val = this.filterForm.value;
     
-    // On ajoute -01 pour avoir une date valide (YYYY-MM-01)
-    const dateLimit = `${val.date}-01`;
-    
-    this.paymentService.getCollectionReport(val.classroomId, dateLimit).subscribe({
+    this.paymentService.getCollectionReport(val.classroomId, val.startDate, val.endDate).subscribe({
       next: (res: any) => {
+        console.log('Report Data Received:', res);
         this.reportData.set(res.data);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: (err) => {
+        console.error('Report Loading Error:', err);
+        this.isLoading.set(false);
+      }
     });
   }
 

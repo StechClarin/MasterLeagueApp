@@ -23,7 +23,40 @@ class StudentService(BaseService):
                 except json.JSONDecodeError:
                     pass
         
-        return super().before_validate(data, instance)
+        data = super().before_validate(data, instance)
+        if not data.get('matricule') and not instance:
+            data['matricule'] = self._generate_matricule(data.get('establishment') or data.get('establishment_id'))
+        return data
+
+    def _generate_matricule(self, establishment_id=None):
+        from datetime import date
+        year_suffix = date.today().strftime('%y')
+        
+        est_code = "ET"
+        establishment = None
+        if establishment_id:
+            from apps.core.models.establishment import Establishment
+            establishment = Establishment.objects.filter(id=establishment_id).first()
+            if establishment and establishment.name:
+                est_code = establishment.name[:2].upper()
+            
+        pattern = f"{year_suffix}-{est_code}-"
+        
+        last_student = self.model.all_objects.filter(
+            matricule__startswith=pattern,
+            establishment=establishment
+        ).order_by('-matricule').first()
+        
+        seq = 1
+        if last_student and last_student.matricule:
+            try:
+                parts = last_student.matricule.split('-')
+                if len(parts) >= 3:
+                     seq = int(parts[2]) + 1
+            except ValueError:
+                pass
+        
+        return f"{year_suffix}-{est_code}-{seq:04d}"
 
     def save_process(self, data, instance=None):
         # Extract nested data for after_save
@@ -75,13 +108,20 @@ class StudentService(BaseService):
 
         # 2. Inscription
         if enrollment_data:
-            # academic_year_id et classroom_id sont garantis par le Serializer
+            # Récupération sécurisée des instances ou IDs
+            classroom_id = enrollment_data.get('classroom_id')
+            academic_year_id = enrollment_data.get('academic_year_id')
+            
+            # DRF PrimaryKeyRelatedField renvoie l'objet, on extrait l'ID si c'est le cas
+            if hasattr(classroom_id, 'id'): classroom_id = classroom_id.id
+            if hasattr(academic_year_id, 'id'): academic_year_id = academic_year_id.id
+
             Enrollment.objects.update_or_create(
                 student=student,
-                academic_year_id=enrollment_data.get('academic_year_id'),
+                academic_year_id=academic_year_id,
                 defaults={
-                    'establishment': student.establishment,
-                    'classroom_id': enrollment_data.get('classroom_id'),
+                    'establishment_id': student.establishment_id,
+                    'classroom_id': classroom_id,
                     'is_repeater': enrollment_data.get('is_repeater', False),
                     'status': 'REGISTERED'
                 }

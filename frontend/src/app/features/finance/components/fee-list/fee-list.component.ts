@@ -177,6 +177,12 @@ export class FeeListComponent extends BaseModalListComponent<any> implements OnI
         { header: 'Catégorie', key: 'category' },
         { header: 'Montant', format: (item) => `${item.amount?.toLocaleString()} FCFA` },
         { header: 'Niveau', format: (item) => item.level?.name || '-' },
+        { header: 'Ciblage', format: (item) => {
+            if (item.students?.length) return `Élèves (${item.students.length})`;
+            if (item.classroom) return `Classe: ${item.classroom.name}`;
+            if (item.option) return `Filière: ${item.option.name}`;
+            return 'Global';
+        }},
         { header: 'Année', format: (item) => item.academicYear?.name || '-' }
       ];
       this.cdr.detectChanges();

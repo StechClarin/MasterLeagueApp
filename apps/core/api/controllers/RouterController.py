@@ -38,6 +38,10 @@ class RouterView(APIView):
         # 2. Instancier et Vérifier la méthode
         controller_instance = controller_class()
         
+        # Lier manuellement la requête (DRF le fait normalement dans dispatch)
+        controller_instance.request = request
+        controller_instance.format_kwarg = None
+        
         # [CRITICAL UPDATE] On doit appeler initial() manuellement pour que le BaseController
         # puisse injecter le contexte (Set Context) avant l'exécution de l'action.
         controller_instance.initial(request)
@@ -74,6 +78,13 @@ class RouterView(APIView):
 
         # 2. Instancier et Vérifier la méthode
         controller_instance = controller_class()
+        
+        # Lier manuellement la requête (DRF le fait normalement dans dispatch)
+        controller_instance.request = request
+        controller_instance.format_kwarg = None
+        
+        # [CRITICAL] On doit appeler initial() pour injecter le contexte (Establishment/User)
+        controller_instance.initial(request)
         
         if not hasattr(controller_instance, method_name):
             return Response(

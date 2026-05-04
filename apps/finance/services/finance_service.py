@@ -23,8 +23,15 @@ class FinanceService(BaseService):
 
     def generate_invoice_reference(self):
         from datetime import date
+        from apps.core.models import Establishment
+        
         year = date.today().year
-        prefix = f"FAC-{year}-"
+        # Récupération du code établissement pour garantir l'unicité du préfixe
+        est = Establishment.objects.get(id=self.establishment_id)
+        # On utilise le code, sinon les 3 premières lettres du nom (nettoyé)
+        est_code = (est.code or est.name[:3]).upper().replace(' ', '')
+        
+        prefix = f"FAC-{est_code}-{year}-"
         
         last_invoice = Invoice.objects.filter(
             reference__startswith=prefix,
@@ -34,7 +41,9 @@ class FinanceService(BaseService):
         seq = 1
         if last_invoice and last_invoice.reference:
             try:
-                seq = int(last_invoice.reference.split('-')[-1]) + 1
+                # On prend la dernière partie numérique
+                parts = last_invoice.reference.split('-')
+                seq = int(parts[-1]) + 1
             except (ValueError, IndexError):
                 pass
                 
@@ -43,20 +52,27 @@ class FinanceService(BaseService):
     @staticmethod
     def generate_invoices_for_enrollment(enrollment):
         """
-        Génère automatiquement les factures en fonction du niveau de l'inscription.
+        Génère automatiquement les factures en fonction du niveau et de l'option de l'inscription.
+        Logique de priorité (Surgical) : Étudiant > Classe > Option > Niveau (Par catégorie).
         """
         from django.db.models import Q
-        fees = FeeDefinition.objects.filter(
-            Q(level=enrollment.classroom.level, students__isnull=True, classroom__isnull=True) |
-            Q(students=enrollment.student) |
-            Q(classroom=enrollment.classroom),
+        
+        # 1. Récupérer TOUS les candidats potentiels
+        potential_fees = FeeDefinition.objects.filter(
+            Q(level=enrollment.classroom.level, students__isnull=True, classroom__isnull=True, option__isnull=True) | # Global Niveau
+            Q(level=enrollment.classroom.level, option=enrollment.classroom.option) | # Par Filière/Option
+            Q(classroom=enrollment.classroom) | # Par Classe
+            Q(students=enrollment.student), # Par Élève (Dérogation)
             academic_year=enrollment.academic_year,
             establishment=enrollment.establishment,
             is_active=True,
             is_required=True
-        ).distinct()
-        
-        if not fees.exists():
+        ).order_by('id')
+
+        # 2. Arbitrage des priorités par catégorie ( Substitution )
+        final_fees = FinanceService.resolve_fees_priority(potential_fees)
+
+        if not final_fees:
             logger.warning(f"Aucun frais défini pour le niveau {enrollment.classroom.level} ({enrollment.academic_year})")
             return []
 
@@ -65,7 +81,7 @@ class FinanceService(BaseService):
         service.set_context(None, enrollment.establishment_id)
 
         created_invoices = []
-        for fee in fees:
+        for fee in final_fees:
             # Vérifier si une facture identique existe déjà pour cet élève/inscription
             exists = Invoice.objects.filter(
                 student=enrollment.student,
@@ -112,72 +128,108 @@ class FinanceService(BaseService):
             'invoices_count': invoices.count()
         }
 
-    def get_collection_report(self, classroom_id, report_date_str):
+    def get_collection_report(self, classroom_id, start_date_str, end_date_str):
         """
-        Génère un état de recouvrement pour une classe à une date donnée.
+        Génère un état de recouvrement périodique pour une classe.
         """
         from apps.students.models import Enrollment
         from django.utils.dateparse import parse_date
         
-        report_date = parse_date(report_date_str) if isinstance(report_date_str, str) else report_date_str
-        if not report_date:
-            report_date = date.today()
+        start_date = parse_date(start_date_str) if isinstance(start_date_str, str) else start_date_str
+        end_date = parse_date(end_date_str) if isinstance(end_date_str, str) else end_date_str
+        
+        if not start_date: start_date = date.today().replace(day=1)
+        if not end_date: end_date = date.today()
 
         enrollments = Enrollment.objects.filter(
             classroom_id=classroom_id,
             establishment_id=self.establishment_id,
-            status='ACTIVE'
+            status='REGISTERED'
         ).select_related('student', 'classroom', 'academic_year', 'classroom__level')
 
         report_data = []
-        total_class_expected = 0
-        total_class_paid = 0
-        total_class_due = 0
+        total_class_expected_period = 0
+        total_class_paid_period = 0
+        total_class_due_final = 0
 
         for enrollment in enrollments:
-            # 1. Identifier tous les frais applicables à cet élève
-            fee_defs = FeeDefinition.objects.filter(
-                Q(level=enrollment.classroom.level, students__isnull=True, classroom__isnull=True) |
+            # 1. Identifier tous les frais applicables
+            potential_fees = FeeDefinition.objects.filter(
+                Q(level=enrollment.classroom.level, students__isnull=True, classroom__isnull=True, option__isnull=True) |
+                Q(level=enrollment.classroom.level, option=enrollment.classroom.option) |
                 Q(students=enrollment.student) |
                 Q(classroom=enrollment.classroom),
                 academic_year=enrollment.academic_year,
                 establishment=enrollment.establishment,
                 is_active=True,
                 is_required=True
-            ).distinct()
-
-            student_expected = 0
-            student_paid = 0
+            ).order_by('id')
             
-            # Calcul du théorique attendu à la date du rapport
-            start_date = enrollment.academic_year.start_date
-            # Calcul simpliste du nombre de mois écoulés (incluant le mois de début)
-            months_elapsed = (report_date.year - start_date.year) * 12 + (report_date.month - start_date.month) + 1
-            months_elapsed = max(1, months_elapsed)
+            fee_defs = FinanceService.resolve_fees_priority(potential_fees)
 
+            expected_until_start = 0
+            expected_until_end = 0
+            
+            academic_start = enrollment.academic_year.start_date
+            
+            # Calcul des mois écoulés
+            months_until_start = (start_date.year - academic_start.year) * 12 + (start_date.month - academic_start.month)
+            months_until_end = (end_date.year - academic_start.year) * 12 + (end_date.month - academic_start.month) + 1
+            
             for fee in fee_defs:
                 if fee.payment_modality == 'UNIQUE':
-                    # On considère que les frais uniques sont dus dès le premier mois
-                    student_expected += fee.amount
+                    # Frais uniques dus dès le début
+                    expected_until_start += fee.amount
+                    expected_until_end += fee.amount
                 else:
-                    # Pour les tranches, on calcule le prorata
                     count = fee.installment_count or 1
-                    monthly_amount = fee.amount / count
-                    # On ne peut pas demander plus que le montant total
-                    periods_to_pay = min(months_elapsed, count)
-                    student_expected += (monthly_amount * periods_to_pay)
+                    
+                    periods_start = min(max(0, months_until_start), count)
+                    periods_end = min(max(0, months_until_end), count)
 
-            # 2. Récupérer le perçu total pour cet élève (sur cette année/inscription)
-            actual_invoices = Invoice.objects.filter(
-                student=enrollment.student,
-                enrollment=enrollment,
-                establishment_id=self.establishment_id
-            )
-            student_paid = actual_invoices.aggregate(Sum('paid_amount'))['paid_amount__sum'] or 0
+                    if fee.custom_installments and len(fee.custom_installments) == count:
+                        custom_insts = sorted(fee.custom_installments, key=lambda x: int(x.get('tranche', 0)))
+                        expected_until_start += sum(float(inst.get('amount', 0)) for inst in custom_insts[:periods_start])
+                        expected_until_end += sum(float(inst.get('amount', 0)) for inst in custom_insts[:periods_end])
+                    else:
+                        monthly_amount = fee.amount / count
+                        expected_until_start += (monthly_amount * periods_start)
+                        expected_until_end += (monthly_amount * periods_end)
+
+            expected_period = expected_until_end - expected_until_start
+            if expected_period < 0: expected_period = 0
             
-            # 3. Calcul du reste à payer à date
-            student_due = student_expected - student_paid
-            if student_due < 0: student_due = 0 # Trop-perçu ou avance
+            # Catégories de frais considérées comme obligatoires pour cet élève
+            mandatory_categories = [fee.category for fee in fee_defs]
+
+            # 2. Récupérer les paiements de la période (uniquement pour frais obligatoires)
+            payments_period = Payment.objects.filter(
+                invoice__enrollment=enrollment,
+                invoice__category__in=mandatory_categories,
+                payment_date__date__range=[start_date, end_date],
+                establishment_id=self.establishment_id
+            ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+            # 3. Calculer le reste global à la date de fin
+            total_expected_to_date = expected_until_end
+            total_paid_to_date = Payment.objects.filter(
+                invoice__enrollment=enrollment,
+                invoice__category__in=mandatory_categories,
+                payment_date__date__lte=end_date,
+                establishment_id=self.establishment_id
+            ).aggregate(Sum('amount'))['amount__sum'] or 0
+            
+            remaining_balance = total_expected_to_date - total_paid_to_date
+            if remaining_balance < 0: remaining_balance = 0
+
+            # 4. Calculer les montants globaux annuels
+            total_expected_global = sum(fee.amount for fee in fee_defs)
+            total_paid_global = total_paid_to_date
+            remaining_global = total_expected_global - total_paid_global
+            if remaining_global < 0: remaining_global = 0
+
+            # 5. Statut à jour
+            is_up_to_date = total_paid_to_date >= total_expected_to_date
 
             report_data.append({
                 'student': {
@@ -186,26 +238,63 @@ class FinanceService(BaseService):
                     'lastName': enrollment.student.last_name,
                     'matricule': enrollment.student.matricule,
                 },
-                'expected_amount': float(student_expected),
-                'paid_amount': float(student_paid),
-                'due_amount': float(student_due),
+                'total_expected_global': total_expected_global,
+                'total_paid_global': total_paid_global,
+                'expected_period': expected_period,
+                'paid_period': payments_period,
+                'due_balance': remaining_balance, # Reste à payer (à la date de fin)
+                'remaining_global': remaining_global,
+                'is_up_to_date': is_up_to_date
             })
 
-            total_class_expected += student_expected
-            total_class_paid += student_paid
-            total_class_due += student_due
+        # Totals calculation
+        total_exp_global = sum(item['total_expected_global'] for item in report_data)
+        total_pd_global = sum(item['total_paid_global'] for item in report_data)
+        total_exp_period = sum(item['expected_period'] for item in report_data)
+        total_pd_period = sum(item['paid_period'] for item in report_data)
+        total_rem_period = sum(item['due_balance'] for item in report_data)
+        total_rem_global = sum(item['remaining_global'] for item in report_data)
 
-        # Calcul du taux de recouvrement
-        recovery_rate = (total_class_paid / total_class_expected * 100) if total_class_expected > 0 else 0
+        recovery_rate = (total_pd_period / total_exp_period * 100) if total_exp_period > 0 else 100
+        if recovery_rate > 100: recovery_rate = 100
 
         return {
-            'period': report_date.strftime('%B %Y'),
+            'start_date': start_date.strftime('%d/%m/%Y'),
+            'end_date': end_date.strftime('%d/%m/%Y'),
             'classroom_name': enrollments.first().classroom.name if enrollments.exists() else 'N/A',
             'items': report_data,
             'totals': {
-                'total_expected': float(total_class_expected),
-                'total_paid': float(total_class_paid),
-                'total_due': float(total_class_due),
+                'total_expected_global': float(total_exp_global),
+                'total_paid_global': float(total_pd_global),
+                'total_expected_period': float(total_exp_period),
+                'total_paid_period': float(total_pd_period),
+                'total_remaining_period': float(total_rem_period),
+                'total_remaining_global': float(total_rem_global),
                 'recovery_rate': round(float(recovery_rate), 2)
             }
         }
+
+    @staticmethod
+    def resolve_fees_priority(potential_fees):
+        """
+        Méthode utilitaire pour arbitrer les priorités de frais par catégorie.
+        Surgical Priority: Student (4) > Class (3) > Option (2) > Level (1)
+        """
+        fees_by_category = {}
+        
+        for fee in potential_fees:
+            category = fee.category
+            current_best = fees_by_category.get(category)
+            
+            # Calcul du score de précision
+            score = 1 # Niveau (par défaut)
+            if fee.option_id: score = 2
+            if fee.classroom_id: score = 3
+            # On vérifie si l'item a des relations ManyToMany chargées ou via ID
+            # Dans un queryset, 'students' peut être accédé
+            if fee.students.exists(): score = 4 
+            
+            if not current_best or score >= current_best['score']:
+                fees_by_category[category] = {'fee': fee, 'score': score}
+
+        return [item['fee'] for item in fees_by_category.values()]

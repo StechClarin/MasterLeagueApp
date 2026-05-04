@@ -102,7 +102,8 @@ export class LevelListComponent extends BaseModalListComponent<LevelType> implem
 
     initFilterForm() {
         return this.fb.group({
-            cycleId: ['']
+            cycleId: [''],
+            shortName: ['']
         });
     }
 
@@ -112,6 +113,7 @@ export class LevelListComponent extends BaseModalListComponent<LevelType> implem
 
         // Clean up empty filters
         if (!values.cycleId) delete values.cycleId;
+        if (!values.shortName) delete values.shortName;
 
         return values;
     }

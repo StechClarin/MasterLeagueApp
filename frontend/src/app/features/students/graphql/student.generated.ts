@@ -13,7 +13,7 @@ export type GetAllStudentsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllStudentsQuery = { __typename?: 'Query', students?: { __typename?: 'StudentTypePaginated', items?: Array<{ __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string, photo?: string | null, dateOfBirth?: any | null, placeOfBirth?: string | null, gender: Types.StudentsStudentGenderChoices, address?: string | null, health?: { __typename?: 'StudentHealthType', id: any, bloodGroup?: Types.StudentsStudentHealthBloodGroupChoices | null, medicalConditions?: string | null, allergies?: string | null, emergencyContactName?: string | null, emergencyContactPhone?: string | null } | null, enrollments: Array<{ __typename?: 'EnrollmentType', id: any, status: Types.StudentsEnrollmentStatusChoices, isRepeater: boolean, classroom: { __typename?: 'ClassRoomType', id: any, name: string, level: { __typename?: 'LevelType', id: any, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } }>, guardians: Array<{ __typename?: 'GuardianType', id: any, firstName?: string | null, lastName?: string | null, phoneNumber: string, profession?: string | null, user?: { __typename?: 'UserType', firstName: string, lastName: string, email: string } | null }> } | null> | null } | null };
+export type GetAllStudentsQuery = { __typename?: 'Query', students?: { __typename?: 'StudentTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string, photo?: string | null, dateOfBirth?: any | null, placeOfBirth?: string | null, gender: Types.StudentsStudentGenderChoices, address?: string | null, health?: { __typename?: 'StudentHealthType', id: any, bloodGroup?: Types.StudentsStudentHealthBloodGroupChoices | null, medicalConditions?: string | null, allergies?: string | null, emergencyContactName?: string | null, emergencyContactPhone?: string | null } | null, enrollments: Array<{ __typename?: 'EnrollmentType', id: any, status: Types.StudentsEnrollmentStatusChoices, isRepeater: boolean, classroom: { __typename?: 'ClassRoomType', id: any, name: string, level: { __typename?: 'LevelType', id: any, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } }>, guardians: Array<{ __typename?: 'GuardianType', id: any, firstName?: string | null, lastName?: string | null, phoneNumber: string, profession?: string | null, user?: { __typename?: 'UserType', firstName: string, lastName: string, email: string } | null }> } | null> | null } | null };
 
 export type GetStudentQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
@@ -91,6 +91,8 @@ export const GetAllStudentsDocument = gql`
         }
       }
     }
+    totalCount
+    numPages
   }
 }
     `;
