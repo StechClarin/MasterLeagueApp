@@ -3,6 +3,7 @@ from .views.provisioning import ProvisionTenantView
 from .views.sync import InitialSyncView, SyncInView, SyncDeltaView
 from .views.sync_assets import AssetManifestView, AssetTransferView
 from .views.ping import PingView
+from .views.health import HealthView
 
 urlpatterns = [
     path('external/provision-tenant/', ProvisionTenantView.as_view(), name='provision_tenant'),
@@ -12,4 +13,5 @@ urlpatterns = [
     path('external/sync-assets/manifest/', AssetManifestView.as_view(), name='sync_assets_manifest'),
     path('external/sync-assets/transfer/', AssetTransferView.as_view(), name='sync_assets_transfer'),
     path('external/ping/', PingView.as_view(), name='ping'),
+    path('core/health/', HealthView.as_view(), name='health'),
 ]

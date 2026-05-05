@@ -105,7 +105,7 @@ TEMPLATES = [
 ]
 
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='sqlite:///:memory:')
+    'default': env.db('DATABASE_URL', default=f'sqlite:///{PROJECT_DATA_DIR / "db.sqlite3"}')
 }
 
 AUTH_PASSWORD_VALIDATORS = [

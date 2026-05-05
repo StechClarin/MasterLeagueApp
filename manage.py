@@ -193,8 +193,17 @@ def main():
             print("[HUB_SIGNAL:READY]") 
             sys.stdout.flush()
             
-            # Use high-concurrency mode (32 threads) to avoid Hub-side timeouts
-            serve(application, host='0.0.0.0', port=port, threads=32)
+            # Use high-concurrency mode for industrial stability
+            serve(
+                application, 
+                host='0.0.0.0', 
+                port=port, 
+                threads=32, 
+                connection_limit=1000, 
+                channel_timeout=30,
+                max_request_body_size=1024 * 1024 * 100, # 100MB
+                expose_tracebacks=False
+            )
             sys.exit(0)
         except Exception as e:
             print(f"CRITICAL: WSGI Failure: {e}")

@@ -18,6 +18,7 @@ class Command(BaseCommand):
              self.stdout.write(self.style.SUCCESS(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Local"}'))
 
         # 2. Run Migrations
+        self.stdout.write('[HUB_SIGNAL:MIGRATING]')
         self.stdout.write('Step 1: Running Migrations...')
         try:
             call_command('migrate', interactive=False)
@@ -27,7 +28,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
         # 3. Seed Basic Data (Roles, Navigation, etc.)
-        # We reuse existing seed commands in an atomic block for professional consistency
+        self.stdout.write('[HUB_SIGNAL:SEEDING]')
         self.stdout.write('Step 2: Seeding System Data...')
         try:
             from django.db import transaction
@@ -42,11 +43,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('[OK] System data seeded atomically.'))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'[ERROR] Seeding failed, rolled back: {e}'))
-            # During first setup, seeding failure is fatal for industrial consistency
             sys.exit(1)
         
-        # 4. Pull Tenant Metadata (Future)
-        # TODO: Implement a real pull from the Cloud Parent DB
-        self.stdout.write('Step 3: Pulling Tenant Configuration (Simulation)...')
+        # 4. Success Signal
+        self.stdout.write('[HUB_SIGNAL:SUCCESS]')
         self.stdout.write(self.style.SUCCESS('[OK] Setup finished successfully.'))
         self.stdout.write(self.style.SUCCESS('--- ETHER-SETUP COMPLETE ---'))
