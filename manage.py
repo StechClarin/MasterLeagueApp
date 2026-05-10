@@ -180,6 +180,13 @@ def main():
         try:
             import django
             django.setup()
+            
+            # --- AUTO-MIGRATE ON STARTUP ---
+            # Ensures the SQLite DB (or any DB) is fully populated before taking requests
+            print("[DEBUG] Running auto-migrations to ensure database integrity...")
+            from django.core.management import call_command
+            call_command("migrate", interactive=False)
+            
             from config.wsgi import application
             from waitress import serve
             
