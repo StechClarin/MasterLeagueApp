@@ -6,62 +6,6 @@ from ..models import Personnel
 class PersonnelService(BaseService):
     model = Personnel
 
-    def before_save(self, data, instance=None):
-        # On retire 'user' S'IL s'agit d'un dictionnaire (données imbriquées)
-        # pour éviter que BaseService ne tente de l'assigner directement au champ FK
-        user_data = data.pop('user', None)
-        if isinstance(user_data, dict):
-             if not hasattr(self, 'initial_data'):
-                 self.initial_data = {}
-             self.initial_data['user'] = user_data
-        elif user_data is not None:
-             # On le remet si c'est une instance User
-             data['user'] = user_data
-             
-        data = super().before_save(data, instance)
-        return data
-
-    def before_validate(self, data, instance=None):
-        data = super().before_validate(data, instance)
-        if not data.get('matricule') and not instance:
-            data['matricule'] = self._generate_matricule(data.get('establishment'))
-        return data
-
-    def _generate_matricule(self, establishment_id=None):
-        from datetime import date
-        year_suffix = date.today().strftime('%y')
-        
-        est_code = "HR"
-        establishment = None
-        if establishment_id:
-            from apps.core.models.establishment import Establishment
-            if isinstance(establishment_id, Establishment):
-                establishment = establishment_id
-            else:
-                establishment = Establishment.objects.filter(id=establishment_id).first()
-            
-            if establishment and establishment.name:
-                est_code = establishment.name[:2].upper()
-            
-        pattern = f"{year_suffix}-{est_code}-P"
-        
-        last_personnel = self.model.all_objects.filter(
-            matricule__startswith=pattern,
-            establishment=establishment
-        ).order_by('-matricule').first()
-        
-        seq = 1
-        if last_personnel and last_personnel.matricule:
-            try:
-                parts = last_personnel.matricule.split('-')
-                if len(parts) >= 3:
-                     seq_str = parts[2].replace('P', '')
-                     seq = int(seq_str) + 1
-            except ValueError:
-                pass
-        
-        return f"{year_suffix}-{est_code}-P{seq:04d}"
-
     def after_save(self, instance, created):
         # 1. Capture nested user data from initial request (as it's read_only in serializer)
         user_source = getattr(self, 'initial_data', {}).get('user')
@@ -120,6 +64,10 @@ class PersonnelService(BaseService):
             User = get_user_model()
             user = User.objects.filter(email=email_pro).first()
             if not user:
+                # Use email prefix for pro email fallback as likely no names provided here?
+                # Actually, instance might have names if they were set on Personnel model directly?
+                # But typically names are in user dict. If only email_pro is set, we lack names.
+                # So keep email split for this fallback case.
                 username = email_pro.split('@')[0]
                 base_username = username
                 counter = 1
@@ -127,10 +75,6 @@ class PersonnelService(BaseService):
                     username = f"{base_username}{counter}"
                     counter += 1
                 user = User.objects.create_user(username=username, email=email_pro, password="ChangeMe123!")
-        
-        # Fallback to already linked user if no new user created/found
-        if not user and instance.user:
-            user = instance.user
             
         # Update link if we found/created a user
         if user:
@@ -138,6 +82,10 @@ class PersonnelService(BaseService):
                 instance.user = user
                 instance.save(update_fields=['user'])
             
+            # Sync Roles from Personnel to User
+            if instance.pk:
+                user.roles.add(*instance.roles.all())
+
             # Sync or create the establishment membership for this user
             self._sync_establishment_membership(instance, user)
             
@@ -167,3 +115,7 @@ class PersonnelService(BaseService):
             }
         )
         membership_service.sync_roles_from_personnel(membership, instance)
+
+        if not user.establishment:
+            user.establishment = instance.establishment
+            user.save(update_fields=['establishment'])
