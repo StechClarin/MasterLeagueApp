@@ -11,11 +11,11 @@ def main():
     # --- INDUSTRIAL CONFIGURATION: GLOBAL IDENTITY ---
     # Force UTF-8 for Windows compatibility with Unicode log symbols
     try:
-        if sys.stdout.encoding.lower() != 'utf-8':
-            sys.stdout.reconfigure(encoding='utf-8')
-        if sys.stderr.encoding.lower() != 'utf-8':
-            sys.stderr.reconfigure(encoding='utf-8')
-    except:
+        if hasattr(sys.stdout, 'reconfigure') and sys.stdout.encoding.lower() != 'utf-8':
+            sys.stdout.reconfigure(encoding='utf-8')  # type: ignore
+        if hasattr(sys.stderr, 'reconfigure') and sys.stderr.encoding.lower() != 'utf-8':
+            sys.stderr.reconfigure(encoding='utf-8')  # type: ignore
+    except Exception:
         pass
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -57,9 +57,14 @@ def main():
                     # --- DATABASE OVERRIDE ---
                     db = config.get("db_config")
                     if db:
-                        db_url = f"postgres://{db['user']}:{db['pass']}@{db['host']}:{db['port']}/{db['name']}"
-                        os.environ["DATABASE_URL"] = db_url
-                        print("[DEBUG] Dynamic Database Configuration injected.")
+                        engine = db.get("engine", "postgres")
+                        if engine == "sqlite":
+                            db_name = db.get("db_name", "db.sqlite3")
+                            os.environ["DATABASE_URL"] = f"sqlite:///{db_name}"
+                        else:
+                            db_url = f"postgres://{db.get('user', '')}:{db.get('pass', '')}@{db.get('host', '')}:{db.get('port', '')}/{db.get('name', '')}"
+                            os.environ["DATABASE_URL"] = db_url
+                        print(f"[DEBUG] Dynamic Database Configuration ({engine}) injected.")
         except Exception as e:
             print(f"[DEBUG] Stdin config error: {e}")
 
