@@ -5,6 +5,7 @@ from apps.core.models import Establishment, SyncLog
 from apps.profilmanagement.models import User, Role
 from django.apps import apps
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import os
 
@@ -31,9 +32,8 @@ class InitialSyncView(APIView):
             return Response({"error": "Missing 'tenant_id' parameter"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # 1. On trouve d'abord l'établissement correspondant au tenant_id (Customer ID Store)
-            base_establishment = Establishment.objects.get(code=tenant_id)
-            admin_user = base_establishment.user
+            # 1. On trouve l'utilisateur Admin qui possède ce hub_id
+            admin_user = User.objects.get(hub_id=tenant_id)
 
             if not admin_user:
                 return Response({"error": "No Admin User linked to this Tenant"}, status=status.HTTP_404_NOT_FOUND)
@@ -44,16 +44,19 @@ class InitialSyncView(APIView):
             # 3. Fonction pour extraire dynamiquement les infos liées
             def get_deep_establishment_data(est):
                 # Import dynamique pour éviter les requêtes circulaires
-                from apps.core.models.establishment_aware_model import EstablishmentAwareModel
+                from apps.core.models import EstablishmentAwareModel
                 
                 deep_data = {}
                 for model in apps.get_models():
                     # Si le modèle hérite de 'EstablishmentAwareModel'
-                    if issubclass(model, EstablishmentAwareModel) and model != EstablishmentAwareModel:
-                        qs = model.objects.filter(establishment=est)
-                        if qs.exists():
-                            # Dump des valeurs
-                            deep_data[model._meta.model_name] = list(qs.values())
+                    if issubclass(model, EstablishmentAwareModel) and model is not EstablishmentAwareModel:
+                        meta = getattr(model, '_meta', None)
+                        mgr = getattr(model, 'objects', None)
+                        if meta and mgr:
+                            qs = mgr.filter(establishment=est)
+                            if qs.exists():
+                                # Dump des valeurs
+                                deep_data[meta.model_name] = list(qs.values())
                 return deep_data
 
             # 4. Construction de la réponse structurée
@@ -87,8 +90,8 @@ class InitialSyncView(APIView):
             # Utilisation du JSON Encoder de Django pour gérer les Dates/UUID proprement
             return Response(json.loads(json.dumps(sync_data, cls=DjangoJSONEncoder)), status=status.HTTP_200_OK)
 
-        except Establishment.DoesNotExist:
-            return Response({"error": f"Tenant {tenant_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+        except ObjectDoesNotExist:
+            return Response({"error": f"User with hub_id {tenant_id} not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class SyncInView(APIView):
@@ -112,6 +115,7 @@ class SyncInView(APIView):
         establishments = data.get('establishments', [])
 
         try:
+            user = None
             # 1. Ingestion de l'Admin
             if admin_data:
                 user, created = User.objects.update_or_create(
@@ -137,7 +141,7 @@ class SyncInView(APIView):
                     defaults={
                         'name': est_data['name'],
                         'code': est_data['code'],
-                        'user': user if 'user' in locals() else None
+                        'user': user
                     }
                 )
 
@@ -152,10 +156,14 @@ class SyncInView(APIView):
                                 # Dans une implémentation simple, values() nous donne déjà l'ID
                                 # Django update_or_create gère bien les dictionnaires
                                 try:
-                                    model.objects.update_or_create(
-                                        id=record['id'],
-                                        defaults=record
-                                    )
+                                    # Sécurité : on retire 'id' des defaults pour éviter le conflit dans update_or_create
+                                    rec_id = record.pop('id', None)
+                                    mgr = getattr(model, 'objects', None)
+                                    if rec_id and mgr:
+                                        mgr.update_or_create(
+                                            id=rec_id,
+                                            defaults=record
+                                        )
                                 except Exception as e:
                                     print(f"Error syncing {model_name} record {record.get('id')}: {e}")
 
@@ -177,13 +185,19 @@ class SyncDeltaView(APIView):
         if not api_key: # Securité basique
              return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        deltas = SyncLog.objects.filter(is_synced=False)
+        mgr = getattr(SyncLog, 'objects', None)
+        if not mgr:
+             return Response({"error": "Internal Error: SyncLog manager not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        deltas = mgr.filter(is_synced=False)
         return Response(list(deltas.values()), status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         """ Marque les deltas comme synchronisés """
         delta_ids = request.data.get('ids', [])
-        SyncLog.objects.filter(id__in=delta_ids).update(is_synced=True)
+        mgr = getattr(SyncLog, 'objects', None)
+        if mgr:
+            mgr.filter(id__in=delta_ids).update(is_synced=True)
         return Response({"status": "Deltas marked as synced"}, status=status.HTTP_200_OK)
 
 class PushDeltaView(APIView):
@@ -214,9 +228,15 @@ class PushDeltaView(APIView):
                 for model in apps.get_models():
                     if model._meta.model_name == model_name:
                         if action in ['create', 'update']:
-                            model.objects.update_or_create(id=data['id'], defaults=data)
+                            # Sécurité : on retire 'id' des defaults
+                            rec_id = data.pop('id', None)
+                            mgr = getattr(model, 'objects', None)
+                            if rec_id and mgr:
+                                mgr.update_or_create(id=rec_id, defaults=data)
                         elif action == 'delete':
-                            model.objects.filter(id=data['id']).delete()
+                            mgr = getattr(model, 'objects', None)
+                            if mgr:
+                                mgr.filter(id=data.get('id')).delete()
             except Exception as e:
                 print(f"Push error for {model_name}: {e}")
 

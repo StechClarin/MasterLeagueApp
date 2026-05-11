@@ -98,8 +98,9 @@ class Command(BaseCommand):
         try:
             admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus
             
-            establishment_code = 'ETH-NANOS-SPA001'
-            establishment_name = 'Ethernanos'
+            import os
+            establishment_code = os.environ.get('ETHER_TENANT_ID', 'ETH-NANOS-SPA001')
+            establishment_name = f"Ethernanos ({establishment_code})" if establishment_code != 'ETH-NANOS-SPA001' else 'Ethernanos'
 
             if not User.objects.filter(username='ethernanos').exists():
                 admin_user = User.objects.create_superuser(

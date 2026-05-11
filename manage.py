@@ -45,6 +45,9 @@ def main():
                         os.environ["HUB_API_KEY"] = str(config["hub_api_key"])
                         os.environ["ETHER_HUB_API_KEY"] = str(config["hub_api_key"])
                     
+                    if "cloud_api_url" in config and config["cloud_api_url"]:
+                        os.environ["ETHER_CLOUD_API_URL"] = str(config["cloud_api_url"])
+                    
                     # --- ROUTING SYNC (v22.2) ---
                     # On capture le préfixe envoyé par le Launcher (ex: /schoolmanage/test/)
                     if "url_prefix" in config:
@@ -183,9 +186,12 @@ def main():
             
             # --- AUTO-MIGRATE ON STARTUP ---
             # Ensures the SQLite DB (or any DB) is fully populated before taking requests
-            print("[DEBUG] Running auto-migrations to ensure database integrity...")
+            print("[DEBUG] Running auto-migrations and seeders to ensure database integrity...")
             from django.core.management import call_command
-            call_command("migrate", interactive=False)
+            try:
+                call_command("ether_setup")
+            except Exception as e:
+                print(f"[WARNING] Auto-setup encountered an issue: {e}")
             
             from config.wsgi import application
             from waitress import serve
