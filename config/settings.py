@@ -58,3 +58,9 @@ CSRF_TRUSTED_ORIGINS = [
 # On garde les sessions standard (cookies) pour le confort du navigateur
 CSRF_USE_SESSIONS = False 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# --- CONFIGURATION PROXY SSL (v23.1) ---
+# Nécessaire pour que Django accepte les requêtes venant d'un Nginx en HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
