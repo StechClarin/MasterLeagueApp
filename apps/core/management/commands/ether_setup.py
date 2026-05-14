@@ -12,10 +12,10 @@ class Command(BaseCommand):
         # 1. Verification of the Database Engine
         db_url = os.environ.get('DATABASE_URL', '')
         if not db_url:
-             self.stdout.write(self.style.WARNING('Note: DATABASE_URL is not set. Falling back to local SQLite...'))
-             os.environ['DATABASE_URL'] = 'sqlite:///db.sqlite3'
+             self.stdout.write(self.style.ERROR('[FATAL] DATABASE_URL n\'est pas défini. Vérifiez votre fichier .env.'))
+             sys.exit(1)
         else:
-             self.stdout.write(self.style.SUCCESS(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Local"}'))
+             self.stdout.write(self.style.SUCCESS(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Database URL set"}'))
 
         # 2. Run Migrations
         self.stdout.write('[HUB_SIGNAL:MIGRATING]')
@@ -60,9 +60,6 @@ class Command(BaseCommand):
                                 from apps.profilmanagement.models import User
                                 from apps.core.models import Establishment
                                 
-                                admin_data = data.get('admin')
-                                establishments = data.get('establishments', [])
-                                
                                 if admin_data:
                                     user, _ = User.objects.update_or_create(
                                         id=admin_data['id'],
@@ -77,18 +74,11 @@ class Command(BaseCommand):
                                             'is_superuser': admin_data.get('is_superuser', False)
                                         }
                                     )
-                                    
-                                for est_data in establishments:
-                                    Establishment.objects.update_or_create(
-                                        id=est_data['id'],
-                                        defaults={
-                                            'name': est_data['name'],
-                                            'code': est_data['code'],
-                                            'user': user if 'user' in locals() else None,
-                                            'hub_id': tenant_id
-                                        }
-                                    )
-                                self.stdout.write(self.style.SUCCESS('   [OK] Auto-Pull Complete!'))
+                                    self.stdout.write(self.style.SUCCESS('   [OK] Super-user ethernanos ingested from Cloud.'))
+                                
+                                # On lance seed_roles pour créer l'établissement local et les rôles
+                                call_command('seed_roles')
+                                self.stdout.write(self.style.SUCCESS('   [OK] Auto-Pull & Roles Sync Complete!'))
                             else:
                                 self.stdout.write(self.style.ERROR(f'   [ERROR] Cloud API returned {response.status}'))
                                 call_command('seed_roles')

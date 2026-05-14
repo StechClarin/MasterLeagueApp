@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from apps.profilmanagement.models import Role, User
 from apps.core.models import Group, Establishment
 from django.db import IntegrityError
+from django.conf import settings
 
 ROLES_STRUCTURE = {
     # Roles Techniques
@@ -83,8 +84,8 @@ class Command(BaseCommand):
         
         admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
         if not admin_pass or admin_pass == "admin":
-            # Tentative de lecture du fichier .env local si l'environnement n'a pas été injecté
-            env_path = Path(os.getcwd()) / '.env'
+            # On utilise BASE_DIR de Django pour être sûr de trouver le .env
+            env_path = Path(settings.BASE_DIR) / '.env'
             if env_path.exists():
                 try:
                     environ.Env.read_env(str(env_path))

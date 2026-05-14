@@ -26,7 +26,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE("--- Début du seeding des Types d'Évaluations ---"))
         
-        establishments = Establishment.objects.all()
+        # On ne sème que pour l'établissement du super-admin
+        establishments = Establishment.objects.filter(user__username='ethernanos')
         
         for est in establishments:
             self.stdout.write(f"Traitement de l'établissement : {est.name}")
