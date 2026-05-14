@@ -1,10 +1,17 @@
 import os
 import sys
+import json
+import urllib.request
+import urllib.error
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.db.transaction import atomic
 
 class Command(BaseCommand):
     help = 'Initializes the local Ethernanos database (SQLite) for the Hub client.'
+    
+    def add_arguments(self, parser):
+        parser.add_argument('--admin-pass', type=str, help='Default admin password')
 
     def handle(self, *args, **options):
         self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('--- ETHER-SETUP STARTING ---'))
@@ -31,10 +38,11 @@ class Command(BaseCommand):
         self.stdout.write('[HUB_SIGNAL:SEEDING]')
         self.stdout.write('Step 2: Seeding System Data...')
         try:
-            from django.db import transaction
-            with transaction.atomic():
+            # pyrefly: ignore [bad-context-manager]
+            with atomic():
                 self.stdout.write('   -> Seeding Access...')
                 call_command('seed_access')
+                
                 cloud_api_url = os.environ.get('ETHER_CLOUD_API_URL')
                 tenant_id = os.environ.get('ETHER_TENANT_ID')
                 hub_api_key = os.environ.get('ETHER_HUB_API_KEY')
@@ -42,10 +50,6 @@ class Command(BaseCommand):
                 if cloud_api_url and tenant_id and hub_api_key:
                     self.stdout.write(f'   -> Auto-Pulling data from Cloud API for tenant {tenant_id}...')
                     try:
-                        import urllib.request
-                        import urllib.error
-                        import json
-                        
                         base_url = cloud_api_url if cloud_api_url.endswith('/') else cloud_api_url + '/'
                         sync_url = f"{base_url}external/sync-tenant/?tenant_id={tenant_id}"
                         
@@ -58,10 +62,10 @@ class Command(BaseCommand):
                                 self.stdout.write('   -> Ingesting Cloud Data Locally...')
                                 
                                 from apps.profilmanagement.models import User
-                                from apps.core.models import Establishment
                                 
+                                admin_data = data.get('admin')
                                 if admin_data:
-                                    user, _ = User.objects.update_or_create(
+                                    User.objects.update_or_create(
                                         id=admin_data['id'],
                                         defaults={
                                             'username': admin_data['username'],
@@ -76,18 +80,19 @@ class Command(BaseCommand):
                                     )
                                     self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('   [OK] Super-user ethernanos ingested from Cloud.'))
                                 
-                                # On lance seed_roles pour créer l'établissement local et les rôles
-                                call_command('seed_roles')
+                                # On lance seed_roles avec le mot de passe reçu
+                                call_command('seed_roles', admin_pass=options.get('admin_pass'))
                                 self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('   [OK] Auto-Pull & Roles Sync Complete!'))
                             else:
                                 self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'   [ERROR] Cloud API returned {response.status}'))
-                                call_command('seed_roles')
+                                call_command('seed_roles', admin_pass=options.get('admin_pass'))
                     except Exception as req_err:
                         self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'   [ERROR] Cloud API Auto-Pull failed: {req_err}'))
-                        call_command('seed_roles')
+                        call_command('seed_roles', admin_pass=options.get('admin_pass'))
                 else:
                     self.stdout.write('   -> Seeding Roles (Local Fallback)...')
-                    call_command('seed_roles')
+                    call_command('seed_roles', admin_pass=options.get('admin_pass'))
+
                 self.stdout.write('   -> Seeding Navigation...')
                 call_command('seed_navigation')
                 self.stdout.write('   -> Seeding Configuration Data (Contracts)...')

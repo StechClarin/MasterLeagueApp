@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db.transaction import atomic
 from apps.finance.models import Invoice, Payment
 from apps.finance.services.finance_service import FinanceService
 from apps.finance.services.payment_service import PaymentService
@@ -19,7 +19,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Found {count_invoices} invoices to fix.")
         
         if count_invoices > 0:
-            with transaction.atomic():
+            with atomic():
                 for invoice in invoices_to_fix:
                     # On définit le contexte d'établissement pour la séquence
                     finance_service.set_context(None, invoice.establishment_id)
@@ -33,7 +33,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Found {count_payments} payments to fix.")
         
         if count_payments > 0:
-            with transaction.atomic():
+            with atomic():
                 for payment in payments_to_fix:
                     payment_service.set_context(None, payment.establishment_id)
                     payment.reference = payment_service.generate_payment_reference()

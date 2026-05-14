@@ -46,6 +46,9 @@ ROLES_STRUCTURE = {
 class Command(BaseCommand):
     help = "Crée les Rôles, les lie aux Groupes (définis dans seed_access), et assure l'existence du super-admin."
 
+    def add_arguments(self, parser):
+        parser.add_argument('--admin-pass', type=str, help='Default admin password')
+
     def handle(self, *args, **options):
         self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Début du seeding des Rôles (Consolidé) ---"))
         
@@ -82,10 +85,14 @@ class Command(BaseCommand):
         # 2. Gestion du Super-Admin "ethernanos" (Core Logic)
         self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Vérification du Super-Admin 'ethernanos' ---"))
         
-        # 1. On cherche d'abord dans l'environnement système (passé par le Hub)
-        admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
+        # 1. On cherche d'abord dans les arguments explicites (--admin-pass)
+        admin_pass = options.get('admin_pass')
+
+        # 2. On cherche ensuite dans l'environnement système (passé par le Hub)
+        if not admin_pass:
+            admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
         
-        # 2. Si non trouvé, on tente de charger un fichier .env
+        # 3. Si toujours non trouvé, on tente de charger un fichier .env
         if not admin_pass or admin_pass == "admin":
             env = environ.Env()
             # On cherche dans BASE_DIR et aussi un cran au dessus (cas du binaire OneDir)
@@ -102,9 +109,9 @@ class Command(BaseCommand):
                         self.stdout.write(f"  [OK] Configuration chargée depuis {path}")
                         break
 
-        # 3. Vérification finale
+        # 4. Vérification finale
         if not admin_pass or admin_pass == "admin":
-            raise CommandError("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini (ni dans l'environnement, ni dans un fichier .env).")
+            raise CommandError("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini (ni via argument, ni dans l'environnement, ni dans un fichier .env).")
 
         try:
             admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus

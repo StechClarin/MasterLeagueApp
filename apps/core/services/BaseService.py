@@ -1,6 +1,7 @@
+from typing import Any, cast
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http import Http404
-from django.db import transaction
+from django.db.transaction import atomic
 from apps.core.utils.importfile import ImportFile
 from apps.core.utils.exportfile import ExportFile
 
@@ -17,8 +18,10 @@ class BaseService:
     """
     
     # Le modèle Django ciblé (à définir dans l'enfant, ex: model = Product)
-    model = None 
+    model: Any = cast(Any, None) 
     
+    # [CRITICAL UPDATE] Expose raw payload to service for nested custom saves (after_save logic)
+    initial_data: Any = None
     # Configuration de l'Export : liste des champs (ex: ['name', 'price'])
     export_fields = [] 
     
@@ -46,6 +49,8 @@ class BaseService:
         """
         Récupère une liste d'objets, avec filtrage optionnel et contextuel.
         """
+        if self.model is None:
+            raise ValueError(f"Le service {self.__class__.__name__} doit définir un attribut 'model'.")
         queryset = self.model.objects.all()
 
         # Filtrage contextuel (Establishment)
@@ -66,6 +71,9 @@ class BaseService:
         """
         Récupère un objet par son ID. Lève une 404 si non trouvé.
         """
+        if self.model is None:
+             raise ValueError(f"Le service {self.__class__.__name__} doit définir un attribut 'model'.")
+             
         try:
             return self.model.objects.get(pk=pk)
         except (ObjectDoesNotExist, ValueError, TypeError):
@@ -81,6 +89,9 @@ class BaseService:
         Sert à nettoyer les données brutes (trim, upper case, formatage).
         Doit retourner le dictionnaire 'data' modifié.
         """
+        if self.model is None:
+             raise ValueError(f"Le service {self.__class__.__name__} doit définir un attribut 'model'.")
+             
         # Injection automatique de l'établissement si le modèle est lié
         if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
              print(f"DEBUG: Injecting establishment_id {self.establishment_id} into data")
@@ -149,7 +160,9 @@ class BaseService:
         simple_data = {}
         
         # Identification des champs M2M du modèle
-        # On regarde uniquement les champs directs (pas les relations inverses auto-créées)
+        if self.model is None:
+             raise ValueError(f"Le service {self.__class__.__name__} doit définir un attribut 'model'.")
+             
         model_m2m_fields = [
             f.name for f in self.model._meta.get_fields() 
             if f.many_to_many and not f.auto_created
@@ -211,6 +224,8 @@ class BaseService:
         À surcharger pour optimiser avec select_related() ou prefetch_related().
         Par défaut : self.model.objects.all()
         """
+        if self.model is None:
+             raise ValueError(f"Le service {self.__class__.__name__} doit définir un attribut 'model'.")
         return self.model.objects.all()
 
     def export_data(self, format_type='csv'):
@@ -218,6 +233,8 @@ class BaseService:
         Génère un fichier (CSV/Excel) contenant les données.
         Gère le renommage des colonnes (Aliasing) pour les relations.
         """
+        if self.model is None:
+             raise ValueError(f"Le service {self.__class__.__name__} doit définir un attribut 'model'.")
         # 1. Préparation des champs à demander à la BDD
         fields_to_query = [] # Ce qu'on envoie au .values() de Django
         header_mapping = {}  # Pour renommer les colonnes à la fin (ex: role__name -> role)
@@ -328,7 +345,8 @@ class BaseService:
         relation_cache = {}
 
         try:
-            with transaction.atomic():
+            # pyrefly: ignore [not-callable]
+            with atomic():
                 for index, row in enumerate(raw_data):
                     row_num = index + 2 # +1 header, +1 index 0
                     try:

@@ -11,6 +11,7 @@ while [[ $# -gt 0 ]]; do
     --db-pass) export DB_PASS="$2"; shift 2 ;;
     --tenant-id) export TENANT_ID="$2"; shift 2 ;;
     --app-port) export APP_PORT="$2"; shift 2 ;;
+    --admin-pass) export ADMIN_DEFAULT_PASSWORD="$2"; shift 2 ;;
     *) shift ;;
   esac
 done
@@ -25,9 +26,10 @@ if [ -d ".venv" ]; then
     source .venv/bin/activate
 fi
 
-# 4. Prepare Database
+# 4. Prepare Database & Seed
 echo "🚀 Initializing School Manager database..."
-python3 manage.py migrate --noinput
+# On passe le mot de passe explicitement pour éviter les problèmes d'env
+python3 manage.py ether_setup --admin-pass "${ADMIN_DEFAULT_PASSWORD:-admin1234}"
 
 # 5. Start Server
 echo "🎯 Launching School Manager on port ${APP_PORT}..."

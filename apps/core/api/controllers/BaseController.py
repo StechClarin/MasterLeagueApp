@@ -1,7 +1,8 @@
+from typing import Any, cast
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, exceptions
-from django.db import transaction
+from django.db.transaction import atomic
 from django.http import Http404
 from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -14,8 +15,8 @@ class BaseController(APIView):
     Permissions -> Préparation (before_validate) -> Validation -> Service (save).
     """
     
-    serializer_class = None
-    service_class = None
+    serializer_class: Any = cast(Any, None)
+    service_class: Any = cast(Any, None)
     
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated] 
@@ -211,7 +212,8 @@ class BaseController(APIView):
 
         # 3. EXÉCUTION (Service)
         try:
-            with transaction.atomic():
+            # pyrefly: ignore [bad-context-manager]
+            with atomic():
                 # On délègue tout au service (qui gère create vs update et les hooks)
                 result = self.service.save(validated_data, instance)
                 

@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db.transaction import atomic
 from django.conf import settings
 from django.core.mail import send_mail
 from apps.core.models import Establishment
@@ -27,7 +27,8 @@ class ProvisioningService:
         }
 
         try:
-            with transaction.atomic():
+            # pyrefly: ignore [bad-context-manager]
+            with atomic():
                 # 1. Création/Récupération de l'Administrateur
                 user, results["user_created"] = User.objects.get_or_create(
                     email=target_email,
