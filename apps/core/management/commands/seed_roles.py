@@ -82,17 +82,29 @@ class Command(BaseCommand):
         # 2. Gestion du Super-Admin "ethernanos" (Core Logic)
         self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Vérification du Super-Admin 'ethernanos' ---"))
         
-        # On initialise environ et on force la lecture du .env du projet
-        env = environ.Env()
-        env_path = Path(str(settings.BASE_DIR)) / '.env'
-        if env_path.exists():
-            environ.Env.read_env(str(env_path))
+        # 1. On cherche d'abord dans l'environnement système (passé par le Hub)
+        admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
         
-        # On récupère le mot de passe (priorité au .env, fallback sur os.environ via Env())
-        admin_pass = env('ADMIN_DEFAULT_PASSWORD', default=None)
-
+        # 2. Si non trouvé, on tente de charger un fichier .env
         if not admin_pass or admin_pass == "admin":
-            raise CommandError(f"[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini dans {env_path} ou est trop faible.")
+            env = environ.Env()
+            # On cherche dans BASE_DIR et aussi un cran au dessus (cas du binaire OneDir)
+            possible_paths = [
+                Path(str(settings.BASE_DIR)) / '.env',
+                Path(str(settings.BASE_DIR)).parent / '.env'
+            ]
+            
+            for path in possible_paths:
+                if path.exists():
+                    environ.Env.read_env(str(path))
+                    admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
+                    if admin_pass:
+                        self.stdout.write(f"  [OK] Configuration chargée depuis {path}")
+                        break
+
+        # 3. Vérification finale
+        if not admin_pass or admin_pass == "admin":
+            raise CommandError("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini (ni dans l'environnement, ni dans un fichier .env).")
 
         try:
             admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus

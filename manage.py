@@ -48,6 +48,9 @@ def main():
                     if "cloud_api_url" in config and config["cloud_api_url"]:
                         os.environ["ETHER_CLOUD_API_URL"] = str(config["cloud_api_url"])
                     
+                    if "admin_pass" in config:
+                        os.environ["ADMIN_DEFAULT_PASSWORD"] = str(config["admin_pass"])
+                    
                     # --- ROUTING SYNC (v22.2) ---
                     # On capture le préfixe envoyé par le Launcher (ex: /schoolmanage/test/)
                     if "url_prefix" in config:
