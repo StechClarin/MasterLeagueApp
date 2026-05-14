@@ -98,7 +98,6 @@ class Command(BaseCommand):
         try:
             admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus
             
-            import os
             establishment_code = os.environ.get('ETHER_TENANT_ID', 'ETH-NANOS-SPA001')
             establishment_name = f"Ethernanos ({establishment_code})" if establishment_code != 'ETH-NANOS-SPA001' else 'Ethernanos'
 

@@ -12,7 +12,7 @@ class Cycle(EstablishmentAwareModel):
         verbose_name = "Cycle"
         verbose_name_plural = "Cycles"
         ordering = ['order', 'name']
-        unique_together = [('name', 'establishment'), ('code', 'establishment')]
+        unique_together = [('name', 'establishment'), ('code', 'establishment'), ('order', 'establishment')]
 
     def __str__(self):
         return self.name
