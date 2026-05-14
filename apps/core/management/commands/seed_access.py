@@ -200,7 +200,7 @@ class Command(BaseCommand):
     help = "Crée les Permissions et les Groupes selon la structure définie."
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE("--- Début du seeding Access (Permissions & Groups) ---"))
+        self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Début du seeding Access (Permissions & Groups) ---"))
         
         for group_data in GROUP_STRUCTURE:
             group_name = group_data['name']
@@ -223,6 +223,6 @@ class Command(BaseCommand):
                 
                 group.permissions.add(perm)
 
-            self.stdout.write(self.style.SUCCESS(f"  ✔ Permissions pour '{group_name}' synchronisées."))
+            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"  ✔ Permissions pour '{group_name}' synchronisées."))
 
-        self.stdout.write(self.style.SUCCESS("--- Seeding Access terminé ---"))
+        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("--- Seeding Access terminé ---"))

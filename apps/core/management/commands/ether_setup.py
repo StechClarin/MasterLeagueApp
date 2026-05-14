@@ -7,24 +7,24 @@ class Command(BaseCommand):
     help = 'Initializes the local Ethernanos database (SQLite) for the Hub client.'
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('--- ETHER-SETUP STARTING ---'))
+        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('--- ETHER-SETUP STARTING ---'))
         
         # 1. Verification of the Database Engine
         db_url = os.environ.get('DATABASE_URL', '')
         if not db_url:
-             self.stdout.write(self.style.ERROR('[FATAL] DATABASE_URL n\'est pas défini. Vérifiez votre fichier .env.'))
+             self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)('[FATAL] DATABASE_URL n\'est pas défini. Vérifiez votre fichier .env.'))
              sys.exit(1)
         else:
-             self.stdout.write(self.style.SUCCESS(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Database URL set"}'))
+             self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Database URL set"}'))
 
         # 2. Run Migrations
         self.stdout.write('[HUB_SIGNAL:MIGRATING]')
         self.stdout.write('Step 1: Running Migrations...')
         try:
             call_command('migrate', interactive=False)
-            self.stdout.write(self.style.SUCCESS('[OK] Migrations completed.'))
+            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('[OK] Migrations completed.'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'[ERROR] Migration failed: {e}'))
+            self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'[ERROR] Migration failed: {e}'))
             sys.exit(1)
 
         # 3. Seed Basic Data (Roles, Navigation, etc.)
@@ -74,16 +74,16 @@ class Command(BaseCommand):
                                             'is_superuser': admin_data.get('is_superuser', False)
                                         }
                                     )
-                                    self.stdout.write(self.style.SUCCESS('   [OK] Super-user ethernanos ingested from Cloud.'))
+                                    self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('   [OK] Super-user ethernanos ingested from Cloud.'))
                                 
                                 # On lance seed_roles pour créer l'établissement local et les rôles
                                 call_command('seed_roles')
-                                self.stdout.write(self.style.SUCCESS('   [OK] Auto-Pull & Roles Sync Complete!'))
+                                self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('   [OK] Auto-Pull & Roles Sync Complete!'))
                             else:
-                                self.stdout.write(self.style.ERROR(f'   [ERROR] Cloud API returned {response.status}'))
+                                self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'   [ERROR] Cloud API returned {response.status}'))
                                 call_command('seed_roles')
                     except Exception as req_err:
-                        self.stdout.write(self.style.ERROR(f'   [ERROR] Cloud API Auto-Pull failed: {req_err}'))
+                        self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'   [ERROR] Cloud API Auto-Pull failed: {req_err}'))
                         call_command('seed_roles')
                 else:
                     self.stdout.write('   -> Seeding Roles (Local Fallback)...')
@@ -95,12 +95,12 @@ class Command(BaseCommand):
                 self.stdout.write('   -> Seeding Evaluation Types...')
                 call_command('seed_evaluation_types')
                 
-            self.stdout.write(self.style.SUCCESS('[OK] System data seeded atomically.'))
+            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('[OK] System data seeded atomically.'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'[ERROR] Seeding failed, rolled back: {e}'))
+            self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'[ERROR] Seeding failed, rolled back: {e}'))
             sys.exit(1)
         
         # 4. Success Signal
         self.stdout.write('[HUB_SIGNAL:SUCCESS]')
-        self.stdout.write(self.style.SUCCESS('[OK] Setup finished successfully.'))
-        self.stdout.write(self.style.SUCCESS('--- ETHER-SETUP COMPLETE ---'))
+        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('[OK] Setup finished successfully.'))
+        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('--- ETHER-SETUP COMPLETE ---'))

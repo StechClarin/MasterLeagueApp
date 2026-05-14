@@ -47,7 +47,7 @@ class Command(BaseCommand):
     help = "Crée les Rôles, les lie aux Groupes (définis dans seed_access), et assure l'existence du super-admin."
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE("--- Début du seeding des Rôles (Consolidé) ---"))
+        self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Début du seeding des Rôles (Consolidé) ---"))
         
         all_groups = list(Group.objects.all())
 
@@ -74,27 +74,25 @@ class Command(BaseCommand):
                         count += 1
                     else:
                         if group_names: # On ne warn que si on attendait des groupes
-                             self.stdout.write(self.style.WARNING(f"    ⚠ Groupe '{g_name}' introuvable pour le rôle '{role_name}'."))
+                             self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)(f"    ⚠ Groupe '{g_name}' introuvable pour le rôle '{role_name}'."))
                 
                 if count > 0 or not group_names:
                      self.stdout.write(f"    ✔ '{role_name}' a reçu {count} groupes.")
 
         # 2. Gestion du Super-Admin "ethernanos" (Core Logic)
-        self.stdout.write(self.style.NOTICE("--- Vérification du Super-Admin 'ethernanos' ---"))
+        self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Vérification du Super-Admin 'ethernanos' ---"))
         
-        admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
-        if not admin_pass or admin_pass == "admin":
-            # On utilise BASE_DIR de Django pour être sûr de trouver le .env
-            env_path = Path(settings.BASE_DIR) / '.env'
-            if env_path.exists():
-                try:
-                    environ.Env.read_env(str(env_path))
-                    admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
-                except Exception:
-                    pass
+        # On initialise environ et on force la lecture du .env du projet
+        env = environ.Env()
+        env_path = Path(str(settings.BASE_DIR)) / '.env'
+        if env_path.exists():
+            environ.Env.read_env(str(env_path))
+        
+        # On récupère le mot de passe (priorité au .env, fallback sur os.environ via Env())
+        admin_pass = env('ADMIN_DEFAULT_PASSWORD', default=None)
 
         if not admin_pass or admin_pass == "admin":
-            raise CommandError("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini ou trop faible. Définissez cette variable d'environnement avant l'installation.")
+            raise CommandError(f"[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini dans {env_path} ou est trop faible.")
 
         try:
             admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus
@@ -108,10 +106,10 @@ class Command(BaseCommand):
                     email='ethernanos@gmail.com',
                     password=admin_pass
                 )
-                self.stdout.write(self.style.SUCCESS("  ✔ Utilisateur 'ethernanos' créé avec succès."))
+                self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("  ✔ Utilisateur 'ethernanos' créé avec succès."))
             else:
                 admin_user = User.objects.get(username='ethernanos')
-                self.stdout.write(self.style.WARNING("  [OK] Utilisateur 'ethernanos' existant mis à jour."))
+                self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)("  [OK] Utilisateur 'ethernanos' existant mis à jour."))
 
             admin_user.is_superuser = True
             admin_user.is_staff = True
@@ -129,9 +127,9 @@ class Command(BaseCommand):
                 establishment.name = establishment_name
                 establishment.user = admin_user
                 establishment.save()
-                self.stdout.write(self.style.NOTICE(f"  [OK] Etablissement existant '{establishment_code}' mis à jour."))
+                self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)(f"  [OK] Etablissement existant '{establishment_code}' mis à jour."))
             else:
-                self.stdout.write(self.style.SUCCESS(f"  ✔ Etablissement '{establishment_name}' créé pour {establishment_code}."))
+                self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"  ✔ Etablissement '{establishment_name}' créé pour {establishment_code}."))
 
             # 4. Création du Membership (Contextual Access)
             from apps.core.services.establishment_membership_service import EstablishmentMembershipService
@@ -145,9 +143,9 @@ class Command(BaseCommand):
                 status='active'
             )
             
-            self.stdout.write(self.style.SUCCESS("  [OK] Utilisateur 'ethernanos' lié à l'établissement via Membership (is_owner=True)."))
+            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("  [OK] Utilisateur 'ethernanos' lié à l'établissement via Membership (is_owner=True)."))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"  [ERROR] {e}"))
+            self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f"  [ERROR] {e}"))
             
-        self.stdout.write(self.style.SUCCESS("--- Seeding Roles termine ---"))
+        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("--- Seeding Roles termine ---"))
