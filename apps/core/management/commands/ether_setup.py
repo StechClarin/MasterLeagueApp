@@ -19,7 +19,7 @@ class Command(BaseCommand):
         # 1. Verification of the Database Engine
         db_url = os.environ.get('DATABASE_URL', '')
         if not db_url:
-             self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)('[FATAL] DATABASE_URL n\'est pas défini. Vérifiez votre fichier .env.'))
+             self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)('[FATAL] DATABASE_URL n\'est pas defini. Verifiez votre fichier .env.'))
              sys.exit(1)
         else:
              self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Database URL set"}'))
@@ -42,6 +42,9 @@ class Command(BaseCommand):
             with atomic():
                 self.stdout.write('   -> Seeding Access...')
                 call_command('seed_access')
+                
+                # Initialisation pour eviter UnboundLocalError
+                data = {}
                 
                 cloud_api_url = os.environ.get('ETHER_CLOUD_API_URL')
                 tenant_id = os.environ.get('ETHER_TENANT_ID')
@@ -97,15 +100,15 @@ class Command(BaseCommand):
                 call_command('seed_navigation')
                 
                 # --- SYNC LICENSES (UNLOCKED MODULES) ---
-                unlocked_codes = data.get('unlocked_module_codes', []) if 'data' in locals() else []
+                unlocked_codes = data.get('unlocked_module_codes', [])
                 if unlocked_codes:
                     self.stdout.write(f'   -> Synchronizing Licenses ({len(unlocked_codes)} active modules)...')
                     from apps.core.models import Module
-                    # On active ceux qui sont dans la liste + les modules Core (Référentiel, Admin)
-                    # Note: Les codes sont générés en "mod-{slug}"
+                    # On active ceux qui sont dans la liste + les modules Core (Referentiel, Admin)
+                    # Note: Les codes sont generes en "mod-{slug}"
                     core_codes = ['mod-referentiel', 'mod-administration']
                     
-                    # 1. On désactive tout ce qui n'est pas Core
+                    # 1. On desactive tout ce qui n'est pas Core
                     Module.objects.exclude(code__in=core_codes).update(is_active=False)
                     
                     # 2. On active ceux qui ont une licence

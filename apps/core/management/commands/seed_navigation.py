@@ -236,28 +236,37 @@ class Command(BaseCommand):
     help = "Crée les Modules et les Pages pour la navigation."
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE("--- Début du seeding Navigation (Modules & Pages) ---"))
+        self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Debut du seeding Navigation (Modules & Pages) ---"))
         
         Module.objects.all().delete()
         
         for mod_data in MODULE_STRUCTURE:
+            # On s'assure que c'est bien un dictionnaire avant d'extraire
+            if not isinstance(mod_data, dict):
+                continue
+                
             pages_data = mod_data.pop('pages', []) 
+            if not isinstance(pages_data, list):
+                pages_data = []
             
-            # Génération automatique du code technique basé sur le nom
-            mod_code = f"mod-{slugify(mod_data['name'])}"
+            # Generation automatique du code technique base sur le nom
+            mod_code = f"mod-{slugify(str(mod_data.get('name', '')))}"
             
             module = Module.objects.create(code=mod_code, **mod_data)
-            self.stdout.write(f"  Module '{module.name}' créé avec le code '{module.code}'.")
+            self.stdout.write(f"  Module '{module.name}' cree avec le code '{module.code}'.")
             
             for page_data in pages_data:
+                if not isinstance(page_data, dict):
+                    continue
+                    
                 Page.objects.create(
                     module=module,
-                    title=page_data['title'],
-                    icon=page_data['icon'],
-                    order=page_data['order'],
-                    link=page_data['link'],
-                    permission_tags=page_data.get('tags', []) # Utilise .get pour la sécurité
+                    title=page_data.get('title', ''),
+                    icon=page_data.get('icon', ''),
+                    order=page_data.get('order', 1),
+                    link=page_data.get('link', ''),
+                    permission_tags=page_data.get('tags', []) 
                 )
-            self.stdout.write(f"    ✔ {len(pages_data)} pages créées pour '{module.name}'.")
+            self.stdout.write(f"    ✔ {len(pages_data)} pages creees pour '{module.name}'.")
 
-        self.stdout.write(self.style.SUCCESS("--- Seeding Navigation terminé ---"))
+        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("--- Seeding Navigation termine ---"))
