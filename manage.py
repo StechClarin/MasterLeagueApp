@@ -65,10 +65,10 @@ def main():
                     if db:
                         engine = db.get("engine", "postgres")
                         if engine == "sqlite":
-                            db_name = db.get("db_name", "db.sqlite3")
+                            db_name = db.get("name", "db.sqlite3")
                             os.environ["DATABASE_URL"] = f"sqlite:///{db_name}"
                         else:
-                            db_url = f"postgres://{db.get('user', '')}:{db.get('pass', '')}@{db.get('host', '')}:{db.get('port', '')}/{db.get('name', '')}"
+                            db_url = f"postgres://{db.get('user', '')}:{db.get('password', '')}@{db.get('host', '')}:{db.get('port', '')}/{db.get('name', '')}"
                             os.environ["DATABASE_URL"] = db_url
                         print(f"[DEBUG] Dynamic Database Configuration ({engine}) injected.")
         except Exception as e:
