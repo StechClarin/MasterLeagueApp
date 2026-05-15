@@ -1,5 +1,6 @@
 from django.utils.functional import SimpleLazyObject
 from django.contrib.auth.models import AnonymousUser
+from django.db import models
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
 
@@ -70,4 +71,44 @@ class EstablishmentMiddleware:
                 est_id = None
 
         request.establishment_id = est_id if est_id else None
+        return self.get_response(request)
+
+class LicenseMiddleware:
+    """
+    Bouclier de Licence : Empêche l'accès aux URLs appartenant à un module
+    qui n'est pas débloqué (is_active=False).
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # 1. On ignore les super-utilisateurs (Support technique)
+        if request.user.is_superuser:
+            return self.get_response(request)
+
+        # 2. On ignore les routes système/publiques
+        path = request.path
+        if any(path.startswith(p) for p in ['/admin', '/graphql', '/api/auth', '/static', '/media']):
+            return self.get_response(request)
+
+        # 3. Vérification du module
+        from apps.core.models import Page
+        # On cherche si l'URL demandée correspond à une page enregistrée
+        # Note: On utilise startswith car certaines URLs ont des IDs (ex: /students/12)
+        target_page = Page.objects.select_related('module').filter(
+            link__isnull=False
+        ).filter(
+            # On cherche une correspondance de début de chemin
+            # ex: Si link est '/students', on match '/students' et '/students/add'
+            models.Q(link=path) | models.Q(link__startswith=path + '/')
+        ).first()
+
+        if target_page and not target_page.module.is_active:
+            from django.http import JsonResponse
+            return JsonResponse({
+                "error": "LICENSE_RESTRICTION",
+                "message": f"Le module '{target_page.module.name}' n'est pas débloqué dans votre cockpit.",
+                "code": target_page.module.code
+            }, status=403)
+
         return self.get_response(request)

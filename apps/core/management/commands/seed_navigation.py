@@ -1,6 +1,7 @@
 # Fichier: apps/core/management/commands/seed_navigation.py
 
 from django.core.management.base import BaseCommand
+from django.utils.text import slugify
 from apps.core.models import Module, Page
 
 # TA STRUCTURE DE SEED POUR LE MENU
@@ -242,8 +243,11 @@ class Command(BaseCommand):
         for mod_data in MODULE_STRUCTURE:
             pages_data = mod_data.pop('pages', []) 
             
-            module = Module.objects.create(**mod_data)
-            self.stdout.write(f"  Module '{module.name}' créé.")
+            # Génération automatique du code technique basé sur le nom
+            mod_code = f"mod-{slugify(mod_data['name'])}"
+            
+            module = Module.objects.create(code=mod_code, **mod_data)
+            self.stdout.write(f"  Module '{module.name}' créé avec le code '{module.code}'.")
             
             for page_data in pages_data:
                 Page.objects.create(

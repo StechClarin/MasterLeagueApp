@@ -95,6 +95,27 @@ class Command(BaseCommand):
 
                 self.stdout.write('   -> Seeding Navigation...')
                 call_command('seed_navigation')
+                
+                # --- SYNC LICENSES (UNLOCKED MODULES) ---
+                unlocked_codes = data.get('unlocked_module_codes', []) if 'data' in locals() else []
+                if unlocked_codes:
+                    self.stdout.write(f'   -> Synchronizing Licenses ({len(unlocked_codes)} active modules)...')
+                    from apps.core.models import Module
+                    # On active ceux qui sont dans la liste + les modules Core (Référentiel, Admin)
+                    # Note: Les codes sont générés en "mod-{slug}"
+                    core_codes = ['mod-referentiel', 'mod-administration']
+                    
+                    # 1. On désactive tout ce qui n'est pas Core
+                    Module.objects.exclude(code__in=core_codes).update(is_active=False)
+                    
+                    # 2. On active ceux qui ont une licence
+                    Module.objects.filter(code__in=unlocked_codes).update(is_active=True)
+                    
+                    active_count = Module.objects.filter(is_active=True).count()
+                    self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f'   [OK] Licenses synced. {active_count} modules are now active.'))
+                else:
+                    self.stdout.write('   -> No license data found, maintaining default access.')
+
                 self.stdout.write('   -> Seeding Configuration Data (Contracts)...')
                 call_command('seed_data')
                 self.stdout.write('   -> Seeding Evaluation Types...')
