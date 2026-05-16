@@ -3,6 +3,10 @@
 # Stop on error
 set -e
 
+# Force UTF-8 encoding for Python to avoid migration decoding errors
+export PYTHONIOENCODING=utf-8
+export PYTHONDEFAULTENCODING=utf-8
+
 # Default Django settings module
 : "${DJANGO_SETTINGS_MODULE:=config.settings}"
 export DJANGO_SETTINGS_MODULE

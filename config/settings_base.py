@@ -1,8 +1,23 @@
 import os
+import sys
 from pathlib import Path
 import environ
 from datetime import timedelta
 from corsheaders.defaults import default_headers
+
+# --- CRITICAL: Enforce UTF-8 encoding globally ---
+os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+os.environ.setdefault('PYTHONDEFAULTENCODING', 'utf-8')
+
+# Ensure sys.stdout/stderr use UTF-8
+if sys.version_info >= (3, 7):
+    try:
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        if hasattr(sys.stderr, 'reconfigure'):
+            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent

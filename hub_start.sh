@@ -1,6 +1,10 @@
 #!/bin/bash
 # Startup script for School Manager (Ethernanos Hub)
 
+# Force UTF-8 encoding for Python to avoid migration decoding errors
+export PYTHONIOENCODING=utf-8
+export PYTHONDEFAULTENCODING=utf-8
+
 # 1. Parse Arguments from Hub
 while [[ $# -gt 0 ]]; do
   case $1 in

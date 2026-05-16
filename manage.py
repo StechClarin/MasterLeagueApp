@@ -1,7 +1,15 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Django management script with UTF-8 encoding enforcement
+"""
 import os
 import sys
 import json
+
+# --- CRITICAL: Force UTF-8 encoding BEFORE any other imports ---
+os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+os.environ.setdefault('PYTHONDEFAULTENCODING', 'utf-8')
 
 def main():
     """Run administrative tasks."""
@@ -33,10 +41,18 @@ def main():
         try:
             # Safer stdin detection
             if not sys.stdin.isatty():
-                line = sys.stdin.readline()
-                if line and line.strip():
-                    config = json.loads(line)
-                    print("[DEBUG] Hub Configuration received via STDIN.")
+                try:
+                    # On tente de lire une ligne de config
+                    line = sys.stdin.readline()
+                    if line and line.strip():
+                        config = json.loads(line)
+                        print("[DEBUG] Hub Configuration received via STDIN.")
+                except UnicodeDecodeError as ude:
+                    print(f"[ERROR] Stdin Encoding Error: {ude}")
+                    # En cas d'erreur de décodage, on tente une lecture brute si possible
+                    # Mais normalement reconfigure(errors='replace') gère déjà ça.
+                except Exception as e:
+                    print(f"[DEBUG] Stdin read error: {e}")
                     
                     # --- DYNAMIC ENV INJECTION ---
                     if "session_token" in config:

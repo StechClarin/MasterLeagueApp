@@ -10,6 +10,9 @@ services:
       - static_volume_test:/app/static
       - media_volume_test:/app/media
     environment:
+      # Force UTF-8 encoding to prevent migration decoding errors
+      - PYTHONIOENCODING=utf-8
+      - PYTHONDEFAULTENCODING=utf-8
       # On pointe vers le container de db de la prod, mais sur la base 'schoolmanage_test'
       - DATABASE_URL=postgres://app_user:secure_password@schoolmanage-db-1:5432/schoolmanage_test
       - DEBUG=0
