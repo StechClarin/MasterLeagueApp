@@ -88,11 +88,12 @@ def main():
                     db_name = db.get("name", "db.sqlite3")
                     os.environ["DATABASE_URL"] = f"sqlite:///{db_name}"
                 else:
-                    db_user = str(db.get('user', ''))
-                    db_pass = str(db.get('password', ''))
+                    import urllib.parse
+                    db_user = urllib.parse.quote_plus(str(db.get('user', '')))
+                    db_pass = urllib.parse.quote_plus(str(db.get('password', '')))
                     db_host = str(db.get('host', ''))
                     db_port = str(db.get('port', ''))
-                    db_name = str(db.get('name', ''))
+                    db_name = urllib.parse.quote_plus(str(db.get('name', '')))
                     db_url = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
                     os.environ["DATABASE_URL"] = db_url
                     os.environ.setdefault("PGCLIENTENCODING", "UTF8")

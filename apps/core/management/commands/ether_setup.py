@@ -32,7 +32,7 @@ class Command(BaseCommand):
             call_command('migrate', interactive=False)
             self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('[OK] Migrations completed.'))
         except Exception as e:
-            self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'[ERROR] Migration failed: {e}'))
+            self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'[ERROR] Migration failed: {repr(e)}'))
             traceback.print_exc(file=sys.stdout)
             sys.exit(1)
 
