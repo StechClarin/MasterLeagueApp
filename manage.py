@@ -88,8 +88,17 @@ def main():
                     db_name = db.get("name", "db.sqlite3")
                     os.environ["DATABASE_URL"] = f"sqlite:///{db_name}"
                 else:
-                    db_url = f"postgres://{db.get('user', '')}:{db.get('password', '')}@{db.get('host', '')}:{db.get('port', '')}/{db.get('name', '')}"
+                    db_user = str(db.get('user', ''))
+                    db_pass = str(db.get('password', ''))
+                    db_host = str(db.get('host', ''))
+                    db_port = str(db.get('port', ''))
+                    db_name = str(db.get('name', ''))
+                    db_url = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
                     os.environ["DATABASE_URL"] = db_url
+                    os.environ.setdefault("PGCLIENTENCODING", "UTF8")
+                    print(f"[DEBUG] PGCLIENTENCODING set to {os.environ['PGCLIENTENCODING']}")
+                    print(f"[DEBUG] DATABASE_URL repr={db_url!r}")
+                    print(f"[DEBUG] DATABASE CONFIG user={db_user!r} host={db_host!r} port={db_port!r} name={db_name!r}")
                 print(f"[DEBUG] Dynamic Database Configuration ({engine}) injected.")
         except Exception as e:
             print(f"[DEBUG] Stdin config error: {e}")
