@@ -238,7 +238,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Debut du seeding Navigation (Modules & Pages) ---"))
         
-        Module.objects.all().delete()
+        # Point Industrial v22.4: On doit utiliser hard_delete() via 'all_objects' car Module et Page utilisent SoftDeleteManager.
+        # delete() les mettrait simplement en is_deleted=True, ce qui ferait échouer l'insertion de nouveaux modules
+        # avec le même 'code' unique (ex: mod-referentiel).
+        Page.all_objects.all().hard_delete()
+        Module.all_objects.all().hard_delete()
         
         for mod_data in MODULE_STRUCTURE:
             # On s'assure que c'est bien un dictionnaire avant d'extraire
