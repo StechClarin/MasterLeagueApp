@@ -53,42 +53,43 @@ def main():
                     # Mais normalement reconfigure(errors='replace') gère déjà ça.
                 except Exception as e:
                     print(f"[DEBUG] Stdin read error: {e}")
-                    
-                    # --- DYNAMIC ENV INJECTION ---
-                    if "session_token" in config:
-                        os.environ["ETHER_SESSION_TOKEN"] = str(config["session_token"])
-                    if "tenant_id" in config:
-                        os.environ["ETHER_TENANT_ID"] = str(config["tenant_id"])
-                    if "hub_api_key" in config:
-                        os.environ["HUB_API_KEY"] = str(config["hub_api_key"])
-                        os.environ["ETHER_HUB_API_KEY"] = str(config["hub_api_key"])
-                    
-                    if "cloud_api_url" in config and config["cloud_api_url"]:
-                        os.environ["ETHER_CLOUD_API_URL"] = str(config["cloud_api_url"])
-                    
-                    if "admin_pass" in config:
-                        os.environ["ADMIN_DEFAULT_PASSWORD"] = str(config["admin_pass"])
-                    
-                    # --- ROUTING SYNC (v22.2) ---
-                    # On capture le préfixe envoyé par le Launcher (ex: /schoolmanage/test/)
-                    if "url_prefix" in config:
-                        prefix = str(config["url_prefix"])
-                        # On assure les slashes avant/après
-                        if not prefix.startswith('/'): prefix = '/' + prefix
-                        if not prefix.endswith('/'): prefix = prefix + '/'
-                        os.environ["ETHER_APP_PREFIX"] = prefix
-                    
-                    # --- DATABASE OVERRIDE ---
-                    db = config.get("db_config")
-                    if db:
-                        engine = db.get("engine", "postgres")
-                        if engine == "sqlite":
-                            db_name = db.get("name", "db.sqlite3")
-                            os.environ["DATABASE_URL"] = f"sqlite:///{db_name}"
-                        else:
-                            db_url = f"postgres://{db.get('user', '')}:{db.get('password', '')}@{db.get('host', '')}:{db.get('port', '')}/{db.get('name', '')}"
-                            os.environ["DATABASE_URL"] = db_url
-                        print(f"[DEBUG] Dynamic Database Configuration ({engine}) injected.")
+
+            # --- DYNAMIC ENV INJECTION ---
+            if "session_token" in config:
+                os.environ["ETHER_SESSION_TOKEN"] = str(config["session_token"])
+            if "tenant_id" in config:
+                os.environ["ETHER_TENANT_ID"] = str(config["tenant_id"])
+            if "hub_api_key" in config:
+                os.environ["HUB_API_KEY"] = str(config["hub_api_key"])
+                os.environ["ETHER_HUB_API_KEY"] = str(config["hub_api_key"])
+
+            if "cloud_api_url" in config and config["cloud_api_url"]:
+                os.environ["ETHER_CLOUD_API_URL"] = str(config["cloud_api_url"])
+
+            if "admin_pass" in config:
+                os.environ["ADMIN_DEFAULT_PASSWORD"] = str(config["admin_pass"])
+
+            # --- ROUTING SYNC (v22.2) ---
+            # On capture le préfixe envoyé par le Launcher (ex: /schoolmanage/test/)
+            if "url_prefix" in config:
+                prefix = str(config["url_prefix"])
+                if not prefix.startswith('/'):
+                    prefix = '/' + prefix
+                if not prefix.endswith('/'):
+                    prefix = prefix + '/'
+                os.environ["ETHER_APP_PREFIX"] = prefix
+
+            # --- DATABASE OVERRIDE ---
+            db = config.get("db_config")
+            if db:
+                engine = db.get("engine", "postgres")
+                if engine == "sqlite":
+                    db_name = db.get("name", "db.sqlite3")
+                    os.environ["DATABASE_URL"] = f"sqlite:///{db_name}"
+                else:
+                    db_url = f"postgres://{db.get('user', '')}:{db.get('password', '')}@{db.get('host', '')}:{db.get('port', '')}/{db.get('name', '')}"
+                    os.environ["DATABASE_URL"] = db_url
+                print(f"[DEBUG] Dynamic Database Configuration ({engine}) injected.")
         except Exception as e:
             print(f"[DEBUG] Stdin config error: {e}")
 
