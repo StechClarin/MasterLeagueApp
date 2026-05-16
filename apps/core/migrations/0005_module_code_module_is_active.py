@@ -9,7 +9,12 @@ class Migration(migrations.Migration):
         ('core', '0004_establishment_deleted_at_establishment_is_deleted_and_more'),
     ]
 
+    def delete_all_modules(apps, schema_editor):
+        Module = apps.get_model('core', 'Module')
+        Module.objects.all().delete()
+
     operations = [
+        migrations.RunPython(delete_all_modules),
         migrations.AddField(
             model_name='module',
             name='code',

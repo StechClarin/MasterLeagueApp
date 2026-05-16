@@ -34,49 +34,43 @@ class Command(BaseCommand):
             try:
                 import psycopg2
                 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-                
-                # Parse URL
                 import urllib.parse
+                
+                # Parse and unquote URL safely
                 result = urllib.parse.urlparse(db_url)
-                username = result.username
-                password = result.password
-                database = result.path[1:]
+                username = urllib.parse.unquote(result.username or '')
+                password = urllib.parse.unquote(result.password or '')
+                database = urllib.parse.unquote(result.path[1:] or '')
                 hostname = result.hostname
                 port = result.port
                 
-                # Test connection to target DB
-                try:
-                    conn = psycopg2.connect(
-                        dbname=database,
-                        user=username,
-                        password=password,
-                        host=hostname,
-                        port=port
-                    )
-                    conn.close()
+                # Connect to 'postgres' maintenance DB (always exists)
+                conn = psycopg2.connect(
+                    dbname='postgres',
+                    user=username,
+                    password=password,
+                    host=hostname,
+                    port=port
+                )
+                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                cur = conn.cursor()
+                
+                # Safe check using SQL query to avoid triggering PG connection errors
+                cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (database,))
+                db_exists = cur.fetchone()
+                
+                if not db_exists:
+                    self.stdout.write(f"   [INFO] Database '{database}' missing, attempting to create...")
+                    cur.execute(f'CREATE DATABASE "{database}"')
+                    self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"   [OK] Database '{database}' created successfully."))
+                else:
                     self.stdout.write(f"   [OK] Database '{database}' already exists.")
-                except psycopg2.OperationalError as e:
-                    if "does not exist" in str(e):
-                        self.stdout.write(f"   [INFO] Database '{database}' missing, attempting to create...")
-                        # Connect to 'postgres' maintenance DB
-                        con_master = psycopg2.connect(
-                            dbname='postgres',
-                            user=username,
-                            password=password,
-                            host=hostname,
-                            port=port
-                        )
-                        con_master.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                        cur_master = con_master.cursor()
-                        # On utilise des doubles quotes pour le nom de la BD au cas où il y aurait des tirets
-                        cur_master.execute(f'CREATE DATABASE "{database}"')
-                        cur_master.close()
-                        con_master.close()
-                        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"   [OK] Database '{database}' created successfully."))
-                    else:
-                        raise e
+                
+                cur.close()
+                conn.close()
             except Exception as dbe:
-                self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)(f"   [WARN] Database auto-creation check failed: {dbe}"))
+                # Use repr(dbe) here as well to safely handle any encoding issues in the error
+                self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)(f"   [WARN] Database auto-creation check failed: {repr(dbe)}"))
                 self.stdout.write("   Continuing anyway, migrate will show the final error if it persists.")
 
         self.stdout.write('Step 1: Running Migrations...')
