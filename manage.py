@@ -96,8 +96,12 @@ def main():
                     db_name = urllib.parse.quote_plus(str(db.get('name', '')))
                     db_url = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
                     os.environ["DATABASE_URL"] = db_url
+                    # Force English messages to avoid encoding issues with localized error messages (e.g. French accents)
+                    os.environ["LC_ALL"] = "C"
+                    os.environ["LC_MESSAGES"] = "C"
+                    os.environ["LANG"] = "C"
                     os.environ.setdefault("PGCLIENTENCODING", "UTF8")
-                    print(f"[DEBUG] PGCLIENTENCODING set to {os.environ['PGCLIENTENCODING']}")
+                    print(f"[DEBUG] Environment forced to LC_ALL=C for Postgres safety.")
                     print(f"[DEBUG] DATABASE_URL repr={db_url!r}")
                     print(f"[DEBUG] DATABASE CONFIG user={db_user!r} host={db_host!r} port={db_port!r} name={db_name!r}")
                 print(f"[DEBUG] Dynamic Database Configuration ({engine}) injected.")
