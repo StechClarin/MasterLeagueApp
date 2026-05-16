@@ -27,6 +27,58 @@ class Command(BaseCommand):
 
         # 2. Run Migrations
         self.stdout.write('[HUB_SIGNAL:MIGRATING]')
+        
+        # --- AUTO-CREATE DATABASE IF MISSING (Postgres only) ---
+        if 'postgres' in db_url:
+            self.stdout.write('Step 0: Checking if database exists...')
+            try:
+                import psycopg2
+                from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+                
+                # Parse URL
+                import urllib.parse
+                result = urllib.parse.urlparse(db_url)
+                username = result.username
+                password = result.password
+                database = result.path[1:]
+                hostname = result.hostname
+                port = result.port
+                
+                # Test connection to target DB
+                try:
+                    conn = psycopg2.connect(
+                        dbname=database,
+                        user=username,
+                        password=password,
+                        host=hostname,
+                        port=port
+                    )
+                    conn.close()
+                    self.stdout.write(f"   [OK] Database '{database}' already exists.")
+                except psycopg2.OperationalError as e:
+                    if "does not exist" in str(e):
+                        self.stdout.write(f"   [INFO] Database '{database}' missing, attempting to create...")
+                        # Connect to 'postgres' maintenance DB
+                        con_master = psycopg2.connect(
+                            dbname='postgres',
+                            user=username,
+                            password=password,
+                            host=hostname,
+                            port=port
+                        )
+                        con_master.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                        cur_master = con_master.cursor()
+                        # On utilise des doubles quotes pour le nom de la BD au cas où il y aurait des tirets
+                        cur_master.execute(f'CREATE DATABASE "{database}"')
+                        cur_master.close()
+                        con_master.close()
+                        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"   [OK] Database '{database}' created successfully."))
+                    else:
+                        raise e
+            except Exception as dbe:
+                self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)(f"   [WARN] Database auto-creation check failed: {dbe}"))
+                self.stdout.write("   Continuing anyway, migrate will show the final error if it persists.")
+
         self.stdout.write('Step 1: Running Migrations...')
         try:
             call_command('migrate', interactive=False)
