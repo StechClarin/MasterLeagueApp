@@ -10,6 +10,7 @@ import json
 # --- CRITICAL: Force UTF-8 encoding BEFORE any other imports ---
 os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
 os.environ.setdefault('PYTHONDEFAULTENCODING', 'utf-8')
+os.environ.setdefault('PYTHONUTF8', '1')
 
 def main():
     """Run administrative tasks."""

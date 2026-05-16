@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import traceback
 import urllib.request
 import urllib.error
 from django.core.management.base import BaseCommand
@@ -32,6 +33,7 @@ class Command(BaseCommand):
             self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('[OK] Migrations completed.'))
         except Exception as e:
             self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f'[ERROR] Migration failed: {e}'))
+            traceback.print_exc(file=sys.stdout)
             sys.exit(1)
 
         # 3. Seed Basic Data (Roles, Navigation, etc.)
