@@ -7,3 +7,5 @@ from .permission import Permission
 from .group import Group
 from .sync_log import SyncLog
 from .user_audit_model import UserAuditModel
+from .tenant_license import TenantLicense
+

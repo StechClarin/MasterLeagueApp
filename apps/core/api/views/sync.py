@@ -71,6 +71,13 @@ class InitialSyncView(APIView):
                     "related_elements": get_deep_establishment_data(est)
                 })
 
+            # Récupération des codes de modules débloqués (licences actives) pour ces établissements
+            from apps.core.models import TenantLicense
+            active_licenses = TenantLicense.objects.filter(
+                establishment__in=all_establishments,
+                is_active=True
+            ).values_list('module_code', flat=True)
+
             sync_data = {
                 "admin": {
                     "id": str(admin_user.id),
@@ -84,7 +91,8 @@ class InitialSyncView(APIView):
                     "is_superuser": admin_user.is_superuser,
                     "role": "admin"
                 },
-                "establishments": establishments_payload
+                "establishments": establishments_payload,
+                "unlocked_module_codes": list(active_licenses)
             }
             
             # Utilisation du JSON Encoder de Django pour gérer les Dates/UUID proprement
@@ -166,6 +174,16 @@ class SyncInView(APIView):
                                         )
                                 except Exception as e:
                                     print(f"Error syncing {model_name} record {record.get('id')}: {e}")
+
+            # 3. Ingestion des Licences (Modules Déverrouillés) en BDD locale
+            unlocked_codes = data.get('unlocked_module_codes')
+            if unlocked_codes is not None:
+                from apps.core.models import Module
+                core_codes = ['mod-referentiel', 'mod-administration']
+                # Désactiver les modules non-core et non débloqués
+                Module.objects.exclude(code__in=core_codes).update(is_active=False)
+                # Activer les modules débloqués par la licence
+                Module.objects.filter(code__in=unlocked_codes).update(is_active=True)
 
             return Response({"status": "Sync In Complete"}, status=status.HTTP_200_OK)
         except Exception as e:

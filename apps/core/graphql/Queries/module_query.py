@@ -18,8 +18,8 @@ class ModuleQuery(graphene.ObjectType):
 
         pages_prefetch = Prefetch('pages', queryset=Page.objects.order_by('order'))
 
-        # 2. SUPERUSER : Il voit tout (Admin) mais limité par la licence active
-        if user.is_superuser:
+        # 2. SUPERUSER ou ADMIN : Il voit tout mais limité par la licence active
+        if user.is_superuser or user.roles.filter(name='admin').exists():
             return Module.objects.filter(is_active=True).prefetch_related(pages_prefetch).order_by('order')
 
         # 3. UTILISATEUR STANDARD : Filtrage par Tags + Licence
