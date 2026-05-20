@@ -126,16 +126,16 @@ interface Page {
           <div class="flex items-center gap-3 cursor-pointer group p-1.5 pr-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200/50">
             <div class="relative">
                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-white group-hover:ring-indigo-100 transition-all">
-                 <img src="https://ui-avatars.com/api/?name=Ether+Nanos&background=6366f1&color=fff" alt="Profile" class="rounded-full h-full w-full object-cover">
+                 <img [src]="avatarUrl" alt="Profile" class="rounded-full h-full w-full object-cover">
                </div>
                <div class="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
             
             <div class="hidden sm:block text-left">
               <p class="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                EtherNanos
+                {{ username }}
               </p>
-              <p class="text-xs text-gray-500 font-medium">Super Admin</p>
+              <p class="text-xs text-gray-500 font-medium">{{ userRole }}</p>
             </div>
   
             <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -162,10 +162,22 @@ interface Page {
   `
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private moduleState = inject(ModuleStateService);
   private router = inject(Router);
   public structureState = inject(StructureStateService);
+
+  get username(): string {
+    return this.authService.getUsername() || 'Utilisateur';
+  }
+
+  get userRole(): string {
+    return this.username.toLowerCase() === 'ethernanos' ? 'Super Admin' : 'Admin';
+  }
+
+  get avatarUrl(): string {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.username)}&background=6366f1&color=fff`;
+  }
 
   searchControl = new FormControl('');
   showResults = false;
