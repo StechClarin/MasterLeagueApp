@@ -7,58 +7,91 @@ class ModuleQuery(graphene.ObjectType):
     modules = graphene.List(ModuleType)
 
     def resolve_modules(root, info, **kwargs):
-        user = info.context.user
+        user = getattr(info.context, 'user', None)
 
         # 1. SÉCURITÉ : Si pas connecté, liste vide
-        if not user.is_authenticated:
+        if not user or not user.is_authenticated:
             return Module.objects.none()
 
         from django.db.models import Prefetch
         from apps.core.models import Page
+        from django.db.models import Q
 
         pages_prefetch = Prefetch('pages', queryset=Page.objects.order_by('order'))
 
-        # 2. SUPERUSER ou ADMIN : Il voit tout mais limité par la licence active
-        if user.is_superuser or user.roles.filter(name='admin').exists():
-            return Module.objects.filter(is_active=True).prefetch_related(pages_prefetch).order_by('order')
-
-        # 3. UTILISATEUR STANDARD : Filtrage par Tags + Licence
-        allowed_tags = set()
+        # --- GESTION DES LICENCES PAR ETABLISSEMENT ---
+        est_id = getattr(info.context, 'establishment_id', None)
         
-        if user.roles.exists():
-            # A. On récupère tous les groupes liés aux rôles de l'utilisateur
-            # (On utilise la relation inverse du ManyToMany : role_set ou le related_name)
-            user_groups = Group.objects.filter(role__in=user.roles.all())
-            
-            # B. On récupère les tags des permissions de ces groupes
-            tags = Permission.objects.filter(
-                group__in=user_groups
-            ).values_list('tag', flat=True).distinct()
-            
-            allowed_tags = set(tags)
+        if est_id:
+            from apps.core.models import TenantLicense
+            unlocked_codes = TenantLicense.objects.filter(
+                establishment_id=est_id,
+                is_active=True
+            ).values_list('module_code', flat=True)
+            core_codes = ['mod-referentiel', 'mod-administration']
+            base_module_query = Module.objects.filter(
+                Q(code__in=core_codes) | Q(code__in=unlocked_codes)
+            )
+        else:
+            base_module_query = Module.objects.filter(is_active=True)
 
-        # 4. FILTRAGE DES PAGES + LICENCE
-        # On charge tous les modules débloqués
-        all_modules = Module.objects.filter(is_active=True).prefetch_related(pages_prefetch).order_by('order')
+        base_module_query = base_module_query.prefetch_related(pages_prefetch).order_by('order').distinct()
+
+        # 2. VÉRIFICATION DES DROITS (Context-Aware)
+        is_admin = user.is_superuser
+        allowed_tags = set()
+
+        if not is_admin and est_id:
+            from apps.core.models.establishment_membership import EstablishmentMembership
+            from django.core.exceptions import ObjectDoesNotExist
+            try:
+                membership = EstablishmentMembership.objects.get(
+                    user=user, 
+                    establishment_id=est_id,
+                    status='active'
+                )
+                if membership.is_owner:
+                    is_admin = True
+                else:
+                    # Récupération des tags via les groupes des rôles de CE membership
+                    tags = Permission.objects.filter(
+                        group__roles__memberships=membership
+                    ).values_list('tag', flat=True).distinct()
+                    allowed_tags = set(tags)
+                    
+                    # Tags via permissions directes sur les rôles (au cas où)
+                    direct_tags = Permission.objects.filter(
+                        roles__memberships=membership
+                    ).values_list('tag', flat=True).distinct()
+                    allowed_tags.update(direct_tags)
+                    
+            except ObjectDoesNotExist:
+                return [] # Aucun droit sur cet établissement
+
+        # Si admin (Superuser ou Owner), on renvoie tout ce que la licence permet
+        if is_admin:
+            return base_module_query
+
+        # 3. FILTRAGE DES PAGES POUR L'UTILISATEUR STANDARD
+        all_modules = base_module_query
         filtered_modules = []
 
         for module in all_modules:
             allowed_pages = []
             
             for page in module.pages.all():
-                # Si la page n'a pas de tag, elle est publique pour les connectés
+                # Si la page n'a pas de tag, elle est publique
                 if not page.permission_tags:
                     allowed_pages.append(page)
                     continue
                 
-                # Si l'utilisateur a au moins un des tags requis
+                # Vérifie si l'utilisateur a au moins un des tags requis
                 page_tags = set(page.permission_tags)
                 if page_tags.intersection(allowed_tags):
                     allowed_pages.append(page)
             
             # Si le module contient des pages visibles, on l'ajoute
             if allowed_pages:
-                # Astuce pour ne renvoyer que les pages filtrées
                 module._prefetched_objects_cache = {'pages': allowed_pages}
                 filtered_modules.append(module)
 

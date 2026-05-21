@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import os
 from apps.core.models import Establishment, TenantLicense
+from apps.profilmanagement.models import User
 
 class UnlockModuleView(APIView):
     """
@@ -31,15 +32,27 @@ class UnlockModuleView(APIView):
             return Response({"error": "Missing required fields (tenant_id, module_code)"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # 3. Récupération du Tenant (Establishment) par son code
-            establishment = Establishment.objects.get(code=tenant_id)
+            # 3. Récupération des Tenants (Establishments) via le hub_id (de l'admin/owner)
+            owners = User.objects.filter(hub_id=tenant_id)
+            establishments = list(Establishment.objects.filter(user__in=owners))
+            
+            if not establishments:
+                # Fallback: recherche directe par le code de l'établissement
+                try:
+                    establishments = [Establishment.objects.get(code=tenant_id)]
+                except Establishment.DoesNotExist:
+                    pass
 
-            # 4. Enregistrement de la licence (Ajout ou mise à jour)
-            license, created = TenantLicense.objects.update_or_create(
-                establishment=establishment,
-                module_code=module_code,
-                defaults={'is_active': is_active}
-            )
+            if not establishments:
+                return Response({"error": f"Tenant '{tenant_id}' not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # 4. Enregistrement de la licence (Ajout ou mise à jour) pour chaque établissement du Tenant
+            for est in establishments:
+                TenantLicense.objects.update_or_create(
+                    establishment=est,
+                    module_code=module_code,
+                    defaults={'is_active': is_active}
+                )
 
             status_str = "unlocked" if is_active else "revoked"
             return Response({

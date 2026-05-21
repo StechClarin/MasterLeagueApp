@@ -32,14 +32,16 @@ class InitialSyncView(APIView):
             return Response({"error": "Missing 'tenant_id' parameter"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # 1. On trouve l'utilisateur Admin qui possède ce hub_id
-            admin_user = User.objects.get(hub_id=tenant_id)
+            # 1. On trouve les utilisateurs (Admins) qui possèdent ce hub_id
+            admin_users = User.objects.filter(hub_id=tenant_id)
 
-            if not admin_user:
+            if not admin_users.exists():
                 return Response({"error": "No Admin User linked to this Tenant"}, status=status.HTTP_404_NOT_FOUND)
 
-            # 2. On récupère TOUS les établissements de ce propriétaire
-            all_establishments = admin_user.establishments_owned.all()
+            admin_user = admin_users.first() # Utilisateur de référence pour l'authentification locale du Hub
+
+            # 2. On récupère TOUS les établissements de ces propriétaires
+            all_establishments = Establishment.objects.filter(user__in=admin_users)
 
             # 3. Fonction pour extraire dynamiquement les infos liées
             def get_deep_establishment_data(est):
@@ -184,6 +186,13 @@ class SyncInView(APIView):
                 Module.objects.exclude(code__in=core_codes).update(is_active=False)
                 # Activer les modules débloqués par la licence
                 Module.objects.filter(code__in=unlocked_codes).update(is_active=True)
+
+            # 4. Migration automatique des chemins des fichiers médias existants (Restructuration SaaS Multi-Tenant)
+            from django.core.management import call_command
+            try:
+                call_command('migrate_media_tenant')
+            except Exception as e:
+                print(f"Warning: Failed to execute migrate_media_tenant during sync: {e}")
 
             return Response({"status": "Sync In Complete"}, status=status.HTTP_200_OK)
         except Exception as e:

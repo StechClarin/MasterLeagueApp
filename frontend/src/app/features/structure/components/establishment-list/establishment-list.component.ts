@@ -5,6 +5,7 @@ import { BaseModalListComponent } from '@core/abstracts/base-modal-list.componen
 import { EstablishmentService } from '../../services/establishment.service';
 import { EstablishmentType } from '@app/graphql/types';
 import { EstablishmentFormComponent } from '../establishment-form/establishment-form.component';
+import { AuthService } from '@core/services/auth.service';
 
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagination.component';
@@ -40,6 +41,12 @@ export class EstablishmentListComponent extends BaseModalListComponent<Establish
     query = inject(EstablishmentService).getQuery();
     responseKey = 'establishments';
     public service = inject(EstablishmentService);
+    public authService = inject(AuthService);
+
+    get isSuperAdmin(): boolean {
+        const username = this.authService.getUsername();
+        return username ? username.toLowerCase() === 'ethernanos' : false;
+    }
 
     searchControl = new FormControl('');
     isFiltersOpen = signal(false);

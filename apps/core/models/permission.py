@@ -14,5 +14,5 @@ class Permission(UserAuditModel):
         verbose_name_plural = "Permissions"
         ordering = ['tag', 'name']
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return str(self.name)

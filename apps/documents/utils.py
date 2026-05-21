@@ -7,39 +7,37 @@ def get_file_category(extension):
     """
     extension = extension.lower()
     if extension in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff']:
-        return 'image' # Singular 'image' as requested
-    elif extension in ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.csv', '.txt']:
-        return 'pdfexcel'
-    return 'others'
+        return 'image'
+    return 'files'
 
 def document_upload_path(instance, filename):
     """
-    Generates dynamic upload path:
-    1. Custom path if model defines 'get_document_upload_path'
-    2. Default: <app_label>/<category>/<filename>
-    
-    Handles both Document instances (via content_object) and direct Model instances (like User).
+    Generates dynamic upload path: <hub_id>/<establishment_id>/<category>/<filename>
     """
     name, ext = os.path.splitext(filename)
     safe_name = slugify(name)
     final_filename = f"{safe_name}{ext.lower()}"
     category = get_file_category(ext)
     
-    # CASE 1: Instance is a generic Document linking to another object
-    if hasattr(instance, 'content_object') and instance.content_object:
-        # Allow the related object to override path generation
-        if hasattr(instance.content_object, 'get_document_upload_path'):
-            return instance.content_object.get_document_upload_path(filename, category)
-        
-        # Surcharge du nom du dossier (Module)
-        app_label = getattr(instance.content_object, 'upload_folder_name', instance.content_type.app_label)
-        return f"{app_label}/{category}/{final_filename}"
+    hub_id = "global"
+    est_id = "global"
     
-    # CASE 2: Instance is a direct model (e.g., User, Personnel)
-    if hasattr(instance, '_meta'):
-        # Surcharge du nom du dossier (Module)
-        app_label = getattr(instance, 'upload_folder_name', instance._meta.app_label)
-        return f"{app_label}/{category}/{final_filename}"
-
-    # Fallback
-    return f"common/{category}/{final_filename}"
+    # Récupération de l'objet métier de référence
+    obj = instance
+    if hasattr(instance, 'content_object') and instance.content_object:
+        obj = instance.content_object
+        
+    # Extraction des identifiants (Tenant & Establishment)
+    if hasattr(obj, 'establishment') and obj.establishment:
+        est_id = str(obj.establishment.id)
+        if obj.establishment.user:
+            hub_id = obj.establishment.user.hub_id or "global"
+    elif hasattr(obj, 'user') and obj.user and hasattr(obj.user, 'hub_id'):
+        # Si l'objet métier est l'Etablissement lui-même
+        hub_id = obj.user.hub_id or "global"
+        est_id = str(getattr(obj, 'id', 'global'))
+    elif hasattr(obj, 'hub_id'):
+        # Si l'objet métier est l'Utilisateur
+        hub_id = obj.hub_id or "global"
+        
+    return f"{hub_id}/{est_id}/{category}/{final_filename}"

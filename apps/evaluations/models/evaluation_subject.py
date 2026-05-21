@@ -21,7 +21,16 @@ def generate_subject_filename(instance, filename):
                 level_name = "tronc-commun"
                 
     new_filename = f"{session_name}_{subject_name}_{level_name}{ext}"
-    return f"evaluations/subjects/{new_filename}"
+    
+    hub_id = "global"
+    est_id = "global"
+    
+    if getattr(instance, 'establishment', None):
+        est_id = str(instance.establishment.id)
+        if getattr(instance.establishment, 'user', None):
+            hub_id = instance.establishment.user.hub_id or "global"
+            
+    return f"{hub_id}/{est_id}/files/{new_filename}"
 
 
 class EvaluationSubject(EstablishmentAwareModel):

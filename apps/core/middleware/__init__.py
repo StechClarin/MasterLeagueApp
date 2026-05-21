@@ -103,12 +103,30 @@ class LicenseMiddleware:
             models.Q(link=path) | models.Q(link__startswith=path + '/')
         ).first()
 
-        if target_page and not target_page.module.is_active:
-            from django.http import JsonResponse
-            return JsonResponse({
-                "error": "LICENSE_RESTRICTION",
-                "message": f"Le module '{target_page.module.name}' n'est pas débloqué dans votre cockpit.",
-                "code": target_page.module.code
-            }, status=403)
+        if target_page:
+            module = target_page.module
+            core_codes = ['mod-referentiel', 'mod-administration']
+            is_unlocked = False
+            
+            if module.code in core_codes:
+                is_unlocked = True
+            elif hasattr(request, 'establishment_id') and request.establishment_id:
+                from apps.core.models import TenantLicense
+                is_unlocked = TenantLicense.objects.filter(
+                    establishment_id=request.establishment_id,
+                    module_code=module.code,
+                    is_active=True
+                ).exists()
+            else:
+                # Fallback si pas d'établissement dans le contexte
+                is_unlocked = module.is_active
+
+            if not is_unlocked:
+                from django.http import JsonResponse
+                return JsonResponse({
+                    "error": "LICENSE_RESTRICTION",
+                    "message": f"Le module '{module.name}' n'est pas débloqué dans votre cockpit.",
+                    "code": module.code
+                }, status=403)
 
         return self.get_response(request)

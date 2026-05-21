@@ -20,8 +20,24 @@ export DJANGO_SETTINGS_MODULE
 : "${GUNICORN_ERROR_LOGFILE:=-}"
 : "${GUNICORN_LOG_LEVEL:=info}"
 
-echo "Waiting for postgres..."
-while ! nc -z db 5432; do
+# Extraire dynamiquement l'hôte et le port de DATABASE_URL si configuré
+DB_HOST="db"
+DB_PORT="5432"
+
+if [ -n "$DATABASE_URL" ]; then
+  # Extraire la partie après '@' et avant '/'
+  TEMP_HOST_PORT=$(echo "$DATABASE_URL" | sed -e 's|^.*@||' -e 's|/.*$||')
+  # Si un port est spécifié avec ':'
+  if echo "$TEMP_HOST_PORT" | grep -q ":"; then
+    DB_HOST=$(echo "$TEMP_HOST_PORT" | cut -d':' -f1)
+    DB_PORT=$(echo "$TEMP_HOST_PORT" | cut -d':' -f2)
+  else
+    DB_HOST="$TEMP_HOST_PORT"
+  fi
+fi
+
+echo "Waiting for postgres on $DB_HOST:$DB_PORT..."
+while ! nc -z "$DB_HOST" "$DB_PORT"; do
   sleep 0.1
 done
 echo "PostgreSQL started"

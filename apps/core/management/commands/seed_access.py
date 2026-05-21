@@ -2,8 +2,9 @@
 from django.core.management.base import BaseCommand
 # On importe depuis 'core' car c'est là qu'on a mis les modèles
 from apps.core.models import Group, Permission 
+from typing import List, Dict, Any
 # TA STRUCTURE DE SEED (CORRIGÉE)
-GROUP_STRUCTURE = [
+GROUP_STRUCTURE: List[Dict[str, Any]] = [
     {
         "name": "Gestion des Utilisateurs",
         "tag": "user", # Le tag correspond à la page "user"

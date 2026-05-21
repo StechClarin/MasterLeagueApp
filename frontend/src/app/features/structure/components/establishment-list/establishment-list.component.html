@@ -3,7 +3,7 @@
     <!-- Header Actions (Search + Add) -->
     <ng-container header-actions>
         <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher un établissement...">
-            <button (click)="openModal()"
+            <button *ngIf="isSuperAdmin" (click)="openModal()"
                 class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 focus:ring-4 focus:ring-indigo-500/30 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center font-medium text-sm transform hover:-translate-y-0.5">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
