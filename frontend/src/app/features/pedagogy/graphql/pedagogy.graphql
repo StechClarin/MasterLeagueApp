@@ -107,6 +107,13 @@ query GetPlanningDependencies {
            }
        }
    }
+   teachingAssignments(search: "", page: 1, pageSize: 1000) {
+       items {
+           personnel { id }
+           classroom { id }
+           subject { id }
+       }
+   }
 }
 
 # --- TEACHING ASSIGNMENTS ---

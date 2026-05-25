@@ -14,6 +14,8 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
+import { CycleService } from '../../services/cycle.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, map } from 'rxjs/operators';
 
@@ -31,7 +33,8 @@ import { debounceTime, distinctUntilChanged, takeUntil, map } from 'rxjs/operato
         UiConfirmModalComponent,
         UiTableComponent,
         UiFilterPanelComponent,
-        UiDropdownComponent
+        UiDropdownComponent,
+        UiSelectComponent
     ],
     templateUrl: './option-list.component.html'
 })
@@ -45,6 +48,10 @@ export class OptionListComponent extends BaseModalListComponent<OptionType> impl
     isFiltersOpen = signal(false);
     private cdr = inject(ChangeDetectorRef);
     private destroy$ = new Subject<void>();
+    private cycleService = inject(CycleService);
+
+    cycles: any[] = [];
+    parentOptions: any[] = [];
 
     @ViewChild('nameCell') nameCell!: TemplateRef<any>;
     @ViewChild('parentCell') parentCell!: TemplateRef<any>;
@@ -92,10 +99,42 @@ export class OptionListComponent extends BaseModalListComponent<OptionType> impl
             this.currentPage.set(1);
             this.refresh();
         });
+
+        this.loadCycles();
+        this.loadParentOptions();
+    }
+
+    private loadCycles() {
+        this.cycleService.getAllCycles().valueChanges.pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+            const items = res.data.cycles?.items || [];
+            this.cycles = items
+                .filter((c: any) => !!c)
+                .map((c: any) => ({
+                    value: c!.id,
+                    label: c!.name
+                }));
+            this.cycles.unshift({ value: '', label: 'Toutes les filières (Cycle confondu)' });
+            this.cdr.markForCheck();
+        });
+    }
+
+    private loadParentOptions() {
+        this.service.getAll().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+            const items = res.data.options?.items || [];
+            this.parentOptions = items
+                .filter((o: any) => !!o && !o.parent) 
+                .map((o: any) => ({
+                    value: o!.id,
+                    label: o!.name
+                }));
+            this.parentOptions.unshift({ value: '', label: 'Toutes les options' });
+            this.cdr.markForCheck();
+        });
     }
 
     initFilterForm() {
         return this.fb.group({
+            cycleId: [''],
             parentId: ['']
         });
     }
@@ -105,6 +144,7 @@ export class OptionListComponent extends BaseModalListComponent<OptionType> impl
         values.search = this.searchControl.value || '';
 
         if (!values.parentId) delete values.parentId;
+        if (!values.cycleId) delete values.cycleId;
 
         return values;
     }

@@ -114,7 +114,7 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
     installmentPeriod: 'Périodicité',
     targetType: 'Type de Ciblage',
     student: 'Élève Spécifique',
-    classroom: 'Classe Spécifique',
+    classrooms: 'Classes Spécifiques',
     applyToExisting: 'Appliquer aux déjà inscrits'
   };
 
@@ -190,8 +190,8 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
       paymentModality: [this.item?.paymentModality || 'UNIQUE', Validators.required],
       installmentCount: [this.item?.installmentCount || 1],
       installmentPeriod: [this.item?.installmentPeriod || 'MONTHLY'],
-      targetType: [this.item?.students?.length > 0 ? 'STUDENT' : (this.item?.classroom ? 'CLASSROOM' : (this.item?.option ? 'OPTION' : 'GLOBAL'))],
-      classroom: [this.item?.classroom?.id || null],
+      targetType: [this.item?.students?.length > 0 ? 'STUDENT' : (this.item?.classrooms?.length > 0 ? 'CLASSROOM' : (this.item?.option ? 'OPTION' : 'GLOBAL'))],
+      classrooms: [this.item?.classrooms?.map((c: any) => c.id) || []],
       option: [this.item?.option?.id || null],
       students: [this.item?.students?.map((s: any) => s.id) || []],
       applyToExisting: [false],
@@ -203,23 +203,23 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
     // Handle clearing targets and dynamic validators when type changes
     this.form.get('targetType')?.valueChanges.subscribe(type => {
       // Clear values
-      this.form.patchValue({ students: [], classroom: null, option: null }, { emitEvent: false });
+      this.form.patchValue({ students: [], classrooms: [], option: null }, { emitEvent: false });
       
       // Clear validators
-      this.form.get('classroom')?.clearValidators();
+      this.form.get('classrooms')?.clearValidators();
       this.form.get('option')?.clearValidators();
       this.form.get('students')?.clearValidators();
 
       // Set specific validators
       if (type === 'CLASSROOM') {
-        this.form.get('classroom')?.setValidators([Validators.required]);
+        this.form.get('classrooms')?.setValidators([Validators.required]);
       } else if (type === 'OPTION') {
         this.form.get('option')?.setValidators([Validators.required]);
       } else if (type === 'STUDENT') {
         this.form.get('students')?.setValidators([Validators.required]);
       }
 
-      this.form.get('classroom')?.updateValueAndValidity();
+      this.form.get('classrooms')?.updateValueAndValidity();
       this.form.get('option')?.updateValueAndValidity();
       this.form.get('students')?.updateValueAndValidity();
     });
@@ -374,7 +374,7 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
               this.currentTab.set('info');
           } else if (this.form.get('paymentModality')?.invalid || this.form.get('installmentCount')?.invalid || this.form.get('installmentPeriod')?.invalid || this.tranchesError() !== null) {
               this.currentTab.set('payment');
-          } else if (this.form.get('classroom')?.invalid || this.form.get('option')?.invalid || this.form.get('students')?.invalid) {
+          } else if (this.form.get('classrooms')?.invalid || this.form.get('option')?.invalid || this.form.get('students')?.invalid) {
               this.currentTab.set('targeting');
           }
       }
@@ -398,7 +398,7 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
       installment_period: val.installmentPeriod,
       academic_year: val.academicYear,
       students_ids: val.targetType === 'STUDENT' ? val.students : [],
-      classroom_id: val.targetType === 'CLASSROOM' ? val.classroom : null,
+      classrooms_ids: val.targetType === 'CLASSROOM' ? val.classrooms : [],
       option_id: val.targetType === 'OPTION' ? val.option : null,
       apply_to_existing: val.applyToExisting,
       custom_installments: val.paymentModality === 'INSTALLMENTS' ? 

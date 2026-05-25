@@ -19,15 +19,20 @@ class ModuleQuery(graphene.ObjectType):
 
         pages_prefetch = Prefetch('pages', queryset=Page.objects.order_by('order'))
 
-        # --- GESTION DES LICENCES PAR ETABLISSEMENT ---
+        # --- GESTION DES LICENCES PAR PROPRIÉTAIRE (TENANT) ---
         est_id = getattr(info.context, 'establishment_id', None)
         
         if est_id:
-            from apps.core.models import TenantLicense
-            unlocked_codes = TenantLicense.objects.filter(
-                establishment_id=est_id,
-                is_active=True
-            ).values_list('module_code', flat=True)
+            from apps.core.models import TenantLicense, Establishment
+            try:
+                est = Establishment.objects.get(id=est_id)
+                unlocked_codes = TenantLicense.objects.filter(
+                    user=est.user,
+                    is_active=True
+                ).values_list('module_code', flat=True)
+            except Establishment.DoesNotExist:
+                unlocked_codes = []
+
             core_codes = ['mod-referentiel', 'mod-administration']
             base_module_query = Module.objects.filter(
                 Q(code__in=core_codes) | Q(code__in=unlocked_codes)

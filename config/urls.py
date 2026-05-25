@@ -9,10 +9,8 @@ from apps.core.api.controllers.RouterController import RouterView
 from apps.core.api.controllers.GraphQlController import GraphQLController 
 
 # Authentification JWT
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from apps.profilmanagement.api.views.custom_jwt_view import CustomTokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     # 1. Admin Django
@@ -21,7 +19,7 @@ urlpatterns = [
 
     # 2. Authentification (Publique)
     # L'exemption CSRF est nécessaire pour les APIs JWT car on n'utilise pas encore de session/cookie
-    path('api/auth/login/', csrf_exempt(TokenObtainPairView.as_view()), name='token_obtain_pair'),
+    path('api/auth/login/', csrf_exempt(CustomTokenObtainPairView.as_view()), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # 3. API CUD (REST - Écriture)

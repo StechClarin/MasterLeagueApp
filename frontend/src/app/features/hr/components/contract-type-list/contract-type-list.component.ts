@@ -62,7 +62,6 @@ export class ContractTypeListComponent extends BaseModalListComponent<any> {
 
     override initFilterForm(): FormGroup {
         return this.fb.group({
-            search: ['']
         });
     }
 

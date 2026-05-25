@@ -21,6 +21,7 @@ import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { UiStatusBadgeComponent } from '@shared/components/ui-status-badge/ui-status-badge.component';
 
 @Component({
@@ -39,6 +40,7 @@ import { UiStatusBadgeComponent } from '@shared/components/ui-status-badge/ui-st
         UiFilterPanelComponent,
         UiSelectComponent,
         UiDropdownComponent,
+        UiExportModalComponent,
         UiStatusBadgeComponent
     ],
     templateUrl: './academic-period-list.component.html'
@@ -130,5 +132,66 @@ export class AcademicPeriodListComponent extends BaseModalListComponent<Academic
     resetFilters() {
         this.searchControl.setValue('');
         this.filterForm.reset();
+    }
+
+    private handleFileOperation(
+        operation: 'import' | 'export',
+        serviceMethod: () => import('rxjs').Observable<any>,
+        successMessage: string
+    ) {
+        this.isLoading.set(true);
+
+        serviceMethod().subscribe({
+            next: (response) => {
+                if (operation === 'export') {
+                    this.downloadFile(response);
+                } else {
+                    this.refresh();
+                }
+                this.toastService.success(successMessage);
+                this.isLoading.set(false);
+            },
+            error: (err) => {
+                console.error(`Erreur lors de l'${operation}`, err);
+                this.toastService.error(`Une erreur est survenue lors de l'${operation}.`);
+                this.isLoading.set(false);
+            }
+        });
+    }
+
+    onImport() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv,.xlsx,.xls';
+
+        input.onchange = (event: any) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            this.handleFileOperation(
+                'import',
+                () => this.service.import(file),
+                `${file.name} importé avec succès.`
+            );
+        };
+
+        input.click();
+    }
+
+    onDownloadTemplate() {
+        this.handleFileOperation(
+            'export',
+            () => this.service.downloadTemplate(),
+            'Modèle téléchargé avec succès.'
+        );
+    }
+
+    private downloadFile(blob: Blob) {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `academic_periods_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
     }
 }

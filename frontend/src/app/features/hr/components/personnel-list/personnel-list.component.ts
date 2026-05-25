@@ -132,13 +132,11 @@ export class PersonnelListComponent extends BaseModalListComponent<any> implemen
     }
 
     resetFilters() {
-        this.searchControl.setValue('');
-        this.filterForm.reset({
-            search: '',
-            contractType: null,
-            role: null,
-            jobTitle: ''
-        });
+        this.filterForm.reset();
+    }
+
+    dispatchFilters() {
+        this.refresh();
     }
 
     /**

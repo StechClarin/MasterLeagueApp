@@ -5,14 +5,14 @@ from pathlib import Path
 import environ
 from django.core.management.base import BaseCommand, CommandError
 from apps.profilmanagement.models import Role, User
-from apps.core.models import Group, Establishment
+from apps.core.models import Group, Establishment, Module, TenantLicense
 from django.db import IntegrityError
 from django.conf import settings
 
 ROLES_STRUCTURE = {
     # Roles Techniques
-    "Admin Master": "__ALL__", # Renommé ou gardé tel quel, c'est le super user technique
-    "Admin": "__ALL__", # Renommé ou gardé tel quel, c'est le super user technique
+    "superadmin": "__ALL__", # Renommé pour correspondre à vos attentes
+    "admin": "__ALL__", 
     
     # Roles Métier (School)
     "DIRECTEUR_ETABLISSEMENT": [
@@ -114,7 +114,7 @@ class Command(BaseCommand):
             raise CommandError("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini (ni via argument, ni dans l'environnement, ni dans un fichier .env).")
 
         try:
-            admin_role = Role.objects.get(name="Admin") # On sait qu'il est créé ci-dessus
+            superadmin_role = Role.objects.get(name="superadmin") # On s'assure de prendre le superadmin
             
             establishment_code = os.environ.get('ETHER_TENANT_ID', 'ETH-NANOS-SPA001')
             establishment_name = f"Ethernanos ({establishment_code})" if establishment_code != 'ETH-NANOS-SPA001' else 'Ethernanos'
@@ -157,12 +157,26 @@ class Command(BaseCommand):
             membership_service.create_or_update_with_roles(
                 user=admin_user,
                 establishment=establishment,
-                roles=[admin_role],
+                roles=[superadmin_role],
                 is_owner=True, # Hub admin = Owner
                 status='active'
             )
             
-            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("  [OK] Utilisateur 'ethernanos' lié à l'établissement via Membership (is_owner=True)."))
+            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("  [OK] Utilisateur 'ethernanos' lié à l'établissement avec le rôle 'superadmin'."))
+
+            # 5. Déblocage de TOUS les modules via TenantLicense
+            self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Déblocage des Modules pour 'ethernanos' ---"))
+            all_modules = Module.objects.all()
+            if not all_modules.exists():
+                self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)("  ⚠ Aucun module trouvé dans la base de données. N'oubliez pas de lancer le seeder de modules (seed_navigation) avant."))
+            else:
+                for mod in all_modules:
+                    TenantLicense.objects.update_or_create(
+                        user=admin_user,
+                        module_code=mod.code,
+                        defaults={'is_active': True}
+                    )
+                self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"  ✔ {all_modules.count()} modules débloqués pour le propriétaire 'ethernanos'."))
 
         except Exception as e:
             self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f"  [ERROR] {e}"))

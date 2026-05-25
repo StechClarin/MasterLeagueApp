@@ -35,7 +35,8 @@
 
         <app-ui-filter-panel [isOpen]="isFiltersOpen()" [form]="filterForm" (reset)="resetFilters()">
             <div [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                <p class="text-xs text-slate-500 italic md:col-span-2">Affinez votre recherche par types ou catégories d'options.</p>
+                <app-ui-select label="Cycle" formControlName="cycleId" [options]="cycles" placeholder="Filtrer par cycle"></app-ui-select>
+                <app-ui-select label="Option Parente" formControlName="parentId" [options]="parentOptions" placeholder="Filtrer par option parente"></app-ui-select>
             </div>
         </app-ui-filter-panel>
     </ng-container>

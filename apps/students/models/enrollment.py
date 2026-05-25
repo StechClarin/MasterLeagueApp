@@ -7,6 +7,7 @@ from .student import Student
 
 class Enrollment(EstablishmentAwareModel):
     STATUS_CHOICES = [
+        ('PENDING', 'En attente'),
         ('REGISTERED', 'Inscrit'),
         ('LEFT', 'Parti'),
         ('EXPELLED', 'Renvoyé'),
@@ -18,7 +19,7 @@ class Enrollment(EstablishmentAwareModel):
     classroom = models.ForeignKey('structure.ClassRoom', on_delete=models.PROTECT, related_name='enrollments')
     academic_year = models.ForeignKey('structure.AcademicYear', on_delete=models.PROTECT, related_name='enrollments')
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='REGISTERED')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     enrollment_date = models.DateField(auto_now_add=True)
     is_repeater = models.BooleanField(default=False)
 

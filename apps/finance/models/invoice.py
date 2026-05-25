@@ -24,6 +24,10 @@ class Invoice(EstablishmentAwareModel):
     
     # Suivi des tranches pour la facture
     installment_count = models.PositiveIntegerField(default=1, help_text="Nombre de tranches prévu pour ce frais")
+    custom_installments = models.JSONField(
+        null=True, blank=True,
+        help_text="Format copié de FeeDefinition: [{'tranche': 1, 'amount': 50000}, {'tranche': 2, 'amount': 25000}]"
+    )
     
     # Suivi des impressions
     print_count = models.PositiveIntegerField(default=0, help_text="Nombre de fois que la facture/reçu a été imprimée")

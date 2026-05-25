@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -16,6 +16,8 @@ import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagin
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
+import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
+import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { ClassRoomService } from '@features/structure/services/classroom.service';
 
 @Component({
@@ -30,7 +32,9 @@ import { ClassRoomService } from '@features/structure/services/classroom.service
     UiPaginationComponent,
     UiModalComponent,
     UiToolbarComponent,
-    UiSelectComponent
+    UiSelectComponent,
+    UiFilterPanelComponent,
+    UiExportModalComponent
   ],
   template: `
     <app-ui-list-page 
@@ -40,40 +44,70 @@ import { ClassRoomService } from '@features/structure/services/classroom.service
       [isEmpty]="(items$ | async)?.length === 0">
       
       <ng-container header-actions>
-        <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher (Réf, Matricule, Libellé, Élève)..."></app-ui-toolbar>
+        <div class="flex items-center gap-3">
+           <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher (Réf, Matricule)..."></app-ui-toolbar>
+           <button (click)="openExportModal()"
+              class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm flex items-center font-medium text-sm">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Exporter
+           </button>
+        </div>
       </ng-container>
 
       <div filters class="flex flex-col gap-4">
-        <!-- Barre de filtres par catégorie -->
-        <div class="px-6 py-3 border-b border-slate-100 bg-white overflow-x-auto rounded-xl shadow-sm">
-          <div class="flex items-center gap-2 min-w-max">
-             <button 
-               (click)="setCategory(null)"
-               [class]="!filterForm.value.search ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
-               class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all border border-transparent flex items-center gap-2">
-               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-               Tout
-             </button>
-             <button 
-               *ngFor="let cat of dynamicCategories"
-               (click)="setCategory(cat.value)"
-               [class]="filterForm.value.search === cat.value ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 hover:bg-slate-50'"
-               class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all border border-slate-100 flex items-center gap-2">
-               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" [innerHTML]="cat.svg"></svg>
-               {{ cat.label }}
-             </button>
-          </div>
+        <div class="flex justify-between items-center">
+            <!-- Barre de filtres par catégorie -->
+            <div class="flex items-center gap-2 overflow-x-auto min-w-max">
+               <button 
+                 (click)="setCategory(null)"
+                 [class]="!filterForm.value.search ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                 class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all border border-transparent flex items-center gap-2">
+                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                 Tout
+               </button>
+               <button 
+                 *ngFor="let cat of dynamicCategories"
+                 (click)="setCategory(cat.value)"
+                 [class]="filterForm.value.search === cat.value ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-100'"
+                 class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all border flex items-center gap-2">
+                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" [innerHTML]="cat.svg"></svg>
+                 {{ cat.label }}
+               </button>
+            </div>
+            
+            <button (click)="toggleFilters()"
+              class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center font-medium text-sm group shrink-0">
+              <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filtres Avancés
+            </button>
         </div>
 
-        <!-- Autres filtres -->
-        <div [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-           <app-ui-select 
-              label="Filtrer par Classe" 
-              formControlName="classroomId" 
-              [options]="classroomOptions"
-              placeholder="Toutes les classes">
-           </app-ui-select>
-        </div>
+        <app-ui-filter-panel [isOpen]="isFiltersOpen()" [form]="filterForm" (reset)="resetFilters()">
+           <div [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
+              <!-- Filter: Class -->
+              <div class="space-y-1.5 md:col-span-2">
+                <label for="filter-class" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Classe</label>
+                <div class="relative">
+                   <select id="filter-class" formControlName="classroomId"
+                    class="block w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+                    <option [ngValue]="null">Toutes les classes</option>
+                    <option *ngFor="let c of classroomOptions" [value]="c.value">{{ c.label }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter: Seuil d'exclusion -->
+              <div class="space-y-1.5 md:col-span-2">
+                <label for="filter-amount" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Insolvables (Paiement inférieur à)</label>
+                <input type="number" id="filter-amount" formControlName="maxPaidAmount" placeholder="Ex: 50000"
+                  class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-red-600 font-bold">
+              </div>
+           </div>
+        </app-ui-filter-panel>
       </div>
 
       <ng-container table>
@@ -105,6 +139,11 @@ import { ClassRoomService } from '@features/structure/services/classroom.service
          (success)="onSave()">
        </app-payment-form>
     </app-ui-modal>
+
+    <!-- Export Modal -->
+    <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"
+      (confirm)="confirmExport($event)">
+    </app-ui-export-modal>
 
     <!-- Templates for Table Cells -->
     <ng-template #statusCell let-item>
@@ -158,6 +197,8 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
   private cdr = inject(ChangeDetectorRef);
   private classroomService = inject(ClassRoomService);
   router = inject(Router);
+
+  isFiltersOpen = signal(false);
 
   dynamicCategories: any[] = [];
   classroomOptions: any[] = [];
@@ -225,8 +266,153 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
       studentId: [null],
       status: [null],
       category: [null],
-      classroomId: [null]
+      classroomId: [null],
+      maxPaidAmount: [null]
     });
+  }
+
+  toggleFilters() {
+    this.isFiltersOpen.update((v: boolean) => !v);
+  }
+
+  resetFilters() {
+    this.filterForm.reset();
+    this.searchControl.setValue('');
+  }
+
+  protected override getExportConfig() {
+      return {
+          title: 'Liste des Factures / Insolvables',
+          columns: [
+              { header: 'Référence', key: 'reference' },
+              { header: 'Libellé', key: 'title' },
+              { header: 'Élève', key: 'student', format: (s: any) => `${s?.firstName} ${s?.lastName}` },
+              { header: 'Matricule', key: 'student.matricule' },
+              { header: 'Classe', key: 'enrollment.classroom.name' },
+              { header: 'Total (FCFA)', key: 'totalAmount', format: (v: any) => v?.toLocaleString() },
+              { header: 'Payé (FCFA)', key: 'paidAmount', format: (v: any) => v?.toLocaleString() },
+              { header: 'Reste (FCFA)', key: 'remainingAmount', format: (v: any) => v?.toLocaleString() },
+              { header: 'Statut', key: 'status', format: (v: string) => this.getStatusLabel(v) }
+          ]
+      };
+  }
+
+  override async confirmExport(format: 'excel' | 'pdf') {
+      if (format === 'excel') {
+          return super.confirmExport(format);
+      }
+      
+      this.closeExportModal();
+      this.isExporting.set(true);
+
+      try {
+          const result = await this.apollo.query({
+              query: this.query,
+              variables: { ...this.filterForm.value, page: 1, pageSize: 1000 },
+              fetchPolicy: 'network-only'
+          }).toPromise();
+
+          const data = (result as any).data[this.responseKey];
+          const items = data.items || data;
+
+          if (!items || items.length === 0) {
+              this.toastService.warning('Aucune donnée à exporter.');
+              this.isExporting.set(false);
+              return;
+          }
+
+          await this.generateDefaultersPDF(items);
+          this.toastService.success(`Export PDF terminé.`);
+      } catch (error) {
+          console.error('Export error:', error);
+          this.toastService.error("Erreur lors de l'export.");
+      } finally {
+          this.isExporting.set(false);
+      }
+  }
+
+  private async generateDefaultersPDF(data: any[]) {
+      const [jsPDFModule, autoTableModule] = await Promise.all([
+          import('jspdf'),
+          import('jspdf-autotable')
+      ]);
+      const JsPDF = (jsPDFModule as any).default || jsPDFModule;
+      const doc = new JsPDF();
+      const autoTable = (autoTableModule as any).default || autoTableModule;
+
+      // Grouper les données par classe
+      const grouped: { [key: string]: any[] } = {};
+      data.forEach(item => {
+          const className = item.enrollment?.classroom?.name || 'Non Inscrit';
+          if (!grouped[className]) {
+              grouped[className] = [];
+          }
+          grouped[className].push(item);
+      });
+
+      const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      let firstPage = true;
+
+      // Trier les classes par ordre alphabétique
+      const sortedClasses = Object.keys(grouped).sort();
+
+      for (const className of sortedClasses) {
+          const items = grouped[className];
+          
+          if (!firstPage) {
+              doc.addPage();
+          }
+          firstPage = false;
+
+          doc.setFontSize(18);
+          doc.setTextColor(40);
+          doc.text(`Liste des Insolvables`, 14, 22);
+          
+          doc.setFontSize(12);
+          doc.setTextColor(60);
+          doc.text(`Classe : ${className}`, 14, 30);
+          
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(`Généré le ${date}`, 14, 36);
+
+          const headers = ['Libellé', 'Élève', 'Matricule', 'Total (FCFA)', 'Payé (FCFA)', 'Reste (FCFA)', 'Statut'];
+          const rows = items.map(item => [
+              item.title || '',
+              `${item.student?.firstName || ''} ${item.student?.lastName || ''}`,
+              item.student?.matricule || 'N/A',
+              item.totalAmount?.toLocaleString() || '0',
+              item.paidAmount?.toLocaleString() || '0',
+              item.remainingAmount?.toLocaleString() || '0',
+              this.getStatusLabel(item.status)
+          ]);
+
+          const tableConfig = {
+              head: [headers],
+              body: rows,
+              startY: 42,
+              theme: 'grid',
+              headStyles: { fillColor: [79, 70, 229] },
+              alternateRowStyles: { fillColor: [249, 250, 251] },
+              styles: { fontSize: 9, cellPadding: 3 },
+              didDrawPage: (data: any) => {
+                  const str = 'Page ' + doc.getNumberOfPages();
+                  doc.setFontSize(10);
+                  const pageSize = doc.internal.pageSize;
+                  const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+                  doc.text(str, data.settings.margin.left, pageHeight - 10);
+              }
+          };
+
+          if (typeof (doc as any).autoTable === 'function') {
+              (doc as any).autoTable(tableConfig);
+          } else if (typeof autoTable === 'function') {
+              autoTable(doc, tableConfig);
+          }
+      }
+
+      doc.save(`insolvables_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
   loadClassrooms() {

@@ -44,8 +44,7 @@ export class EstablishmentListComponent extends BaseModalListComponent<Establish
     public authService = inject(AuthService);
 
     get isSuperAdmin(): boolean {
-        const username = this.authService.getUsername();
-        return username ? username.toLowerCase() === 'ethernanos' : false;
+        return this.authService.isSuperAdmin();
     }
 
     searchControl = new FormControl('');

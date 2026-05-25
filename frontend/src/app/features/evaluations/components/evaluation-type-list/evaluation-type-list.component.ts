@@ -14,6 +14,7 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
+import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
@@ -30,7 +31,8 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
         UiToolbarComponent,
         UiConfirmModalComponent,
         UiTableComponent,
-        UiFilterPanelComponent
+        UiFilterPanelComponent,
+        UiDropdownComponent
     ],
     templateUrl: './evaluation-type-list.component.html'
 })

@@ -21,6 +21,14 @@
                     <app-ui-input type="date" label="Date de fin" formControlName="date_end" [min]="minDate" [required]="true"></app-ui-input>
                 </div>
             </div>
+
+            <div class="flex justify-end pt-2">
+                <label class="flex items-center gap-2 cursor-pointer bg-amber-50 px-4 py-2 rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors shadow-sm" title="Si coché, la sécurité de l'affectation est désactivée et vous pourrez choisir n'importe quel enseignant.">
+                    <input type="checkbox" class="w-4 h-4 text-amber-600 bg-white border-amber-300 rounded focus:ring-amber-500 focus:ring-2 cursor-pointer" 
+                           [checked]="isReplacementMode()" (change)="isReplacementMode.set(!isReplacementMode())">
+                    <span class="text-sm font-bold text-amber-900">Mode Remplacement (Afficher tous les professeurs)</span>
+                </label>
+            </div>
         </div>
 
         <!-- Navigation des Onglets (Seulement si dates valides) -->
@@ -70,7 +78,7 @@
                             
                             <!-- Selection Area -->
                             <div class="md:col-span-3 pt-1">
-                                <app-ui-select label="Enseignant" [options]="teachers()" formControlName="enseignant_id" bindLabel="fullName" bindValue="id" [required]="true"></app-ui-select>
+                                <app-ui-select label="Enseignant" [options]="getFilteredTeachers($any(ctrl))" formControlName="enseignant_id" bindLabel="fullName" bindValue="id" [required]="true"></app-ui-select>
                             </div>
                             
                             <div class="md:col-span-2 pt-1">

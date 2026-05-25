@@ -11,6 +11,7 @@ class PaymentService(BaseService):
         # Validation stricte des règles de paiement
         from decimal import Decimal
         from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ObjectDoesNotExist
         
         amount = Decimal(str(data.get('amount', 0)))
         invoice_id = data.get('invoice')
@@ -31,7 +32,7 @@ class PaymentService(BaseService):
                 if invoice.installment_count == 1 and amount < invoice.remaining_amount:
                     raise ValidationError("Ce frais exige un paiement unique et total. Les versements partiels sont interdits.")
                     
-            except Invoice.DoesNotExist:
+            except ObjectDoesNotExist:
                 pass # Géré par le serializer de base
                 
         return data
@@ -44,6 +45,23 @@ class PaymentService(BaseService):
             data['reference'] = self.generate_payment_reference()
             
         return data
+
+    def after_save(self, instance, created):
+        super().after_save(instance, created)
+        
+        # Validation automatique de l'inscription
+        # Si c'est un paiement pour une facture d'inscription (REGISTRATION)
+        if instance.invoice and instance.invoice.category == 'REGISTRATION':
+            # Optionnellement, on pourrait exiger que la facture soit totalement payée
+            # if instance.invoice.status == 'PAID':
+            
+            # Dès le premier versement des frais d'inscription, l'élève passe 'Inscrit'
+            enrollment = instance.invoice.enrollment
+            if enrollment and enrollment.status == 'PENDING':
+                enrollment.status = 'REGISTERED'
+                # save() ici ne déclenchera pas la génération de nouvelles factures
+                # car created sera False pour l'enrollment au moment du save() standard
+                enrollment.save(update_fields=['status'])
 
     def generate_payment_reference(self):
         from datetime import date

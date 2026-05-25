@@ -49,8 +49,7 @@ export class RoomListComponent extends BaseModalListComponent<any> implements Af
         setTimeout(() => {
             this.tableColumns = [
                 { header: 'Nom de la salle', template: this.nameCell },
-                { header: 'Capacité (Élèves)', template: this.capacityCell },
-                { header: '', template: this.actionsCell },
+                { header: 'Capacité (Élèves)', template: this.capacityCell }
             ];
             this.cdr.detectChanges();
         });

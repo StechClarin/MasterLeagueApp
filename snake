@@ -35,12 +35,15 @@ case "$COMMAND" in
         ;;
 
     run)
-        echo "--- Lancement du serveur sur http://127.0.0.1:8000 ---"
-        $PYTHON_EXEC manage.py runserver
+        echo "--- Lancement du serveur en Local (http://127.0.0.1:8000) ---"
+        $PYTHON_EXEC manage.py runserver 127.0.0.1:8000
         ;;
 
     remote)
-        echo "--- Lancement du serveur sur toutes les interfaces (0.0.0.0:8000) ---"
+        # Détection automatique de l'IP du réseau Wifi (cross-platform via Python)
+        LOCAL_IP=$($PYTHON_EXEC -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(('8.8.8.8', 80)); print(s.getsockname()[0]); s.close()" 2>/dev/null || echo "0.0.0.0")
+        echo "--- Lancement du serveur en Réseau (Wifi) ---"
+        echo "👉 Votre application est accessible sur : http://$LOCAL_IP:8000"
         $PYTHON_EXEC manage.py runserver 0.0.0.0:8000
         ;;
 

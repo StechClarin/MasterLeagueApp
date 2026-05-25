@@ -19,6 +19,7 @@ import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-fi
 
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
+import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 
 @Component({
     selector: 'app-enrollment-list',
@@ -34,13 +35,13 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
         UiTableComponent,
         UiFilterPanelComponent,
         UiDropdownComponent,
-        UiConfirmModalComponent
+        UiConfirmModalComponent,
+        UiExportModalComponent
     ],
     template: `
     <app-ui-list-page title="Gestion des Inscriptions" description="Consultez et gérez les inscriptions des élèves par année et par classe."
       [isLoading]="isLoading()" [isEmpty]="(items$ | async)?.length === 0">
  
-      <!-- Header Actions -->
       <ng-container header-actions>
         <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher un élève...">
         </app-ui-toolbar>
@@ -61,6 +62,18 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+          </div>
+
+          <div class="flex items-center gap-3">
+              <button (click)="openExportModal()"
+                  class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
+                  <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Exporter
+              </button>
           </div>
         </div>
 
@@ -172,6 +185,10 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
             (confirm)="confirmTransfer()"
             (cancel)="closeModal()"></app-ui-confirm-modal>
     </app-ui-modal>
+    
+    <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"
+        (confirm)="confirmExport($event)">
+    </app-ui-export-modal>
     `
 })
 export class EnrollmentListComponent extends BaseModalListComponent<any> implements OnInit, AfterViewInit, OnDestroy {
@@ -237,6 +254,20 @@ export class EnrollmentListComponent extends BaseModalListComponent<any> impleme
             ];
             this.cdr.detectChanges();
         });
+    }
+
+    override getExportConfig() {
+        return {
+            title: 'Liste des Inscriptions',
+            columns: [
+                { header: 'Matricule', key: 'student.matricule', format: (item: any) => item.student?.matricule || '-' },
+                { header: 'Prénom', key: 'student.firstName', format: (item: any) => item.student?.firstName || '-' },
+                { header: 'Nom', key: 'student.lastName', format: (item: any) => item.student?.lastName || '-' },
+                { header: 'Classe', key: 'classroom.name', format: (item: any) => item.classroom?.name || '-' },
+                { header: 'Passage', key: 'isRepeater', format: (item: any) => item.isRepeater ? 'Redoublant' : 'Passant' },
+                { header: 'Statut', key: 'status', format: (item: any) => this.getStatusLabel(item.status) }
+            ]
+        };
     }
 
     onExpel(item: any) {

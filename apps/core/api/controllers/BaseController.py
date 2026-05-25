@@ -41,6 +41,19 @@ class BaseController(APIView):
         action = 'write' if self.request.method in ['POST', 'PUT', 'PATCH'] else 'read'
         return self.get_serializer_class(action)
 
+    def get_serializer_instance(self, *args, **kwargs):
+        """ Instancie le serializer courant avec le contexte de la requête """
+        kwargs.setdefault('context', {})
+        kwargs['context']['request'] = getattr(self, 'request', None)
+        return self.serializer(*args, **kwargs)
+
+    def get_read_serializer_instance(self, *args, **kwargs):
+        """ Instancie le serializer de lecture avec le contexte de la requête """
+        serializer_class = self.get_serializer_class(action='read')
+        kwargs.setdefault('context', {})
+        kwargs['context']['request'] = getattr(self, 'request', None)
+        return serializer_class(*args, **kwargs)
+
     def initial(self, request, *args, **kwargs):
         """
         Surcharge de la méthode initial de DRF (exécutée avant chaque action).
@@ -109,6 +122,12 @@ class BaseController(APIView):
             "data": data
         }, status=status_code)
 
+    def error_response(self, message, status_code):
+        return Response({
+            "status": "error",
+            "message": message
+        }, status=status_code)
+
     # --- MÉTHODES CUD (Orchestration) ---
 
     # --- MÉTHODES CUD (Orchestration) ---
@@ -141,7 +160,7 @@ class BaseController(APIView):
         page = paginator.paginate_queryset(queryset, request, view=self)
         
         if page is not None:
-            serializer = self.serializer(page, many=True)
+            serializer = self.get_serializer_instance(page, many=True)
             # On conserve notre structure de réponse standard "Envelope"
             return self.success_response({
                 "count": paginator.page.paginator.count,
@@ -151,7 +170,7 @@ class BaseController(APIView):
             }, "Liste récupérée avec succès (paginée).", status.HTTP_200_OK)
 
         # Fallback si pagination désactivée (peu probable ici)
-        data = self.serializer(queryset, many=True).data
+        data = self.get_serializer_instance(queryset, many=True).data
         return self.success_response(data, "Liste récupérée avec succès.", status.HTTP_200_OK)
 
     def get_by_id(self, request, pk, *args, **kwargs):
@@ -163,9 +182,8 @@ class BaseController(APIView):
 
         try:
             instance = self.service.get_by_id(pk)
-            # On utilise le serializer de lecture
-            read_serializer_class = self.get_serializer_class(action='read')
-            data = read_serializer_class(instance).data
+            # On utilise le serializer de lecture avec le contexte
+            data = self.get_read_serializer_instance(instance).data
             return self.success_response(data, "Objet récupéré avec succès.", status.HTTP_200_OK)
         except Exception as e:
             from django.http import Http404
@@ -204,7 +222,7 @@ class BaseController(APIView):
 
         # 2. VALIDATION (Serializer)
         # On valide les données préparées
-        serializer = self.serializer(instance, data=prepared_data, partial=bool(instance))
+        serializer = self.get_serializer_instance(instance, data=prepared_data, partial=bool(instance))
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -236,8 +254,7 @@ class BaseController(APIView):
 
         # 4. RÉPONSE
         # On utilise le serializer de lecture pour la réponse
-        read_serializer_class = self.get_serializer_class(action='read')
-        data = read_serializer_class(result).data
+        data = self.get_read_serializer_instance(result).data
         return self.success_response(data, message, status_code)
 
     def delete(self, request, pk, *args, **kwargs):
@@ -265,7 +282,7 @@ class BaseController(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
         # On renvoie l'objet mis à jour
-        data = self.serializer(result).data
+        data = self.get_serializer_instance(result).data
         return self.success_response(data, "Statut modifié avec succès.", status.HTTP_200_OK)
 
     def export_data(self, request, *args, **kwargs):

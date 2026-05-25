@@ -13,6 +13,7 @@ export type GetAllUsersQueryVariables = Types.Exact<{
   username?: Types.InputMaybe<Types.Scalars['String']['input']>;
   email?: Types.InputMaybe<Types.Scalars['String']['input']>;
   role?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  isActive?: Types.InputMaybe<Types.Scalars['Boolean']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
@@ -85,11 +86,12 @@ export const PermissionFieldsFragmentDoc = gql`
 }
     `;
 export const GetAllUsersDocument = gql`
-    query GetAllUsers($username: String, $email: String, $role: String, $page: Int, $pageSize: Int) {
+    query GetAllUsers($username: String, $email: String, $role: String, $isActive: Boolean, $page: Int, $pageSize: Int) {
   users(
     username: $username
     email: $email
     role: $role
+    isActive: $isActive
     page: $page
     pageSize: $pageSize
   ) {

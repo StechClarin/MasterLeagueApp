@@ -532,7 +532,7 @@ export type FeeDefinitionType = {
   academicYear: AcademicYearType;
   amount: Scalars['Decimal']['output'];
   category: FinanceFeeDefinitionCategoryChoices;
-  classroom?: Maybe<ClassRoomType>;
+  classrooms: Array<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
   /** Format: [{'tranche': 1, 'amount': 50000}, {'tranche': 2, 'amount': 25000}] */
@@ -704,6 +704,8 @@ export type InvoiceType = {
   category: FinanceInvoiceCategoryChoices;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  /** Format copié de FeeDefinition: [{'tranche': 1, 'amount': 50000}, {'tranche': 2, 'amount': 25000}] */
+  customInstallments?: Maybe<Scalars['JSONString']['output']>;
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
   dueDate?: Maybe<Scalars['Date']['output']>;
   enrollment?: Maybe<EnrollmentType>;
@@ -802,6 +804,8 @@ export type LevelTypePaginated = {
 
 export type ModuleType = {
   __typename?: 'ModuleType';
+  /** Code technique unique (ex: mod-finance) */
+  code: Scalars['String']['output'];
   createdByUser?: Maybe<UserType>;
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
   /** ex: card-view, list-view */
@@ -809,6 +813,8 @@ export type ModuleType = {
   /** Nom de l'icône (ex: pascal-icon-dashboard) */
   icon: Scalars['String']['output'];
   id: Scalars['UUID']['output'];
+  /** Définit si le module est débloqué par la licence */
+  isActive: Scalars['Boolean']['output'];
   isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
@@ -1034,6 +1040,7 @@ export type Query = {
   modules?: Maybe<Array<Maybe<ModuleType>>>;
   option?: Maybe<OptionType>;
   options?: Maybe<OptionTypePaginated>;
+  payment?: Maybe<PaymentType>;
   payments?: Maybe<PaymentTypePaginated>;
   permissions?: Maybe<Array<Maybe<PermissionType>>>;
   personnel?: Maybe<PersonnelType>;
@@ -1223,6 +1230,7 @@ export type QueryGuardiansArgs = {
 export type QueryInvoicesArgs = {
   category?: InputMaybe<Scalars['String']['input']>;
   classroomId?: InputMaybe<Scalars['ID']['input']>;
+  maxPaidAmount?: InputMaybe<Scalars['Float']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -1273,10 +1281,16 @@ export type QueryOptionsArgs = {
 };
 
 
+export type QueryPaymentArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type QueryPaymentsArgs = {
   invoiceId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1398,6 +1412,7 @@ export type QueryUserArgs = {
 
 export type QueryUsersArgs = {
   email?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   role?: InputMaybe<Scalars['String']['input']>;
@@ -1533,6 +1548,8 @@ export enum StudentsEnrollmentStatusChoices {
   Expelled = 'EXPELLED',
   /** Parti */
   Left = 'LEFT',
+  /** En attente */
+  Pending = 'PENDING',
   /** Inscrit */
   Registered = 'REGISTERED'
 }

@@ -72,7 +72,7 @@
            <!-- Job Title -->
            <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Intitulé du poste</label>
-              <input type="text" formControlName="jobTitle"
+              <input type="text" formControlName="jobTitle" (input)="dispatchFilters()"
                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-gray-400"
                   placeholder="Ex: Professeur">
            </div>
@@ -81,7 +81,7 @@
            <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Type de contrat</label>
               <div class="relative">
-                <select formControlName="contractType"
+                <select formControlName="contractType" (change)="dispatchFilters()"
                   class="block w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer bg-white">
                   <option [ngValue]="null">Tous les contrats</option>
                   <option *ngFor="let type of contractTypes$ | async" [value]="type.id">{{ type.designation }}</option>
@@ -98,7 +98,7 @@
            <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Rôle</label>
               <div class="relative">
-                <select formControlName="role"
+                <select formControlName="role" (change)="dispatchFilters()"
                   class="block w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer bg-white">
                   <option [ngValue]="null">Tous les rôles</option>
                   <option *ngFor="let role of roles$ | async" [value]="role.id">{{ role.name }}</option>

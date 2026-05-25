@@ -108,10 +108,10 @@
                 <div class="grid grid-cols-2 gap-4">
                   <app-ui-select label="Type de Ciblage" formControlName="targetType" [options]="targetTypes"></app-ui-select>
 
-                  <app-ui-select 
+                  <app-ui-multi-select 
                     *ngIf="form.get('targetType')?.value === 'CLASSROOM'"
-                    label="Classe Spécifique" formControlName="classroom" [options]="classrooms()" [required]="true">
-                  </app-ui-select>
+                    label="Classes Spécifiques" formControlName="classrooms" [options]="classrooms()" [required]="true">
+                  </app-ui-multi-select>
 
                   <app-ui-select 
                     *ngIf="form.get('targetType')?.value === 'OPTION'"

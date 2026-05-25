@@ -123,7 +123,7 @@ class StudentService(BaseService):
                     'establishment_id': student.establishment_id,
                     'classroom_id': classroom_id,
                     'is_repeater': enrollment_data.get('is_repeater', False),
-                    'status': 'REGISTERED'
+                    'status': enrollment_data.get('status', 'PENDING')
                 }
             )
 

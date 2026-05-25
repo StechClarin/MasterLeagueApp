@@ -27,6 +27,7 @@ class FinanceQuery(graphene.ObjectType):
         status=graphene.String(),
         category=graphene.String(),
         classroom_id=graphene.ID(),
+        max_paid_amount=graphene.Float(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -34,6 +35,7 @@ class FinanceQuery(graphene.ObjectType):
     # Payments
     payments = graphene.Field(
         PaymentPaginatedType,
+        search=graphene.String(),
         invoice_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
@@ -41,6 +43,13 @@ class FinanceQuery(graphene.ObjectType):
 
     # Dynamic Filter Categories (based on created FeeDefinitions)
     used_fee_categories = graphene.List(graphene.JSONString)
+
+    # Single Payment (for receipts)
+    payment = graphene.Field(PaymentType, id=graphene.ID(required=True))
+
+    def resolve_payment(self, info, id):
+        est_id = info.context.establishment_id
+        return Payment.objects.get(id=id, establishment_id=est_id)
 
     def resolve_fee_definitions(self, info, search=None, level_id=None, page=1, page_size=10):
         est_id = info.context.establishment_id
@@ -51,19 +60,23 @@ class FinanceQuery(graphene.ObjectType):
         if level_id:
             queryset = queryset.filter(level_id=level_id)
         
-        return FeeDefinitionPaginatedType(**paginate_queryset(queryset, page, page_size))
+        return FeeDefinitionPaginatedType(**paginate_queryset(queryset, page, page_size))  # type: ignore
 
-    def resolve_invoices(self, info, search=None, student_id=None, status=None, category=None, classroom_id=None, page=1, page_size=10):
+    def resolve_invoices(self, info, search=None, student_id=None, status=None, category=None, classroom_id=None, max_paid_amount=None, page=1, page_size=10):
         est_id = info.context.establishment_id
         queryset = Invoice.objects.filter(establishment_id=est_id).order_by('-created_at')
         
         if search:
-            queryset = queryset.filter(
-                Q(title__icontains=search) | 
-                Q(student__last_name__icontains=search) | 
-                Q(student__matricule__icontains=search) | 
+            import operator
+            from functools import reduce
+            
+            conditions = [
+                Q(title__icontains=search),
+                Q(student__last_name__icontains=search),
+                Q(student__matricule__icontains=search),
                 Q(reference__icontains=search)
-            )
+            ]
+            queryset = queryset.filter(reduce(operator.or_, conditions))
         if student_id:
             queryset = queryset.filter(student_id=student_id)
         if status:
@@ -72,17 +85,30 @@ class FinanceQuery(graphene.ObjectType):
             queryset = queryset.filter(category=category)
         if classroom_id:
             queryset = queryset.filter(enrollment__classroom_id=classroom_id)
+        if max_paid_amount is not None:
+            queryset = queryset.filter(paid_amount__lt=max_paid_amount)
             
-        return InvoicePaginatedType(**paginate_queryset(queryset, page, page_size))
+        return InvoicePaginatedType(**paginate_queryset(queryset, page, page_size))  # type: ignore
 
-    def resolve_payments(self, info, invoice_id=None, page=1, page_size=10):
+    def resolve_payments(self, info, search=None, invoice_id=None, page=1, page_size=10):
         est_id = info.context.establishment_id
         queryset = Payment.objects.filter(establishment_id=est_id).order_by('-payment_date')
         
+        if search:
+            import operator
+            from functools import reduce
+            conditions = [
+                Q(invoice__title__icontains=search),
+                Q(invoice__student__last_name__icontains=search),
+                Q(invoice__student__matricule__icontains=search),
+                Q(reference__icontains=search)
+            ]
+            queryset = queryset.filter(reduce(operator.or_, conditions))
+            
         if invoice_id:
             queryset = queryset.filter(invoice_id=invoice_id)
             
-        return PaymentPaginatedType(**paginate_queryset(queryset, page, page_size))
+        return PaymentPaginatedType(**paginate_queryset(queryset, page, page_size))  # type: ignore
 
     def resolve_used_fee_categories(self, info):
         """

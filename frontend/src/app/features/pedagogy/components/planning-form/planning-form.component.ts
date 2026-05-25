@@ -73,6 +73,8 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
     subjects = signal<any[]>([]);
     classrooms = signal<any[]>([]);
     rooms = signal<any[]>([]);
+    teachingAssignments = signal<any[]>([]);
+    isReplacementMode = signal<boolean>(false);
 
     // Form value signals for reactive tabs
     private dateStartSignal = signal<string>('');
@@ -131,6 +133,7 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
             this.subjects.set(res.data.subjects?.items || []);
             this.classrooms.set(res.data.classrooms?.items || []);
             this.rooms.set(res.data.rooms?.items || []);
+            this.teachingAssignments.set(res.data.teachingAssignments?.items || []);
 
             // Active Year Logic
             const years = res.data.academicyears?.items || [];
@@ -296,5 +299,31 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
 
     get minDate(): string {
         return new Date().toISOString().split('T')[0];
+    }
+
+    getFilteredTeachers(ctrl: AbstractControl): any[] {
+        if (this.isReplacementMode()) {
+            return this.teachers();
+        }
+
+        const matiereId = ctrl.get('matiere_id')?.value;
+        const classeId = ctrl.get('classe_id')?.value;
+
+        if (!matiereId || !classeId) {
+            // Si la classe ou la matière n'est pas encore choisie, 
+            // on affiche tout pour ne pas bloquer, ou on pourrait ne rien afficher.
+            // Afficher tout est plus user-friendly en attendant la sélection.
+            return this.teachers();
+        }
+
+        const assignedIds = this.teachingAssignments()
+            .filter(a => a.subject?.id === matiereId && a.classroom?.id === classeId)
+            .map(a => a.personnel?.id);
+
+        if (assignedIds.length === 0) {
+            return []; // Aucun prof affecté officiellement
+        }
+
+        return this.teachers().filter(t => assignedIds.includes(t.id));
     }
 }

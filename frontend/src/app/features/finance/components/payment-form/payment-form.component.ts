@@ -43,8 +43,28 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
           <p class="text-xs text-indigo-600 font-medium italic">Reste à payer</p>
         </div>
       </div>
+      
 
       <div class="grid grid-cols-2 gap-4">
+        <div *ngIf="tranchesToPay.length > 0" class="col-span-2 flex flex-col gap-2 mb-2">
+           <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Sélection des tranches à payer (Paiement Séquentiel)</label>
+           <div class="flex flex-wrap gap-2">
+              <button *ngFor="let option of tranchesToPay"
+                      type="button"
+                      (click)="form.get('selectedTrancheAmount')?.setValue(option.value)"
+                      [class.bg-indigo-600]="form.get('selectedTrancheAmount')?.value === option.value"
+                      [class.text-white]="form.get('selectedTrancheAmount')?.value === option.value"
+                      [class.border-indigo-600]="form.get('selectedTrancheAmount')?.value === option.value"
+                      [class.bg-white]="form.get('selectedTrancheAmount')?.value !== option.value"
+                      [class.text-slate-600]="form.get('selectedTrancheAmount')?.value !== option.value"
+                      [class.border-slate-200]="form.get('selectedTrancheAmount')?.value !== option.value"
+                      [class.hover:border-indigo-300]="form.get('selectedTrancheAmount')?.value !== option.value"
+                      class="px-4 py-2 text-sm font-bold border rounded-xl transition-all shadow-sm">
+                 {{ option.label }}
+              </button>
+           </div>
+        </div>
+
         <app-ui-input 
           label="Montant Versé" 
           type="number"
@@ -92,6 +112,8 @@ export class PaymentFormComponent extends BaseFormComponent implements OnInit {
   lastPayment: any = null;
   today = new Date();
   financialStatus = signal<any>(null);
+  
+  tranchesToPay: any[] = [];
 
   get installmentBreakdown(): string | null {
     const amount = this.form?.get('amount')?.value;
@@ -99,13 +121,16 @@ export class PaymentFormComponent extends BaseFormComponent implements OnInit {
     if (!amount || amount <= 0 || instCount <= 1) return null;
 
     const total = this.item.totalAmount;
-    const instAmount = total / instCount;
     
-    // Si c'est le montant total
     if (amount >= this.item.remainingAmount) {
         return "⚠️ Ce montant solde la totalité de la facture.";
     }
 
+    if (this.item?.customInstallments?.length) {
+       return "Le montant sera imputé sur les tranches selon l'ordre défini.";
+    }
+
+    const instAmount = total / instCount;
     const fullTranches = Math.floor(amount / instAmount);
     const remainder = amount % instAmount;
 
@@ -137,24 +162,93 @@ export class PaymentFormComponent extends BaseFormComponent implements OnInit {
     super.ngOnInit();
   }
 
-  initForm() {
+  calculateTranches() {
     const totalAmount = this.item?.totalAmount || 0;
     const instCount = this.item?.installmentCount || 1;
-    const remaining = this.item?.remainingAmount || 0;
+    const paid = this.item?.paidAmount || 0;
     
-    // On propose le montant d'une tranche si applicable, sinon le reste
+    if (instCount <= 1) return;
+
+    let tranches = [];
+    if (this.item?.customInstallments?.length) {
+       tranches = [...this.item.customInstallments].sort((a: any, b: any) => a.tranche - b.tranche);
+    } else {
+       const instAmount = totalAmount / instCount;
+       for (let i = 1; i <= instCount; i++) {
+           tranches.push({ tranche: i, amount: instAmount });
+       }
+    }
+
+    let currentPaid = paid;
+    let unpaidTranches = [];
+
+    for (let t of tranches) {
+        let tAmount = Number(t.amount);
+        if (currentPaid >= tAmount) {
+            currentPaid -= tAmount;
+        } else {
+            let remainingForThisTranche = tAmount - currentPaid;
+            unpaidTranches.push({
+                tranche: t.tranche,
+                remainingAmount: remainingForThisTranche
+            });
+            currentPaid = 0;
+        }
+    }
+
+    let options = [];
+    let accumulatedAmount = 0;
+    const firstTrancheNum = unpaidTranches[0]?.tranche;
+
+    for (let i = 0; i < unpaidTranches.length; i++) {
+        const u = unpaidTranches[i];
+        accumulatedAmount += u.remainingAmount;
+        
+        let label = (i === 0) 
+            ? `Tranche ${u.tranche}` 
+            : `Tranches ${firstTrancheNum} à ${u.tranche}`;
+        
+        options.push({
+            label: `${label} (${accumulatedAmount.toLocaleString()} FCFA)`,
+            value: accumulatedAmount
+        });
+    }
+
+    this.tranchesToPay = options;
+  }
+
+  initForm() {
+    this.calculateTranches();
+    
+    const remaining = this.item?.remainingAmount || 0;
     let proposedAmount = remaining;
-    if (instCount > 1 && remaining > (totalAmount / instCount)) {
-        proposedAmount = totalAmount / instCount;
+    
+    if (this.tranchesToPay.length > 0) {
+        proposedAmount = this.tranchesToPay[0].value;
     }
 
     this.form = this.fb.group({
       invoice: [this.item?.id, Validators.required],
+      selectedTrancheAmount: [proposedAmount], // Option sélectionnée par défaut (prochaine tranche)
       amount: [proposedAmount, [Validators.required, Validators.min(1)]],
       paymentMethod: ['CASH', Validators.required],
       reference: [''],
       note: ['']
     });
+
+    // Binding entre le sélecteur et l'input du montant
+    this.form.get('selectedTrancheAmount')?.valueChanges.subscribe(val => {
+       if (val) {
+           this.form.get('amount')?.setValue(val);
+       }
+    });
+  }
+
+  save() {
+    // Retirer le champ virtuel selectedTrancheAmount avant d'envoyer au backend
+    const payload = { ...this.form.value };
+    delete payload.selectedTrancheAmount;
+    return this.service.save(payload);
   }
 
   override submit() {
@@ -165,19 +259,13 @@ export class PaymentFormComponent extends BaseFormComponent implements OnInit {
           this.isSubmitting = false;
           const paymentId = res.data.id;
           this.toastService.success('Paiement enregistré avec succès.');
-          
-          // Redirection vers la page d'impression du reçu individuel
           this.router.navigate(['/print/receipt', paymentId]);
         },
         error: (err) => {
           this.isSubmitting = false;
-          this.toastService.error('Erreur lors de l\'enregistrement du paiement.');
+          this.toastService.error("Erreur lors de l'enregistrement du paiement.");
         }
       });
     }
-  }
-
-  save() {
-    return this.service.save(this.form.value);
   }
 }

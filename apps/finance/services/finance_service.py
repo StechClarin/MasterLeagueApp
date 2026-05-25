@@ -59,9 +59,9 @@ class FinanceService(BaseService):
         
         # 1. Récupérer TOUS les candidats potentiels
         potential_fees = FeeDefinition.objects.filter(
-            Q(level=enrollment.classroom.level, students__isnull=True, classroom__isnull=True, option__isnull=True) | # Global Niveau
+            Q(level=enrollment.classroom.level, students__isnull=True, classrooms__isnull=True, option__isnull=True) | # Global Niveau
             Q(level=enrollment.classroom.level, option=enrollment.classroom.option) | # Par Filière/Option
-            Q(classroom=enrollment.classroom) | # Par Classe
+            Q(classrooms=enrollment.classroom) | # Par Classe
             Q(students=enrollment.student), # Par Élève (Dérogation)
             academic_year=enrollment.academic_year,
             establishment=enrollment.establishment,
@@ -100,6 +100,7 @@ class FinanceService(BaseService):
                     total_amount=fee.amount,
                     category=fee.category,
                     installment_count=fee.installment_count or 1,
+                    custom_installments=fee.custom_installments,
                     status=InvoiceStatus.UNPAID,
                     reference=service.generate_invoice_reference()
                 )
@@ -141,11 +142,14 @@ class FinanceService(BaseService):
         if not start_date: start_date = date.today().replace(day=1)
         if not end_date: end_date = date.today()
 
-        enrollments = Enrollment.objects.filter(
-            classroom_id=classroom_id,
-            establishment_id=self.establishment_id,
-            status='REGISTERED'
-        ).select_related('student', 'classroom', 'academic_year', 'classroom__level')
+        query = {
+            'establishment_id': self.establishment_id,
+            'status': 'REGISTERED'
+        }
+        if classroom_id:
+            query['classroom_id'] = classroom_id
+            
+        enrollments = Enrollment.objects.filter(**query).select_related('student', 'classroom', 'academic_year', 'classroom__level')
 
         report_data = []
         total_class_expected_period = 0
@@ -153,83 +157,85 @@ class FinanceService(BaseService):
         total_class_due_final = 0
 
         for enrollment in enrollments:
-            # 1. Identifier tous les frais applicables
+            # 1. Identifier tous les frais applicables (obligatoires et optionnels)
             potential_fees = FeeDefinition.objects.filter(
-                Q(level=enrollment.classroom.level, students__isnull=True, classroom__isnull=True, option__isnull=True) |
+                Q(level=enrollment.classroom.level, students__isnull=True, classrooms__isnull=True, option__isnull=True) |
                 Q(level=enrollment.classroom.level, option=enrollment.classroom.option) |
                 Q(students=enrollment.student) |
-                Q(classroom=enrollment.classroom),
+                Q(classrooms=enrollment.classroom),
                 academic_year=enrollment.academic_year,
                 establishment=enrollment.establishment,
-                is_active=True,
-                is_required=True
+                is_active=True
             ).order_by('id')
             
             fee_defs = FinanceService.resolve_fees_priority(potential_fees)
 
-            expected_until_start = 0
-            expected_until_end = 0
-            
+            mandatory_fees = [f for f in fee_defs if f.is_required]
+            optional_fees = [f for f in fee_defs if not f.is_required]
+
             academic_start = enrollment.academic_year.start_date
-            
-            # Calcul des mois écoulés
             months_until_start = (start_date.year - academic_start.year) * 12 + (start_date.month - academic_start.month)
             months_until_end = (end_date.year - academic_start.year) * 12 + (end_date.month - academic_start.month) + 1
-            
-            for fee in fee_defs:
-                if fee.payment_modality == 'UNIQUE':
-                    # Frais uniques dus dès le début
-                    expected_until_start += fee.amount
-                    expected_until_end += fee.amount
-                else:
-                    count = fee.installment_count or 1
-                    
-                    periods_start = min(max(0, months_until_start), count)
-                    periods_end = min(max(0, months_until_end), count)
 
-                    if fee.custom_installments and len(fee.custom_installments) == count:
-                        custom_insts = sorted(fee.custom_installments, key=lambda x: int(x.get('tranche', 0)))
-                        expected_until_start += sum(float(inst.get('amount', 0)) for inst in custom_insts[:periods_start])
-                        expected_until_end += sum(float(inst.get('amount', 0)) for inst in custom_insts[:periods_end])
+            def calculate_expected(fees_list):
+                exp_start = 0
+                exp_end = 0
+                for fee in fees_list:
+                    if fee.payment_modality == 'UNIQUE':
+                        exp_start += fee.amount
+                        exp_end += fee.amount
                     else:
-                        monthly_amount = fee.amount / count
-                        expected_until_start += (monthly_amount * periods_start)
-                        expected_until_end += (monthly_amount * periods_end)
+                        count = fee.installment_count or 1
+                        periods_start = min(max(0, months_until_start), count)
+                        periods_end = min(max(0, months_until_end), count)
+                        if fee.custom_installments and len(fee.custom_installments) == count:
+                            custom_insts = sorted(fee.custom_installments, key=lambda x: int(x.get('tranche', 0)))
+                            exp_start += sum(float(inst.get('amount', 0)) for inst in custom_insts[:periods_start])
+                            exp_end += sum(float(inst.get('amount', 0)) for inst in custom_insts[:periods_end])
+                        else:
+                            monthly_amount = fee.amount / count
+                            exp_start += (monthly_amount * periods_start)
+                            exp_end += (monthly_amount * periods_end)
+                return exp_end, max(0, exp_end - exp_start)
 
-            expected_period = expected_until_end - expected_until_start
-            if expected_period < 0: expected_period = 0
+            # Frais obligatoires
+            mand_expected_until_end, expected_period = calculate_expected(mandatory_fees)
+            mand_categories = [f.category for f in mandatory_fees]
             
-            # Catégories de frais considérées comme obligatoires pour cet élève
-            mandatory_categories = [fee.category for fee in fee_defs]
-
-            # 2. Récupérer les paiements de la période (uniquement pour frais obligatoires)
             payments_period = Payment.objects.filter(
-                invoice__enrollment=enrollment,
-                invoice__category__in=mandatory_categories,
-                payment_date__date__range=[start_date, end_date],
-                establishment_id=self.establishment_id
+                invoice__enrollment=enrollment, invoice__category__in=mand_categories,
+                payment_date__date__range=[start_date, end_date], establishment_id=self.establishment_id
             ).aggregate(Sum('amount'))['amount__sum'] or 0
 
-            # 3. Calculer le reste global à la date de fin
-            total_expected_to_date = expected_until_end
             total_paid_to_date = Payment.objects.filter(
-                invoice__enrollment=enrollment,
-                invoice__category__in=mandatory_categories,
-                payment_date__date__lte=end_date,
-                establishment_id=self.establishment_id
+                invoice__enrollment=enrollment, invoice__category__in=mand_categories,
+                payment_date__date__lte=end_date, establishment_id=self.establishment_id
             ).aggregate(Sum('amount'))['amount__sum'] or 0
-            
-            remaining_balance = total_expected_to_date - total_paid_to_date
-            if remaining_balance < 0: remaining_balance = 0
 
-            # 4. Calculer les montants globaux annuels
-            total_expected_global = sum(fee.amount for fee in fee_defs)
+            remaining_balance = max(0, mand_expected_until_end - total_paid_to_date)
+            total_expected_global = sum(f.amount for f in mandatory_fees)
             total_paid_global = total_paid_to_date
-            remaining_global = total_expected_global - total_paid_global
-            if remaining_global < 0: remaining_global = 0
+            remaining_global = max(0, total_expected_global - total_paid_global)
 
-            # 5. Statut à jour
-            is_up_to_date = total_paid_to_date >= total_expected_to_date
+            # Frais optionnels
+            opt_expected_until_end, opt_expected_period = calculate_expected(optional_fees)
+            opt_categories = [f.category for f in optional_fees]
+            
+            opt_payments_period = Payment.objects.filter(
+                invoice__enrollment=enrollment, invoice__category__in=opt_categories,
+                payment_date__date__range=[start_date, end_date], establishment_id=self.establishment_id
+            ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+            opt_total_paid_to_date = Payment.objects.filter(
+                invoice__enrollment=enrollment, invoice__category__in=opt_categories,
+                payment_date__date__lte=end_date, establishment_id=self.establishment_id
+            ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+            opt_remaining_balance = max(0, opt_expected_until_end - opt_total_paid_to_date)
+            opt_total_expected_global = sum(f.amount for f in optional_fees)
+            opt_remaining_global = max(0, opt_total_expected_global - opt_total_paid_to_date)
+
+            is_up_to_date = total_paid_to_date >= mand_expected_until_end
 
             report_data.append({
                 'student': {
@@ -237,15 +243,61 @@ class FinanceService(BaseService):
                     'firstName': enrollment.student.first_name,
                     'lastName': enrollment.student.last_name,
                     'matricule': enrollment.student.matricule,
+                    'classroom_id': enrollment.classroom.id,
+                    'classroom_name': enrollment.classroom.name,
                 },
                 'total_expected_global': total_expected_global,
                 'total_paid_global': total_paid_global,
                 'expected_period': expected_period,
                 'paid_period': payments_period,
-                'due_balance': remaining_balance, # Reste à payer (à la date de fin)
+                'due_balance': remaining_balance,
                 'remaining_global': remaining_global,
-                'is_up_to_date': is_up_to_date
+                'is_up_to_date': is_up_to_date,
+                
+                'opt_expected_period': opt_expected_period,
+                'opt_paid_period': opt_payments_period,
+                'opt_due_balance': opt_remaining_balance,
+                'opt_total_expected_global': opt_total_expected_global,
+                'opt_total_paid_global': opt_total_paid_to_date,
+                'opt_remaining_global': opt_remaining_global
             })
+
+        # Agrégation globale par classe si aucune classe spécifique n'a été demandée
+        is_global = not classroom_id
+        if is_global:
+            grouped = {}
+            for item in report_data:
+                cid = item['student']['classroom_id']
+                if cid not in grouped:
+                    grouped[cid] = {
+                        'is_global_row': True,
+                        'classroom_name': item['student']['classroom_name'],
+                        'total_expected_global': 0, 'total_paid_global': 0,
+                        'expected_period': 0, 'paid_period': 0,
+                        'due_balance': 0, 'remaining_global': 0,
+                        'opt_expected_period': 0, 'opt_paid_period': 0,
+                        'opt_due_balance': 0, 'opt_total_expected_global': 0,
+                        'opt_total_paid_global': 0, 'opt_remaining_global': 0
+                    }
+                g = grouped[cid]
+                g['total_expected_global'] += item['total_expected_global']
+                g['total_paid_global'] += item['total_paid_global']
+                g['expected_period'] += item['expected_period']
+                g['paid_period'] += item['paid_period']
+                g['due_balance'] += item['due_balance']
+                g['remaining_global'] += item['remaining_global']
+                
+                g['opt_expected_period'] += item['opt_expected_period']
+                g['opt_paid_period'] += item['opt_paid_period']
+                g['opt_due_balance'] += item['opt_due_balance']
+                g['opt_total_expected_global'] += item['opt_total_expected_global']
+                g['opt_total_paid_global'] += item['opt_total_paid_global']
+                g['opt_remaining_global'] += item['opt_remaining_global']
+            
+            for g in grouped.values():
+                g['is_up_to_date'] = (g['due_balance'] <= 0)
+            
+            report_data = sorted(grouped.values(), key=lambda x: x['classroom_name'])
 
         # Totals calculation
         total_exp_global = sum(item['total_expected_global'] for item in report_data)
@@ -255,13 +307,24 @@ class FinanceService(BaseService):
         total_rem_period = sum(item['due_balance'] for item in report_data)
         total_rem_global = sum(item['remaining_global'] for item in report_data)
 
+        opt_total_exp_period = sum(item['opt_expected_period'] for item in report_data)
+        opt_total_pd_period = sum(item['opt_paid_period'] for item in report_data)
+        opt_total_rem_period = sum(item['opt_due_balance'] for item in report_data)
+        opt_total_exp_global = sum(item['opt_total_expected_global'] for item in report_data)
+        opt_total_pd_global = sum(item['opt_total_paid_global'] for item in report_data)
+        opt_total_rem_global = sum(item['opt_remaining_global'] for item in report_data)
+
         recovery_rate = (total_pd_period / total_exp_period * 100) if total_exp_period > 0 else 100
         if recovery_rate > 100: recovery_rate = 100
+        
+        opt_recovery_rate = (opt_total_pd_period / opt_total_exp_period * 100) if opt_total_exp_period > 0 else 100
+        if opt_recovery_rate > 100: opt_recovery_rate = 100
 
         return {
             'start_date': start_date.strftime('%d/%m/%Y'),
             'end_date': end_date.strftime('%d/%m/%Y'),
-            'classroom_name': enrollments.first().classroom.name if enrollments.exists() else 'N/A',
+            'classroom_name': 'Toutes les classes' if is_global else (enrollments.first().classroom.name if enrollments.exists() else 'N/A'),
+            'is_global': is_global,
             'items': report_data,
             'totals': {
                 'total_expected_global': float(total_exp_global),
@@ -270,7 +333,15 @@ class FinanceService(BaseService):
                 'total_paid_period': float(total_pd_period),
                 'total_remaining_period': float(total_rem_period),
                 'total_remaining_global': float(total_rem_global),
-                'recovery_rate': round(float(recovery_rate), 2)
+                'recovery_rate': round(float(recovery_rate), 2),
+                
+                'opt_total_expected_global': float(opt_total_exp_global),
+                'opt_total_paid_global': float(opt_total_pd_global),
+                'opt_total_expected_period': float(opt_total_exp_period),
+                'opt_total_paid_period': float(opt_total_pd_period),
+                'opt_total_remaining_period': float(opt_total_rem_period),
+                'opt_total_remaining_global': float(opt_total_rem_global),
+                'opt_recovery_rate': round(float(opt_recovery_rate), 2)
             }
         }
 
@@ -289,7 +360,7 @@ class FinanceService(BaseService):
             # Calcul du score de précision
             score = 1 # Niveau (par défaut)
             if fee.option_id: score = 2
-            if fee.classroom_id: score = 3
+            if fee.classrooms.exists(): score = 3
             # On vérifie si l'item a des relations ManyToMany chargées ou via ID
             # Dans un queryset, 'students' peut être accédé
             if fee.students.exists(): score = 4 

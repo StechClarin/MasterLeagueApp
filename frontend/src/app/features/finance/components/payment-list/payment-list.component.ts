@@ -111,6 +111,10 @@ export class PaymentListComponent extends BaseListComponent<any> implements OnIn
     });
   }
 
+  resetFilters() {
+      this.filterForm.reset();
+  }
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();

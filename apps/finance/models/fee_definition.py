@@ -48,7 +48,7 @@ class FeeDefinition(EstablishmentAwareModel):
     level = models.ForeignKey('structure.Level', on_delete=models.CASCADE, verbose_name="Niveau", related_name="fees")
     option = models.ForeignKey('structure.Option', on_delete=models.CASCADE, null=True, blank=True, verbose_name="Option/Filière", related_name="fees")
     students = models.ManyToManyField('students.Student', blank=True, verbose_name="Élèves Spécifiques", related_name="special_fees")
-    classroom = models.ForeignKey('structure.Classroom', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Classe Spécifique", related_name="group_fees")
+    classrooms = models.ManyToManyField('structure.Classroom', blank=True, verbose_name="Classes Spécifiques", related_name="group_fees")
     academic_year = models.ForeignKey('structure.AcademicYear', on_delete=models.CASCADE, verbose_name="Année Académique")
 
     is_required = models.BooleanField(default=True)

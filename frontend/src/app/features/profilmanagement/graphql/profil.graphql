@@ -70,8 +70,8 @@ fragment PermissionFields on PermissionType {
 # USER QUERIES
 # ==============================================================================
 
-query GetAllUsers($username: String, $email: String, $role: String, $page: Int, $pageSize: Int) {
-  users(username: $username, email: $email, role: $role, page: $page, pageSize: $pageSize) {
+query GetAllUsers($username: String, $email: String, $role: String, $isActive: Boolean, $page: Int, $pageSize: Int) {
+  users(username: $username, email: $email, role: $role, isActive: $isActive, page: $page, pageSize: $pageSize) {
     items {
       ...UserFields
     }

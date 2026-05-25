@@ -56,7 +56,7 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
         cycleService.getAllCycles().valueChanges.pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
             const items = res.data.cycles?.items || [];
             this.cycles = items
-                .filter((c: any) => !!c && c.hasOptions) // On ne montre que les cycles qui acceptent des options
+                .filter((c: any) => !!c)
                 .map((c: any) => ({
                     value: c!.id,
                     label: c!.name

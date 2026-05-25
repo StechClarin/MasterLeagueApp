@@ -36,7 +36,7 @@ export type GetPlanningByIdQuery = { __typename?: 'Query', planning?: { __typena
 export type GetPlanningDependenciesQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetPlanningDependenciesQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', items?: Array<{ __typename?: 'PersonnelType', id: any, matricule: string, roles: Array<{ __typename?: 'RoleType', name: string }>, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null } | null> | null } | null, subjects?: { __typename?: 'SubjectTypePaginated', items?: Array<{ __typename?: 'SubjectType', id: any, name: string } | null> | null } | null, classrooms?: { __typename?: 'ClassRoomTypePaginated', items?: Array<{ __typename?: 'ClassRoomType', id: any, name: string } | null> | null } | null, rooms?: { __typename?: 'RoomTypePaginated', items?: Array<{ __typename?: 'RoomType', id: any, name: string } | null> | null } | null, academicyears?: { __typename?: 'AcademicYearTypePaginated', items?: Array<{ __typename?: 'AcademicYearType', id: any, name: string, isActive: boolean, startDate?: any | null, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: any, startDate?: any | null, cycle: { __typename?: 'CycleType', id: any } } | null> | null } | null> | null } | null };
+export type GetPlanningDependenciesQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', items?: Array<{ __typename?: 'PersonnelType', id: any, matricule: string, roles: Array<{ __typename?: 'RoleType', name: string }>, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null } | null> | null } | null, subjects?: { __typename?: 'SubjectTypePaginated', items?: Array<{ __typename?: 'SubjectType', id: any, name: string } | null> | null } | null, classrooms?: { __typename?: 'ClassRoomTypePaginated', items?: Array<{ __typename?: 'ClassRoomType', id: any, name: string } | null> | null } | null, rooms?: { __typename?: 'RoomTypePaginated', items?: Array<{ __typename?: 'RoomType', id: any, name: string } | null> | null } | null, academicyears?: { __typename?: 'AcademicYearTypePaginated', items?: Array<{ __typename?: 'AcademicYearType', id: any, name: string, isActive: boolean, startDate?: any | null, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: any, startDate?: any | null, cycle: { __typename?: 'CycleType', id: any } } | null> | null } | null> | null } | null, teachingAssignments?: { __typename?: 'TeachingAssignmentTypePaginated', items?: Array<{ __typename?: 'TeachingAssignmentType', personnel: { __typename?: 'PersonnelType', id: any }, classroom: { __typename?: 'ClassRoomType', id: any }, subject: { __typename?: 'SubjectType', id: any } } | null> | null } | null };
 
 export type GetAllTeachingAssignmentsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -261,6 +261,19 @@ export const GetPlanningDependenciesDocument = gql`
           id
         }
         startDate
+      }
+    }
+  }
+  teachingAssignments(search: "", page: 1, pageSize: 1000) {
+    items {
+      personnel {
+        id
+      }
+      classroom {
+        id
+      }
+      subject {
+        id
       }
     }
   }

@@ -17,6 +17,7 @@ class UserQuery(graphene.ObjectType):
         username=graphene.String(),
         email=graphene.String(),
         role=graphene.String(),
+        is_active=graphene.Boolean(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -38,6 +39,8 @@ class UserQuery(graphene.ObjectType):
             filters['email__icontains'] = kwargs['email']
         if kwargs.get('role'):
             filters['memberships__roles__name__iexact'] = kwargs['role']
+        if 'is_active' in kwargs and kwargs['is_active'] is not None:
+            filters['is_active'] = kwargs['is_active']
 
         # On délègue le filtrage au service
         queryset = service.list(filters=filters)

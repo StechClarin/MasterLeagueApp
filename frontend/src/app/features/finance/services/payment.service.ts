@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseService } from '@core/abstracts/base.service';
-import { GetPaymentsGQL, GetPaymentsDocument } from '../graphql/finance.generated';
+import { GetPaymentsGQL, GetPaymentsDocument, GetPaymentByIdGQL } from '../graphql/finance.generated';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@env/environment';
+import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,9 +11,16 @@ import { environment } from '@env/environment';
 export class PaymentService extends BaseService {
   override endpoint = 'payment';
   private generatedGQL = inject(GetPaymentsGQL);
+  private getPaymentByIdGQL = inject(GetPaymentByIdGQL);
 
   getQuery() {
     return GetPaymentsDocument;
+  }
+
+  getPaymentByGraphql(id: string) {
+    return this.getPaymentByIdGQL.fetch({ id }, { fetchPolicy: 'network-only' }).pipe(
+      map(res => ({ data: res.data.payment }))
+    );
   }
 
   getFinancialStatus(studentId: string) {

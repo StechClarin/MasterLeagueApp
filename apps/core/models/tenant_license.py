@@ -1,17 +1,19 @@
 # apps/core/models/tenant_license.py
 from django.db import models
-from .establishment import Establishment
+from django.conf import settings
 from .user_audit_model import UserAuditModel
 
 class TenantLicense(UserAuditModel):
     """
-    Modèle de stockage des licences de modules déverrouillés par Tenant (Établissement).
+    Modèle de stockage des licences de modules déverrouillés par Propriétaire (Tenant / User).
     """
-    establishment = models.ForeignKey(
-        Establishment,
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="licenses",
-        verbose_name="Établissement"
+        verbose_name="Propriétaire (Owner)",
+        null=True,
+        blank=True
     )
     module_code = models.CharField(
         max_length=100,
@@ -25,9 +27,9 @@ class TenantLicense(UserAuditModel):
     )
 
     class Meta:
-        unique_together = ['establishment', 'module_code']
-        verbose_name = "Licence Établissement"
-        verbose_name_plural = "Licences Établissements"
+        unique_together = ['user', 'module_code']
+        verbose_name = "Licence Tenant"
+        verbose_name_plural = "Licences Tenants"
 
     def __str__(self):
-        return f"{self.establishment.name} -> {self.module_code} ({'Actif' if self.is_active else 'Inactif'})"
+        return f"{self.user.username} (Hub: {self.user.hub_id}) -> {self.module_code} ({'Actif' if self.is_active else 'Inactif'})"

@@ -54,9 +54,8 @@ class FeeDefinitionService(BaseService):
         )
 
         # 2. Filtrer par ciblage spécifique si nécessaire
-        # On utilise classroom_id au lieu de classroom car instance est un objet Django
-        if fee.classroom:
-            enrollments = enrollments.filter(classroom=fee.classroom)
+        if fee.classrooms.exists():
+            enrollments = enrollments.filter(classroom__in=fee.classrooms.all())
         
         # Note: Si fee.students est défini (M2M), on filtrera dans la boucle 
         # ou via une requête complexe. Plus simple ici : filtrer dans la boucle.

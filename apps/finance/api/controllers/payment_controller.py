@@ -30,9 +30,7 @@ class PaymentController(BaseController):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         
-        if not classroom_id:
-            return self.error_response("L'identifiant de la classe est requis.", status.HTTP_400_BAD_REQUEST)
-            
+
         finance_service = FinanceService()
         finance_service.set_context(request.user, request.establishment_id)
         

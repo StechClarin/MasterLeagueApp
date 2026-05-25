@@ -14,6 +14,7 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
+import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 
 @Component({
@@ -30,7 +31,8 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
         UiConfirmModalComponent,
         UiTableComponent,
         UiFilterPanelComponent,
-        UiDropdownComponent
+        UiDropdownComponent,
+        UiExportModalComponent
     ],
     templateUrl: './subject-list.component.html'
 })
@@ -82,24 +84,25 @@ export class SubjectListComponent extends BaseModalListComponent<SubjectType> im
         this.filterForm.reset();
     }
 
-    onImport() {
-        // Import implementation
-    }
-
-    onExport() {
-        this.isLoading.set(true);
-        this.service.export().subscribe({
-            next: (blob) => {
-                this.downloadFile(blob);
-                this.isLoading.set(false);
-                this.toastService.success('Export réussi');
-            },
-            error: (err) => {
-                console.error('Export error', err);
-                this.isLoading.set(false);
-                this.toastService.error('Erreur lors de l\'export');
-            }
-        });
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file) {
+            this.isLoading.set(true);
+            this.service.import(file).subscribe({
+                next: () => {
+                    this.toastService.success('Importation réussie.');
+                    this.isLoading.set(false);
+                    this.refresh();
+                },
+                error: (err: any) => {
+                    this.toastService.error('Erreur lors de l\'importation.');
+                    this.isLoading.set(false);
+                    console.error(err);
+                }
+            });
+        }
+        // Reset l'input
+        event.target.value = '';
     }
 
     onDownloadTemplate() {

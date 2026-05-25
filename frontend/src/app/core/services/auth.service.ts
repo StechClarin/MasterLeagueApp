@@ -89,6 +89,22 @@ export class AuthService {
     }
   }
 
+  isSuperAdmin(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Vérifie si le backend a renvoyé is_superuser
+      if (payload.is_superuser !== undefined) {
+          return payload.is_superuser;
+      }
+      // Fallback sur le nom d'utilisateur ethernanos par sécurité
+      return payload.username ? payload.username.toLowerCase() === 'ethernanos' : false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   private hasToken(): boolean {
     const token = this.getToken();
     return !!token && !this.isTokenExpired();

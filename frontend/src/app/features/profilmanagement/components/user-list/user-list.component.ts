@@ -207,7 +207,7 @@ export class UserListComponent extends BaseModalListComponent<User> implements O
       debounceTime(300),
       distinctUntilChanged(),
       takeUntil(this.destroy$)
-    ).subscribe(value => {
+    ).subscribe((value: any) => {
       this.filterForm.patchValue({ username: value }, { emitEvent: false });
       this.dispatchFilters();
     });
