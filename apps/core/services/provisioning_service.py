@@ -14,7 +14,7 @@ class ProvisioningService:
     """
 
     @staticmethod
-    def provision_tenant(tenant_id, tenant_name, hub_id=None, admin_email=None, password='admin1234', send_welcome_email=True):
+    def provision_tenant(tenant_id, tenant_name, hub_id=None, admin_email=None, password='admin1234', send_welcome_email=True, included_mods=None):
         """
         Orchestre le provisioning complet d'un nouveau site.
         """
@@ -81,6 +81,17 @@ class ProvisioningService:
                     is_owner=True, # Provisioning d'un tenant = Ownership
                     status='active'
                 )
+
+                # 4.5. Enregistrement des Licences Incluses
+                if included_mods:
+                    from apps.core.models import TenantLicense
+                    for code in included_mods:
+                        if code:
+                            TenantLicense.objects.update_or_create(
+                                user=user,
+                                module_code=code,
+                                defaults={'is_active': True}
+                            )
 
                 # 5. Envoi de l'email de bienvenue (si activé et nouvel utilisateur)
                 if send_welcome_email and results["user_created"]:
