@@ -73,10 +73,10 @@ class InitialSyncView(APIView):
                     "related_elements": get_deep_establishment_data(est)
                 })
 
-            # Récupération des codes de modules débloqués (licences actives) pour ces établissements
+            # Récupération des codes de modules débloqués (licences actives) pour ces utilisateurs
             from apps.core.models import TenantLicense
             active_licenses = TenantLicense.objects.filter(
-                establishment__in=all_establishments,
+                user__in=admin_users,
                 is_active=True
             ).values_list('module_code', flat=True)
 
