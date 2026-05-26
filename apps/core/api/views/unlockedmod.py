@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import os
+from django.core.exceptions import ObjectDoesNotExist
 from apps.core.models import Establishment, TenantLicense
 from apps.profilmanagement.models import User
 
@@ -30,29 +31,35 @@ class UnlockModuleView(APIView):
             hub_id_from_payload = request.data.get('tenant_id')
 
         module_code = request.data.get('module_code')
+        included_mods = request.data.get('included-mods', [])
         is_active = request.data.get('is_active', True)
 
-        if not hub_id_from_payload or not module_code:
-            return Response({"error": "Missing required fields (hub_id, module_code)"}, status=status.HTTP_400_BAD_REQUEST)
+        if not hub_id_from_payload or (not module_code and not included_mods):
+            return Response({"error": "Missing required fields (hub_id, module_code or included-mods)"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # 3. Récupération de l'Utilisateur (Propriétaire) via le hub_id
             try:
                 owner = User.objects.get(hub_id=hub_id_from_payload)
-            except User.DoesNotExist:
+            except ObjectDoesNotExist:
                 return Response({"error": f"Owner with hub_id '{hub_id_from_payload}' not found"}, status=status.HTTP_404_NOT_FOUND)
 
             # 4. Enregistrement de la licence (Ajout ou mise à jour) pour l'Utilisateur
-            TenantLicense.objects.update_or_create(
-                user=owner,
-                module_code=module_code,
-                defaults={'is_active': is_active}
-            )
+            codes_to_process = included_mods if included_mods else [module_code]
+            
+            for code in codes_to_process:
+                if not code:
+                    continue
+                TenantLicense.objects.update_or_create(
+                    user=owner,
+                    module_code=code,
+                    defaults={'is_active': is_active}
+                )
 
             status_str = "unlocked" if is_active else "revoked"
             return Response({
                 "status": "success",
-                "message": f"Module '{module_code}' {status_str} for user '{owner.username}'."
+                "message": f"Modules {codes_to_process} {status_str} for user '{owner.username}'."
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
