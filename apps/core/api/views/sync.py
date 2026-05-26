@@ -155,6 +155,22 @@ class SyncInView(APIView):
                     }
                 )
 
+                # Créer/Mettre à jour le membership de propriétaire local pour cet admin
+                if user:
+                    from apps.core.models.establishment_membership import EstablishmentMembership
+                    from apps.profilmanagement.models.role import Role
+                    
+                    admin_role, _ = Role.objects.get_or_create(name='admin')
+                    membership, _ = EstablishmentMembership.objects.update_or_create(
+                        user=user,
+                        establishment=est,
+                        defaults={
+                            'is_owner': True,
+                            'status': 'active'
+                        }
+                    )
+                    membership.roles.add(admin_role)
+
                 # Ingestion des related_elements (Deep Sync)
                 related = est_data.get('related_elements', {})
                 for model_name, records in related.items():
@@ -180,12 +196,23 @@ class SyncInView(APIView):
             # 3. Ingestion des Licences (Modules Déverrouillés) en BDD locale
             unlocked_codes = data.get('unlocked_module_codes')
             if unlocked_codes is not None:
-                from apps.core.models import Module
+                from apps.core.models import Module, TenantLicense
                 core_codes = ['mod-referentiel', 'mod-administration']
                 # Désactiver les modules non-core et non débloqués
                 Module.objects.exclude(code__in=core_codes).update(is_active=False)
                 # Activer les modules débloqués par la licence
                 Module.objects.filter(code__in=unlocked_codes).update(is_active=True)
+
+                # Alimenter la table TenantLicense locale pour la validation des droits
+                if user:
+                    TenantLicense.objects.filter(user=user).delete()
+                    for code in unlocked_codes:
+                        if code:
+                            TenantLicense.objects.create(
+                                user=user,
+                                module_code=code,
+                                is_active=True
+                            )
 
             # 4. Migration automatique des chemins des fichiers médias existants (Restructuration SaaS Multi-Tenant)
             from django.core.management import call_command
