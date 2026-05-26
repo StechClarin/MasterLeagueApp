@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { CommonModule } from '@angular/common'; // Added CommonModule
 
 // On utilise les alias pour importer les briques
@@ -66,10 +66,10 @@ import { StructureStateService } from '@core/services/structure-state.service';
             </div>
             <h3 class="text-2xl font-black text-white mb-3">Accès non configuré</h3>
             <p class="text-slate-400 font-medium mb-8">Votre compte n'est lié à aucun établissement pour le moment. Contactez l'administrateur système.</p>
-            <button (click)="structureState.fetchEstablishments()" 
+            <button (click)="goToLogin()" 
                     class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg hover:shadow-indigo-500/30 flex items-center justify-center gap-2 group">
-              <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              Réessayer la connexion
+              <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+              Retourner à la connexion
             </button>
           </div>
 
@@ -165,6 +165,13 @@ import { StructureStateService } from '@core/services/structure-state.service';
 })
 export class MainLayoutComponent {
   public structureState = inject(StructureStateService);
+  private router = inject(Router);
+
+  goToLogin() {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = '/login';
+  }
 
   getLogoUrl(path: string | null | undefined): string {
     if (!path) return '';
