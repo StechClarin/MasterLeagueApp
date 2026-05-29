@@ -16,6 +16,16 @@ fragment EvaluationSessionFields on EvaluationSessionType {
   title
   status
   scope
+  establishment {
+    id
+    name
+    slogan
+    phone
+    email
+    website
+    address
+    logo
+  }
   evaluationType {
     id
     name
@@ -25,6 +35,10 @@ fragment EvaluationSessionFields on EvaluationSessionType {
   academicPeriod {
     id
     name
+    academicYear {
+      id
+      name
+    }
   }
   subjects {
     ...EvaluationSubjectFields
@@ -45,6 +59,10 @@ fragment EvaluationSubjectFields on EvaluationSubjectType {
     name
   }
   levels {
+    id
+    name
+  }
+  classrooms {
     id
     name
   }
@@ -101,13 +119,35 @@ fragment GradeFields on GradeType {
     matricule
     firstName
     lastName
+    enrollments {
+      id
+      classroom {
+        id
+        name
+        level {
+          id
+          cycle {
+            id
+            name
+          }
+        }
+      }
+      academicYear {
+        id
+      }
+    }
   }
   evaluationSubject {
     id
     subject {
       name
     }
+    levelCoefficients {
+      levelId
+      coefficient
+    }
     session {
+      id
       evaluationType {
         code
         weight

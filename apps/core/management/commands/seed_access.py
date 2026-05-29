@@ -195,6 +195,66 @@ GROUP_STRUCTURE: List[Dict[str, Any]] = [
             {"name": "Supprimer un paiement", "codename": "delete_payment"},
         ]
     },
+    {
+        "name": "Gestion des Options",
+        "tag": "option",
+        "permissions": [
+            {"name": "Lire les options", "codename": "view_option"},
+            {"name": "Ajouter une option", "codename": "add_option"},
+            {"name": "Modifier une option", "codename": "change_option"},
+            {"name": "Supprimer une option", "codename": "delete_option"},
+        ]
+    },
+    {
+        "name": "Gestion des Périodes Académiques",
+        "tag": "academicperiod",
+        "permissions": [
+            {"name": "Lire les périodes académiques", "codename": "view_academicperiod"},
+            {"name": "Ajouter une période académique", "codename": "add_academicperiod"},
+            {"name": "Modifier une période académique", "codename": "change_academicperiod"},
+            {"name": "Supprimer une période académique", "codename": "delete_academicperiod"},
+        ]
+    },
+    {
+        "name": "Gestion des Salles",
+        "tag": "room",
+        "permissions": [
+            {"name": "Lire les salles", "codename": "view_room"},
+            {"name": "Ajouter une salle", "codename": "add_room"},
+            {"name": "Modifier une salle", "codename": "change_room"},
+            {"name": "Supprimer une salle", "codename": "delete_room"},
+        ]
+    },
+    {
+        "name": "Gestion des Évaluations",
+        "tag": "evaluation",
+        "permissions": [
+            {"name": "Lire les évaluations", "codename": "view_evaluation"},
+            {"name": "Ajouter une évaluation", "codename": "add_evaluation"},
+            {"name": "Modifier une évaluation", "codename": "change_evaluation"},
+            {"name": "Supprimer une évaluation", "codename": "delete_evaluation"},
+        ]
+    },
+    {
+        "name": "Gestion des Notes",
+        "tag": "grade",
+        "permissions": [
+            {"name": "Lire les notes", "codename": "view_grade"},
+            {"name": "Ajouter une note", "codename": "add_grade"},
+            {"name": "Modifier une note", "codename": "change_grade"},
+            {"name": "Supprimer une note", "codename": "delete_grade"},
+        ]
+    },
+    {
+        "name": "Gestion des Types d'Évaluations",
+        "tag": "evaluationtype",
+        "permissions": [
+            {"name": "Lire les types d'évaluations", "codename": "view_evaluationtype"},
+            {"name": "Ajouter un type d'évaluation", "codename": "add_evaluationtype"},
+            {"name": "Modifier un type d'évaluation", "codename": "change_evaluationtype"},
+            {"name": "Supprimer un type d'évaluation", "codename": "delete_evaluationtype"},
+        ]
+    },
 ]
 
 class Command(BaseCommand):

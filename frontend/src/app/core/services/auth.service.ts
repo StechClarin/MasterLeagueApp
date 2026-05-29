@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Apollo } from 'apollo-angular';
 import { environment } from '../../../environments/environment';
+import { PermissionService } from './permission.service';
 
 // Interface pour la réponse Django
 interface AuthResponse {
@@ -16,6 +17,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private apiUrl = environment.apiUrl; // ex: http://127.0.0.1:8000/api
+  private permissionService = inject(PermissionService);
 
   // Signal pour savoir si on est connecté
   currentUserSignal = signal(this.hasToken());
@@ -38,14 +40,38 @@ export class AuthService {
   private injector = inject(Injector);
 
   logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    // 1. Vide localStorage et sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // 2. Supprime tous les cookies
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.' + window.location.hostname;
+    }
+
+    // 3. Vide le cache CacheStorage
+    if (window.caches) {
+      caches.keys().then((names) => {
+        for (const name of names) {
+          caches.delete(name);
+        }
+      }).catch(() => {});
+    }
+
     this.currentUserSignal.set(false);
 
     // On récupère Apollo via l'injecteur pour éviter une dépendance circulaire
     // car le GraphQLProvider (qui configure Apollo) dépend de AuthService
     const apollo = this.injector.get(Apollo);
-    apollo.client.resetStore();
+    apollo.client.resetStore().catch(() => {});
+
+    this.permissionService.setPermissions([]);
 
     this.router.navigate(['/login']);
   }

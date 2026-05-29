@@ -31,7 +31,7 @@ export type GetAllEnrollmentsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllEnrollmentsQuery = { __typename?: 'Query', enrollments?: { __typename?: 'EnrollmentTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'EnrollmentType', id: any, status: Types.StudentsEnrollmentStatusChoices, enrollmentDate: any, isRepeater: boolean, student: { __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string, photo?: string | null }, classroom: { __typename?: 'ClassRoomType', id: any, name: string, level: { __typename?: 'LevelType', id: any, name: string } }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } } | null> | null } | null };
+export type GetAllEnrollmentsQuery = { __typename?: 'Query', enrollments?: { __typename?: 'EnrollmentTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'EnrollmentType', id: any, status: Types.StudentsEnrollmentStatusChoices, enrollmentDate: any, isRepeater: boolean, student: { __typename?: 'StudentType', id: any, firstName: string, lastName: string, matricule: string, photo?: string | null }, classroom: { __typename?: 'ClassRoomType', id: any, name: string, level: { __typename?: 'LevelType', id: any, name: string, cycle: { __typename?: 'CycleType', id: any, name: string } } }, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } } | null> | null } | null };
 
 export const GetAllStudentsDocument = gql`
     query GetAllStudents($search: String, $classroomId: ID, $academicYearId: ID, $status: String, $page: Int, $pageSize: Int) {
@@ -203,6 +203,10 @@ export const GetAllEnrollmentsDocument = gql`
         level {
           id
           name
+          cycle {
+            id
+            name
+          }
         }
       }
       academicYear {

@@ -8,7 +8,8 @@ class PersonnelService(BaseService):
 
     def after_save(self, instance, created):
         # 1. Capture nested user data from initial request (as it's read_only in serializer)
-        user_source = getattr(self, 'initial_data', {}).get('user')
+        initial_data = getattr(self, 'initial_data', {}) or {}
+        user_source = initial_data.get('user') if isinstance(initial_data, dict) else None
         email_pro = instance.email_pro
         
         user = None
@@ -81,10 +82,6 @@ class PersonnelService(BaseService):
             if instance.user != user:
                 instance.user = user
                 instance.save(update_fields=['user'])
-            
-            # Sync Roles from Personnel to User
-            if instance.pk:
-                user.roles.add(*instance.roles.all())
 
             # Sync or create the establishment membership for this user
             self._sync_establishment_membership(instance, user)
@@ -115,7 +112,3 @@ class PersonnelService(BaseService):
             }
         )
         membership_service.sync_roles_from_personnel(membership, instance)
-
-        if not user.establishment:
-            user.establishment = instance.establishment
-            user.save(update_fields=['establishment'])

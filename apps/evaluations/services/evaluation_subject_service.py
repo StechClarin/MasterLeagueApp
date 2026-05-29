@@ -4,6 +4,19 @@ from ..models import EvaluationSubject, EvaluationPlanning
 class EvaluationSubjectService(BaseService):
     model = EvaluationSubject
 
+    def before_save(self, data, instance=None):
+        data = super().before_save(data, instance)
+        
+        # Automatically populate levels from classrooms if classrooms are present
+        classroom_ids = data.get('classrooms', [])
+        if classroom_ids:
+            from apps.structure.models import ClassRoom
+            level_ids = list(ClassRoom.objects.filter(id__in=classroom_ids).values_list('level_id', flat=True).distinct())
+            data['levels'] = level_ids
+            
+        return data
+
+
     def after_save(self, instance, created):
         """
         Sauvegarde récursive des plannings (EvaluationPlanning).

@@ -22,6 +22,7 @@ class UserQuery(graphene.ObjectType):
         page_size=graphene.Int(default_value=10)
     )
     user = graphene.Field(UserType, id=graphene.Int())
+    me = graphene.Field(UserType)
 
     HIDDEN_USERNAMES = ['ethernanos']
 
@@ -82,3 +83,10 @@ class UserQuery(graphene.ObjectType):
             return user
         except Exception:
             return None
+
+    @staticmethod
+    def resolve_me(root, info):
+        user = getattr(info.context, 'user', None)
+        if user and user.is_authenticated:
+            return user
+        return None

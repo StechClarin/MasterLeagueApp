@@ -1,7 +1,7 @@
-import { Component, computed, inject, signal, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, computed, inject, signal, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule, FormControl } from '@angular/forms';
-import { Observable } from 'rxjs'; // Import Observable
+import { Observable, Subject } from 'rxjs'; // Import Observable
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
 import { UiListPageComponent } from '@shared/components/ui-list-page/ui-list-page.component';
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
@@ -11,7 +11,7 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { ContractTypeService } from '../../services/contract-type.service';
 import { RoleService } from '@features/profilmanagement/services/role.service';
-import { map } from 'rxjs/operators';
+import { map, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { PersonnelService } from '../../services/personnel.service';
@@ -42,7 +42,8 @@ import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagin
     ],
     templateUrl: './personnel-list.component.html'
 })
-export class PersonnelListComponent extends BaseModalListComponent<any> implements AfterViewInit {
+export class PersonnelListComponent extends BaseModalListComponent<any> implements OnInit, AfterViewInit, OnDestroy {
+    private destroy$ = new Subject<void>();
     service = inject(PersonnelService);
     private contractTypeService = inject(ContractTypeService);
     private roleService = inject(RoleService);
@@ -63,6 +64,23 @@ export class PersonnelListComponent extends BaseModalListComponent<any> implemen
     }
 
     tableColumns: UiTableColumn[] = [];
+
+    override ngOnInit() {
+        super.ngOnInit();
+
+        this.searchControl.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.dispatchFilters();
+        });
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
 
     ngAfterViewInit() {
         setTimeout(() => {

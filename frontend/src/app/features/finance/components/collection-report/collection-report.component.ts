@@ -155,148 +155,222 @@ import { StructureStateService } from '@core/services/structure-state.service';
            </div>
         </div>
 
-        <!-- TABLEAU FINANCIER CORPORATE -->
-        <div class="mb-8 overflow-x-auto rounded-xl border border-slate-200 print:border-slate-300">
-          <table class="w-full text-xs text-left border-collapse">
-            <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
-              <tr>
-                <th class="px-3 py-3 border-r border-slate-200 font-black" rowspan="2" *ngIf="!reportData().is_global">Matricule</th>
-                <th class="px-3 py-3 border-r border-slate-200 font-black" rowspan="2">{{ reportData().is_global ? 'Nom de la Classe' : 'Nom & Prénoms' }}</th>
-                <th class="px-3 py-1.5 text-center bg-slate-100/60 border-r border-slate-200" colspan="2">Bilan Annuel (Global)</th>
-                <th class="px-3 py-1.5 text-center bg-indigo-50/40 border-r border-slate-200 text-indigo-900" colspan="3">Activité de la Période</th>
-                <th class="px-3 py-3 border-r border-slate-200 text-right font-black" rowspan="2">Solde Global</th>
-                <th class="px-3 py-3 text-center font-black" rowspan="2">Régularité</th>
-              </tr>
-              <tr class="border-t border-slate-200">
-                <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium">Attendu</th>
-                <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium text-emerald-700">Encaissé</th>
-                <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-indigo-950">Dû</th>
-                <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-emerald-600">Perçu</th>
-                <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium">Reste</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200 text-slate-700 font-medium">
-              <!-- Vue par Elève (is_global: false) -->
-              <ng-container *ngIf="!reportData().is_global">
-                 <tr *ngFor="let item of reportData().items" class="hover:bg-slate-50/60 transition-colors">
-                   <td class="px-3 py-2.5 font-mono text-slate-900 font-bold whitespace-nowrap border-r border-slate-150">{{ item.student.matricule }}</td>
-                   <td class="px-3 py-2.5 font-semibold text-slate-900 uppercase whitespace-nowrap border-r border-slate-150 max-w-[180px] truncate">
-                      {{ item.student.lastName }} {{ item.student.firstName }}
-                   </td>
-                   
-                   <!-- Annuel -->
-                   <td class="px-3 py-2.5 text-right font-semibold text-slate-500 bg-slate-50/30 border-r border-slate-150">{{ item.total_expected_global.toLocaleString() }}</td>
-                   <td class="px-3 py-2.5 text-right font-bold text-emerald-600 bg-emerald-50/20 border-r border-slate-150">{{ item.total_paid_global.toLocaleString() }}</td>
-                   
-                   <!-- Période -->
-                   <td class="px-3 py-2.5 text-right font-semibold text-slate-600 border-r border-slate-150">{{ item.expected_period.toLocaleString() }}</td>
-                   <td class="px-3 py-2.5 text-right font-bold text-emerald-600 border-r border-slate-150">{{ item.paid_period.toLocaleString() }}</td>
-                   <td class="px-3 py-2.5 text-right font-bold border-r border-slate-150" [class.text-rose-600]="item.due_balance > 0">
-                     {{ item.due_balance.toLocaleString() }}
-                   </td>
+        <!-- BLOC DE CHAQUE CLASSE -->
+        <div *ngFor="let cls of reportData().classrooms" class="mb-10 page-break-inside-avoid">
+          <div class="flex justify-between items-center mb-4 border-b-2 border-slate-950 pb-2">
+             <h3 class="text-base font-extrabold text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                <span class="w-1.5 h-5 bg-indigo-600 rounded-sm"></span>Classe : {{ cls.classroom_name }}
+             </h3>
+             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bilan de la Classe</span>
+          </div>
 
-                   <!-- Restes & Statuts -->
-                   <td class="px-3 py-2.5 text-right font-black border-r border-slate-150 bg-slate-50/30" [class.text-rose-600]="item.remaining_global > 0">
-                     {{ item.remaining_global.toLocaleString() }}
-                   </td>
-                   <td class="px-3 py-2.5 text-center whitespace-nowrap">
-                     <span *ngIf="item.is_up_to_date" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold uppercase print:border-none print:text-black">
-                        <span class="w-1 h-1 rounded-full bg-emerald-500 print:hidden"></span> Solvable
-                     </span>
-                     <span *ngIf="!item.is_up_to_date" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase print:border-none print:text-black">
-                        <span class="w-1 h-1 rounded-full bg-amber-500 print:hidden"></span> Reliquat
-                     </span>
-                   </td>
+          <!-- TABLEAU FINANCIER OBLIGATOIRE POUR LA CLASSE -->
+          <div class="mb-6 overflow-x-auto rounded-xl border border-slate-200 print:border-slate-300">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="px-3 py-3 border-r border-slate-200 font-black" rowspan="2">Matricule</th>
+                  <th class="px-3 py-3 border-r border-slate-200 font-black" rowspan="2">Nom & Prénoms</th>
+                  <th class="px-3 py-1.5 text-center bg-slate-100/60 border-r border-slate-200" colspan="2">Bilan Annuel (Global)</th>
+                  <th class="px-3 py-1.5 text-center bg-indigo-50/40 border-r border-slate-200 text-indigo-900" colspan="3">Activité de la Période</th>
+                  <th class="px-3 py-3 border-r border-slate-200 text-right font-black" rowspan="2">Solde Global</th>
+                  <th class="px-3 py-3 text-center font-black" rowspan="2">Régularité</th>
+                </tr>
+                <tr class="border-t border-slate-200">
+                  <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium">Attendu</th>
+                  <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium text-emerald-700">Encaissé</th>
+                  <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-indigo-950">Dû</th>
+                  <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-emerald-600">Perçu</th>
+                  <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium">Reste</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-slate-700 font-medium">
+                <tr *ngFor="let item of cls.items" class="hover:bg-slate-50/60 transition-colors">
+                  <td class="px-3 py-2.5 font-mono text-slate-900 font-bold whitespace-nowrap border-r border-slate-150">{{ item.student.matricule }}</td>
+                  <td class="px-3 py-2.5 font-semibold text-slate-900 uppercase whitespace-nowrap border-r border-slate-150 max-w-[180px] truncate">
+                     {{ item.student.lastName }} {{ item.student.firstName }}
+                  </td>
+                  
+                  <!-- Annuel -->
+                  <td class="px-3 py-2.5 text-right font-semibold text-slate-500 bg-slate-50/30 border-r border-slate-150">{{ item.total_expected_global.toLocaleString() }}</td>
+                  <td class="px-3 py-2.5 text-right font-bold text-emerald-600 bg-emerald-50/20 border-r border-slate-150">{{ item.total_paid_global.toLocaleString() }}</td>
+                  
+                  <!-- Période -->
+                  <td class="px-3 py-2.5 text-right font-semibold text-slate-600 border-r border-slate-150">{{ item.expected_period.toLocaleString() }}</td>
+                  <td class="px-3 py-2.5 text-right font-bold text-emerald-600 border-r border-slate-150">{{ item.paid_period.toLocaleString() }}</td>
+                  <td class="px-3 py-2.5 text-right font-bold border-r border-slate-150" [class.text-rose-600]="item.due_balance > 0">
+                    {{ item.due_balance.toLocaleString() }}
+                  </td>
+ 
+                  <!-- Restes & Statuts -->
+                  <td class="px-3 py-2.5 text-right font-black border-r border-slate-150 bg-slate-50/30" [class.text-rose-600]="item.remaining_global > 0">
+                    {{ item.remaining_global.toLocaleString() }}
+                  </td>
+                  <td class="px-3 py-2.5 text-center whitespace-nowrap">
+                    <span *ngIf="item.is_up_to_date" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold uppercase print:border-none print:text-black">
+                       <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 print:hidden"></span> Solvable
+                    </span>
+                    <span *ngIf="!item.is_up_to_date" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase print:border-none print:text-black">
+                       <span class="w-1.5 h-1.5 rounded-full bg-amber-500 print:hidden"></span> Reliquat
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+              
+              <!-- Totaux de la classe -->
+              <tfoot>
+                <tr class="bg-slate-800 text-white font-bold text-[11px] divide-x divide-slate-700">
+                  <td colspan="2" class="py-2.5 px-3 uppercase tracking-wider text-center font-black">Totaux {{ cls.classroom_name }}</td>
+                  <td class="py-2.5 px-3 text-right bg-slate-800/90">{{ cls.totals.total_expected_global.toLocaleString() }}</td>
+                  <td class="py-2.5 px-3 text-right text-emerald-400 bg-slate-800/90">{{ cls.totals.total_paid_global.toLocaleString() }}</td>
+                  <td class="py-2.5 px-3 text-right bg-slate-750">{{ cls.totals.total_expected_period.toLocaleString() }}</td>
+                  <td class="py-2.5 px-3 text-right text-emerald-400 bg-slate-750">{{ cls.totals.total_paid_period.toLocaleString() }}</td>
+                  <td class="py-2.5 px-3 text-right text-rose-400 bg-slate-750">{{ cls.totals.total_remaining_period.toLocaleString() }}</td>
+                  <td class="py-2.5 px-3 text-right text-rose-400 bg-slate-800/90">{{ cls.totals.total_remaining_global.toLocaleString() }}</td>
+                  <td class="py-2.5 px-3 text-center text-indigo-300 font-black bg-slate-900">{{ cls.totals.recovery_rate }}%</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- TABLEAU FINANCIER OPTIONNEL POUR LA CLASSE -->
+          <div class="mb-6 overflow-x-auto rounded-xl border border-slate-200 print:border-slate-300" *ngIf="cls.totals.opt_total_expected_global > 0">
+             <h4 class="text-[11px] font-extrabold text-slate-700 uppercase bg-slate-100/80 p-2.5 border-b border-slate-200 tracking-wider">Frais Optionnels — {{ cls.classroom_name }}</h4>
+             <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="px-3 py-3 border-r border-slate-200">Matricule</th>
+                  <th class="px-3 py-3 border-r border-slate-200">Nom & Prénoms</th>
+                  <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium">Attendu Période</th>
+                  <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium text-emerald-700">Encaissé Période</th>
+                  <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-rose-600">Reste Période</th>
+                  <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-indigo-950">Solde Dû Global</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-slate-700 font-medium">
+                 <tr *ngFor="let item of cls.items" class="hover:bg-slate-50/60 transition-colors">
+                    <td class="px-3 py-2 font-mono text-slate-900 font-bold border-r border-slate-150">{{ item.student.matricule }}</td>
+                    <td class="px-3 py-2 font-semibold text-slate-900 uppercase border-r border-slate-150">
+                        {{ item.student.lastName }} {{ item.student.firstName }}
+                    </td>
+                    <td class="px-3 py-2 text-right font-semibold text-slate-600 border-r border-slate-150">{{ item.opt_expected_period.toLocaleString() }}</td>
+                    <td class="px-3 py-2 text-right font-bold text-emerald-600 border-r border-slate-150">{{ item.opt_paid_period.toLocaleString() }}</td>
+                    <td class="px-3 py-2 text-right font-bold text-rose-600 border-r border-slate-150">{{ item.opt_due_balance.toLocaleString() }}</td>
+                    <td class="px-3 py-2 text-right font-black border-r border-slate-150 bg-slate-50/30">{{ item.opt_remaining_global.toLocaleString() }}</td>
                  </tr>
-              </ng-container>
-
-              <!-- Vue par Classe (is_global: true) -->
-              <ng-container *ngIf="reportData().is_global">
-                 <tr *ngFor="let item of reportData().items" class="hover:bg-slate-50/60 transition-colors">
-                   <td class="px-3 py-2.5 font-black text-indigo-900 uppercase whitespace-nowrap border-r border-slate-150">
-                      {{ item.classroom_name }}
-                   </td>
-                   
-                   <!-- Annuel -->
-                   <td class="px-3 py-2.5 text-right font-semibold text-slate-500 bg-slate-50/30 border-r border-slate-150">{{ item.total_expected_global.toLocaleString() }}</td>
-                   <td class="px-3 py-2.5 text-right font-bold text-emerald-600 bg-emerald-50/20 border-r border-slate-150">{{ item.total_paid_global.toLocaleString() }}</td>
-                   
-                   <!-- Période -->
-                   <td class="px-3 py-2.5 text-right font-semibold text-slate-600 border-r border-slate-150">{{ item.expected_period.toLocaleString() }}</td>
-                   <td class="px-3 py-2.5 text-right font-bold text-emerald-600 border-r border-slate-150">{{ item.paid_period.toLocaleString() }}</td>
-                   <td class="px-3 py-2.5 text-right font-bold border-r border-slate-150" [class.text-rose-600]="item.due_balance > 0">
-                     {{ item.due_balance.toLocaleString() }}
-                   </td>
-
-                   <!-- Restes & Statuts -->
-                   <td class="px-3 py-2.5 text-right font-black border-r border-slate-150 bg-slate-50/30" [class.text-rose-600]="item.remaining_global > 0">
-                     {{ item.remaining_global.toLocaleString() }}
-                   </td>
-                   <td class="px-3 py-2.5 text-center whitespace-nowrap">
-                     <span *ngIf="item.is_up_to_date" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold uppercase print:border-none print:text-black">
-                        <span class="w-1 h-1 rounded-full bg-emerald-500 print:hidden"></span> OK
-                     </span>
-                     <span *ngIf="!item.is_up_to_date" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[9px] font-bold uppercase print:border-none print:text-black">
-                        <span class="w-1 h-1 rounded-full bg-rose-500 print:hidden"></span> Déficit
-                     </span>
-                   </td>
-                 </tr>
-              </ng-container>
-            </tbody>
-            
-            <!-- Totaux Généraux Récapitulatifs -->
-            <tfoot>
-              <tr class="bg-slate-900 text-white font-bold text-[11px] divide-x divide-slate-800">
-                <td [attr.colspan]="reportData().is_global ? 1 : 2" class="py-3 px-3 uppercase tracking-wider text-center font-black">Totaux Synthèse</td>
-                <td class="py-3 px-3 text-right bg-slate-900/90">{{ reportData().totals.total_expected_global.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right text-emerald-400 bg-slate-900/90">{{ reportData().totals.total_paid_global.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right bg-slate-850">{{ reportData().totals.total_expected_period.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right text-emerald-400 bg-slate-850">{{ reportData().totals.total_paid_period.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right text-rose-400 bg-slate-850">{{ reportData().totals.total_remaining_period.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right text-rose-400 bg-slate-900/90">{{ reportData().totals.total_remaining_global.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-center text-indigo-400 font-black bg-slate-950">{{ reportData().totals.recovery_rate }}%</td>
-              </tr>
-            </tfoot>
-          </table>
+              </tbody>
+              <tfoot>
+                <tr class="bg-slate-800 text-white font-bold text-[11px] divide-x divide-slate-700">
+                  <td colspan="2" class="py-2 px-3 uppercase tracking-wider text-center font-black">Totaux Optionnels {{ cls.classroom_name }}</td>
+                  <td class="py-2 px-3 text-right bg-slate-800/90">{{ cls.totals.opt_total_expected_period.toLocaleString() }}</td>
+                  <td class="py-2 px-3 text-right text-emerald-400 bg-slate-800/90">{{ cls.totals.opt_total_paid_period.toLocaleString() }}</td>
+                  <td class="py-2 px-3 text-right text-rose-400 bg-slate-750">{{ cls.totals.opt_total_remaining_period.toLocaleString() }}</td>
+                  <td class="py-2 px-3 text-right text-rose-400 bg-slate-800/90">{{ cls.totals.opt_total_remaining_global.toLocaleString() }}</td>
+                </tr>
+              </tfoot>
+             </table>
+          </div>
         </div>
 
-        <!-- Bilan des Frais Non Obligatoires (Optionnels) -->
-        <div class="mb-8 overflow-x-auto rounded-xl border border-slate-200 print:border-slate-300" *ngIf="reportData().totals.opt_total_expected_global > 0">
-           <h3 class="text-sm font-bold text-slate-800 uppercase bg-slate-100 p-3 border-b border-slate-200">Bilan des Frais Optionnels (Non Obligatoires)</h3>
-           <table class="w-full text-xs text-left border-collapse">
-            <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
-              <tr>
-                <th class="px-3 py-3 border-r border-slate-200" *ngIf="!reportData().is_global">Matricule</th>
-                <th class="px-3 py-3 border-r border-slate-200">{{ reportData().is_global ? 'Nom de la Classe' : 'Nom & Prénoms' }}</th>
-                <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium">Attendu Période</th>
-                <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium text-emerald-700">Encaissé Période</th>
-                <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-rose-600">Reste Période</th>
-                <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-indigo-950">Solde Dû Global</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200 text-slate-700 font-medium">
-               <tr *ngFor="let item of reportData().items" class="hover:bg-slate-50/60 transition-colors">
-                  <td *ngIf="!reportData().is_global" class="px-3 py-2.5 font-mono text-slate-900 font-bold border-r border-slate-150">{{ item.student.matricule }}</td>
-                  <td class="px-3 py-2.5 font-semibold text-slate-900 uppercase border-r border-slate-150">
-                      <ng-container *ngIf="reportData().is_global">{{ item.classroom_name }}</ng-container>
-                      <ng-container *ngIf="!reportData().is_global">{{ item.student.lastName }} {{ item.student.firstName }}</ng-container>
-                  </td>
-                  <td class="px-3 py-2.5 text-right font-semibold text-slate-600 border-r border-slate-150">{{ item.opt_expected_period.toLocaleString() }}</td>
-                  <td class="px-3 py-2.5 text-right font-bold text-emerald-600 border-r border-slate-150">{{ item.opt_paid_period.toLocaleString() }}</td>
-                  <td class="px-3 py-2.5 text-right font-bold text-rose-600 border-r border-slate-150">{{ item.opt_due_balance.toLocaleString() }}</td>
-                  <td class="px-3 py-2.5 text-right font-black border-r border-slate-150 bg-slate-50/30">{{ item.opt_remaining_global.toLocaleString() }}</td>
-               </tr>
-            </tbody>
-            <tfoot>
-              <tr class="bg-slate-900 text-white font-bold text-[11px] divide-x divide-slate-800">
-                <td [attr.colspan]="reportData().is_global ? 1 : 2" class="py-3 px-3 uppercase tracking-wider text-center font-black">Totaux Optionnels</td>
-                <td class="py-3 px-3 text-right bg-slate-900/90">{{ reportData().totals.opt_total_expected_period.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right text-emerald-400 bg-slate-900/90">{{ reportData().totals.opt_total_paid_period.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right text-rose-400 bg-slate-850">{{ reportData().totals.opt_total_remaining_period.toLocaleString() }}</td>
-                <td class="py-3 px-3 text-right text-rose-400 bg-slate-900/90">{{ reportData().totals.opt_total_remaining_global.toLocaleString() }}</td>
-              </tr>
-            </tfoot>
-           </table>
+        <!-- RECAPITULATIF GENERAL PAR CLASSE -->
+        <div *ngIf="reportData().is_global" class="mt-12 mb-8 page-break-inside-avoid">
+           <div class="flex justify-between items-center mb-4 border-b-4 border-indigo-600 pb-2">
+              <h3 class="text-base font-black text-indigo-900 uppercase tracking-tight flex items-center gap-2">
+                 <span class="w-2.5 h-6 bg-indigo-600 rounded-sm"></span>Récapitulatif Général par Classe
+              </h3>
+              <span class="text-xs font-black text-indigo-600 uppercase">Vue Globale Établissement</span>
+           </div>
+           
+           <!-- TABLEAU SYNTHÈSE DE RECOUVREMENT PAR CLASSE (FRAIS OBLIGATOIRES) -->
+           <div class="mb-6 overflow-x-auto rounded-xl border border-slate-200 print:border-slate-300">
+             <table class="w-full text-xs text-left border-collapse">
+               <thead class="bg-indigo-50 text-indigo-950 font-black uppercase text-[10px] tracking-wider border-b border-indigo-200">
+                 <tr>
+                   <th class="px-3 py-3 border-r border-indigo-100 font-black" rowspan="2">Nom de la Classe</th>
+                   <th class="px-3 py-1.5 text-center bg-indigo-100/50 border-r border-indigo-100" colspan="2">Bilan Annuel (Global)</th>
+                   <th class="px-3 py-1.5 text-center bg-indigo-100/30 border-r border-indigo-100" colspan="3">Activité de la Période</th>
+                   <th class="px-3 py-3 border-r border-indigo-100 text-right font-black" rowspan="2">Solde Global</th>
+                   <th class="px-3 py-3 text-center font-black" rowspan="2">Régularité</th>
+                 </tr>
+                 <tr class="border-t border-indigo-100">
+                   <th class="px-3 py-2 text-right bg-indigo-50/30 border-r border-indigo-100 font-semibold">Attendu</th>
+                   <th class="px-3 py-2 text-right bg-indigo-50/30 border-r border-indigo-100 font-semibold text-emerald-800">Encaissé</th>
+                   <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-indigo-100 font-semibold text-indigo-950">Dû</th>
+                   <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-indigo-100 font-semibold text-emerald-700">Perçu</th>
+                   <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-indigo-100 font-semibold">Reste</th>
+                 </tr>
+               </thead>
+               <tbody class="divide-y divide-slate-200 text-slate-700 font-medium">
+                 <tr *ngFor="let cls of reportData().classrooms" class="hover:bg-indigo-50/10 transition-colors">
+                   <td class="px-3 py-2.5 font-black text-indigo-950 uppercase border-r border-slate-150">{{ cls.classroom_name }}</td>
+                   <td class="px-3 py-2.5 text-right font-semibold text-slate-500 border-r border-slate-150">{{ cls.totals.total_expected_global.toLocaleString() }}</td>
+                   <td class="px-3 py-2.5 text-right font-bold text-emerald-600 border-r border-slate-150">{{ cls.totals.total_paid_global.toLocaleString() }}</td>
+                   <td class="px-3 py-2.5 text-right font-semibold text-slate-600 border-r border-slate-150">{{ cls.totals.total_expected_period.toLocaleString() }}</td>
+                   <td class="px-3 py-2.5 text-right font-bold text-emerald-600 border-r border-slate-150">{{ cls.totals.total_paid_period.toLocaleString() }}</td>
+                   <td class="px-3 py-2.5 text-right font-bold border-r border-slate-150" [class.text-rose-600]="cls.totals.total_remaining_period > 0">
+                     {{ cls.totals.total_remaining_period.toLocaleString() }}
+                   </td>
+                   <td class="px-3 py-2.5 text-right font-black border-r border-slate-150 bg-slate-50/30" [class.text-rose-600]="cls.totals.total_remaining_global > 0">
+                     {{ cls.totals.total_remaining_global.toLocaleString() }}
+                   </td>
+                   <td class="px-3 py-2.5 text-center whitespace-nowrap">
+                     <span *ngIf="cls.totals.total_remaining_period <= 0" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold uppercase print:border-none print:text-black">
+                        OK
+                     </span>
+                     <span *ngIf="cls.totals.total_remaining_period > 0" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[9px] font-bold uppercase print:border-none print:text-black">
+                        Déficit
+                     </span>
+                   </td>
+                 </tr>
+               </tbody>
+               <tfoot>
+                 <tr class="bg-indigo-950 text-white font-bold text-[11px] divide-x divide-indigo-900">
+                   <td class="py-3 px-3 uppercase tracking-wider text-center font-black">Totaux Synthèse Générale</td>
+                   <td class="py-3 px-3 text-right bg-indigo-950/90">{{ reportData().totals.total_expected_global.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right text-emerald-300 bg-indigo-950/90">{{ reportData().totals.total_paid_global.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right bg-indigo-900">{{ reportData().totals.total_expected_period.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right text-emerald-300 bg-indigo-900">{{ reportData().totals.total_paid_period.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right text-rose-300 bg-indigo-900">{{ reportData().totals.total_remaining_period.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right text-rose-300 bg-indigo-950/90">{{ reportData().totals.total_remaining_global.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-center text-indigo-300 font-black bg-slate-950">{{ reportData().totals.recovery_rate }}%</td>
+                 </tr>
+               </tfoot>
+             </table>
+           </div>
+
+           <!-- TABLEAU SYNTHÈSE DE RECOUVREMENT DES FRAIS NON OBLIGATOIRES (OPTIONNELS) PAR CLASSE -->
+           <div class="mb-6 overflow-x-auto rounded-xl border border-slate-200 print:border-slate-300" *ngIf="reportData().totals.opt_total_expected_global > 0">
+              <h4 class="text-xs font-bold text-slate-800 uppercase bg-slate-100 p-2.5 border-b border-slate-200">Synthèse Générale des Frais Optionnels</h4>
+              <table class="w-full text-xs text-left border-collapse">
+               <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                 <tr>
+                   <th class="px-3 py-3 border-r border-slate-200">Nom de la Classe</th>
+                   <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium">Attendu Période</th>
+                   <th class="px-3 py-2 text-right bg-slate-100/40 border-r border-slate-200 font-medium text-emerald-700">Encaissé Période</th>
+                   <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-rose-600">Reste Période</th>
+                   <th class="px-3 py-2 text-right bg-indigo-50/20 border-r border-slate-200 font-medium text-indigo-950">Solde Dû Global</th>
+                 </tr>
+               </thead>
+               <tbody class="divide-y divide-slate-200 text-slate-700 font-medium">
+                  <tr *ngFor="let cls of reportData().classrooms" class="hover:bg-slate-50/60 transition-colors">
+                     <td class="px-3 py-2.5 font-semibold text-slate-900 uppercase border-r border-slate-150">{{ cls.classroom_name }}</td>
+                     <td class="px-3 py-2.5 text-right font-semibold text-slate-600 border-r border-slate-150">{{ cls.totals.opt_total_expected_period.toLocaleString() }}</td>
+                     <td class="px-3 py-2.5 text-right font-bold text-emerald-600 border-r border-slate-150">{{ cls.totals.opt_total_paid_period.toLocaleString() }}</td>
+                     <td class="px-3 py-2.5 text-right font-bold text-rose-600 border-r border-slate-150">{{ cls.totals.opt_total_remaining_period.toLocaleString() }}</td>
+                     <td class="px-3 py-2.5 text-right font-black border-r border-slate-150 bg-slate-50/30">{{ cls.totals.opt_total_remaining_global.toLocaleString() }}</td>
+                  </tr>
+               </tbody>
+               <tfoot>
+                 <tr class="bg-slate-900 text-white font-bold text-[11px] divide-x divide-slate-800">
+                   <td class="py-3 px-3 uppercase tracking-wider text-center font-black">Totaux Optionnels Généraux</td>
+                   <td class="py-3 px-3 text-right bg-slate-900/90">{{ reportData().totals.opt_total_expected_period.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right text-emerald-400 bg-slate-900/90">{{ reportData().totals.opt_total_paid_period.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right text-rose-400 bg-slate-850">{{ reportData().totals.opt_total_remaining_period.toLocaleString() }}</td>
+                   <td class="py-3 px-3 text-right text-rose-400 bg-slate-900/90">{{ reportData().totals.opt_total_remaining_global.toLocaleString() }}</td>
+                 </tr>
+               </tfoot>
+              </table>
+           </div>
         </div>        <!-- PIED DE PAGE: Visas administratifs (Visible uniquement au Print) -->
         <div class="mt-12 pt-5 border-t border-dashed border-slate-300 text-center relative z-10 hidden print:block">
            <div class="grid grid-cols-2 gap-20 mb-16 px-6">

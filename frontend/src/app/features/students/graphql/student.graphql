@@ -131,6 +131,10 @@ query GetAllEnrollments($search: String, $classroomId: ID, $academicYearId: ID, 
         level {
           id
           name
+          cycle {
+            id
+            name
+          }
         }
       }
       academicYear {

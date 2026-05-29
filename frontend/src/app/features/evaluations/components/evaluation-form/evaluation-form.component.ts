@@ -58,9 +58,11 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
     @Input() item: EvaluationSessionFieldsFragment | null = null;
     @Input() isReadOnly: boolean = false;
+    @Input() isClone: boolean = false;
 
     get formTitle(): string {
         if (this.isReadOnly) return 'Détails de la Session d\'Évaluation';
+        if (this.isClone) return 'Cloner la Session d\'Évaluation';
         return this.item ? 'Modifier la Session d\'Évaluation' : 'Nouvelle Session d\'Évaluation';
     }
 
@@ -231,8 +233,8 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
     private patchForm(item: EvaluationSessionFieldsFragment) {
         this.form.patchValue({
-            id: item.id,
-            title: item.title,
+            id: this.isClone ? null : item.id,
+            title: this.isClone ? `${item.title} (Copie)` : item.title,
             scope: item.scope,
             academic_period: item.academicPeriod?.id || '',
             evaluation_type: item.evaluationType?.id || '',
@@ -247,7 +249,7 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
 
             if (!groupedSubjects.has(subjectId)) {
                 groupedSubjects.set(subjectId, {
-                    id: s.id,
+                    id: this.isClone ? null : s.id,
                     subject: subjectId,
                     classrooms: [],
                     max_score: s.maxScore,
@@ -262,7 +264,7 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
                 if (!group.classrooms.includes(c.id)) {
                     group.classrooms.push(c.id);
                 }
-                if (s.subjectFile) {
+                if (s.subjectFile && !this.isClone) {
                     group.subjectFiles[c.id] = s.subjectFile;
                 }
             });
@@ -299,14 +301,14 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
             const finalPlannings = Array.from(deduplicatedPlannings.values());
 
             const subjectGroup = this.fb.group({
-                id: [sGroup.id],
+                id: [this.isClone ? null : sGroup.id],
                 subject: [sGroup.subject, [Validators.required]],
                 classrooms: [sGroup.classrooms, [Validators.required]],
                 max_score: [sGroup.max_score],
                 subjectFiles: Object.keys(sGroup.subjectFiles).length > 0 ? [sGroup.subjectFiles] : [{}],
                 plannings: this.fb.array(
                     finalPlannings.map((p: any) => this.fb.group({
-                        id: [p.id || null],
+                        id: [this.isClone ? null : (p.id || null)],
                         date: [p.date || '', [Validators.required]],
                         start_time: [p.startTime ? p.startTime.substring(0, 5) : '', [Validators.required]],
                         duration_minutes: [p.durationMinutes || null, [Validators.required]],
@@ -326,10 +328,10 @@ export class EvaluationFormComponent extends BaseFormComponent implements OnChan
         this.supervisions.clear();
         (item as any).supervisions?.forEach((sup: any) => {
             const supervisionGroup = this.fb.group({
-                id: [sup.id],
+                id: [this.isClone ? null : sup.id],
                 date: [sup.date, [Validators.required]],
                 room: [sup.room?.id, [Validators.required]],
-                supervisors: [sup.supervisors?.map((s: any) => s.id) || []]
+                supervisors: [this.isClone ? [] : (sup.supervisors?.map((s: any) => s.id) || [])]
             });
             this.supervisions.push(supervisionGroup);
         });

@@ -9,6 +9,15 @@ class UserService(BaseService):
         # On garde 'roles' comme champ texte pour l'instant, on le traite dans before_save
         'roles' 
     ]
+
+    import_field_labels = {
+        'username': "Nom d'utilisateur",
+        'email': "Adresse email",
+        'first_name': "Prénom",
+        'last_name': "Nom de famille",
+        'password': "Mot de passe",
+        'roles': "Rôles (séparés par des virgules)"
+    }
     
     export_fields = ['username', 'email', 'roles_display', 'is_active'] # roles_display pour l'export
 
@@ -42,7 +51,7 @@ class UserService(BaseService):
                         role = Role.objects.get(name__iexact=name)
                         self._roles_to_add.append(role)
                     except Role.DoesNotExist:
-                        print(f"⚠️ Rôle inconnu ignoré : {name}")
+                        print(f"!!!! Rôle inconnu ignoré : {name}")
 
             # Cas 2 : API (Liste d'IDs [1, 2])
             elif isinstance(raw_roles, list):
@@ -53,7 +62,7 @@ class UserService(BaseService):
         
         return data
 
-    def save_process(self, data, instance=None):
+    def save_process(self, data, instance=None) -> tuple[User, bool]:
         # Gestion du mot de passe (inchangée)
         data.pop('password2', None)
         

@@ -137,7 +137,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.normpath(str(FRONTEND_DIR))
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    PROJECT_DATA_DIR / 'apps' / 'core' / 'assets',
+]
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 WHITENOISE_INDEX_FILE = True
 

@@ -20,12 +20,15 @@ ROLES_STRUCTURE = {
         "Gestion des Matières", "Gestion des Années Académiques", "Gestion des Cycles", 
         "Gestion des Personnels", "Gestion des Enseignants", "Gestion des Affectations", 
         "Gestion des Apprenants", "Gestion des Tuteurs", "Gestion des Inscriptions", 
-        "Gestion des Plannings", "Gestion des Tarifs", "Gestion des Factures", "Gestion des Paiements"
+        "Gestion des Plannings", "Gestion des Tarifs", "Gestion des Factures", "Gestion des Paiements",
+        "Gestion des Options", "Gestion des Périodes Académiques", "Gestion des Salles",
+        "Gestion des Évaluations", "Gestion des Notes", "Gestion des Types d'Évaluations"
     ],
     "DIRECTEUR_ETUDES": [
         "Gestion des Classes", "Gestion des Matières", "Gestion des Enseignants",
         "Gestion des Affectations", "Gestion des Plannings", "Gestion des Apprenants",
-        "Gestion des Inscriptions"
+        "Gestion des Inscriptions", "Gestion des Options", "Gestion des Périodes Académiques",
+        "Gestion des Salles", "Gestion des Évaluations", "Gestion des Notes", "Gestion des Types d'Évaluations"
     ],
     "RESPONSABLE_RH": [
         "Gestion des Personnels", "Gestion des Enseignants", "Gestion des Type de contrat"
@@ -34,7 +37,7 @@ ROLES_STRUCTURE = {
         "Gestion des Apprenants", "Gestion des Inscriptions"
     ],
     "ENSEIGNANT": [
-        "Gestion des Plannings"
+        "Gestion des Plannings", "Gestion des Évaluations", "Gestion des Notes"
     ],
     "COMPTABLE": [
         "Gestion des Type de contrat", "Gestion des Tarifs", "Gestion des Factures", "Gestion des Paiements"

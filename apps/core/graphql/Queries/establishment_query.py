@@ -5,6 +5,7 @@ from apps.core.models import Establishment
 from apps.core.utils.pagination import paginate_queryset
 
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
 class EstablishmentQuery(graphene.ObjectType):
     establishments = graphene.Field(
@@ -24,19 +25,26 @@ class EstablishmentQuery(graphene.ObjectType):
         if not user.is_authenticated:
             return None # Or an empty paginated response, depending on the error handling policy
             
-        # 0. Base Filter (Default to current user if no user_id provided)
+        # 0. Base Filter (Access for owned or context membership establishments)
         user_id = kwargs.get('user_id')
-        if user_id:
-            queryset = Establishment.objects.filter(user_id=user_id).order_by('name')
+        target_user_id = user_id if user_id else user.id
+        
+        if user.is_superuser:
+            queryset = Establishment.objects.all().order_by('name')
         else:
-            queryset = Establishment.objects.filter(user=user).order_by('name')
+            q_owner = Q(user_id=target_user_id)
+            q_member = Q(memberships__user_id=target_user_id, memberships__status='active')
+            queryset = Establishment.objects.filter(
+                Q(q_owner, q_member, _connector=Q.OR)
+            ).distinct().order_by('name')
         
         # 1. Global Search "FIND" (OR conditions)
         if search:
+            q_name = Q(name__icontains=search)
+            q_city = Q(city__icontains=search)
+            q_phone = Q(phone__icontains=search)
             queryset = queryset.filter(
-                Q(name__icontains=search) | 
-                Q(city__icontains=search) |
-                Q(phone__icontains=search)
+                Q(q_name, q_city, q_phone, _connector=Q.OR)
             )
 
         # 2. Specific Filters (AND conditions)
@@ -58,7 +66,18 @@ class EstablishmentQuery(graphene.ObjectType):
         user = info.context.user
         if not user.is_authenticated:
             return None
+        if user.is_superuser:
+            try:
+                return Establishment.objects.get(pk=id)
+            except ObjectDoesNotExist:
+                return None
         try:
-            return Establishment.objects.get(pk=id, user=user)
-        except Establishment.DoesNotExist:
+            q_owner = Q(user=user)
+            q_member = Q(memberships__user=user, memberships__status='active')
+            q_or = Q(q_owner, q_member, _connector=Q.OR)
+            return Establishment.objects.filter(
+                Q(pk=id),
+                q_or
+            ).distinct().get()
+        except ObjectDoesNotExist:
             return None

@@ -1,7 +1,7 @@
 from typing import Any, cast
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http import Http404
-from django.db.transaction import atomic
+from django.db.transaction import atomic as db_atomic
 from apps.core.utils.importfile import ImportFile
 from apps.core.utils.exportfile import ExportFile
 
@@ -28,6 +28,7 @@ class BaseService:
     # Configuration de l'Import : liste des champs ou config relations
     # ex: ['name', {'category': {'model': Category, 'search_field': 'name'}}]
     import_fields = []
+    import_field_labels = {}
 
     def __init__(self):
         self.user = None
@@ -97,7 +98,7 @@ class BaseService:
              print(f"DEBUG: Injecting establishment_id {self.establishment_id} into data")
              # On ne l'ajoute que s'il n'est pas déjà présent (permet de forcer si besoin)
              if 'establishment' not in data and 'establishment_id' not in data:
-                 data['establishment'] = self.establishment_id
+                 data['establishment_id'] = self.establishment_id
         else:
             print(f"DEBUG: Skip injection. Model:{hasattr(self.model, 'establishment')}, ID:{getattr(self, 'establishment_id', 'Not Set')}")
         
@@ -123,10 +124,10 @@ class BaseService:
     # --- Les Hooks surchargeables ---
 
     def before_save(self, data, instance=None):
-        """
-        [HOOK] À surcharger pour modifier les données juste avant l'écriture BDD.
-        Ex: Générer un matricule automatique, crypter une donnée.
-        """
+        # Gérer le cas où establishment est fourni sous forme de string/UUID (ex: via DRF default)
+        if 'establishment' in data and not hasattr(data['establishment'], '_meta'):
+            data['establishment_id'] = data.pop('establishment')
+
         # [SAFETY NET] Injection de l'établissement si manquant
         if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
             should_inject = False
@@ -137,7 +138,7 @@ class BaseService:
             
             if should_inject:
                 if 'establishment' not in data and 'establishment_id' not in data:
-                     data['establishment'] = self.establishment_id
+                     data['establishment_id'] = self.establishment_id
 
         # [AUDIT] Injection automatique de l'utilisateur (Pattern Global)
         if hasattr(self, 'user') and self.user:
@@ -151,7 +152,7 @@ class BaseService:
 
         return data
 
-    def save_process(self, data, instance=None):
+    def save_process(self, data, instance=None) -> tuple[Any, bool]:
         """
         Effectue l'écriture réelle en base de données.
         Gère automatiquement les champs ManyToMany (M2M) qui ne peuvent pas être assignés directement.
@@ -344,15 +345,27 @@ class BaseService:
         # Cache local pour toute la durée de l'import
         relation_cache = {}
 
+        # Reverse mapping if import_field_labels is present
+        reverse_labels = {}
+        if hasattr(self, 'import_field_labels') and self.import_field_labels:
+            for k, v in self.import_field_labels.items():
+                reverse_labels[str(v).strip().lower()] = k
+
         try:
-            # pyrefly: ignore [not-callable]
-            with atomic():
+            with db_atomic():
                 for index, row in enumerate(raw_data):
                     row_num = index + 2 # +1 header, +1 index 0
                     try:
                         data_to_save = {}
                         
+                        # Translate headers from labels to field names if defined
+                        translated_row = {}
                         for key, value in row.items():
+                            clean_key = str(key).strip().lower()
+                            mapped_key = reverse_labels.get(clean_key, key)
+                            translated_row[mapped_key] = value
+
+                        for key, value in translated_row.items():
                             # Cas 1 : Champ simple autorisé
                             if not self.import_fields or key in simple_fields:
                                 data_to_save[key] = value
@@ -361,6 +374,10 @@ class BaseService:
                             elif key in relation_configs:
                                 config = relation_configs[key]
                                 data_to_save[key] = self.relation_in_import(key, value, config, relation_cache)
+
+                        # Exécuter les hooks de pré-validation (génère le matricule, etc.)
+                        if hasattr(self, 'before_validate'):
+                            data_to_save = self.before_validate(data_to_save)
 
                         # Appel au flux de sauvegarde complet (Hooks inclus !)
                         self.save(data_to_save, instance=None)
@@ -425,18 +442,21 @@ class BaseService:
         """
         # 1. Extraction des en-têtes depuis import_fields
         headers = []
+        labels_map = getattr(self, 'import_field_labels', {}) or {}
         if self.import_fields:
             for field in self.import_fields:
                 if isinstance(field, dict):
                     # Cas complexe : {'role': {'model': Role...}} -> 'role'
-                    headers.append(list(field.keys())[0])
+                    key = list(field.keys())[0]
+                    headers.append(labels_map.get(key, key))
                 else:
                     # Cas simple : 'username'
-                    headers.append(field)
+                    headers.append(labels_map.get(field, field))
         else:
             # Fallback : tous les champs du modèle (moins risqué de ne rien mettre ?)
             # On met au moins les champs obligatoires si possible, ou tous.
-            headers = [f.name for f in self.model._meta.fields]
+            for f in self.model._meta.fields:
+                headers.append(labels_map.get(f.name, f.name))
 
         # 2. Création de la structure pour l'export (une seule ligne vide ou juste headers)
         # ExportFile.to_excel attend une liste de dicts.

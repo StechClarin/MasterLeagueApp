@@ -417,3 +417,121 @@ c) Sécurité & .gitignore
 
 ==============================================================================
 
+10. ARCHITECTURE DE CONNECTIVITÉ DU LANCEUR (TAURI <=> DJANGO BRIDGE)
+==============================================================================
+Lorsque le projet est exécuté au sein du Hub Ethernanos, l'application Django 
+communique de façon bidirectionnelle et sécurisée avec le lanceur de bureau Tauri.
+
+a) Lancement de l'Application et Injection Stdin
+   ----------------------------------------------
+   Tauri (Rust) orchestre le démarrage de Django via `app_manager_service.rs` :
+   1. Allocation de Port Dynamique : Tauri cherche un port libre de manière séquentielle 
+      à partir du port par défaut de l'application (`port` à `port + 100`).
+   2. Injection de Configuration : Tauri écrit un payload JSON directement sur l'entrée 
+      standard (`stdin`) du processus enfant Django.
+      Ce payload contient :
+      - `session_token` : Jeton dynamique unique généré via Sha256 de `hub_pid:timestamp`.
+      - `tenant_id` : L'identifiant de l'établissement / tenant courant.
+      - `app_port` : Le port de routage alloué.
+      - `db_config` : Les configurations et identifiants de la base de données.
+      - `hub_api_key` : Clé d'API globale partagée.
+      - `admin_pass` : Le mot de passe par défaut administrateur.
+      - `url_prefix` : Le préfixe URL de routage de type `/schoolmanage/{tenant_id}/`.
+      - `cloud_api_url` : L'URL de synchronisation cloud.
+   3. Django (`manage.py`) capture cette configuration au démarrage via la détection de 
+      l'environnement `ETHER_HUB_PID`, lit `stdin` et configure dynamiquement les variables 
+      d'environnement (comme `DATABASE_URL` et `ETHER_APP_PREFIX`) avant de démarrer le serveur.
+
+b) Poignée de Main Sécurisée (Hub Handshake)
+   -----------------------------------------
+   Pour garantir qu'aucun client externe non autorisé ne puisse interroger l'application 
+   hébergée localement, le middleware `HubHandshakeMiddleware` applique un bouclier strict :
+   1. Validation de Jeton : Toute requête REST (`/api/*`) ou GraphQL (`/graphql`) doit 
+      transmettre l'en-tête `X-Hub-Session-Token` correspondant exactement à 
+      `ETHER_SESSION_TOKEN` (le jeton envoyé par Tauri via stdin).
+   2. Exceptions Publiques : Les requêtes d'authentification initiale (`/api/auth/login/`) 
+      et l'accès direct Django Admin (`/admin/`) contournent cette restriction pour permettre 
+      l'initialisation et la maintenance.
+   3. Immunité CSRF : La validation réussie du jeton de session Hub active l'exemption CSRF 
+      adaptative (`_dont_enforce_csrf_checks = True`) pour simplifier les requêtes API/GraphQL 
+      derrière le WebView2 (qui bloque fréquemment les cookies tiers).
+
+c) Nettoyage des Préfixes Dynamiques (Routing)
+   -------------------------------------------
+   Le middleware `HubPrefixMiddleware` synchronise le chemin de routage interne de Django :
+   1. Détection de Préfixe : Si le préfixe configuré (`ETHER_APP_PREFIX`, ex : `/schoolmanage/test/`) 
+      est détecté en tête de l'URL (`request.path_info`).
+   2. Nettoyage : Il extrait ce préfixe pour ne présenter au Resolver Django que la route 
+      métier propre (ex : `/schoolmanage/test/api/login` devient `/api/login`).
+   3. Synchronisation : Le middleware synchronise `SCRIPT_NAME` de l'environnement WSGI avec le 
+      préfixe afin de préserver la génération correcte des URLs absolues.
+
+d) Signal de Disponibilité (Handshake de démarrage)
+   ------------------------------------------------
+   - Au démarrage, après exécution des migrations et configuration de Waitress, le serveur 
+     Django imprime sur son flux standard `stdout` le jeton de synchronisation `[HUB_SIGNAL:READY]`.
+   - Tauri intercepte cette ligne dans sa boucle asynchrone Rust et déclenche l'événement global 
+     `app-ready` vers l'interface utilisateur frontend du lanceur, lui indiquant de charger 
+     l'application Webview en toute sécurité.
+
+e) Variables d'Environnement Clés (Bridge)
+   ---------------------------------------
+   Le pont d'intégration utilise des variables d'environnement clés pour configurer et sécuriser le runtime :
+   - `ETHER_HUB_PID` : Identifiant de processus (PID) de Tauri. Sa présence active le mode Hub dans l'application Django.
+   - `ETHER_SESSION_TOKEN` : Jeton de session dynamique unique utilisé par le middleware pour authentifier chaque requête entrante.
+   - `ETHER_APP_PORT` : Port TCP sur lequel le serveur WSGI Waitress écoute.
+   - `ETHER_HUB_API_KEY` : Clé d'API globale partagée permettant d'autoriser l'accès aux points d'entrée `/api/external/*`.
+   - `ETHER_TENANT_ID` : Identifiant unique de l'établissement / tenant courant.
+   - `ETHER_APP_PREFIX` : Préfixe d'URL dynamique (ex: `/schoolmanage/{tenant_id}/`) utilisé par le middleware de routage.
+   - `ADMIN_DEFAULT_PASSWORD` : Mot de passe par défaut pour le compte administrateur créé à l'initialisation.
+   - `DATABASE_URL` : Chaîne de connexion injectée dynamiquement selon la configuration de la base de données (PostgreSQL ou SQLite).
+   - `LC_ALL`, `LC_MESSAGES`, `LANG` : Forcées à "C" au niveau du processus Django pour éviter les problèmes d'encodage lors des retours d'erreurs PostgreSQL localisés.
+
+==============================================================================
+
+
+11. PROCÉDURE EN CAS DE CHANGEMENT DE VPS (MIGRATION DE DISTRIBUTION)
+==============================================================================
+Si vous devez migrer le serveur de mise à jour et de distribution des modules 
+vers un nouveau VPS, suivez scrupuleusement la procédure suivante :
+
+a) Mise à jour DNS
+   ---------------
+   1. Connectez-vous à votre registrar de domaine (ex: Cloudflare, Namecheap...).
+   2. Modifiez l'enregistrement DNS de type A pour le sous-domaine de distribution :
+      - Nom : `updates.ethernanos.space` (ou le nom configuré dans `nginx.conf`)
+      - Nouvelle Valeur : L'adresse IP publique de votre nouveau VPS.
+      - TTL : Positionnez-le au plus bas (ex: 2 min / 120s) pour accélérer la propagation.
+
+b) Configuration de Nginx sur le nouveau VPS
+   ------------------------------------------
+   1. Installez Nginx sur le nouveau serveur :
+      `sudo apt update && sudo apt install nginx`
+   2. Copiez le fichier `vps/nginx.conf` du dépôt vers la configuration Nginx :
+      `sudo cp vps/nginx.conf /etc/nginx/sites-available/updates.ethernanos`
+   3. Ajustez les chemins absolus (comme `/home/stech/launcher`) dans ce fichier 
+      si le nom d'utilisateur du nouveau VPS est différent.
+   4. Activez la configuration en créant le lien symbolique :
+      `sudo ln -s /etc/nginx/sites-available/updates.ethernanos /etc/nginx/sites-enabled/`
+   5. Testez la syntaxe Nginx et rechargez le service :
+      `sudo nginx -t && sudo systemctl reload nginx`
+
+c) Génération du Certificat SSL
+   ----------------------------
+   Le Hub requiert impérativement des connexions sécurisées HTTPS.
+   1. Installez Certbot et son plugin Nginx :
+      `sudo apt install certbot python3-certbot-nginx`
+   2. Générez le certificat SSL de type Let's Encrypt :
+      `sudo certbot --nginx -d updates.ethernanos.space`
+   3. Vérifiez que le renouvellement automatique est configuré :
+      `sudo systemctl status certbot.timer`
+
+d) Migration des Fichiers et Permissions
+   -------------------------------------
+   1. Recréez la structure de dossiers sur le nouveau VPS (ex: `/home/<user>/launcher/releases/`).
+   2. Transférez les fichiers de mise à jour existants (`metadata.json`, fichiers `.tar.gz`, 
+      exécutables `.exe`, `.dmg`, `.deb`...) de l'ancien serveur vers le nouveau.
+   3. Assurez-vous des permissions de lecture pour que Nginx puisse servir les fichiers :
+      `chmod -R 755 /home/<user>/launcher/releases/`
+
+==============================================================================

@@ -67,9 +67,11 @@ interface SidebarModule {
             class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group focus:outline-none border border-transparent hover:border-white/5">
             
             <div class="flex items-center gap-4">
-              <span class="p-2 rounded-lg bg-slate-800/50 text-slate-400 group-hover:text-indigo-400 group-hover:bg-indigo-500/10 transition-all duration-300">
-                 <!-- Icone générique si pas d'icone spécifique -->
-                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+              <span class="p-2 rounded-lg bg-slate-800/50 text-slate-400 group-hover:text-indigo-400 group-hover:bg-indigo-500/10 transition-all duration-300 flex items-center justify-center">
+                 <img *ngIf="module.icon; else genericModuleIcon" [src]="module.icon" class="w-5 h-5 object-contain" alt="" />
+                 <ng-template #genericModuleIcon>
+                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                 </ng-template>
               </span>
               <span class="text-sm font-semibold tracking-wide">{{ module.name }}</span>
             </div>
@@ -101,8 +103,11 @@ interface SidebarModule {
               <!-- Effet de fond au survol -->
               <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/0 via-indigo-600/0 to-indigo-600/0 group-hover/page:from-indigo-600/10 group-hover/page:to-transparent transition-all duration-300"></div>
 
-              <span class="mr-3 relative z-10">
-                 <svg class="w-1.5 h-1.5 rounded-full bg-current opacity-40 group-hover/page:opacity-100 group-hover/page:scale-125 transition-all duration-300" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+              <span class="mr-3 relative z-10 flex items-center justify-center w-5 h-5">
+                 <img *ngIf="page.icon; else genericPageIcon" [src]="page.icon" class="w-4 h-4 object-contain transition-all duration-300" alt="" />
+                 <ng-template #genericPageIcon>
+                   <svg class="w-1.5 h-1.5 rounded-full bg-current opacity-40 group-hover/page:opacity-100 group-hover/page:scale-125 transition-all duration-300" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                 </ng-template>
               </span>
 
               <span class="font-medium relative z-10">{{ page.title }}</span>

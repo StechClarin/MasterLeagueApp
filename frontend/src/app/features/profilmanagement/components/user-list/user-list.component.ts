@@ -24,11 +24,13 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
+import { HasPermissionDirective } from '@core/guards/has-permission.directive';
+import { PermissionService } from '@core/services/permission.service';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UserFormComponent, UiModalComponent, UiPaginationComponent, UiDropdownComponent, UiStatusBadgeComponent, UiAvatarComponent, UserDetailComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiFilterPanelComponent, UiConfirmModalComponent, UiTableComponent],
+  imports: [CommonModule, ReactiveFormsModule, UserFormComponent, UiModalComponent, UiPaginationComponent, UiDropdownComponent, UiStatusBadgeComponent, UiAvatarComponent, UserDetailComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiFilterPanelComponent, UiConfirmModalComponent, UiTableComponent, HasPermissionDirective],
   templateUrl: './user-list.component.html'
 })
 export class UserListComponent extends BaseModalListComponent<User> implements OnInit, OnDestroy, AfterViewInit {
@@ -51,6 +53,7 @@ export class UserListComponent extends BaseModalListComponent<User> implements O
   private destroy$ = new Subject<void>();
 
   public service = inject(UserService); // Public pour être accessible par le template si besoin
+  public permissionService = inject(PermissionService);
   private roleService = inject(RoleService); // Injected here for use in ngOnInit
 
   // === Import / Export (DRY Pattern) ===

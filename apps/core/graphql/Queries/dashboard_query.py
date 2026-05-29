@@ -91,14 +91,17 @@ class DashboardQuery(graphene.ObjectType):
         ]
 
         # 8. Top Students
-        top_students_data = Grade.objects.filter(establishment_id=est_id).values(
+        top_students_data = Grade.objects.filter(
+            establishment_id=est_id,
+            student__isnull=False
+        ).values(
             'student__first_name', 'student__last_name', 'student__matricule'
-        ).annotate(avg=Avg('value')).order_by('-avg')[:5]
+        ).annotate(avg=Avg('value')).filter(avg__isnull=False).order_by('-avg')[:5]
         
         top_students = [
             StudentPerformanceType(
-                student_name=f"{item['student__first_name']} {item['student__last_name']}",
-                average_grade=round(item['avg'], 2),
+                student_name=f"{item['student__first_name'] or ''} {item['student__last_name'] or ''}".strip() or "Élève sans nom",
+                average_grade=round(item['avg'], 2) if item['avg'] is not None else 0.0,
                 matricule=item['student__matricule']
             ) for item in top_students_data
         ]

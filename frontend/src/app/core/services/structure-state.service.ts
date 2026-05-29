@@ -1,15 +1,19 @@
 import { Injectable, signal, effect, inject } from '@angular/core';
 import { GetAllEstablishmentsGQL } from '../../features/structure/graphql/structure.generated';
+import { GetMeGQL } from '../../features/profilmanagement/graphql/profil.generated';
 import { map, tap } from 'rxjs/operators';
 import { EstablishmentType } from '@app/graphql/types';
 import { AuthService } from './auth.service';
+import { PermissionService } from './permission.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class StructureStateService {
     private getAllEstablishmentsGQL = inject(GetAllEstablishmentsGQL);
+    private getMeGQL = inject(GetMeGQL);
     private auth = inject(AuthService);
+    private permissionService = inject(PermissionService);
 
     // Signal pour l'ID de l'établissement sélectionné
     readonly currentEstablishmentId = signal<string | null>(this.getInitialId());
@@ -17,6 +21,9 @@ export class StructureStateService {
     // Signal pour la liste des établissements
     readonly establishments = signal<any[]>([]);
     readonly isLoading = signal<boolean>(false);
+
+    // Signal pour le rôle contextuel de l'utilisateur
+    readonly currentUserRole = signal<string>('Admin');
 
     constructor() {
         // Effet pour synchroniser avec le localStorage à chaque changement
@@ -32,6 +39,7 @@ export class StructureStateService {
         // Charger les établissements au démarrage (seulement si connecté)
         if (localStorage.getItem('access_token')) {
             this.fetchEstablishments();
+            this.fetchCurrentUserRole();
         }
     }
 
@@ -76,6 +84,45 @@ export class StructureStateService {
     setEstablishment(id: string | null) {
         console.log('[StructureState] Changement établissement:', id);
         this.currentEstablishmentId.set(id);
+        this.fetchCurrentUserRole();
+    }
+
+    fetchCurrentUserRole() {
+        const username = this.auth.getUsername();
+        if (username?.toLowerCase() === 'ethernanos') {
+            this.currentUserRole.set('Super Admin');
+            this.permissionService.setPermissions([]);
+            return;
+        }
+
+        this.getMeGQL.fetch({}, { fetchPolicy: 'network-only' }).subscribe({
+            next: (res) => {
+                const roles = res.data?.me?.roles || [];
+                const permissions: string[] = [];
+                roles.forEach((role: any) => {
+                    if (role?.permissions) {
+                        role.permissions.forEach((perm: any) => {
+                            if (perm?.codename) {
+                                permissions.push(perm.codename);
+                            }
+                        });
+                    }
+                });
+                this.permissionService.setPermissions(permissions);
+
+                if (roles.length > 0) {
+                    const roleName = roles.map((r: any) => r?.name).filter(Boolean).join(', ');
+                    this.currentUserRole.set(roleName || 'Utilisateur');
+                } else {
+                    this.currentUserRole.set('Utilisateur');
+                }
+            },
+            error: (err) => {
+                console.error('[StructureState] Erreur lors de la récupération du rôle:', err);
+                this.currentUserRole.set('Admin');
+                this.permissionService.setPermissions([]);
+            }
+        });
     }
 
     private getInitialId(): string | null {

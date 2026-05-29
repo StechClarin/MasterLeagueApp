@@ -15,6 +15,10 @@ fragment UserFields on UserType {
   roles {
     id
     name
+    permissions {
+      id
+      codename
+    }
   }
 }
 
@@ -115,6 +119,12 @@ query GetRoleById($id: ID!) {
 query GetAllPermissions {
   permissions {
     ...PermissionFields
+  }
+}
+
+query GetMe {
+  me {
+    ...UserFields
   }
 }
 

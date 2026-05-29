@@ -5,6 +5,24 @@ from ..models import Student, StudentHealth, Guardian, Enrollment
 class StudentService(BaseService):
     model = Student
 
+    import_fields = [
+        'first_name',
+        'last_name',
+        'gender',
+        'date_of_birth',
+        'place_of_birth',
+        'address'
+    ]
+
+    import_field_labels = {
+        'first_name': 'Prénom',
+        'last_name': 'Nom',
+        'gender': 'Sexe (M/F)',
+        'date_of_birth': 'Date de naissance (AAAA-MM-JJ)',
+        'place_of_birth': 'Lieu de naissance',
+        'address': 'Adresse'
+    }
+
     def before_validate(self, data, instance=None):
         import json
         # Handle JSON strings from FormData (Angular Refactor)

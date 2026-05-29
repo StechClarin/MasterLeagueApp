@@ -3,7 +3,7 @@ import * as Types from '../../../graphql/types';
 import { gql } from 'apollo-angular';
 import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
-export type UserFieldsFragment = { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string } | null> | null };
+export type UserFieldsFragment = { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null };
 
 export type RoleFieldsFragment = { __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, name: string, codename: string } | null> | null };
 
@@ -19,14 +19,14 @@ export type GetAllUsersQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string } | null> | null } | null> | null } | null };
+export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null } | null> | null } | null };
 
 export type GetUserByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['Int']['input'];
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string } | null> | null } | null };
+export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null } | null };
 
 export type GetAllRolesQueryVariables = Types.Exact<{
   name?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -49,6 +49,11 @@ export type GetAllPermissionsQueryVariables = Types.Exact<{ [key: string]: never
 
 export type GetAllPermissionsQuery = { __typename?: 'Query', permissions?: Array<{ __typename?: 'PermissionType', id: any, name: string, codename: string, tag: string } | null> | null };
 
+export type GetMeQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type GetMeQuery = { __typename?: 'Query', me?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null } | null };
+
 export const UserFieldsFragmentDoc = gql`
     fragment UserFields on UserType {
   id
@@ -63,6 +68,10 @@ export const UserFieldsFragmentDoc = gql`
   roles {
     id
     name
+    permissions {
+      id
+      codename
+    }
   }
 }
     `;
@@ -187,6 +196,24 @@ export const GetAllPermissionsDocument = gql`
   })
   export class GetAllPermissionsGQL extends Apollo.Query<GetAllPermissionsQuery, GetAllPermissionsQueryVariables> {
     document = GetAllPermissionsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetMeDocument = gql`
+    query GetMe {
+  me {
+    ...UserFields
+  }
+}
+    ${UserFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetMeGQL extends Apollo.Query<GetMeQuery, GetMeQueryVariables> {
+    document = GetMeDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

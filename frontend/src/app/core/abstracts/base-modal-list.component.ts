@@ -10,7 +10,7 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> imp
 
     // État de la modale
     isModalOpen = signal(false);
-    modalMode = signal<'create' | 'edit' | 'detail' | 'delete'>('create');
+    modalMode = signal<'create' | 'edit' | 'detail' | 'delete' | 'clone'>('create');
     selectedItem = signal<T | null>(null);
 
     // État du menu d'actions (pour les listes qui ont un menu dropdown par ligne)
@@ -23,7 +23,7 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> imp
 
     // --- Modal Management ---
 
-    openModal(item: T | null = null, mode: 'create' | 'edit' | 'detail' | 'delete' = 'create') {
+    openModal(item: T | null = null, mode: 'create' | 'edit' | 'detail' | 'delete' | 'clone' = 'create') {
         this.logger.logAction(this.componentName, `Open Modal [${mode}]`, item);
         this.selectedItem.set(item);
         this.modalMode.set(mode);
@@ -44,6 +44,11 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> imp
         this.openModal(item, 'edit');
     }
 
+    onClone(item: T) {
+        this.logger.logAction(this.componentName, 'Click Clone', item);
+        this.openModal(item, 'clone');
+    }
+
     onDetails(item: T) {
         this.logger.logAction(this.componentName, 'Click Details', item);
         this.openModal(item, 'detail');
@@ -59,7 +64,7 @@ export abstract class BaseModalListComponent<T> extends BaseListComponent<T> imp
         this.closeModal();
         this.refresh();
         const mode = this.modalMode();
-        const action = mode === 'create' ? 'créé' : 'modifié';
+        const action = (mode === 'create' || mode === 'clone') ? 'créé' : 'modifié';
         this.logger.logAction(this.componentName, `Save Success [${mode}]`);
         this.toastService.success(`Élément ${action} avec succès`);
     }

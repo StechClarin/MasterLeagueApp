@@ -5,7 +5,7 @@ class RoleService(BaseService):
     model = Role
 
     # Les méthodes create, update, delete sont gérées par BaseService
-    def save_process(self, data, instance=None):
+    def save_process(self, data, instance=None) -> tuple[Role, bool]:
         """
         Surcharge pour gérer les permissions (ManyToMany).
         """
@@ -19,5 +19,9 @@ class RoleService(BaseService):
         if permissions is not None:
             # On remplace tout par la nouvelle liste
             role.permissions.set(permissions)
+            
+            # [CRITICAL] Une fois personnalisé, le rôle ne doit plus hériter de permissions
+            # indirectes via ses groupes (sinon les permissions retirées restent actives).
+            role.groups.clear()
             
         return role, created

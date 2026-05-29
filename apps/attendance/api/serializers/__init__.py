@@ -1,2 +1,0 @@
-
-from .attendance_session_serializer import AttendanceSessionSerializer

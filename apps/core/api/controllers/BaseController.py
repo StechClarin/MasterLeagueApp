@@ -215,21 +215,21 @@ class BaseController(APIView):
         # On utilise .copy() pour éviter de modifier la request.data immuable
         raw_data = request.data.copy() if hasattr(request.data, 'copy') else request.data
         
-        prepared_data = self.service.before_validate(raw_data, instance)
-
-        # [CRITICAL UPDATE] Expose raw payload to service for nested custom saves (after_save logic)
-        self.service.initial_data = prepared_data
-
-        # 2. VALIDATION (Serializer)
-        # On valide les données préparées
-        serializer = self.get_serializer_instance(instance, data=prepared_data, partial=bool(instance))
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        validated_data = serializer.validated_data
-
-        # 3. EXÉCUTION (Service)
         try:
+            prepared_data = self.service.before_validate(raw_data, instance)
+
+            # [CRITICAL UPDATE] Expose raw payload to service for nested custom saves (after_save logic)
+            self.service.initial_data = prepared_data
+
+            # 2. VALIDATION (Serializer)
+            # On valide les données préparées
+            serializer = self.get_serializer_instance(instance, data=prepared_data, partial=bool(instance))
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            validated_data = serializer.validated_data
+
+            # 3. EXÉCUTION (Service)
             # pyrefly: ignore [bad-context-manager]
             with atomic():
                 # On délègue tout au service (qui gère create vs update et les hooks)

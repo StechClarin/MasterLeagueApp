@@ -1,7 +1,7 @@
 from .settings_base import *
 
 # --- CONFIGURATION DÉVELOPPEMENT NAVIGATEUR (v7.1) ---
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=True)
 
 # --- SYNCHRONISATION DES CHEMINS (v22.1) ---
 # Si un préfixe d'application est détecté (ex: /schoolmanage/test/), on force Django à l'utiliser

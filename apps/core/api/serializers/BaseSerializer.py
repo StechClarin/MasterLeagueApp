@@ -11,12 +11,21 @@ class SmartRelatedField(serializers.PrimaryKeyRelatedField):
         # Par défaut, on veut lire l'ID en entrée
         super().__init__(**kwargs)
 
-    def use_pk_only_optimization(self):
+    def use_pk_only_optimization(self):  # type: ignore
         return False
 
     def to_representation(self, value):
         # C'est ici la magie : au lieu de renvoyer l'ID, on renvoie le __str__ de l'objet
         return str(value)
+class CurrentEstablishmentDefault:
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        request = serializer_field.context.get('request')
+        if request and hasattr(request, 'establishment_id') and request.establishment_id:
+            return request.establishment_id
+        return None
+
 class BaseSerializer(serializers.ModelSerializer):
     """
     Serializer de base.
@@ -28,20 +37,26 @@ class BaseSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Injection automatique : 'establishment' est géré par le backend
-        if 'establishment' in self.fields:
-            self.fields['establishment'].required = False
-            self.fields['establishment'].allow_null = True
+        fields = getattr(self, 'fields')
+        if 'establishment' in fields:
+            fields['establishment'].required = False
+            fields['establishment'].allow_null = True
+            fields['establishment'].default = CurrentEstablishmentDefault()
 
     def create(self, validated_data):
         """
         Surcharge de create pour injecter automatiquement l'établissement
         si le modèle est 'EstablishmentAware' et que l'ID est dans la request.
         """
-        model_class = self.Meta.model
+        model_class = getattr(self.Meta, 'model', None)
         request = self.context.get('request')
 
+        # Gérer le cas où CurrentEstablishmentDefault a injecté l'ID sous forme de string/UUID
+        if 'establishment' in validated_data and not hasattr(validated_data['establishment'], '_meta'):
+            validated_data['establishment_id'] = validated_data.pop('establishment')
+
         # Si le modèle a un champ 'establishment' et qu'il n'est pas déjà fourni
-        if hasattr(model_class, 'establishment') and 'establishment' not in validated_data:
+        if hasattr(model_class, 'establishment') and 'establishment' not in validated_data and 'establishment_id' not in validated_data:
             if request and hasattr(request, 'establishment_id') and request.establishment_id:
                 validated_data['establishment_id'] = request.establishment_id
             else:

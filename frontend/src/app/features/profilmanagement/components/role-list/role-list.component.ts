@@ -12,11 +12,14 @@ import { UiPaginationComponent } from '@shared/components/ui-pagination/ui-pagin
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { RoleFormComponent } from '../role-form/role-form.component';
 import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component'; // Assuming UiModalComponent is needed and imported somewhere else, or it's a typo in the original imports. I'll keep it as it was in the original imports.
+import { HasPermissionDirective } from '@core/guards/has-permission.directive';
+
+import { PermissionService } from '@core/services/permission.service';
 
 @Component({
     selector: 'app-role-list',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, UiPaginationComponent, UiDropdownComponent, UiModalComponent, RoleFormComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiConfirmModalComponent, UiTableComponent],
+    imports: [CommonModule, ReactiveFormsModule, UiPaginationComponent, UiDropdownComponent, UiModalComponent, RoleFormComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiConfirmModalComponent, UiTableComponent, HasPermissionDirective],
     templateUrl: './role-list.component.html'
 })
 export class RoleListComponent extends BaseModalListComponent<any> implements OnInit, AfterViewInit {
@@ -25,6 +28,7 @@ export class RoleListComponent extends BaseModalListComponent<any> implements On
     responseKey = 'roles';
 
     public service = inject(RoleService);
+    public permissionService = inject(PermissionService);
 
     searchControl = new FormControl('');
 

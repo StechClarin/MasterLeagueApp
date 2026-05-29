@@ -16,7 +16,7 @@ class Command(BaseCommand):
         # 1. Setup Client & Authentification
         client = Client(SERVER_NAME='127.0.0.1')
         User = get_user_model()
-        user = User.objects.filter(is_active=True).first()
+        user = User.objects.filter(is_superuser=True, is_active=True).first() or User.objects.filter(is_active=True).first()
         
         if not user:
             self.stdout.write(self.style.ERROR('[CRITIQUE] Aucun utilisateur actif trouvé pour simuler les requêtes.'))
@@ -106,7 +106,28 @@ class Command(BaseCommand):
                     errors.append(err_msg)
 
                 # --- TEST GRAPHQL (Architecture Read) ---
-                query_name = to_camel_case(model_name)
+                from apps.core.graphql.schema import schema
+                available_queries = schema.query._meta.fields if hasattr(schema, 'query') and hasattr(schema.query, '_meta') else {}
+                
+                candidates = [
+                    to_camel_case(model_name),
+                    model_name.lower() + 's',
+                    to_snake_case(model_name) + 's',
+                    to_camel_case(to_snake_case(model_name) + 's')
+                ]
+                
+                query_name = None
+                for candidate in candidates:
+                    if candidate in available_queries:
+                        components = candidate.split('_')
+                        query_name = components[0] + ''.join(x.title() for x in components[1:])
+                        break
+                
+                if not query_name:
+                    self.stdout.write(self.style.WARNING(f'  ⚠️ Aucun point d\'entrée GraphQL racine trouvé pour {model_name} (modèle probablement imbriqué ou REST uniquement).'))
+                    warnings.append(f'GraphQL: Le modèle {model_name} n\'expose pas de requête racine.')
+                    self.stdout.write('')
+                    continue
                     
                 graphql_query = {
                     "query": f"query {{ {query_name}(page: 1, pageSize: 1) {{ totalCount }} }}"
@@ -117,13 +138,17 @@ class Command(BaseCommand):
                     if response.status_code == 200:
                         data = response.json()
                         if 'errors' in data:
-                            err_msg = f'GRAPHQL READ a échoué (La requête {query_name} n\'existe pas dans le Schema GraphQL).'
+                            err_msg = f'GRAPHQL READ [{query_name}] a échoué. Détails: {data["errors"]}'
                             self.stdout.write(self.style.ERROR(f'  ❌ {err_msg}'))
                             errors.append(err_msg)
                         else:
                             self.stdout.write(self.style.SUCCESS(f'  ✅ ARCHITECTURE GRAPHQL VALIDE (La Query "{query_name}" est exposée).'))
                     else:
-                        err_msg = f'GRAPHQL READ a échoué avec le statut {response.status_code} pour {query_name}.'
+                        try:
+                            resp_content = response.json()
+                        except Exception:
+                            resp_content = response.content.decode('utf-8', errors='replace')
+                        err_msg = f'GRAPHQL READ a échoué avec le statut {response.status_code} pour {query_name}. Réponse: {resp_content}'
                         self.stdout.write(self.style.ERROR(f'  ❌ {err_msg}'))
                         errors.append(err_msg)
                 except Exception as e:

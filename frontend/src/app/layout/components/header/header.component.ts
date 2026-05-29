@@ -172,7 +172,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   get userRole(): string {
-    return this.username.toLowerCase() === 'ethernanos' ? 'Super Admin' : 'Admin';
+    return this.structureState.currentUserRole();
   }
 
   get avatarUrl(): string {

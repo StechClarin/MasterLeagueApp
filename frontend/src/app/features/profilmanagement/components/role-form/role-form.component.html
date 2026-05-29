@@ -3,7 +3,7 @@
     [formGroup]="form"
     [submitLabel]="isEditMode ? 'Modifier' : 'Créer'"
     description="Configurez les accès et permissions système."
-    (submitForm)="save()"
+    (submitForm)="onSubmit()"
     (cancel)="cancel.emit()">
 
     <!-- Nom du Rôle -->

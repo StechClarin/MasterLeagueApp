@@ -95,11 +95,44 @@ class PaymentService(BaseService):
         total_paid = sum(i.paid_amount for i in invoices)
         remaining = total_due - total_paid
         
+        breakdown = []
+        categories = {}
+        for i in invoices:
+            cat_label = i.get_category_display() if hasattr(i, 'get_category_display') else i.category
+            if cat_label not in categories:
+                categories[cat_label] = {'due': 0, 'paid': 0, 'remaining': 0}
+            categories[cat_label]['due'] += i.total_amount
+            categories[cat_label]['paid'] += i.paid_amount
+            categories[cat_label]['remaining'] += (i.total_amount - i.paid_amount)
+            
+        for label, data in categories.items():
+            breakdown.append({
+                'label': label,
+                'due': data['due'],
+                'paid': data['paid'],
+                'remaining': data['remaining']
+            })
+
+        from apps.finance.models import Payment
+        payments = Payment.objects.filter(invoice__in=invoices).select_related('invoice').order_by('payment_date')
+        history = []
+        for p in payments:
+            cat_label = p.invoice.get_category_display() if hasattr(p.invoice, 'get_category_display') else p.invoice.category
+            history.append({
+                'date': p.payment_date.isoformat() if p.payment_date else None,
+                'reference': p.reference,
+                'category': cat_label,
+                'method': p.get_payment_method_display() if hasattr(p, 'get_payment_method_display') else p.payment_method,
+                'amount': p.amount
+            })
+        
         return {
             'total_due': total_due,
             'total_paid': total_paid,
             'remaining_total': remaining,
-            'invoices_count': invoices.count()
+            'invoices_count': invoices.count(),
+            'breakdown': breakdown,
+            'history': history
         }
 
     def get_payment_history_for_invoice(self, invoice_id):

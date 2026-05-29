@@ -3,7 +3,7 @@ from graphene_django.types import DjangoObjectType
 from ...models import EvaluationSubject
 
 class LevelCoefficientType(graphene.ObjectType):
-    level_id = graphene.Int()
+    level_id = graphene.ID()
     coefficient = graphene.Decimal()
 
 class EvaluationSubjectType(DjangoObjectType):

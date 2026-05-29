@@ -31,7 +31,7 @@ export class RoleFormComponent extends BaseFormComponent implements OnInit, OnCh
     permissionGroups: { tag: string, permissions: any[] }[] = [];
 
     // Liste plate des permissions cochées
-    selectedPermissions: number[] = [];
+    selectedPermissions: string[] = [];
 
     constructor() {
         super();
@@ -139,7 +139,7 @@ export class RoleFormComponent extends BaseFormComponent implements OnInit, OnCh
 
     // loadRole removed as we use Input now
 
-    togglePermission(permId: number, event: any) {
+    togglePermission(permId: string, event: any) {
         const checked = event.target.checked;
         if (checked) {
             this.selectedPermissions.push(permId);
@@ -148,8 +148,12 @@ export class RoleFormComponent extends BaseFormComponent implements OnInit, OnCh
         }
     }
 
-    isPermissionSelected(permId: number): boolean {
+    isPermissionSelected(permId: string): boolean {
         return this.selectedPermissions.includes(permId);
+    }
+
+    onSubmit() {
+        super.submit();
     }
 
     save(): Observable<any> {

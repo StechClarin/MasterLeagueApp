@@ -97,6 +97,7 @@ fragment PaymentFields on PaymentType {
       }
     }
     student {
+      id
       firstName
       lastName
       matricule

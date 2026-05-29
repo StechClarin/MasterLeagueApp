@@ -262,70 +262,95 @@ class FinanceService(BaseService):
                 'opt_remaining_global': opt_remaining_global
             })
 
-        # Agrégation globale par classe si aucune classe spécifique n'a été demandée
         is_global = not classroom_id
-        if is_global:
-            grouped = {}
-            for item in report_data:
-                cid = item['student']['classroom_id']
-                if cid not in grouped:
-                    grouped[cid] = {
-                        'is_global_row': True,
-                        'classroom_name': item['student']['classroom_name'],
-                        'total_expected_global': 0, 'total_paid_global': 0,
-                        'expected_period': 0, 'paid_period': 0,
-                        'due_balance': 0, 'remaining_global': 0,
-                        'opt_expected_period': 0, 'opt_paid_period': 0,
-                        'opt_due_balance': 0, 'opt_total_expected_global': 0,
-                        'opt_total_paid_global': 0, 'opt_remaining_global': 0
+
+        # Group items by classroom
+        classrooms_dict = {}
+        for item in report_data:
+            cid = item['student']['classroom_id']
+            cname = item['student']['classroom_name']
+            if cid not in classrooms_dict:
+                classrooms_dict[cid] = {
+                    'classroom_id': cid,
+                    'classroom_name': cname,
+                    'items': [],
+                    'totals': {
+                        'total_expected_global': 0.0,
+                        'total_paid_global': 0.0,
+                        'total_expected_period': 0.0,
+                        'total_paid_period': 0.0,
+                        'total_remaining_period': 0.0,
+                        'total_remaining_global': 0.0,
+                        
+                        'opt_total_expected_global': 0.0,
+                        'opt_total_paid_global': 0.0,
+                        'opt_total_expected_period': 0.0,
+                        'opt_total_paid_period': 0.0,
+                        'opt_total_remaining_period': 0.0,
+                        'opt_total_remaining_global': 0.0,
                     }
-                g = grouped[cid]
-                g['total_expected_global'] += item['total_expected_global']
-                g['total_paid_global'] += item['total_paid_global']
-                g['expected_period'] += item['expected_period']
-                g['paid_period'] += item['paid_period']
-                g['due_balance'] += item['due_balance']
-                g['remaining_global'] += item['remaining_global']
-                
-                g['opt_expected_period'] += item['opt_expected_period']
-                g['opt_paid_period'] += item['opt_paid_period']
-                g['opt_due_balance'] += item['opt_due_balance']
-                g['opt_total_expected_global'] += item['opt_total_expected_global']
-                g['opt_total_paid_global'] += item['opt_total_paid_global']
-                g['opt_remaining_global'] += item['opt_remaining_global']
+                }
             
-            for g in grouped.values():
-                g['is_up_to_date'] = (g['due_balance'] <= 0)
+            c = classrooms_dict[cid]
+            c['items'].append(item)
             
-            report_data = sorted(grouped.values(), key=lambda x: x['classroom_name'])
+            # Accumulate totals
+            c['totals']['total_expected_global'] += float(item['total_expected_global'])
+            c['totals']['total_paid_global'] += float(item['total_paid_global'])
+            c['totals']['total_expected_period'] += float(item['expected_period'])
+            c['totals']['total_paid_period'] += float(item['paid_period'])
+            c['totals']['total_remaining_period'] += float(item['due_balance'])
+            c['totals']['total_remaining_global'] += float(item['remaining_global'])
+            
+            c['totals']['opt_total_expected_global'] += float(item['opt_total_expected_global'])
+            c['totals']['opt_total_paid_global'] += float(item['opt_total_paid_global'])
+            c['totals']['opt_total_expected_period'] += float(item['opt_expected_period'])
+            c['totals']['opt_total_paid_period'] += float(item['opt_paid_period'])
+            c['totals']['opt_total_remaining_period'] += float(item['opt_due_balance'])
+            c['totals']['opt_total_remaining_global'] += float(item['opt_remaining_global'])
 
-        # Totals calculation
-        total_exp_global = sum(item['total_expected_global'] for item in report_data)
-        total_pd_global = sum(item['total_paid_global'] for item in report_data)
-        total_exp_period = sum(item['expected_period'] for item in report_data)
-        total_pd_period = sum(item['paid_period'] for item in report_data)
-        total_rem_period = sum(item['due_balance'] for item in report_data)
-        total_rem_global = sum(item['remaining_global'] for item in report_data)
+        # Calculate recovery rates for each classroom
+        for c in classrooms_dict.values():
+            exp_period = c['totals']['total_expected_period']
+            paid_period = c['totals']['total_paid_period']
+            c['totals']['recovery_rate'] = round((paid_period / exp_period * 100) if exp_period > 0 else 100.0, 2)
+            if c['totals']['recovery_rate'] > 100.0: c['totals']['recovery_rate'] = 100.0
+            
+            opt_exp_period = c['totals']['opt_total_expected_period']
+            opt_paid_period = c['totals']['opt_total_paid_period']
+            c['totals']['opt_recovery_rate'] = round((opt_paid_period / opt_exp_period * 100) if opt_exp_period > 0 else 100.0, 2)
+            if c['totals']['opt_recovery_rate'] > 100.0: c['totals']['opt_recovery_rate'] = 100.0
 
-        opt_total_exp_period = sum(item['opt_expected_period'] for item in report_data)
-        opt_total_pd_period = sum(item['opt_paid_period'] for item in report_data)
-        opt_total_rem_period = sum(item['opt_due_balance'] for item in report_data)
-        opt_total_exp_global = sum(item['opt_total_expected_global'] for item in report_data)
-        opt_total_pd_global = sum(item['opt_total_paid_global'] for item in report_data)
-        opt_total_rem_global = sum(item['opt_remaining_global'] for item in report_data)
+        # Sort classrooms by name
+        classrooms_list = sorted(classrooms_dict.values(), key=lambda x: x['classroom_name'])
 
-        recovery_rate = (total_pd_period / total_exp_period * 100) if total_exp_period > 0 else 100
-        if recovery_rate > 100: recovery_rate = 100
+        # Global totals
+        total_exp_global = sum(c['totals']['total_expected_global'] for c in classrooms_list)
+        total_pd_global = sum(c['totals']['total_paid_global'] for c in classrooms_list)
+        total_exp_period = sum(c['totals']['total_expected_period'] for c in classrooms_list)
+        total_pd_period = sum(c['totals']['total_paid_period'] for c in classrooms_list)
+        total_rem_period = sum(c['totals']['total_remaining_period'] for c in classrooms_list)
+        total_rem_global = sum(c['totals']['total_remaining_global'] for c in classrooms_list)
         
-        opt_recovery_rate = (opt_total_pd_period / opt_total_exp_period * 100) if opt_total_exp_period > 0 else 100
-        if opt_recovery_rate > 100: opt_recovery_rate = 100
+        opt_total_exp_global = sum(c['totals']['opt_total_expected_global'] for c in classrooms_list)
+        opt_total_pd_global = sum(c['totals']['opt_total_paid_global'] for c in classrooms_list)
+        opt_total_exp_period = sum(c['totals']['opt_total_expected_period'] for c in classrooms_list)
+        opt_total_pd_period = sum(c['totals']['opt_total_paid_period'] for c in classrooms_list)
+        opt_total_rem_period = sum(c['totals']['opt_total_remaining_period'] for c in classrooms_list)
+        opt_total_rem_global = sum(c['totals']['opt_total_remaining_global'] for c in classrooms_list)
+        
+        recovery_rate = (total_pd_period / total_exp_period * 100) if total_exp_period > 0 else 100.0
+        if recovery_rate > 100.0: recovery_rate = 100.0
+        
+        opt_recovery_rate = (opt_total_pd_period / opt_total_exp_period * 100) if opt_total_exp_period > 0 else 100.0
+        if opt_recovery_rate > 100.0: opt_recovery_rate = 100.0
 
         return {
             'start_date': start_date.strftime('%d/%m/%Y'),
             'end_date': end_date.strftime('%d/%m/%Y'),
             'classroom_name': 'Toutes les classes' if is_global else (enrollments.first().classroom.name if enrollments.exists() else 'N/A'),
             'is_global': is_global,
-            'items': report_data,
+            'classrooms': classrooms_list,
             'totals': {
                 'total_expected_global': float(total_exp_global),
                 'total_paid_global': float(total_pd_global),

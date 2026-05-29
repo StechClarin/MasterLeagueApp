@@ -741,7 +741,7 @@ export type InvoiceTypePaginated = {
 export type LevelCoefficientType = {
   __typename?: 'LevelCoefficientType';
   coefficient?: Maybe<Scalars['Decimal']['output']>;
-  levelId?: Maybe<Scalars['Int']['output']>;
+  levelId?: Maybe<Scalars['ID']['output']>;
 };
 
 export type LevelSubjectType = {
@@ -1035,6 +1035,7 @@ export type Query = {
   invoices?: Maybe<InvoiceTypePaginated>;
   level?: Maybe<LevelType>;
   levels?: Maybe<LevelTypePaginated>;
+  me?: Maybe<UserType>;
   membership?: Maybe<EstablishmentMembershipType>;
   memberships?: Maybe<EstablishmentMembershipTypePaginated>;
   modules?: Maybe<Array<Maybe<ModuleType>>>;

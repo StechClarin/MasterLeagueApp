@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl, FormBuilder } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BaseModalListComponent } from '@core/abstracts/base-modal-list.component';
+import { AppRoutes } from '@core/routing/routes.enum';
 import { EvaluationService } from '../../services/evaluation.service';
 import { EvaluationSessionFieldsFragment } from '../../graphql/evaluations.generated';
 import { EvaluationFormComponent } from '../evaluation-form/evaluation-form.component';
@@ -175,8 +176,7 @@ export class EvaluationListComponent extends BaseModalListComponent<EvaluationSe
     }
 
     goToGrades(item: EvaluationSessionFieldsFragment) {
-        // Sessions have multiple subjects now.
-        console.log('Go to grades for session:', item.id);
+        this.router.navigate([AppRoutes.NOTES_AND_BULLETINS, item.id]);
     }
 
     getSubjectCount(item: any): number {
