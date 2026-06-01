@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.apps import apps
 from apps.documents.utils import document_upload_path
-from apps.evaluations.models.evaluation_subject import generate_subject_filename
+from apps.documents.utils import document_upload_path
 
 class Command(BaseCommand):
     help = "Migrate existing media files to the multi-tenant folder structure (<hub_id>/<est_id>/...)"
@@ -16,15 +16,25 @@ class Command(BaseCommand):
 
         self.stdout.write(style_notice("--- Starting Media Migration to Multi-Tenant Structure ---"))
         
-        # Définition des champs fichiers à inspecter par modèle
-        # Format: 'app_label.ModelName': [('field_name', path_generator_function)]
+        # Définition dynamique des champs fichiers à inspecter par modèle
         target_models = {
-            'students.Student': [('photo', document_upload_path)],
             'documents.Document': [('file', document_upload_path)],
-            'evaluations.EvaluationSubject': [('subject_file', generate_subject_filename)],
             'profilmanagement.User': [('photo', document_upload_path)],
             'core.Establishment': [('logo', document_upload_path), ('print_header', document_upload_path)],
         }
+
+        # Imports conditionnels pour éviter des crashs de modules non installés
+        try:
+            from apps.evaluations.models.evaluation_subject import generate_subject_filename
+            target_models['evaluations.EvaluationSubject'] = [('subject_file', generate_subject_filename)]
+        except ImportError:
+            self.stdout.write("ℹ️ Module evaluations non trouvé. Skipping.")
+
+        try:
+            apps.get_model('students.Student')
+            target_models['students.Student'] = [('photo', document_upload_path)]
+        except LookupError:
+            pass
         
         media_root: str = str(settings.MEDIA_ROOT)
         total_moved = 0

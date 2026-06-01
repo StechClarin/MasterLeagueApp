@@ -85,6 +85,16 @@ case "$COMMAND" in
         exec $PYTHON_EXEC manage.py runserver 0.0.0.0:${APP_PORT}
         ;;
 
+    config)
+        if [ "$2" = "server" ]; then
+            shift 2
+            exec "$0" config-server "$@"
+        else
+            echo "Usage: ./snake config server"
+            exit 1
+        fi
+        ;;
+
     config-server)
         echo "--- Configuration du serveur (automigrate) ---"
         $PYTHON_EXEC manage.py craft automigrate
