@@ -1,8 +1,0 @@
---- Modules and Pages ---
-Module: Admin (Order: 1)
-  - Page: user | Link: /users
-  - Page: Role | Link: /roles
-
---- All Pages ---
-Page: user | Link: /users | Module: Admin
-Page: Role | Link: /roles | Module: Admin
