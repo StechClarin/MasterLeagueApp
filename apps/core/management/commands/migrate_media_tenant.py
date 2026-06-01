@@ -23,11 +23,13 @@ class Command(BaseCommand):
             'core.Establishment': [('logo', document_upload_path), ('print_header', document_upload_path)],
         }
 
-        # Imports conditionnels pour éviter des crashs de modules non installés
+        # Imports conditionnels via importlib pour satisfaire le linter statique (ex: Pyright)
         try:
-            from apps.evaluations.models.evaluation_subject import generate_subject_filename
+            import importlib
+            eval_subject_mod = importlib.import_module('apps.evaluations.models.evaluation_subject')
+            generate_subject_filename = eval_subject_mod.generate_subject_filename
             target_models['evaluations.EvaluationSubject'] = [('subject_file', generate_subject_filename)]
-        except ImportError:
+        except (ImportError, ModuleNotFoundError):
             self.stdout.write("ℹ️ Module evaluations non trouvé. Skipping.")
 
         try:
