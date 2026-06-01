@@ -51,7 +51,7 @@ def main():
     manifest['name'] = app_name
     manifest['port'] = port
     manifest['version'] = "1.0.0"
-    manifest['exec_command'] = "./hub_start.sh"
+    manifest['exec_command'] = "./snake start"
 
     with open(manifest_path, 'w', encoding='utf-8') as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
@@ -342,7 +342,7 @@ export const routes: Routes = [
     print("Prochaines étapes conseillées :")
     print("1. Créez votre branche git pour l'application.")
     print("2. Exécutez 'python manage.py makemigrations' et 'python manage.py migrate'.")
-    print("3. Lancez le serveur local : './hub_start.sh' ou 'python manage.py runserver'.")
+    print("3. Lancez le serveur local : './snake start' ou './snake run'.")
     print("=" * 60 + "\n")
 
 if __name__ == '__main__':

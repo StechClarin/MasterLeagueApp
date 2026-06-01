@@ -47,6 +47,44 @@ case "$COMMAND" in
         $PYTHON_EXEC manage.py runserver 0.0.0.0:8000
         ;;
 
+    start)
+        echo "--- Lancement depuis Ethernanos Hub ---"
+        # Force UTF-8 encoding for Python to avoid migration decoding errors
+        export PYTHONIOENCODING=utf-8
+        export PYTHONDEFAULTENCODING=utf-8
+
+        # Décale "start" pour traiter les arguments restants
+        shift
+        
+        while [[ $# -gt 0 ]]; do
+          case $1 in
+            --db-host) export DB_HOST="$2"; shift 2 ;;
+            --db-port) export DB_PORT="$2"; shift 2 ;;
+            --db-name) export DB_NAME="$2"; shift 2 ;;
+            --db-user) export DB_USER="$2"; shift 2 ;;
+            --db-pass) export DB_PASS="$2"; shift 2 ;;
+            --tenant-id) export TENANT_ID="$2"; shift 2 ;;
+            --app-port) export APP_PORT="$2"; shift 2 ;;
+            --admin-pass) export ADMIN_DEFAULT_PASSWORD="$2"; shift 2 ;;
+            *) shift ;;
+          esac
+        done
+
+        # Reconstruire DATABASE_URL pour django-environ
+        if [ -n "$DB_USER" ] && [ -n "$DB_PASS" ] && [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ] && [ -n "$DB_NAME" ]; then
+            export DATABASE_URL="postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+        fi
+        
+        export DEBUG=False
+        export APP_PORT=${APP_PORT:-8000}
+
+        echo "🚀 Initialisation de la base de données..."
+        $PYTHON_EXEC manage.py ether_setup --admin-pass "${ADMIN_DEFAULT_PASSWORD:-admin1234}"
+
+        echo "🎯 Lancement sur le port ${APP_PORT}..."
+        exec $PYTHON_EXEC manage.py runserver 0.0.0.0:${APP_PORT}
+        ;;
+
     config-server)
         echo "--- Configuration du serveur (automigrate) ---"
         $PYTHON_EXEC manage.py craft automigrate
@@ -58,6 +96,7 @@ case "$COMMAND" in
         echo "  \033[36minstall\033[0m        Installe les dépendances (requirements.txt)"
         echo "  \033[36mrun\033[0m            Lance le serveur de développement (Local)"
         echo "  \033[36mremote\033[0m         Lance le serveur sur le réseau (Public)"
+        echo "  \033[36mstart\033[0m          Lance l'application depuis le Ethernanos Hub"
         echo "  \033[36mconfig-server\033[0m  Configure le serveur (automigrate)"
         echo ""
         echo "Toute autre commande (ex: 'craft ...', 'migrate', 'createsuperuser') est passée à manage.py."
