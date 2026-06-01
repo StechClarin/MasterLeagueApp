@@ -1,5 +1,6 @@
 import os
 import django
+from django.core.exceptions import ObjectDoesNotExist
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
@@ -12,7 +13,7 @@ def get_token():
         user = User.objects.get(username="ethernanos")
         refresh = RefreshToken.for_user(user)
         print(str(refresh.access_token))
-    except User.DoesNotExist:
+    except ObjectDoesNotExist:
         print("User ethernanos not found")
     except Exception as e:
         print(f"Error: {e}")
