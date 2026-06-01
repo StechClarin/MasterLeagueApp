@@ -5,6 +5,31 @@ import environ
 from datetime import timedelta
 from corsheaders.defaults import default_headers
 
+# --- CRITICAL: Wrapper to prevent Errno 5 Input/output error on detached stdout/stderr ---
+class SafeStream:
+    def __init__(self, original_stream):
+        self.original_stream = original_stream
+
+    def write(self, data):
+        try:
+            if self.original_stream:
+                self.original_stream.write(data)
+        except Exception:
+            pass
+
+    def flush(self):
+        try:
+            if self.original_stream:
+                self.original_stream.flush()
+        except Exception:
+            pass
+
+    def __getattr__(self, attr):
+        return getattr(self.original_stream, attr)
+
+sys.stdout = SafeStream(sys.stdout)
+sys.stderr = SafeStream(sys.stderr)
+
 # --- CRITICAL: Enforce UTF-8 encoding globally ---
 os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
 os.environ.setdefault('PYTHONDEFAULTENCODING', 'utf-8')
@@ -12,10 +37,10 @@ os.environ.setdefault('PYTHONDEFAULTENCODING', 'utf-8')
 # Ensure sys.stdout/stderr use UTF-8
 if sys.version_info >= (3, 7):
     try:
-        if hasattr(sys.stdout, 'reconfigure'):
-            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-        if hasattr(sys.stderr, 'reconfigure'):
-            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+        if sys.stdout.original_stream and hasattr(sys.stdout.original_stream, 'reconfigure'):
+            sys.stdout.original_stream.reconfigure(encoding='utf-8', errors='replace')
+        if sys.stderr.original_stream and hasattr(sys.stderr.original_stream, 'reconfigure'):
+            sys.stderr.original_stream.reconfigure(encoding='utf-8', errors='replace')
     except Exception:
         pass
 
@@ -72,13 +97,7 @@ INSTALLED_APPS = [
 
     'apps.core.apps.CoreConfig',
     'apps.profilmanagement.apps.ProfilmanagementConfig',
-    'apps.structure.apps.StructureConfig',   
-    'apps.students.apps.StudentsConfig',
-    'apps.hr.apps.HrConfig',
-    'apps.pedagogy.apps.PedagogyConfig',
     'apps.documents.apps.DocumentsConfig',
-    'apps.evaluations.apps.EvaluationsConfig',
-    'apps.finance.apps.FinanceConfig',
 
     'rest_framework',
     'rest_framework_simplejwt',
