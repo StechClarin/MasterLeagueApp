@@ -1,6 +1,5 @@
 import { Injectable, signal, effect, inject } from '@angular/core';
-import { GetAllEstablishmentsGQL } from '../../features/structure/graphql/structure.generated';
-import { GetMeGQL } from '../../features/profilmanagement/graphql/profil.generated';
+import { GetAllEstablishmentsGQL, GetMeGQL } from '../../features/profilmanagement/graphql/profil.generated';
 import { map, tap } from 'rxjs/operators';
 import { EstablishmentType } from '@app/graphql/types';
 import { AuthService } from './auth.service';

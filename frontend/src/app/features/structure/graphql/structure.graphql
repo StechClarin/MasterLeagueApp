@@ -2,36 +2,6 @@
 # FRAGMENTS
 # ==============================================================================
 
-fragment EstablishmentFields on EstablishmentType {
-  id
-  name
-  # code aliased/used if needed, but keeping simple
-  phone
-  email
-  address
-  logo
-  isActive
-  
-  # Identity & Legal
-  slogan
-  website
-  taxId
-  
-  # Location (Hard-coded to default in Back but good to have)
-  city
-  country
-  
-  # Branding
-  printHeader
-  printFooter
-  
-  # Owner
-  user {
-    id
-    username
-  }
-}
-
 fragment AcademicYearFields on AcademicYearType {
   id
   name
@@ -178,23 +148,6 @@ fragment StructureResponse on StructureResponseType {
 # QUERIES (Read-Only for now)
 #Matches backend: academicyears -> [AcademicYearType]
 # ==============================================================================
-
-query GetAllEstablishments($search: String, $city: String, $phone: String, $userId: ID, $isActive: Boolean, $page: Int, $pageSize: Int) {
-  establishments(search: $search, city: $city, phone: $phone, userId: $userId, isActive: $isActive, page: $page, pageSize: $pageSize) {
-    items {
-      ...EstablishmentFields
-    }
-    totalCount
-    numPages
-    currentPage
-  }
-}
-
-query GetEstablishmentById($id: ID!) {
-  establishment(id: $id) {
-    ...EstablishmentFields
-  }
-}
 
 query GetAllAcademicYears($search: String, $isActive: Boolean, $isArchived: Boolean, $page: Int, $pageSize: Int) {
   academicyears(search: $search, isActive: $isActive, isArchived: $isArchived, page: $page, pageSize: $pageSize) {

@@ -128,5 +128,47 @@ query GetMe {
   }
 }
 
+# ==============================================================================
+# ESTABLISHMENT QUERIES
+# ==============================================================================
+
+fragment EstablishmentFields on EstablishmentType {
+  id
+  name
+  phone
+  email
+  address
+  logo
+  isActive
+  slogan
+  website
+  taxId
+  city
+  country
+  printHeader
+  printFooter
+  user {
+    id
+    username
+  }
+}
+
+query GetAllEstablishments($search: String, $city: String, $phone: String, $userId: ID, $isActive: Boolean, $page: Int, $pageSize: Int) {
+  establishments(search: $search, city: $city, phone: $phone, userId: $userId, isActive: $isActive, page: $page, pageSize: $pageSize) {
+    items {
+      ...EstablishmentFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetEstablishmentById($id: ID!) {
+  establishment(id: $id) {
+    ...EstablishmentFields
+  }
+}
+
 
 

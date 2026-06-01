@@ -54,6 +54,28 @@ export type GetMeQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 export type GetMeQuery = { __typename?: 'Query', me?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null } | null };
 
+export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null };
+
+export type GetAllEstablishmentsQueryVariables = Types.Exact<{
+  search?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  city?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  phone?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  userId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
+  isActive?: Types.InputMaybe<Types.Scalars['Boolean']['input']>;
+  page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllEstablishmentsQuery = { __typename?: 'Query', establishments?: { __typename?: 'EstablishmentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null } | null> | null } | null };
+
+export type GetEstablishmentByIdQueryVariables = Types.Exact<{
+  id: Types.Scalars['ID']['input'];
+}>;
+
+
+export type GetEstablishmentByIdQuery = { __typename?: 'Query', establishment?: { __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null } | null };
+
 export const UserFieldsFragmentDoc = gql`
     fragment UserFields on UserType {
   id
@@ -92,6 +114,28 @@ export const PermissionFieldsFragmentDoc = gql`
   name
   codename
   tag
+}
+    `;
+export const EstablishmentFieldsFragmentDoc = gql`
+    fragment EstablishmentFields on EstablishmentType {
+  id
+  name
+  phone
+  email
+  address
+  logo
+  isActive
+  slogan
+  website
+  taxId
+  city
+  country
+  printHeader
+  printFooter
+  user {
+    id
+    username
+  }
 }
     `;
 export const GetAllUsersDocument = gql`
@@ -214,6 +258,55 @@ export const GetMeDocument = gql`
   })
   export class GetMeGQL extends Apollo.Query<GetMeQuery, GetMeQueryVariables> {
     document = GetMeDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllEstablishmentsDocument = gql`
+    query GetAllEstablishments($search: String, $city: String, $phone: String, $userId: ID, $isActive: Boolean, $page: Int, $pageSize: Int) {
+  establishments(
+    search: $search
+    city: $city
+    phone: $phone
+    userId: $userId
+    isActive: $isActive
+    page: $page
+    pageSize: $pageSize
+  ) {
+    items {
+      ...EstablishmentFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    ${EstablishmentFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllEstablishmentsGQL extends Apollo.Query<GetAllEstablishmentsQuery, GetAllEstablishmentsQueryVariables> {
+    document = GetAllEstablishmentsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetEstablishmentByIdDocument = gql`
+    query GetEstablishmentById($id: ID!) {
+  establishment(id: $id) {
+    ...EstablishmentFields
+  }
+}
+    ${EstablishmentFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetEstablishmentByIdGQL extends Apollo.Query<GetEstablishmentByIdQuery, GetEstablishmentByIdQueryVariables> {
+    document = GetEstablishmentByIdDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

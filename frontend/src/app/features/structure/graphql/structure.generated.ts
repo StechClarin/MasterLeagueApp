@@ -3,8 +3,6 @@ import * as Types from '../../../graphql/types';
 import { gql } from 'apollo-angular';
 import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
-export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null };
-
 export type AcademicYearFieldsFragment = { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean, cycleConfigs?: Array<{ __typename?: 'AcademicCycleConfigType', id: any, startDate?: any | null, cycle: { __typename?: 'CycleType', id: any } } | null> | null };
 
 export type CycleFieldsFragment = { __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } };
@@ -24,26 +22,6 @@ export type AcademicPeriodFieldsFragment = { __typename?: 'AcademicPeriodType', 
 export type RoomFieldsFragment = { __typename?: 'RoomType', id: any, name: string, capacity?: number | null };
 
 export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, levels: Array<{ __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null };
-
-export type GetAllEstablishmentsQueryVariables = Types.Exact<{
-  search?: Types.InputMaybe<Types.Scalars['String']['input']>;
-  city?: Types.InputMaybe<Types.Scalars['String']['input']>;
-  phone?: Types.InputMaybe<Types.Scalars['String']['input']>;
-  userId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
-  isActive?: Types.InputMaybe<Types.Scalars['Boolean']['input']>;
-  page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
-  pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
-}>;
-
-
-export type GetAllEstablishmentsQuery = { __typename?: 'Query', establishments?: { __typename?: 'EstablishmentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null } | null> | null } | null };
-
-export type GetEstablishmentByIdQueryVariables = Types.Exact<{
-  id: Types.Scalars['ID']['input'];
-}>;
-
-
-export type GetEstablishmentByIdQuery = { __typename?: 'Query', establishment?: { __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null } | null };
 
 export type GetAllAcademicYearsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -154,28 +132,6 @@ export type GetActiveStructureQueryVariables = Types.Exact<{ [key: string]: neve
 
 export type GetActiveStructureQuery = { __typename?: 'Query', activeStructure?: { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, levels: Array<{ __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
 
-export const EstablishmentFieldsFragmentDoc = gql`
-    fragment EstablishmentFields on EstablishmentType {
-  id
-  name
-  phone
-  email
-  address
-  logo
-  isActive
-  slogan
-  website
-  taxId
-  city
-  country
-  printHeader
-  printFooter
-  user {
-    id
-    username
-  }
-}
-    `;
 export const AcademicYearFieldsFragmentDoc = gql`
     fragment AcademicYearFields on AcademicYearType {
   id
@@ -330,55 +286,6 @@ export const StructureResponseFragmentDoc = gql`
 }
     ${CycleFieldsFragmentDoc}
 ${LevelFieldsFragmentDoc}`;
-export const GetAllEstablishmentsDocument = gql`
-    query GetAllEstablishments($search: String, $city: String, $phone: String, $userId: ID, $isActive: Boolean, $page: Int, $pageSize: Int) {
-  establishments(
-    search: $search
-    city: $city
-    phone: $phone
-    userId: $userId
-    isActive: $isActive
-    page: $page
-    pageSize: $pageSize
-  ) {
-    items {
-      ...EstablishmentFields
-    }
-    totalCount
-    numPages
-    currentPage
-  }
-}
-    ${EstablishmentFieldsFragmentDoc}`;
-
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetAllEstablishmentsGQL extends Apollo.Query<GetAllEstablishmentsQuery, GetAllEstablishmentsQueryVariables> {
-    document = GetAllEstablishmentsDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
-  }
-export const GetEstablishmentByIdDocument = gql`
-    query GetEstablishmentById($id: ID!) {
-  establishment(id: $id) {
-    ...EstablishmentFields
-  }
-}
-    ${EstablishmentFieldsFragmentDoc}`;
-
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class GetEstablishmentByIdGQL extends Apollo.Query<GetEstablishmentByIdQuery, GetEstablishmentByIdQueryVariables> {
-    document = GetEstablishmentByIdDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
-  }
 export const GetAllAcademicYearsDocument = gql`
     query GetAllAcademicYears($search: String, $isActive: Boolean, $isArchived: Boolean, $page: Int, $pageSize: Int) {
   academicyears(
