@@ -17,6 +17,14 @@ class PlanningQuery(graphene.ObjectType):
         page_size=graphene.Int(default_value=10)
     )
 
+    compiled_schedule = graphene.List(
+        graphene.JSONString,
+        start_date=graphene.Date(required=True),
+        end_date=graphene.Date(required=True),
+        classroom_id=graphene.ID(),
+        personnel_id=graphene.ID()
+    )
+
     def resolve_planning(root, info, id):
         try:
             queryset = Planning.objects.filter(pk=id)
@@ -31,7 +39,7 @@ class PlanningQuery(graphene.ObjectType):
         queryset = get_context_filtered_queryset(Planning, info, order_by='-created_at')
 
         if search:
-            queryset = queryset.filter(name__icontains=search)
+            queryset = queryset.filter(nom__icontains=search)
         
         if min_date:
             queryset = queryset.filter(date_end__gte=min_date)
@@ -41,3 +49,19 @@ class PlanningQuery(graphene.ObjectType):
 
         paginated_data = paginate_queryset(queryset, page, page_size)
         return PlanningPaginatedType(**paginated_data)
+
+    def resolve_compiled_schedule(root, info, start_date, end_date, classroom_id=None, personnel_id=None):
+        from apps.pedagogy.services.planning_engine_service import PlanningEngineService
+        
+        establishment_id = getattr(info.context, 'establishment_id', None)
+        if not establishment_id:
+            raise Exception("Un établissement actif est requis.")
+            
+        compiled = PlanningEngineService.get_compiled_schedule(
+            establishment_id=establishment_id,
+            start_date=start_date,
+            end_date=end_date,
+            classroom_id=classroom_id,
+            personnel_id=personnel_id
+        )
+        return compiled

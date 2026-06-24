@@ -12,6 +12,7 @@ class OptionQuery(graphene.ObjectType):
         OptionPaginatedType,
         search=graphene.String(),
         parentId=graphene.ID(),
+        cycleId=graphene.ID(),
         establishmentId=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
@@ -23,7 +24,7 @@ class OptionQuery(graphene.ObjectType):
         except Option.DoesNotExist:
             return None
 
-    def resolve_options(root, info, search=None, parentId=None, establishmentId=None, page=1, page_size=10, **kwargs):
+    def resolve_options(root, info, search=None, parentId=None, cycleId=None, establishmentId=None, page=1, page_size=10, **kwargs):
         # Multi-tenant filter (Priorité au middleware)
         context_est_id = getattr(info.context, 'establishment_id', None)
         active_est_id = context_est_id or establishmentId
@@ -45,6 +46,10 @@ class OptionQuery(graphene.ObjectType):
             queryset = queryset.filter(parent_id=parentId)
         elif parentId == "": # Explicitly looking for root options
             queryset = queryset.filter(parent__isnull=True)
+            
+        if cycleId:
+            from django.db.models import Q
+            queryset = queryset.filter(Q(cycle_id=cycleId) | Q(cycle__isnull=True))
 
         paginated_data = paginate_queryset(queryset, page, page_size)
         return OptionPaginatedType(**paginated_data)

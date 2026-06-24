@@ -11,7 +11,7 @@ class AcademicPeriodQuery(graphene.ObjectType):
     academic_periods = graphene.Field(
         AcademicPeriodPaginatedType,
         search=graphene.String(),
-        academic_year_id=graphene.Int(),
+        academic_year_id=graphene.ID(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )

@@ -52,7 +52,7 @@ class GradeService(BaseService):
                 
                 if grade:
                     grade.value = value
-                    grade.is_absent = is_absent
+                    grade.absence_status = 'UNJUSTIFIED' if is_absent else 'NONE'
                     grade.comment = comment
                     grade.save()
                     results["updated"] += 1
@@ -61,7 +61,7 @@ class GradeService(BaseService):
                         student_id=student_id,
                         evaluation_subject_id=eval_subject_id,
                         value=value,
-                        is_absent=is_absent,
+                        absence_status='UNJUSTIFIED' if is_absent else 'NONE',
                         comment=comment,
                         establishment_id=context_est_id
                     )

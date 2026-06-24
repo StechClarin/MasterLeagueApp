@@ -1,10 +1,15 @@
-import { Component, Input, computed, signal, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, signal, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
+import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
+import { PlanningService } from '../../services/planning.service';
+import { ToastService } from '@core/services/toast.service';
 
 @Component({
     selector: 'app-planning-calendar',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule, UiConfirmModalComponent, UiModalComponent],
     templateUrl: './planning-calendar.component.html',
     styles: [`
     .calendar-grid {
@@ -37,15 +42,30 @@ import { CommonModule } from '@angular/common';
       margin: 1px;
       border-radius: 4px;
     }
-    .event-card:hover {
-      z-index: 50;
-      transform: scale(1.02);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    .event-card .action-buttons {
+      display: none;
+    }
+    .event-card:hover .action-buttons {
+      display: flex !important;
     }
   `]
 })
 export class PlanningCalendarComponent implements OnChanges {
-    @Input() planning: any;
+    planningService = inject(PlanningService);
+    toastService = inject(ToastService);
+
+    @Input() dateStart?: string;
+    @Input() dateEnd?: string;
+    @Input() compiledDetails: any[] = [];
+    @Input() planningName?: string;
+
+    @Output() scheduleChanged = new EventEmitter<void>();
+
+    // Modals state
+    showCancelModal = signal(false);
+    showRescheduleModal = signal(false);
+    selectedEvent = signal<any>(null);
+    newDate = signal<string>('');
 
     // Configuration
     startHour = 8;
@@ -56,17 +76,17 @@ export class PlanningCalendarComponent implements OnChanges {
     events = signal<any[]>([]);
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['planning'] && this.planning) {
+        if ((changes['dateStart'] || changes['dateEnd'] || changes['compiledDetails']) && this.dateStart && this.dateEnd) {
             this.initCalendar();
         }
     }
 
     initCalendar() {
-        if (!this.planning?.dateStart || !this.planning?.dateEnd) return;
+        if (!this.dateStart || !this.dateEnd) return;
 
         // 1. Generate Days
-        const start = new Date(this.planning.dateStart);
-        const end = new Date(this.planning.dateEnd);
+        const start = new Date(this.dateStart);
+        const end = new Date(this.dateEnd);
         const dayList: any[] = [];
         const dt = new Date(start);
 
@@ -88,10 +108,32 @@ export class PlanningCalendarComponent implements OnChanges {
         this.hours.set(hourList);
 
         // 3. Map Events
-        if (this.planning.details) {
-            const evtList = this.planning.details.map((d: any) => {
+        if (this.compiledDetails && this.compiledDetails.length > 0) {
+            const evtList = this.compiledDetails.map((d: any) => {
                 const dayIndex = dayList.findIndex(day => day.date === d.date);
                 if (dayIndex === -1) return null;
+                const col = dayIndex + 2;
+
+                // Handle Holidays specifically
+                if (d.type === 'HOLIDAY') {
+                    return {
+                        ...d,
+                        style: {
+                            'grid-column': `${col} / span 1`,
+                            'grid-row-start': 2,
+                            'grid-row-end': (this.endHour - this.startHour + 1) * 4 + 2,
+                            'background-color': '#f3f4f6',
+                            'border': '2px dashed #9ca3af',
+                            'opacity': '0.9',
+                            'color': '#4b5563',
+                            'display': 'flex',
+                            'align-items': 'center',
+                            'justify-content': 'center',
+                            'font-size': '1.1rem',
+                            'font-weight': 'bold'
+                        }
+                    };
+                }
 
                 // Parse times (HH:mm)
                 const [startH, startM] = d.heureDebut.split(':').map(Number);
@@ -102,9 +144,6 @@ export class PlanningCalendarComponent implements OnChanges {
                 // Formula: (Hour - StartHour) + 2 + (Minute / 60)
                 const startRow = (startH - this.startHour) + 2 + (startM / 60);
                 const endRow = (endH - this.startHour) + 2 + (endM / 60);
-
-                // Grid Column: Sidebar is 1. Days start at 2.
-                const col = dayIndex + 2;
 
                 return {
                     ...d,
@@ -155,5 +194,55 @@ export class PlanningCalendarComponent implements OnChanges {
         if (!subject?.id) return '#374151';
         const idx = (typeof subject.id === 'number' ? subject.id : subject.id.charCodeAt(0)) % colors.length;
         return colors[idx];
+    }
+
+    // --- ACTIONS ---
+
+    promptCancel(evt: any, event: Event) {
+        event.stopPropagation();
+        this.selectedEvent.set(evt);
+        this.showCancelModal.set(true);
+    }
+
+    confirmCancel() {
+        const evt = this.selectedEvent();
+        if (!evt) return;
+
+        this.planningService.cancelEvent(evt.real_id, evt.date, evt.type).subscribe({
+            next: (res) => {
+                this.toastService.success('Événement annulé avec succès.');
+                this.showCancelModal.set(false);
+                this.selectedEvent.set(null);
+                this.scheduleChanged.emit();
+            },
+            error: (err) => {
+                this.toastService.error('Impossible d\'annuler l\'événement.');
+            }
+        });
+    }
+
+    promptReschedule(evt: any, event: Event) {
+        event.stopPropagation();
+        this.selectedEvent.set(evt);
+        this.newDate.set(evt.date); // Par défaut la même date
+        this.showRescheduleModal.set(true);
+    }
+
+    confirmReschedule() {
+        const evt = this.selectedEvent();
+        const date = this.newDate();
+        if (!evt || !date) return;
+
+        this.planningService.rescheduleEvent(evt.real_id, evt.date, date, evt.type).subscribe({
+            next: (res) => {
+                this.toastService.success('Événement reporté avec succès.');
+                this.showRescheduleModal.set(false);
+                this.selectedEvent.set(null);
+                this.scheduleChanged.emit();
+            },
+            error: (err) => {
+                this.toastService.error('Impossible de reporter l\'événement.');
+            }
+        });
     }
 }

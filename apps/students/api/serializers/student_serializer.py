@@ -29,18 +29,19 @@ class ParentInputSerializer(serializers.Serializer):
         required=True,
         error_messages={'required': "Un numéro de téléphone est requis pour chaque parent."}
     )
-    profession = serializers.CharField(required=False, allow_blank=True)
+    profession = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     email = serializers.EmailField(
         required=False, 
         allow_blank=True,
+        allow_null=True,
         error_messages={'invalid': "Format d'email invalide."}
     )
     is_legal_guardian = serializers.BooleanField(default=False)
 
     def validate_phone_number(self, value):
-        # Format simple: min 8 chiffres
+        # Format simple: min 4 chiffres
         clean_phone = re.sub(r'\s+', '', value)
-        if not re.match(r'^\+?[\d\-]{8,}$', clean_phone):
+        if not re.match(r'^\+?[\d\-]{4,}$', clean_phone):
             raise serializers.ValidationError("Le numéro de téléphone n'est pas valide.")
         return value
 
@@ -69,6 +70,7 @@ class StudentSerializer(BaseSerializer):
     # Nested Outputs (Read)
     health = StudentHealthSerializer(read_only=True)
     current_enrollment = serializers.SerializerMethodField()
+    guardians = serializers.SerializerMethodField()
     
     # Nested Inputs (Write)
     health_input = StudentHealthSerializer(write_only=True, required=False)
@@ -122,3 +124,17 @@ class StudentSerializer(BaseSerializer):
                 "status": enrollment.status
             }
         return None
+
+    def get_guardians(self, obj):
+        return [
+            {
+                "id": g.id,
+                "role": g.role,
+                "first_name": g.first_name,
+                "last_name": g.last_name,
+                "phone_number": g.phone_number,
+                "profession": g.profession,
+                "is_legal_guardian": g.is_legal_guardian,
+            }
+            for g in obj.guardians.all()
+        ]

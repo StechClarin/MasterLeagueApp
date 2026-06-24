@@ -1,0 +1,165 @@
+<app-ui-modal [isOpen]="isOpen" (close)="closeModal()" [maxWidth]="'sm:max-w-4xl'">
+  <div class="bg-white rounded-2xl w-full h-full flex flex-col font-sans overflow-hidden print:h-auto print:overflow-visible print:rounded-none">
+    
+    <!-- Modal Header -->
+    <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50 print:bg-white print:border-b-2 print:border-slate-800 print:px-0 print:py-4">
+      <div class="flex items-center gap-4">
+        <div class="shadow-sm rounded-full bg-white border border-slate-100 p-0.5">
+          <app-ui-avatar [photoUrl]="student?.photo" [name]="(student?.firstName || '') + ' ' + (student?.lastName || '')" [size]="'lg'"></app-ui-avatar>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">
+            Rapport d'Évolution - {{ student?.firstName }} {{ student?.lastName | uppercase }}
+          </h2>
+          <p class="text-sm text-slate-500 mt-1 flex items-center gap-2">
+            <span class="font-medium text-slate-700">Matricule:</span> {{ student?.matricule }}
+            <span class="mx-2 text-slate-300">|</span>
+            <span class="font-medium text-slate-700">Classe:</span> {{ enrollment?.classroom?.name || 'Inconnue' }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 print:hidden">
+        <button (click)="printReport()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-sm font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+          Imprimer
+        </button>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors bg-white hover:bg-slate-100 p-2 rounded-full border border-slate-200">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="flex-1 overflow-y-auto bg-slate-50/50 p-8 print:overflow-visible print:bg-white print:p-0 print:pt-4">
+      
+      <!-- Print Header (Visible only when printing) -->
+      <div class="hidden print:block mb-8 text-center pb-4 border-b-2 border-slate-100">
+        <h2 class="text-2xl font-bold uppercase tracking-widest text-slate-800">Bilan Pédagogique et Évolution</h2>
+        <p class="text-lg text-slate-600 mt-2 font-medium">Période : {{ getPeriodName() }}</p>
+      </div>
+
+      <!-- Filters Card -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-8 print:hidden">
+        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+          Configuration du Rapport
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-slate-700">Année Académique</label>
+            <select [formControl]="yearControl" class="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+              <option *ngFor="let year of academicYears()" [value]="year.id">{{ year.name }}</option>
+            </select>
+          </div>
+          
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-slate-700">Période Académique</label>
+            <select [formControl]="periodControl" class="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" [class.opacity-50]="academicPeriods().length === 0">
+              <option *ngFor="let period of academicPeriods()" [value]="period.id">{{ period.name }}</option>
+              <option *ngIf="academicPeriods().length === 0" [value]="null">Aucune période trouvée</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Card -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative min-h-[400px] print:shadow-none print:border-none print:p-0 print:min-h-0 print:mb-8">
+        
+        <div *ngIf="isLoading()" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-xl z-10">
+          <div class="flex flex-col items-center gap-3">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+            <span class="text-sm font-medium text-indigo-600">Génération du graphique...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!isLoading() && grades().length === 0" class="absolute inset-0 flex items-center justify-center rounded-xl z-0">
+          <div class="text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+              <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900">Aucune note trouvée</h3>
+            <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">L'élève n'a pas encore de notes enregistrées pour cette période académique.</p>
+          </div>
+        </div>
+
+        <div *ngIf="chartOptions?.series[0]?.data?.length > 0" class="w-full h-full animate-in fade-in duration-500 print:animate-none print:opacity-100">
+          <apx-chart
+            [series]="chartOptions.series"
+            [chart]="chartOptions.chart"
+            [xaxis]="chartOptions.xaxis"
+            [yaxis]="chartOptions.yaxis"
+            [title]="chartOptions.title"
+            [stroke]="chartOptions.stroke"
+            [dataLabels]="chartOptions.dataLabels"
+            [markers]="chartOptions.markers"
+            [colors]="chartOptions.colors"
+            [fill]="chartOptions.fill"
+          ></apx-chart>
+        </div>
+
+      </div>
+
+      <!-- Global Chart Card -->
+      <div *ngIf="globalChartOptions?.series[0]?.data?.length > 0" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative mt-6 min-h-[300px] print:shadow-none print:border-none print:p-0 print:min-h-0 print:mt-8 print:break-inside-avoid">
+        <div class="w-full h-full animate-in fade-in duration-500 delay-150 print:animate-none print:opacity-100">
+          <apx-chart
+            [series]="globalChartOptions.series"
+            [chart]="globalChartOptions.chart"
+            [xaxis]="globalChartOptions.xaxis"
+            [yaxis]="chartOptions.yaxis"
+            [title]="globalChartOptions.title"
+            [stroke]="globalChartOptions.stroke"
+            [dataLabels]="globalChartOptions.dataLabels"
+            [markers]="globalChartOptions.markers"
+            [colors]="globalChartOptions.colors"
+            [fill]="globalChartOptions.fill"
+          ></apx-chart>
+        </div>
+      </div>
+
+      <!-- Analysis Section -->
+      <div *ngIf="verdict() || weakSubjects().length > 0" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mt-6 animate-in slide-in-from-bottom-4 duration-500 delay-300 print:shadow-none print:border-2 print:border-slate-800 print:rounded-none print:break-inside-avoid">
+        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-6 flex items-center gap-2">
+          <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          Analyse Pédagogique
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Verdict -->
+          <div *ngIf="verdict()" class="p-4 rounded-xl border" [ngClass]="{
+            'bg-emerald-50 border-emerald-100': verdict()?.type === 'positive',
+            'bg-red-50 border-red-100': verdict()?.type === 'negative',
+            'bg-slate-50 border-slate-100': verdict()?.type === 'neutral'
+          }">
+            <div class="text-xs font-semibold uppercase tracking-wider mb-1" [ngClass]="{
+              'text-emerald-600': verdict()?.type === 'positive',
+              'text-red-600': verdict()?.type === 'negative',
+              'text-slate-600': verdict()?.type === 'neutral'
+            }">Tendance de l'Élève</div>
+            <div class="font-medium text-slate-900">{{ verdict()?.text }}</div>
+          </div>
+
+          <!-- Weak Subjects -->
+          <div *ngIf="weakSubjects().length > 0" class="p-4 rounded-xl border bg-orange-50 border-orange-100">
+            <div class="text-xs font-semibold uppercase tracking-wider mb-2 text-orange-600">Matières à renforcer</div>
+            <div class="flex flex-wrap gap-2">
+              <span *ngFor="let subject of weakSubjects()" class="px-2.5 py-1 bg-white border border-orange-200 text-orange-700 text-xs rounded-md shadow-sm">
+                {{ subject.name }} ({{ subject.avg | number:'1.1-2' }})
+              </span>
+            </div>
+          </div>
+          
+          <div *ngIf="weakSubjects().length === 0 && grades().length > 0" class="p-4 rounded-xl border bg-emerald-50 border-emerald-100 flex items-center">
+             <div class="text-sm font-medium text-emerald-800">Aucune lacune majeure détectée (toutes les moyennes > 10).</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</app-ui-modal>

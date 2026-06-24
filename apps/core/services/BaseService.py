@@ -149,6 +149,8 @@ class BaseService:
             # created_by_user : Uniquement à la création
             if not instance and hasattr(self.model, 'created_by_user'):
                 data['created_by_user_id'] = self.user.id
+            
+            print(f"[DEBUG]: user with id:{self.user.id}, is the writer")
 
         return data
 

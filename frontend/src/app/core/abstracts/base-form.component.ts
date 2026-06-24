@@ -120,7 +120,16 @@ export abstract class BaseFormComponent implements OnInit {
      */
     resolveMediaUrl(path: string | null | undefined): string {
         if (!path) return '';
-        if (path.startsWith('http') || path.startsWith('data:')) return path;
+        
+        if (path.startsWith('data:')) return path;
+
+        // Extraire la partie après /media/ s'il s'agit d'une URL absolue de dev ou de prod
+        const mediaIndex = path.indexOf('/media/');
+        if (mediaIndex !== -1) {
+            path = path.substring(mediaIndex); // Devient /media/...
+        } else if (path.startsWith('http')) {
+            return path;
+        }
         
         // Nettoyage du path
         let cleanPath = path.startsWith('/') ? path.substring(1) : path;

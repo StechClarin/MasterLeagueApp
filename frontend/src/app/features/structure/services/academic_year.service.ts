@@ -20,4 +20,10 @@ export class AcademicYearService extends BaseService {
             map(res => res.data.academicyears?.items || [])
         );
     }
+
+    listActive() {
+        return this.generatedGQL.fetch({ isActive: true }).pipe(
+            map(res => res.data.academicyears?.items || [])
+        );
+    }
 }

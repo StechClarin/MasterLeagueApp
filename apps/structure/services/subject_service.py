@@ -37,6 +37,7 @@ class SubjectService(BaseService):
                 
                 level_val = item.get('level') or item.get('level_id')
                 option_val = item.get('option') or item.get('option_id')
+                group_val = item.get('group') or item.get('group_id')
                 
                 if level_val and establishment_id:
                      # Validation UUID basique pour éviter les erreurs "Id is not a valid UUID"
@@ -44,18 +45,22 @@ class SubjectService(BaseService):
                          # Si c'est déjà une instance, on récupère le PK
                          actual_level_id = level_val.pk if hasattr(level_val, 'pk') else level_val
                          actual_option_id = option_val.pk if hasattr(option_val, 'pk') else option_val
+                         actual_group_id = group_val.pk if hasattr(group_val, 'pk') else group_val
                          
                          # On vérifie si c'est un UUID valide
                          if actual_level_id: uuid.UUID(str(actual_level_id))
                          if actual_option_id: uuid.UUID(str(actual_option_id))
+                         if actual_group_id: uuid.UUID(str(actual_group_id))
                          
                          kwargs = {
                              'subject': instance,
                              'establishment_id': establishment_id,
                              'level_id': actual_level_id,
                              'option_id': actual_option_id if actual_option_id else None,
+                             'group_id': actual_group_id if actual_group_id else None,
                              'coefficient': item.get('coefficient', 1),
-                             'hourly_quota': item.get('hourly_quota') or item.get('weekly_hours', 0)
+                             'hourly_quota': item.get('hourly_quota') or item.get('weekly_hours', 0),
+                             'credits': item.get('credits', 0)
                          }
                          new_links.append(LevelSubject(**kwargs))
                      except (ValueError, TypeError):

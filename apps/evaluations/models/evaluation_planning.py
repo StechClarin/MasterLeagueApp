@@ -38,6 +38,10 @@ class EvaluationPlanning(EstablishmentAwareModel):
         help_text="Durée de l'épreuve en minutes"
     )
     
+    # Gestion des annulations et reports
+    is_cancelled = models.BooleanField(default=False, help_text="Marque cet examen comme annulé")
+    rescheduled_to = models.DateField(null=True, blank=True, help_text="Date à laquelle l'examen a été reporté")
+    
     class Meta:
         verbose_name = "Planification d'Épreuve"
         verbose_name_plural = "Planifications d'Épreuve"

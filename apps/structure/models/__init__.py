@@ -15,3 +15,4 @@ __all__ = [
 from .room import Room
 from .academic_cycle_config import AcademicCycleConfig
 from .academic_period import AcademicPeriod
+from .subject_group import SubjectGroup

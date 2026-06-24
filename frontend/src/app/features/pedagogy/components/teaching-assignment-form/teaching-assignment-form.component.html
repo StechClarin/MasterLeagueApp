@@ -37,7 +37,12 @@
         <app-ui-input label="Date de début" type="date" formControlName="start_date"></app-ui-input>
 
         <!-- Date Fin -->
-        <app-ui-input label="Date de fin" type="date" formControlName="end_date"></app-ui-input>
+        <div>
+            <app-ui-input label="Date de fin" type="date" formControlName="end_date"></app-ui-input>
+            <div *ngIf="form.errors?.['dateRange']" class="text-red-500 text-xs font-bold mt-1 pl-1">
+                La fin doit être supérieure ou égale au début.
+            </div>
+        </div>
     </div>
 
     <!-- Heures Prévues -->

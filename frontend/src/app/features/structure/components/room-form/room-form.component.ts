@@ -1,48 +1,58 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 import { RoomService } from '../../services/room.service';
-import { Observable } from 'rxjs';
 
 // Shared UI Imports
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
+import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
+import { RoomType } from '@app/graphql/types';
 
 @Component({
   selector: 'app-room-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UiInputComponent],
+  imports: [CommonModule, ReactiveFormsModule, UiInputComponent, UiFormComponent],
   templateUrl: './room-form.component.html'
 })
-export class RoomFormComponent extends BaseFormComponent implements OnInit {
+export class RoomFormComponent extends BaseFormComponent implements OnChanges {
   private fb = inject(FormBuilder);
   public service = inject(RoomService);
 
-  @Input() item: any;
+  @Input() room: RoomType | null = null;
   @Input() isReadOnly = false;
 
-  form!: FormGroup;
-
-  override ngOnInit(): void {
-    super.ngOnInit();
-    this.form = this.initForm();
-    if (this.item) {
-      this.form.patchValue(this.item);
-    }
-    if (this.isReadOnly) {
-      this.form.disable();
-    }
-  }
-
-  initForm(): FormGroup {
-    return this.fb.group({
-      id: [null],
+  override form = this.fb.nonNullable.group({
       name: ['', [Validators.required]],
       capacity: [30, [Validators.required, Validators.min(1)]]
-    });
+  });
+
+  ngOnChanges(changes: SimpleChanges): void {
+      if (changes['room']) {
+          if (this.room) {
+              this.form.patchValue({
+                  name: this.room.name || '',
+                  capacity: this.room.capacity || 30
+              });
+          } else {
+              this.form.reset({ capacity: 30 });
+          }
+      }
+
+      if (changes['isReadOnly']) {
+          if (this.isReadOnly) {
+              this.form.disable();
+          } else {
+              this.form.enable();
+          }
+      }
   }
 
-  save(): Observable<any> {
-    return this.service.save(this.form.value);
+  save() {
+      const payload: any = this.form.getRawValue();
+      if (this.room?.id) {
+          payload.id = this.room.id;
+      }
+      return this.service.save(payload);
   }
 }

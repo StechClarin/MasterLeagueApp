@@ -17,9 +17,22 @@ export interface SelectOption {
         {{ label }} <span *ngIf="required" class="text-red-500">*</span>
       </label>
       <div class="relative">
-        <select
+        <select *ngIf="!multiple"
           [id]="'select-' + label"
           [formControl]="control"
+          (blur)="onBlur()"
+          class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm bg-white transition-all appearance-none cursor-pointer"
+        >
+          <option [ngValue]="null" disabled>{{ placeholder }}</option>
+          <option *ngFor="let option of options" [ngValue]="option[bindValue]">
+            {{ option[bindLabel] }}
+          </option>
+        </select>
+
+        <select *ngIf="multiple"
+          [id]="'select-' + label"
+          [formControl]="control"
+          multiple
           (blur)="onBlur()"
           class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm bg-white transition-all appearance-none cursor-pointer"
         >
@@ -49,6 +62,7 @@ export class UiSelectComponent implements ControlValueAccessor, OnInit {
   @Input() control: FormControl = new FormControl();
   @Input() required: boolean = false;
   @Input() hint: string = '';
+  @Input() multiple: boolean = false;
 
   onChange: any = () => { };
   onTouch: any = () => { };

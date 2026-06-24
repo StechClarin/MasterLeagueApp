@@ -5,6 +5,8 @@ from ...models import EvaluationSubject
 class LevelCoefficientType(graphene.ObjectType):
     level_id = graphene.ID()
     coefficient = graphene.Decimal()
+    group_name = graphene.String()
+    credits = graphene.Decimal()
 
 class EvaluationSubjectType(DjangoObjectType):
     coefficient = graphene.Decimal()
@@ -32,5 +34,11 @@ class EvaluationSubjectType(DjangoObjectType):
         for level in levels:
             ls = LevelSubject.objects.filter(level=level, subject=self.subject).first()
             if ls:
-                lcs.append(LevelCoefficientType(level_id=level.id, coefficient=ls.coefficient))
+                group_name = ls.group.name if ls.group else None
+                lcs.append(LevelCoefficientType(
+                    level_id=level.id, 
+                    coefficient=ls.coefficient,
+                    group_name=group_name,
+                    credits=ls.credits
+                ))
         return lcs

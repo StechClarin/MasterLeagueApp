@@ -149,8 +149,11 @@ export class FeeFormComponent extends BaseFormComponent implements OnInit {
        this.rawLevels.set(items);
        this.levels.set(items.map((i: any) => ({ label: i.name, value: i.id })));
     });
-    this.yearService.list().subscribe((items: any[]) => {
+    this.yearService.listActive().subscribe((items: any[]) => {
        this.academicYears.set(items.map((i: any) => ({ label: i.name, value: i.id })));
+       if (items.length > 0 && !this.form.get('academicYear')?.value) {
+           this.form.get('academicYear')?.setValue(items[0]?.id);
+       }
     });
     this.classroomService.list().subscribe((items: any[]) => {
        this.classrooms.set(items.map((i: any) => ({ label: i.name, value: i.id })));

@@ -1,10 +1,11 @@
 import { Component, Input, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-planning-resource-grid',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     template: `
     <div class="flex flex-col h-full bg-slate-50 rounded-3xl border border-slate-200 shadow-xl overflow-hidden font-sans relative">
         
@@ -41,6 +42,19 @@ import { CommonModule } from '@angular/common';
            </div>
            
            <div class="hidden xl:flex items-center gap-4">
+                <div class="relative group">
+                    <select 
+                        [ngModel]="selectedTeacherId()" 
+                        (ngModelChange)="selectedTeacherId.set($event)"
+                        class="pl-4 pr-10 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-64 shadow-sm appearance-none cursor-pointer"
+                    >
+                        <option value="">Tous les enseignants</option>
+                        <option *ngFor="let t of allTeachers()" [value]="t.id">{{ t.name }}</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
                 <button (click)="goToToday()" class="px-4 py-2 bg-slate-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-slate-700 transition-colors shadow-lg shadow-slate-200">
                     Aujourd'hui
                 </button>
@@ -76,7 +90,7 @@ import { CommonModule } from '@angular/common';
                 </div>
 
                 <!-- Teacher Rows -->
-                <div *ngFor="let teacher of teachers(); let i = index" 
+                <div *ngFor="let teacher of filteredTeachers(); let i = index" 
                      class="flex border-b border-slate-100 group transition-all duration-300 hover:bg-slate-50/30">
                     
                     <!-- Teacher Info (Sticky Left) -->
@@ -141,7 +155,7 @@ import { CommonModule } from '@angular/common';
                 </div>
 
                 <!-- Empty State -->
-                <div *ngIf="teachers().length === 0" class="flex flex-col items-center justify-center py-20">
+                <div *ngIf="filteredTeachers().length === 0" class="flex flex-col items-center justify-center py-20">
                     <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 ring-8 ring-slate-50 shadow-inner">
                         <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </div>
@@ -165,7 +179,13 @@ export class PlanningResourceGridComponent implements OnChanges {
     @Input() planning: any;
 
     days = signal<any[]>([]);
-    teachers = signal<any[]>([]);
+    allTeachers = signal<any[]>([]);
+    selectedTeacherId = signal<string>('');
+    filteredTeachers = computed(() => {
+        const id = this.selectedTeacherId();
+        if (!id) return this.allTeachers();
+        return this.allTeachers().filter(t => t.id === id);
+    });
     private eventMap = new Map<string, any[]>();
     currentWeekStart = signal<Date>(this.getStartOfWeek(new Date()));
 
@@ -270,7 +290,7 @@ export class PlanningResourceGridComponent implements OnChanges {
 
         // Trier les profs par nom
         const sortedTeachers = Array.from(teacherMap.values()).sort((a: any, b: any) => a.name.localeCompare(b.name));
-        this.teachers.set(sortedTeachers);
+        this.allTeachers.set(sortedTeachers);
     }
 
     getEvents(teacherId: string, date: string) {

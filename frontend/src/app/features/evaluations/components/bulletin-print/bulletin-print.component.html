@@ -1,0 +1,225 @@
+<div class="bg-slate-50 min-h-screen py-8 print:py-0 print:bg-white text-slate-800 text-sm">
+  @if (bulletins().length === 0) {
+    <div class="text-center py-20">
+      <p class="text-slate-500 text-lg">Chargement des bulletins...</p>
+    </div>
+  }
+
+  @for (b of bulletins(); track $index) {
+    <div class="bulletin-page flex flex-col font-sans">
+      
+      <!-- HEADER -->
+      <div class="flex justify-between items-start border-b-2 border-teal-700 pb-4 mb-4">
+        <!-- ESTABLISHMENT INFO -->
+        <div class="w-1/3 text-left space-y-1">
+          <h1 class="text-lg font-bold text-teal-800">{{ b.establishment.name }}</h1>
+          <p class="text-xs italic text-slate-600">{{ b.establishment.slogan }}</p>
+          <div class="text-xs text-slate-500 mt-2">
+            <p>{{ b.establishment.address }}</p>
+            <p>{{ b.establishment.phone }}</p>
+            <p>{{ b.establishment.email }}</p>
+          </div>
+        </div>
+
+        <!-- LOGO -->
+        <div class="w-1/3 flex justify-center">
+          @if (b.establishment.logoBase64) {
+            <img [src]="b.establishment.logoBase64" alt="Logo" class="h-24 w-24 object-contain">
+          } @else {
+            <div class="h-24 w-24 bg-teal-50 flex items-center justify-center rounded-full border border-teal-200">
+              <span class="text-teal-700 font-bold text-2xl">LOGO</span>
+            </div>
+          }
+        </div>
+
+        <!-- PERIOD & STUDENT INFO -->
+        <div class="w-1/3 text-right">
+          <h2 class="text-md font-bold text-slate-700 uppercase">BULLETIN DE NOTES</h2>
+          <p class="text-sm font-semibold text-teal-700 mt-1">{{ b.period.name }}</p>
+          <p class="text-xs text-slate-500">Année Académique : {{ b.period.academicYear }}</p>
+        </div>
+      </div>
+
+      <!-- STUDENT DETAILS BAR -->
+      <div class="bg-teal-50 border border-teal-200 rounded-md p-3 mb-4 flex justify-between">
+        <div>
+          <p><span class="font-bold text-slate-700">Nom & Prénom(s) :</span> <span class="font-semibold text-teal-800">{{ b.student.lastName }} {{ b.student.firstName }}</span></p>
+          <p><span class="font-bold text-slate-700">Matricule :</span> {{ b.student.matricule }}</p>
+        </div>
+        <div class="text-right">
+          <p><span class="font-bold text-slate-700">Classe :</span> {{ b.classroomName }}</p>
+          <p><span class="font-bold text-slate-700">Effectif :</span> {{ b.student.totalClassStudents }}</p>
+        </div>
+      </div>
+
+      <!-- LAYOUT WITH CREDITS -->
+      @if (b.hasCredits) {
+        <table class="w-full text-left border-collapse table-border mb-4 text-xs">
+          <thead>
+            <tr class="table-header text-center">
+              <th class="w-2/5 text-left">Unités d'Enseignement (UE) / Matières</th>
+              <th>Moy. CC</th>
+              <th>Note Exam</th>
+              <th>Moyenne</th>
+              <th>Crédits</th>
+              <th>Acquis</th>
+              <th>Appréciation</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ue of b.ueGroups; track ue.groupName) {
+              <!-- UE Header Row -->
+              <tr class="table-ue-row">
+                <td colspan="7" class="py-1">
+                  <div class="flex justify-between items-center w-full px-1">
+                    <span>{{ ue.groupName }}</span>
+                    <span class="font-normal text-[10px] bg-slate-300 text-slate-800 px-2 py-0.5 rounded-full">
+                      Moy: {{ ue.ueAvg | number:'1.2-2' }} | Val: {{ ue.isUeValidated ? 'OUI' : 'NON' }}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <!-- Subjects in UE -->
+              @for (sub of ue.subjects; track sub.name) {
+                <tr class="text-center bg-white">
+                  <td class="text-left py-1 pl-2">{{ sub.name }}</td>
+                  <td>{{ sub.ccAvg !== null ? (sub.ccAvg | number:'1.2-2') : '-' }}</td>
+                  <td>{{ sub.examVal !== null ? (sub.examVal | number:'1.2-2') : '-' }}</td>
+                  <td class="font-semibold">{{ sub.finalSubjAvg | number:'1.2-2' }}</td>
+                  <td>{{ sub.credits }}</td>
+                  <td [class.text-teal-600]="sub.creditsAcquired > 0" [class.font-bold]="sub.creditsAcquired > 0">
+                    {{ sub.creditsAcquired }}
+                  </td>
+                  <td class="italic text-[10px] text-slate-600">{{ sub.appreciation }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+
+        <!-- RESUME CREDITS -->
+        <div class="flex justify-between items-start mb-6">
+          <div class="w-2/3 mr-4">
+            <table class="w-full text-center border-collapse table-border text-xs">
+              <tr class="table-header">
+                <th>Total Crédits</th>
+                <th>Crédits Acquis</th>
+                <th>Moyenne Générale</th>
+                <th>Décision</th>
+              </tr>
+              <tr>
+                <td class="py-2 font-bold">{{ getTotalCredits(b.ueGroups) }}</td>
+                <td class="py-2 font-bold text-teal-700">{{ getAcquiredCredits(b.ueGroups) }}</td>
+                <td class="py-2 font-bold text-lg" [ngClass]="b.student.average >= 10 ? 'text-teal-700' : 'text-red-600'">
+                  {{ b.student.average | number:'1.2-2' }} / 20
+                </td>
+                <td class="py-2 font-bold uppercase" [ngClass]="b.student.average >= 10 ? 'text-teal-700' : 'text-red-600'">
+                  {{ getDecision(b.student.average) }}
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Signatures (shared block) -->
+          <ng-container *ngTemplateOutlet="signaturesBlock"></ng-container>
+        </div>
+
+      } @else {
+        <!-- LAYOUT SANS CREDITS (Classique) -->
+        <table class="w-full text-left border-collapse table-border mb-4 text-xs">
+          <thead>
+            <tr class="table-header text-center">
+              <th class="w-2/5 text-left">Matières</th>
+              <th>Moy. CC</th>
+              <th>Note Exam</th>
+              <th>Moy. / 20</th>
+              <th>Coef.</th>
+              <th>Moy. Pondérée</th>
+              <th>Appréciation</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ue of b.ueGroups; track ue.groupName) {
+              <!-- Group Name Header -->
+              <tr class="table-ue-row">
+                <td colspan="7" class="py-1 px-1">{{ ue.groupName }}</td>
+              </tr>
+              @for (sub of ue.subjects; track sub.name) {
+                <tr class="text-center bg-white">
+                  <td class="text-left py-1 pl-2">{{ sub.name }}</td>
+                  <td>{{ sub.ccAvg !== null ? (sub.ccAvg | number:'1.2-2') : '-' }}</td>
+                  <td>{{ sub.examVal !== null ? (sub.examVal | number:'1.2-2') : '-' }}</td>
+                  <td class="font-semibold">{{ sub.finalSubjAvg | number:'1.2-2' }}</td>
+                  <td>{{ sub.coeff }}</td>
+                  <td>{{ sub.finalWeighted | number:'1.2-2' }}</td>
+                  <td class="italic text-[10px] text-slate-600">{{ sub.appreciation }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+          <!-- Footer Totals -->
+          <tfoot>
+            <tr class="bg-slate-100 font-bold text-center">
+              <td colspan="4" class="text-right pr-4 py-2">TOTAL</td>
+              <td>{{ b.totalPeriodCoeff }}</td>
+              <td>{{ b.totalPeriodPoints | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- RESUME CLASSIQUE -->
+        <div class="flex justify-between items-start mb-6">
+          <div class="w-1/2 mr-4">
+            <table class="w-full text-center border-collapse table-border text-xs mb-2">
+              <tr>
+                <th class="table-header w-1/3 py-2">Moyenne Générale</th>
+                <td class="font-bold text-lg py-2" [ngClass]="b.student.average >= 10 ? 'text-teal-700' : 'text-red-600'">
+                  {{ b.student.average | number:'1.2-2' }} / 20
+                </td>
+              </tr>
+              <tr>
+                <th class="table-header py-1">Appréciation</th>
+                <td class="text-teal-700 font-semibold py-1">{{ b.student.appreciation }}</td>
+              </tr>
+            </table>
+
+            <table class="w-full text-center border-collapse table-border text-[10px]">
+              <tr class="bg-slate-50">
+                <th class="py-1">Moy. Classe</th>
+                <th>Moy. Min</th>
+                <th>Moy. Max</th>
+                <th>Rang</th>
+              </tr>
+              <tr>
+                <td class="py-1 font-semibold">{{ b.classStats.avg | number:'1.2-2' }}</td>
+                <td class="font-semibold">{{ b.classStats.min | number:'1.2-2' }}</td>
+                <td class="font-semibold">{{ b.classStats.max | number:'1.2-2' }}</td>
+                <td class="font-bold text-teal-700">{{ b.student.classRank ? b.student.classRank + 'e' : '-' }} / {{ b.student.totalClassStudents }}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <!-- Signatures -->
+          <ng-container *ngTemplateOutlet="signaturesBlock"></ng-container>
+        </div>
+      }
+
+      <ng-template #signaturesBlock>
+        <div class="flex-1 flex justify-between px-4 mt-2">
+          <div class="text-center w-1/2">
+            <p class="font-bold text-xs underline mb-8">Les Parents</p>
+          </div>
+          <div class="text-center w-1/2">
+            <p class="font-bold text-xs underline mb-8">Le Chef d'Établissement</p>
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- PUSH CONTENT TO BOTTOM IF NEEDED & FOOTER -->
+      <div class="mt-auto border-t border-slate-200 pt-2 text-center text-[9px] text-slate-400 pb-2">
+        Document officiel imprimé le {{ b.period.date }} | ID: {{ b.student.matricule }}
+      </div>
+
+    </div>
+  }
+</div>

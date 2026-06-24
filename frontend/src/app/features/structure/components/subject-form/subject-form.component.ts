@@ -12,6 +12,7 @@ import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-fo
 import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
 import { StructureStateService } from '@core/services/structure-state.service';
 import { LevelService } from '../../services/level.service';
+import { SubjectGroupService } from '../../services/subject-group.service';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs/operators';
 
@@ -39,6 +40,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     private structureState = inject(StructureStateService);
     private cdr = inject(ChangeDetectorRef);
     private destroyRef = inject(DestroyRef);
+    private groupService = inject(SubjectGroupService);
 
     @Input() subject: SubjectType | null = null;
     @Input() isReadOnly = false;
@@ -62,6 +64,9 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     allLevels = signal<LevelType[]>([]);
     levelOptions = signal<any[]>([]);
     isLoadingLevels = signal(false);
+
+    allGroups = signal<any[]>([]);
+    isLoadingGroups = signal(false);
 
     override form = this.fb.group({
         name: ['', [Validators.required]],
@@ -90,6 +95,21 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     override ngOnInit() {
         super.ngOnInit();
         this.loadLevels();
+        this.loadGroups();
+    }
+
+    private loadGroups() {
+        this.isLoadingGroups.set(true);
+        this.groupService.getAll().subscribe({
+            next: (res: any) => {
+                this.allGroups.set(res.items);
+                this.isLoadingGroups.set(false);
+            },
+            error: (err) => {
+                console.error("Erreur lors du chargement des groupes:", err);
+                this.isLoadingGroups.set(false);
+            }
+        });
     }
 
     private loadLevels() {
@@ -130,8 +150,10 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
         const group = this.fb.group({
             levelId: [data?.level?.id || '', [Validators.required]],
             optionId: [data?.option?.id || null],
+            groupId: [data?.group?.id || null],
             coefficient: [data?.coefficient || 1, [Validators.required, Validators.min(0)]],
             hourlyQuota: [data?.hourlyQuota || 0, [Validators.required, Validators.min(0)]],
+            credits: [data?.credits || 0, [Validators.required, Validators.min(0)]],
             // UI Helpers
             availableOptions: [ [] as any[] ]
         });
@@ -163,7 +185,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
         if (level?.cycle?.hasOptions) {
             // Load options for this level's establishment
             const estId = this.structureState.currentEstablishmentId() ?? undefined;
-             this.optionService.getAll(undefined, "", estId).subscribe((res: any) => {
+             this.optionService.getAll(undefined, "", undefined, estId).subscribe((res: any) => {
                 const options = (res.data.options?.items || []).map((o: any) => ({
                     value: o.id,
                     label: o.name
@@ -208,8 +230,10 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
         const assignments = formValue.levelSubjects.map((ls: any) => ({
             level: ls.levelId,
             option: ls.optionId,
+            group: ls.groupId,
             coefficient: ls.coefficient,
-            hourly_quota: ls.hourlyQuota
+            hourly_quota: ls.hourlyQuota,
+            credits: ls.credits
         }));
 
         const payload: any = {

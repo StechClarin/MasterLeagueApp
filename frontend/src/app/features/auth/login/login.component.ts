@@ -127,7 +127,7 @@ import { StructureStateService } from '@core/services/structure-state.service';
           <div class="relative h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-inner border border-white/10">
             <span class="text-white font-bold text-xl">G</span>
           </div>
-          <span class="text-xl font-bold text-white tracking-tight">GigaCore</span>
+          <span class="text-xl font-bold text-white tracking-tight">Eteyelo</span>
         </div>
 
         <!-- Form Container -->
@@ -209,7 +209,7 @@ import { StructureStateService } from '@core/services/structure-state.service';
             <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 blur-2xl opacity-20 rounded-full"></div>
             <img src="assets/images/login-illustration.svg" alt="" class="relative w-96 h-auto opacity-90 drop-shadow-2xl" onerror="this.style.display='none'">
           </div>
-          <h1 class="text-4xl font-bold text-white mb-4 tracking-tight">Bienvenue sur <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">GigaCore</span></h1>
+          <h1 class="text-4xl font-bold text-white mb-4 tracking-tight">Bienvenue sur <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Eteyelo</span></h1>
           <p class="text-lg text-slate-400 max-w-md mx-auto leading-relaxed">
             La plateforme de gestion unifiée pour piloter votre activité avec élégance et performance.
           </p>
@@ -296,10 +296,10 @@ export class LoginComponent extends BaseFormComponent {
     this.success.subscribe(async () => {
       // 1. Recharger les établissements (PRÉ-REQUIS pour l'overlay du layout)
       this.structureState.fetchEstablishments();
-      
+
       // 2. Recharger les routes dynamiques
       await this.dynamicRouter.loadDynamicRoutes();
-      
+
       // 3. Rediriger
       this.router.navigate(['/dashboard']);
     });

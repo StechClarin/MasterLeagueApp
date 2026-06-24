@@ -18,6 +18,10 @@ class Guardian(EstablishmentAwareModel):
     first_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
     
+    role = models.CharField(max_length=20, choices=[('FATHER', 'Père'), ('MOTHER', 'Mère'), ('TUTOR', 'Tuteur')], default='TUTOR')
+    is_legal_guardian = models.BooleanField(default=False)
+
+    
     # Relation M2M simple
     students = models.ManyToManyField('Student', related_name='guardians', blank=True)
 

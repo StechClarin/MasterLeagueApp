@@ -38,7 +38,10 @@ class GradeQuery(graphene.ObjectType):
 
         if classroom_id:
             # We filter by student's active enrollment for this classroom
-            queryset = queryset.filter(student__enrollments__classroom_id=classroom_id)
+            queryset = queryset.filter(
+                student__enrollments__classroom_id=classroom_id,
+                student__enrollments__status='REGISTERED'
+            )
 
         paginated_data = paginate_queryset(queryset, page, page_size)
         return GradePaginatedType(**paginated_data)

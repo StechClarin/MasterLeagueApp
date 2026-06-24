@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild, forwardRef, signal } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, forwardRef, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -99,8 +99,11 @@ export class UiMediaInputComponent implements ControlValueAccessor {
     isVideo = false;
 
     disabled = false;
+    selectedFile: File | null = null;
     onChange = (value: File | null) => { };
-    onTouched = () => { };
+    onTouch = () => { };
+
+    constructor(private cdr: ChangeDetectorRef) {}
 
     get shapeClasses() {
         const rounded = this.shape === 'circle' ? 'rounded-full' : (this.shape === 'square' ? 'rounded-2xl' : 'rounded-lg aspect-video');
@@ -123,6 +126,15 @@ export class UiMediaInputComponent implements ControlValueAccessor {
             // C'est une URL existante
             this.previewUrl = value;
             this.checkMediaType(value);
+        } else if (value instanceof File) {
+            this.selectedFile = value;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.previewUrl = e.target?.result as string;
+                this.checkMediaType(value.type);
+                this.cdr.detectChanges();
+            };
+            reader.readAsDataURL(value);
         } else {
             this.previewUrl = null;
         }
@@ -133,7 +145,7 @@ export class UiMediaInputComponent implements ControlValueAccessor {
     }
 
     registerOnTouched(fn: any): void {
-        this.onTouched = fn;
+        this.onTouch = fn;
     }
 
     setDisabledState(isDisabled: boolean): void {
@@ -151,12 +163,13 @@ export class UiMediaInputComponent implements ControlValueAccessor {
             reader.onload = (e) => {
                 this.previewUrl = e.target?.result as string;
                 this.checkMediaType(file.type);
+                this.cdr.detectChanges();
             };
             reader.readAsDataURL(file);
 
             // Notify form
             this.onChange(file);
-            this.onTouched();
+            this.onTouch();
         }
     }
 

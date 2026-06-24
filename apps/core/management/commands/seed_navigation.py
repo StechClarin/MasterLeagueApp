@@ -48,9 +48,16 @@ MODULE_STRUCTURE = [
                 "tags": ["classroom"]
             },
             {
-                "title": "Matières",
+                "title": "Groupes & UEs",
                 "icon": "subject-icon",
                 "order": 4,
+                "link": "/subject-groups",
+                "tags": ["subjectgroup"]
+            },
+            {
+                "title": "Matières",
+                "icon": "subject-icon",
+                "order": 5,
                 "link": "/subjects",
                 "tags": ["subject"]
             },

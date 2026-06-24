@@ -1,0 +1,23 @@
+<div class="w-full flex flex-col font-sans">
+    <app-ui-form-header
+        [title]="subjectGroup ? 'Modifier le Groupe/UE' : 'Nouveau Groupe/UE'"
+        description="Créez un nouveau groupe de matières ou une Unité d'Enseignement."
+        (close)="onCancel()">
+    </app-ui-form-header>
+
+    <div class="flex-1 p-6 space-y-6">
+        <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
+        
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+            <app-ui-input label="Nom du Groupe/UE" formControlName="name" [required]="true"
+                placeholder="ex: Matières Scientifiques ou UE INFO-101"></app-ui-input>
+        </form>
+    </div>
+
+    <app-ui-form-actions
+        [isSubmitting]="isSubmitting"
+        [disabled]="isSubmitting || form.invalid"
+        (submit)="submit()"
+        (cancel)="onCancel()">
+    </app-ui-form-actions>
+</div>

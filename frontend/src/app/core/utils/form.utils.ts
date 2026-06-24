@@ -1,4 +1,4 @@
-import { FormGroup } from '@angular/forms';
+import { FormGroup, FormArray } from '@angular/forms';
 
 export class FormUtils {
     /**
@@ -67,6 +67,22 @@ export class FormUtils {
                         processErrors(subControl, error, `${prefix}${key}.`);
                     } else {
                         // On tente de mapper même si ce n'est pas un FormGroup (ex: objet JSON brut)
+                        errorsList.push({ field: key, message: JSON.stringify(error) });
+                    }
+                }
+                // 2.5 Erreurs imbriquées dans un FormArray
+                else if (Array.isArray(error) && typeof error[0] === 'object') {
+                    const subControl = container.get(key);
+                    if (subControl instanceof FormArray) {
+                        error.forEach((itemError: any, index: number) => {
+                            if (typeof itemError === 'object') {
+                                const formGroupInArray = subControl.at(index);
+                                if (formGroupInArray instanceof FormGroup) {
+                                    processErrors(formGroupInArray, itemError, `${prefix}${key}[${index}].`);
+                                }
+                            }
+                        });
+                    } else {
                         errorsList.push({ field: key, message: JSON.stringify(error) });
                     }
                 }

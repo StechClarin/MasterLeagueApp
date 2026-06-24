@@ -109,6 +109,27 @@ class FinanceService(BaseService):
         
         return created_invoices
 
+    @staticmethod
+    def recalculate_invoices_on_class_change(enrollment):
+        """
+        Supprime les anciennes factures (si non payées) et régénère les nouvelles
+        suite à un changement de classe.
+        """
+        from apps.finance.models import Invoice, Payment
+        
+        invoices = Invoice.objects.filter(enrollment=enrollment)
+        
+        if Payment.objects.filter(invoice__in=invoices).exists():
+            logger.error(f"Impossible de recalculer les factures de {enrollment.student} : Des paiements existent.")
+            return False
+            
+        # Suppression des anciennes factures
+        invoices.delete()
+        
+        # Régénération
+        FinanceService.generate_invoices_for_enrollment(enrollment)
+        return True
+
     def get_student_financial_status(self, student_id):
         """
         Calcule la situation financière globale d'un élève.

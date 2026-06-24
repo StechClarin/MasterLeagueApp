@@ -41,11 +41,14 @@ export class StudentFormComponent extends BaseModalFormComponent {
     }
 
     loadDropdowns() {
-        this.yearService.list().subscribe((items: any[]) => {
+        this.yearService.listActive().subscribe((items: any[]) => {
             this.academicYearsOptions.set(items.map((y: any) => ({
                 value: y.id,
                 label: y.name
             })));
+            if (items.length > 0 && !this.enrollmentGroup.get('academic_year_id')?.value) {
+                this.enrollmentGroup.get('academic_year_id')?.setValue(items[0]?.id);
+            }
         });
 
         this.classService.list().subscribe((items: any[]) => {
@@ -109,7 +112,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
 
     get healthGroup(): FormGroup { return this.form.get('health_input') as FormGroup; }
     get enrollmentGroup(): FormGroup { return this.form.get('enrollment_input') as FormGroup; }
-    get parentsArray(): FormArray { return this.form.get('parents_input') as FormArray; }
+    get familyGroup(): FormGroup { return this.form.get('family_input') as FormGroup; }
 
     initForm(): FormGroup {
         this.form = this.fb.group({
@@ -122,6 +125,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
             place_of_birth: [''],
             address: [''],
             photo: [null],
+            rfid_uid: [''],
 
             // 2. Health (Nested)
             health_input: this.fb.group({
@@ -129,7 +133,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
                 allergies: [''],
                 medical_conditions: [''],
                 emergency_contact_name: [''],
-                emergency_contact_phone: ['']
+                emergency_contact_phone: ['', [Validators.pattern(/^\+?[\d\s-]{4,}$/)]]
             }),
 
             // 3. Enrollment (Nested)
@@ -139,29 +143,29 @@ export class StudentFormComponent extends BaseModalFormComponent {
                 is_repeater: [false]
             }),
 
-            // 4. Parents (Array)
-            parents_input: this.fb.array([])
+            // 4. Family (Nested)
+            family_input: this.fb.group({
+                is_parent_tutor: [true],
+                father: this.createGuardianGroup('FATHER'),
+                mother: this.createGuardianGroup('MOTHER'),
+                tutor: this.createGuardianGroup('TUTOR')
+            })
         });
-
-        this.addParent('FATHER');
+        
         return this.form;
     }
 
-    addParent(role: string = 'FATHER') {
-        const group = this.fb.group({
-            role: [role, Validators.required],
-            first_name: ['', Validators.required],
-            last_name: ['', Validators.required],
-            phone_number: ['', Validators.required],
+    createGuardianGroup(role: string): FormGroup {
+        return this.fb.group({
+            id: [null],
+            role: [role],
+            first_name: [''],
+            last_name: [''],
+            phone_number: ['', [Validators.pattern(/^\+?[\d\s-]{4,}$/)]],
             profession: [''],
-            email: [''],
-            is_legal_guardian: [true]
+            email: ['', [Validators.email]],
+            is_legal_guardian: [false]
         });
-        this.parentsArray.push(group);
-    }
-
-    removeParent(index: number) {
-        this.parentsArray.removeAt(index);
     }
 
     override fieldLabels = {
@@ -184,7 +188,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
                 this.currentTab.set('identity');
             } else if (this.enrollmentGroup.invalid) {
                 this.currentTab.set('cursus');
-            } else if (this.parentsArray.invalid) {
+            } else if (this.familyGroup.invalid) {
                 this.currentTab.set('family');
             } else if (this.healthGroup.invalid) {
                 this.currentTab.set('health');
@@ -205,6 +209,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
             date_of_birth: data.dateOfBirth,
             place_of_birth: data.placeOfBirth,
             address: data.address,
+            rfid_uid: data.rfidUid,
             photo: this.getPhotoUrl(data.photo) // Bind Photo URL
         });
 
@@ -240,26 +245,43 @@ export class StudentFormComponent extends BaseModalFormComponent {
         }
 
         // 4. Parents
-        this.parentsArray.clear();
+        const familyInput = {
+            is_parent_tutor: true,
+            father: { role: 'FATHER' },
+            mother: { role: 'MOTHER' },
+            tutor: { role: 'TUTOR' }
+        };
+
         if (data.guardians && data.guardians.length > 0) {
+            let hasTutor = false;
             data.guardians.forEach((g: any) => {
-                const group = this.fb.group({
-                    id: [g.id],
-                    role: [g.role || 'TUTOR', Validators.required],
-                    first_name: [g.firstName || g.user?.firstName || '', Validators.required],
-                    last_name: [g.lastName || g.user?.lastName || '', Validators.required],
-                    phone_number: [g.phoneNumber || '', Validators.required],
-                    profession: [g.profession || ''],
-                    email: [g.user?.email || ''],
-                    is_legal_guardian: [true]
+                const mapGuardian = (g: any) => ({
+                    id: g.id,
+                    role: g.role,
+                    first_name: g.firstName || g.user?.firstName || '',
+                    last_name: g.lastName || g.user?.lastName || '',
+                    phone_number: g.phoneNumber || '',
+                    profession: g.profession || '',
+                    email: g.user?.email || '',
+                    is_legal_guardian: g.isLegalGuardian !== undefined ? g.isLegalGuardian : true
                 });
-                this.parentsArray.push(group);
+
+                if (g.role === 'FATHER') {
+                    familyInput.father = mapGuardian(g);
+                } else if (g.role === 'MOTHER') {
+                    familyInput.mother = mapGuardian(g);
+                } else if (g.role === 'TUTOR' || !g.role) {
+                    familyInput.tutor = mapGuardian({ ...g, role: 'TUTOR' });
+                    hasTutor = true;
+                }
             });
-        } else {
-            if (data.guardians?.length === 0) {
-                this.addParent();
+            if (hasTutor) {
+                familyInput.is_parent_tutor = false;
             }
         }
+        
+        // Ensure the form gets all parts properly
+        this.familyGroup.patchValue(familyInput);
     }
 
     save() {
@@ -267,6 +289,24 @@ export class StudentFormComponent extends BaseModalFormComponent {
         if (this.isEditMode) {
             payload.id = this.data.id;
         }
+
+        // Map family_input to parents_input for the backend
+        const family = payload.family_input;
+        const parents = [];
+        if (family.father.first_name || family.father.last_name) {
+            family.father.is_legal_guardian = family.is_parent_tutor;
+            parents.push(family.father);
+        }
+        if (family.mother.first_name || family.mother.last_name) {
+            family.mother.is_legal_guardian = family.is_parent_tutor;
+            parents.push(family.mother);
+        }
+        if (!family.is_parent_tutor && (family.tutor.first_name || family.tutor.last_name)) {
+            family.tutor.is_legal_guardian = true;
+            parents.push(family.tutor);
+        }
+        payload.parents_input = parents;
+        delete payload.family_input;
 
         const formData = new FormData();
 

@@ -78,7 +78,7 @@ export class ClassRoomFormComponent extends BaseFormComponent implements OnChang
         this.hasOptions = selectedLevel?.cycle?.hasOptions || false;
         
         if (this.hasOptions) {
-            this.loadParentOptions();
+            this.loadParentOptions(selectedLevel?.cycle?.id);
         } else {
             this.form.patchValue({ parentId: null, optionId: null });
         }
@@ -114,9 +114,9 @@ export class ClassRoomFormComponent extends BaseFormComponent implements OnChang
         });
     }
 
-    private loadParentOptions() {
+    private loadParentOptions(cycleId?: string) {
         const estId = this.structureState.currentEstablishmentId() ?? undefined;
-        this.optionService.getAll(undefined, "", estId).subscribe(res => {
+        this.optionService.getAll(undefined, "", cycleId, estId).subscribe(res => {
             this.parentOptions = (res.data.options?.items || [])
                 .filter(o => !!o)
                 .map(o => ({

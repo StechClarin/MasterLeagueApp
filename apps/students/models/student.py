@@ -23,6 +23,9 @@ class Student(EstablishmentAwareModel):
     
     address = models.TextField(blank=True, null=True)
     
+    # NFC/RFID chip unique identifier for physical badging
+    rfid_uid = models.CharField(max_length=50, blank=True, null=True, unique=True, help_text="Identifiant unique de la puce NFC/RFID")
+    
     # Optional user account for the student
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 

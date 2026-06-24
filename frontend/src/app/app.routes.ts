@@ -18,6 +18,21 @@ export const routes: Routes = [
       .then(m => m.EvaluationPlanningPrintComponent)
   },
   {
+    path: 'print/bulletins',
+    loadComponent: () => import('./features/evaluations/components/bulletin-print/bulletin-print.component')
+      .then(m => m.BulletinPrintComponent)
+  },
+  {
+    path: 'print/certificate',
+    loadComponent: () => import('./features/students/components/certificate-print/certificate-print.component')
+      .then(m => m.CertificatePrintComponent)
+  },
+  {
+    path: 'print/idcard',
+    loadComponent: () => import('./features/students/components/idcard-print/idcard-print.component')
+      .then(m => m.IdcardPrintComponent)
+  },
+  {
     path: 'print/receipt/:id',
     loadComponent: () => import('@features/finance/components/payment-receipt/payment-receipt.component')
       .then(m => m.PaymentReceiptComponent)

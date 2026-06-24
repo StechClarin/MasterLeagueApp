@@ -14,10 +14,11 @@ export class OptionService extends BaseService {
         return this.generatedGQL.document;
     }
 
-    getAll(search?: string, parentId?: string, establishmentId?: string) {
+    getAll(search?: string, parentId?: string, cycleId?: string, establishmentId?: string) {
         return this.generatedGQL.fetch({
             search,
             parentId,
+            cycleId,
             establishmentId,
             page: 1,
             pageSize: 100

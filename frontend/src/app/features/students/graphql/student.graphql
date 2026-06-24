@@ -11,6 +11,8 @@ query GetAllStudents($search: String, $classroomId: ID, $academicYearId: ID, $st
       placeOfBirth
       gender
       address
+      qrCodeBase64
+      rfidUid
       health {
         id
         bloodGroup
@@ -38,10 +40,12 @@ query GetAllStudents($search: String, $classroomId: ID, $academicYearId: ID, $st
       }
       guardians {
         id
+        role
         firstName
         lastName
         phoneNumber
         profession
+        isLegalGuardian
         user {
           firstName
           lastName
@@ -65,6 +69,8 @@ query GetStudent($id: ID!) {
     dateOfBirth
     placeOfBirth
     address
+    qrCodeBase64
+    rfidUid
     health {
       id
       bloodGroup
@@ -91,8 +97,12 @@ query GetStudent($id: ID!) {
     }
     guardians {
       id
+      role
+      firstName
+      lastName
       phoneNumber
       profession
+      isLegalGuardian
       user {
         firstName
         lastName
@@ -111,8 +121,8 @@ query GetStudent($id: ID!) {
   }
 }
 
-query GetAllEnrollments($search: String, $classroomId: ID, $academicYearId: ID, $page: Int, $pageSize: Int) {
-  enrollments(search: $search, classroomId: $classroomId, academicYearId: $academicYearId, page: $page, pageSize: $pageSize) {
+query GetAllEnrollments($search: String, $classroomId: ID, $academicYearId: ID, $status: String, $page: Int, $pageSize: Int) {
+  enrollments(search: $search, classroomId: $classroomId, academicYearId: $academicYearId, status: $status, page: $page, pageSize: $pageSize) {
     items {
       id
       status
@@ -124,6 +134,11 @@ query GetAllEnrollments($search: String, $classroomId: ID, $academicYearId: ID, 
         lastName
         matricule
         photo
+        dateOfBirth
+        placeOfBirth
+        gender
+        qrCodeBase64
+        rfidUid
       }
       classroom {
         id

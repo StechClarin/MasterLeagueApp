@@ -114,36 +114,47 @@ class StudentService(BaseService):
         enrollment_data = related_data.get('enrollment_data')
         student = instance
 
+        from django.db.transaction import atomic
+
         # 1. Santé
         if health_data:
-            StudentHealth.objects.update_or_create(
-                student=student,
-                defaults={
-                    'establishment': student.establishment,
-                    **health_data
-                }
-            )
+            with atomic(): # type: ignore
+                try:
+                    StudentHealth.objects.update_or_create(
+                        student=student,
+                        defaults={
+                            'establishment': student.establishment,
+                            **health_data
+                        }
+                    )
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"Failed to save Health data: {e}")
 
         # 2. Inscription
         if enrollment_data:
-            # Récupération sécurisée des instances ou IDs
-            classroom_id = enrollment_data.get('classroom_id')
-            academic_year_id = enrollment_data.get('academic_year_id')
-            
-            # DRF PrimaryKeyRelatedField renvoie l'objet, on extrait l'ID si c'est le cas
-            if hasattr(classroom_id, 'id'): classroom_id = classroom_id.id
-            if hasattr(academic_year_id, 'id'): academic_year_id = academic_year_id.id
-
-            Enrollment.objects.update_or_create(
-                student=student,
-                academic_year_id=academic_year_id,
-                defaults={
-                    'establishment_id': student.establishment_id,
-                    'classroom_id': classroom_id,
-                    'is_repeater': enrollment_data.get('is_repeater', False),
-                    'status': enrollment_data.get('status', 'PENDING')
-                }
-            )
+            with atomic(): # type: ignore
+                try:
+                    # Récupération sécurisée des instances ou IDs
+                    classroom_id = enrollment_data.get('classroom_id')
+                    academic_year_id = enrollment_data.get('academic_year_id')
+                    
+                    # DRF PrimaryKeyRelatedField renvoie l'objet, on extrait l'ID si c'est le cas
+                    if hasattr(classroom_id, 'id'): classroom_id = classroom_id.id
+                    if hasattr(academic_year_id, 'id'): academic_year_id = academic_year_id.id
+        
+                    Enrollment.objects.update_or_create(
+                        student=student,
+                        academic_year_id=academic_year_id,
+                        defaults={
+                            'classroom_id': classroom_id,
+                            'status': enrollment_data.get('status', 'PENDING'),
+                            'establishment': student.establishment
+                        }
+                    )
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"Failed to save Enrollment data: {e}")
 
         # 3. Parents / Tuteurs
         if parents_data:
@@ -153,15 +164,25 @@ class StudentService(BaseService):
                 phone = p_data.get('phone_number')
                 if not phone: continue
                 
-                guardian, _ = Guardian.objects.get_or_create(
+                guardian, created_guardian = Guardian.objects.get_or_create(
                     phone_number=phone,
                     defaults={
                         'establishment': student.establishment,
                         'first_name': p_data.get('first_name', ''),
                         'last_name': p_data.get('last_name', ''),
                         'profession': p_data.get('profession', ''),
+                        'role': p_data.get('role', 'TUTOR'),
+                        'is_legal_guardian': p_data.get('is_legal_guardian', False)
                     }
                 )
+                
+                if not created_guardian:
+                    guardian.first_name = p_data.get('first_name', guardian.first_name)
+                    guardian.last_name = p_data.get('last_name', guardian.last_name)
+                    guardian.profession = p_data.get('profession', guardian.profession)
+                    guardian.role = p_data.get('role', guardian.role)
+                    guardian.is_legal_guardian = p_data.get('is_legal_guardian', guardian.is_legal_guardian)
+                    guardian.save()
                 
                 if guardian not in current_guardians:
                     student.guardians.add(guardian)
@@ -169,35 +190,36 @@ class StudentService(BaseService):
         # 4. Synchronisation Photo de profil
         if instance.photo:
             try:
-                from django.contrib.contenttypes.models import ContentType
-                from apps.documents.models.document import Document
-                
-                ct = ContentType.objects.get_for_model(instance)
-                
-                doc = Document.objects.filter(
-                    content_type=ct, 
-                    object_id=instance.id, 
-                    document_type='PHOTO'
-                ).first()
-
-                if not doc:
-                    doc = Document(
-                        content_type=ct,
+                with atomic(): # type: ignore
+                    from django.contrib.contenttypes.models import ContentType
+                    from apps.documents.models.document import Document
+                    
+                    # Vérifier si un document existe déjà pour cette photo
+                    doc = Document.objects.filter(
+                        document_type='PROFILE_PHOTO',
                         object_id=instance.id,
-                        document_type='PHOTO',
-                        title=f"Photo de profil - {instance.first_name} {instance.last_name}"
-                    )
-                    doc.file.name = instance.photo.name
-                    doc.save()
-                else:
-                    if doc.file.name != instance.photo.name:
+                        content_type=ContentType.objects.get_for_model(instance.__class__)
+                    ).first()
+                    
+                    if not doc:
+                        doc = Document(
+                            title=f"Photo de profil - {instance.matricule}",
+                            document_type='PROFILE_PHOTO',
+                            owner=instance.created_by_user,
+                            establishment=instance.establishment,
+                            content_type=ContentType.objects.get_for_model(instance.__class__),
+                            object_id=instance.id,
+                            file=instance.photo
+                        )
                         doc.file.name = instance.photo.name
-                        doc.title = f"Photo de profil - {instance.first_name} {instance.last_name}"
                         doc.save()
-            except (ImportError, Exception):
-                pass 
+                    else:
+                        doc.file = instance.photo
+                        doc.file.name = instance.photo.name
+                        doc.save(update_fields=['file'])
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Error saving profile photo document: {e}") 
 
         # Nettoyage de la mémoire temporaire
         self._temp_related_data = {}
-
-

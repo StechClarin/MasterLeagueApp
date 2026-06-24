@@ -3,6 +3,7 @@ from apps.core.graphql.Types.paginated_type import get_paginated_type
 from apps.core.utils.pagination import paginate_queryset
 from ..Types.student_type import StudentType
 from ...models import Student
+from django.db.models import Q
 
 StudentPaginatedType = get_paginated_type(StudentType)
 
@@ -10,13 +11,13 @@ class StudentQuery(graphene.ObjectType):
     student = graphene.Field(StudentType, id=graphene.ID(required=True))
     students = graphene.Field(
         StudentPaginatedType,
-        search=graphene.String(),
-        classroom_id=graphene.ID(),
-        academic_year_id=graphene.ID(),
-        status=graphene.String(),
-        parent_phone=graphene.String(),
-        page=graphene.Int(default_value=1),
-        page_size=graphene.Int(default_value=10)
+        search              =graphene.String(),
+        classroom_id        =graphene.ID(),
+        academic_year_id    =graphene.ID(),
+        status              =graphene.String(),
+        parent_phone        =graphene.String(),
+        page                =graphene.Int(default_value=1),
+        page_size           =graphene.Int(default_value=10)
     )
 
     def resolve_student(root, info, id):
@@ -26,7 +27,7 @@ class StudentQuery(graphene.ObjectType):
             return None
 
     def resolve_students(root, info, search=None, classroom_id=None, academic_year_id=None, status=None, parent_phone=None, page=1, page_size=10, **kwargs):
-        from django.db.models import Q
+        
         
         # 1. Base Query with optimization
         queryset = Student.objects.select_related('establishment', 'health').prefetch_related(

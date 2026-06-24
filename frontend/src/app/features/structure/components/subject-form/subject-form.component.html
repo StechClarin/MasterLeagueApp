@@ -56,36 +56,38 @@
                     </div>
 
                     <div *ngIf="!isLoadingLevels()" class="space-y-4">
-                        <div class="flex justify-end">
+                        <div class="flex justify-end sticky -top-6 z-20 bg-white/95 backdrop-blur-sm py-4 -mx-4 px-4 border-b border-slate-200/60 shadow-[0_4px_15px_-3px_rgba(0,0,0,0.05)] rounded-b-xl mb-4">
                             <button type="button" (click)="addAssignment()"
-                                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-sm text-sm font-bold">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 text-sm font-bold active:scale-95">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                                 Ajouter une affectation
                             </button>
                         </div>
 
-                        <div class="overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm">
-                            <table class="min-w-full divide-y divide-slate-100">
+                        <div class="overflow-x-auto custom-scrollbar border border-slate-200 rounded-2xl bg-white shadow-sm">
+                            <table class="min-w-[950px] divide-y divide-slate-100">
                                 <thead class="bg-slate-50/80">
                                     <tr>
-                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">Niveau</th>
-                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">Filière / Spécialité</th>
-                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest w-40">Coeff.</th>
-                                        <th scope="col" class="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest w-44">Vol. Horaire</th>
-                                        <th scope="col" class="px-6 py-4 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest w-16"></th>
+                                        <th scope="col" class="px-4 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest min-w-[180px]">Niveau</th>
+                                        <th scope="col" class="px-4 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest min-w-[180px]">Filière / Spécialité</th>
+                                        <th scope="col" class="px-4 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest min-w-[180px]">Groupe / UE</th>
+                                        <th scope="col" class="px-4 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest min-w-[100px]">Crédits</th>
+                                        <th scope="col" class="px-4 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest min-w-[100px]">Coeff.</th>
+                                        <th scope="col" class="px-4 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest min-w-[120px]">Vol. Horaire</th>
+                                        <th scope="col" class="px-4 py-4 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest w-16"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100" formArrayName="levelSubjects">
                                     <tr *ngFor="let control of levelSubjectsArray.controls; let i = index" [formGroupName]="i" 
                                         class="hover:bg-indigo-50/30 transition-colors group">
-                                        <td class="px-6 py-4">
+                                        <td class="px-4 py-4">
                                             <select formControlName="levelId" 
                                                 class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
-                                                <option value="" disabled>Sélectionner un niveau</option>
+                                                <option value="" disabled>Sélectionner</option>
                                                 <option *ngFor="let level of allLevels()" [value]="level.id">{{ level.name }}</option>
                                             </select>
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-4 py-4">
                                             <ng-container *ngIf="control.get('availableOptions')?.value?.length > 0; else noOptions">
                                                 <select formControlName="optionId" 
                                                     class="block w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
@@ -94,18 +96,29 @@
                                                 </select>
                                             </ng-container>
                                             <ng-template #noOptions>
-                                                <span class="text-xs text-slate-400 italic">Aucune option (Tronc Commun)</span>
+                                                <span class="text-xs text-slate-400 italic">Tronc Commun</span>
                                             </ng-template>
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-4 py-4">
+                                            <select formControlName="groupId" 
+                                                class="block w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                                <option [ngValue]="null">Aucun groupe</option>
+                                                <option *ngFor="let group of allGroups()" [value]="group.id">{{ group.name }}</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-4">
+                                            <input type="number" formControlName="credits" min="0" step="1"
+                                                class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                                        </td>
+                                        <td class="px-4 py-4">
                                             <input type="number" formControlName="coefficient" min="1" step="0.5"
                                                 class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-4 py-4">
                                             <input type="number" formControlName="hourlyQuota" min="0"
                                                 class="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
                                         </td>
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-4 py-4 text-right">
                                             <button type="button" (click)="removeAssignment(i)"
                                                 class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>

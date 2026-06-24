@@ -93,7 +93,7 @@
                     (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
 
                 <!-- Formulaire -->
-                <app-room-form *ngSwitchDefault [item]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
+                <app-room-form *ngSwitchDefault [room]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
                     (cancel)="closeModal()" (success)="onSave()"></app-room-form>
             </ng-container>
         </app-ui-modal>

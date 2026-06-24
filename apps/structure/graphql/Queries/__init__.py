@@ -6,6 +6,7 @@ from .subject_query import SubjectQuery
 from .structure_query import StructureQuery
 from .room_query import RoomQuery
 from .option_query import OptionQuery
+from .subject_group_query import SubjectGroupQuery
 
 __all__ = [
     'AcademicYearQuery', 
@@ -15,5 +16,6 @@ __all__ = [
     'SubjectQuery', 
     'StructureQuery',
     'RoomQuery',
-    'OptionQuery'
+    'OptionQuery',
+    'SubjectGroupQuery'
 ]
