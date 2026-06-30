@@ -129,8 +129,8 @@ query GetInvoices($search: String, $studentId: ID, $status: String, $category: S
   }
 }
 
-query GetPayments($search: String, $invoiceId: ID, $page: Int, $pageSize: Int) {
-  payments(search: $search, invoiceId: $invoiceId, page: $page, pageSize: $pageSize) {
+query GetPayments($search: String, $invoiceId: ID, $paymentDate: String, $page: Int, $pageSize: Int) {
+  payments(search: $search, invoiceId: $invoiceId, paymentDate: $paymentDate, page: $page, pageSize: $pageSize) {
     totalCount
     numPages
     currentPage

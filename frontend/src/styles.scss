@@ -62,10 +62,12 @@
     min-height: 0 !important;
     display: block !important;
     background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
-  /* Cacher tout ce qui n'est pas la modale */
-  app-root > *:not(app-ui-modal) {
+  /* Cacher tout ce qui n'est pas la modale ou les pages d'impression */
+  app-root > *:not(app-ui-modal):not(app-idcard-print):not(app-certificate-print):not(app-evaluation-planning-print):not(app-bulletin-print):not(app-payment-receipt):not(app-invoice-receipt) {
     display: none !important;
   }
 

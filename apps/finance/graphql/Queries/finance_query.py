@@ -37,6 +37,7 @@ class FinanceQuery(graphene.ObjectType):
         PaymentPaginatedType,
         search=graphene.String(),
         invoice_id=graphene.ID(),
+        payment_date=graphene.String(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -90,7 +91,7 @@ class FinanceQuery(graphene.ObjectType):
             
         return InvoicePaginatedType(**paginate_queryset(queryset, page, page_size))  # type: ignore
 
-    def resolve_payments(self, info, search=None, invoice_id=None, page=1, page_size=10):
+    def resolve_payments(self, info, search=None, invoice_id=None, payment_date=None, page=1, page_size=10):
         est_id = info.context.establishment_id
         queryset = Payment.objects.filter(establishment_id=est_id).order_by('-payment_date')
         
@@ -107,6 +108,9 @@ class FinanceQuery(graphene.ObjectType):
             
         if invoice_id:
             queryset = queryset.filter(invoice_id=invoice_id)
+            
+        if payment_date:
+            queryset = queryset.filter(payment_date__date=payment_date)
             
         return PaymentPaginatedType(**paginate_queryset(queryset, page, page_size))  # type: ignore
 

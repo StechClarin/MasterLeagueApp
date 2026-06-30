@@ -36,6 +36,7 @@ export type GetInvoicesQuery = { __typename?: 'Query', invoices?: { __typename?:
 export type GetPaymentsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
   invoiceId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
+  paymentDate?: Types.InputMaybe<Types.Scalars['String']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
@@ -228,10 +229,11 @@ export const GetInvoicesDocument = gql`
     }
   }
 export const GetPaymentsDocument = gql`
-    query GetPayments($search: String, $invoiceId: ID, $page: Int, $pageSize: Int) {
+    query GetPayments($search: String, $invoiceId: ID, $paymentDate: String, $page: Int, $pageSize: Int) {
   payments(
     search: $search
     invoiceId: $invoiceId
+    paymentDate: $paymentDate
     page: $page
     pageSize: $pageSize
   ) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -6,7 +6,8 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './certificate-print.component.html',
-  styleUrls: ['./certificate-print.component.css']
+  styleUrls: ['./certificate-print.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class CertificatePrintComponent implements OnInit {
   data = signal<any>(null);

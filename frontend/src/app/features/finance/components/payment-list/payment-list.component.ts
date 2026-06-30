@@ -31,7 +31,23 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
       [isEmpty]="(items$ | async)?.length === 0">
       
       <ng-container header-actions>
-        <app-ui-toolbar [searchControl]="searchControl" placeholder="Filtrer par facture ou élève..."></app-ui-toolbar>
+        <app-ui-toolbar [searchControl]="searchControl" placeholder="Filtrer par facture ou élève...">
+          <div class="flex items-center gap-2">
+            <input 
+              type="date" 
+              [formControl]="dateControl"
+              class="h-[42px] px-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-sm font-medium text-slate-700 bg-white" 
+            />
+            <button 
+              (click)="confirmExport('pdf')"
+              class="h-[42px] px-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-slate-200 flex items-center justify-center gap-2 whitespace-nowrap">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+              </svg>
+              Imprimer Journal
+            </button>
+          </div>
+        </app-ui-toolbar>
       </ng-container>
 
       <ng-container table>
@@ -71,6 +87,7 @@ export class PaymentListComponent extends BaseListComponent<any> implements OnIn
   query = GetPaymentsDocument;
   
   searchControl = new FormControl('');
+  dateControl = new FormControl('');
   private destroy$ = new Subject<void>();
   private cdr = inject(ChangeDetectorRef);
   tableColumns: UiTableColumn[] = [];
@@ -84,6 +101,13 @@ export class PaymentListComponent extends BaseListComponent<any> implements OnIn
         takeUntil(this.destroy$)
     ).subscribe(val => {
         this.filterForm.patchValue({ search: val || '' });
+    });
+
+    // Sync Date
+    this.dateControl.valueChanges.pipe(
+        takeUntil(this.destroy$)
+    ).subscribe(val => {
+        this.filterForm.patchValue({ paymentDate: val || '' });
     });
 
     // Auto-refresh on filter change
@@ -113,6 +137,8 @@ export class PaymentListComponent extends BaseListComponent<any> implements OnIn
 
   resetFilters() {
       this.filterForm.reset();
+      this.searchControl.setValue('', { emitEvent: false });
+      this.dateControl.setValue('', { emitEvent: false });
   }
 
   ngOnDestroy() {
@@ -123,7 +149,26 @@ export class PaymentListComponent extends BaseListComponent<any> implements OnIn
   initFilterForm() {
     return this.fb.group({
       search: [''],
+      paymentDate: [''],
       invoiceId: [null]
     });
+  }
+
+  override getExportConfig() {
+    const d = this.dateControl.value;
+    const titleDate = d ? new Date(d).toLocaleDateString('fr-FR') : 'Global';
+    return {
+      title: `Rapport Journalier des Encaissements - ${titleDate}`,
+      columns: [
+        { header: 'Date', key: 'paymentDate', format: (val: any) => new Date(val).toLocaleDateString('fr-FR') },
+        { header: 'Référence', key: 'reference' },
+        { header: 'Élève', key: 'invoice.student', format: (val: any) => val ? `${val.lastName} ${val.firstName} (${val.matricule})` : '-' },
+        { header: 'Classe', key: 'invoice.enrollment.classroom.name' },
+        { header: 'Facture', key: 'invoice.title' },
+        { header: 'Montant (FCFA)', key: 'amount', format: (val: any) => val ? val.toLocaleString() : '0' },
+        { header: 'Mode', key: 'paymentMethod' },
+        { header: 'Caissier', key: 'createdByUser.username', format: (val: any) => val || 'Système' }
+      ]
+    };
   }
 }

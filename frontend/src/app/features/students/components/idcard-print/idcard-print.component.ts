@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from 'src/environments/environment';
 
@@ -7,7 +7,8 @@ import { environment } from 'src/environments/environment';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './idcard-print.component.html',
-  styleUrls: ['./idcard-print.component.css']
+  styleUrls: ['./idcard-print.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class IdcardPrintComponent implements OnInit {
   data = signal<any>(null);
