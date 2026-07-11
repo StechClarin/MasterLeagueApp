@@ -20,6 +20,7 @@ services:
       - ALLOWED_HOSTS=*
       - CORS_ALLOW_ALL_ORIGINS=True
       - CSRF_TRUSTED_ORIGINS=http://72.60.2.96:8080
+      - STATIC_ROOT=/app/static
     # On force la connexion au réseau du container de prod pour voir la DB
     networks:
       - schoolmanage_default 
