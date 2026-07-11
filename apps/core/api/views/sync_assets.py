@@ -48,6 +48,13 @@ class AssetManifestView(APIView):
             file_paths.add(est.logo.name)
         if est.print_header and est.print_header.name:
             file_paths.add(est.print_header.name)
+            
+        # 1c. Collect files from Users associated with this establishment
+        from apps.core.models.establishment_membership import EstablishmentMembership
+        memberships = EstablishmentMembership.objects.filter(establishment=est).select_related('user')
+        for member in memberships:
+            if member.user and member.user.photo and member.user.photo.name:
+                file_paths.add(member.user.photo.name)
 
         # 2. Collect files from Direct Models (like Student.photo)
         # We look for models that have FileField/ImageField and are EstablishmentAware
