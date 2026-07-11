@@ -47,12 +47,7 @@ else:
         path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
     ]
 
-# Route pour servir les icônes directement depuis apps/core/assets/icons/
-urlpatterns += [
-    path('apps/core/assets/icons/<path:path>', serve, {
-        'document_root': str(settings.BASE_DIR / 'apps' / 'core' / 'assets' / 'icons')
-    }),
-]
+
 
 # 5. Frontend Angular (Maquette/App) - MUST BE LAST
 urlpatterns += [

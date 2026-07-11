@@ -46,6 +46,7 @@ class UnlockModuleView(APIView):
 
             # 4. Enregistrement de la licence (Ajout ou mise à jour) pour l'Utilisateur
             codes_to_process = included_mods if included_mods else [module_code]
+            allowed_pages = request.data.get('allowed_pages', [])
             
             for code in codes_to_process:
                 if not code:
@@ -53,7 +54,10 @@ class UnlockModuleView(APIView):
                 TenantLicense.objects.update_or_create(
                     user=owner,
                     module_code=code,
-                    defaults={'is_active': is_active}
+                    defaults={
+                        'is_active': is_active,
+                        'allowed_pages': allowed_pages
+                    }
                 )
 
             status_str = "unlocked" if is_active else "revoked"

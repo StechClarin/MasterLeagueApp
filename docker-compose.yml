@@ -34,6 +34,8 @@ services:
       - "8080:80" # ACCÈS SUR LE PORT 8080
     volumes:
       - ./releases:/app/releases
+      - static_volume_test:/app/static
+      - media_volume_test:/app/media
     depends_on:
       - backend-test
     networks:

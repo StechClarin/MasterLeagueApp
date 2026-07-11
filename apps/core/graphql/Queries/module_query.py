@@ -22,14 +22,20 @@ class ModuleQuery(graphene.ObjectType):
         # --- GESTION DES LICENCES PAR PROPRIÉTAIRE (TENANT) ---
         est_id = getattr(info.context, 'establishment_id', None)
         
+        license_restrictions = {}
         if est_id:
             from apps.core.models import TenantLicense, Establishment
             try:
                 est = Establishment.objects.get(id=est_id)
-                unlocked_codes = TenantLicense.objects.filter(
+                active_licenses = TenantLicense.objects.filter(
                     user=est.user,
                     is_active=True
-                ).values_list('module_code', flat=True)
+                )
+                unlocked_codes = []
+                for lic in active_licenses:
+                    unlocked_codes.append(lic.module_code)
+                    if lic.allowed_pages:
+                        license_restrictions[lic.module_code] = lic.allowed_pages
             except Establishment.DoesNotExist:
                 unlocked_codes = []
 
@@ -73,31 +79,42 @@ class ModuleQuery(graphene.ObjectType):
             except ObjectDoesNotExist:
                 return [] # Aucun droit sur cet établissement
 
-        # Si admin (Superuser ou Owner), on renvoie tout ce que la licence permet
-        if is_admin:
-            return base_module_query
-
-        # 3. FILTRAGE DES PAGES POUR L'UTILISATEUR STANDARD
+        # 3. FILTRAGE DES PAGES
         all_modules = base_module_query
         filtered_modules = []
 
         for module in all_modules:
-            allowed_pages = []
+            allowed_pages_in_module = []
+            
+            # Récupère les restrictions de licence pour ce module
+            mod_license_pages = license_restrictions.get(module.code, [])
             
             for page in module.pages.all():
-                # Si la page n'a pas de tag, elle est publique
-                if not page.permission_tags:
-                    allowed_pages.append(page)
-                    continue
-                
-                # Vérifie si l'utilisateur a au moins un des tags requis
-                page_tags = set(page.permission_tags)
-                if page_tags.intersection(allowed_tags):
-                    allowed_pages.append(page)
+                # 3.1. Vérification au niveau de la licence du Tenant
+                # Si la licence a des pages spécifiques définies, on doit s'assurer que la page a un tag correspondant
+                if mod_license_pages:
+                    page_tags = set(page.permission_tags) if page.permission_tags else set()
+                    # Si aucun tag de la page ne correspond aux allowed_pages de la licence, on cache la page
+                    if not page_tags.intersection(set(mod_license_pages)):
+                        continue
+
+                # 3.2. Vérification au niveau de l'utilisateur
+                if is_admin:
+                    # Le directeur / superuser voit toutes les pages autorisées par la licence
+                    allowed_pages_in_module.append(page)
+                else:
+                    # Utilisateur standard : vérification des tags
+                    if not page.permission_tags:
+                        # Page publique (mais autorisée par la licence)
+                        allowed_pages_in_module.append(page)
+                    else:
+                        page_tags = set(page.permission_tags)
+                        if page_tags.intersection(allowed_tags):
+                            allowed_pages_in_module.append(page)
             
             # Si le module contient des pages visibles, on l'ajoute
-            if allowed_pages:
-                module._prefetched_objects_cache = {'pages': allowed_pages}
+            if allowed_pages_in_module:
+                module._prefetched_objects_cache = {'pages': allowed_pages_in_module}
                 filtered_modules.append(module)
 
         return filtered_modules

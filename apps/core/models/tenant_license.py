@@ -25,6 +25,12 @@ class TenantLicense(UserAuditModel):
         help_text="Définit si le module est débloqué par la licence",
         verbose_name="Est Actif"
     )
+    allowed_pages = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Liste des tags/pages autorisés pour ce module. Si vide, toutes les pages du module sont autorisées.",
+        verbose_name="Pages Autorisées"
+    )
 
     class Meta:
         unique_together = ['user', 'module_code']

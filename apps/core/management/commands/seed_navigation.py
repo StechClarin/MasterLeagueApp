@@ -269,7 +269,7 @@ class Command(BaseCommand):
                 # Si c'est le module finance, on utilise l'icône dédiée
                 if mod_data.get('name') == "Finance" and icon_name == "evaluation-icon":
                     icon_name = "finance-icon"
-                mod_data['icon'] = f"/apps/core/assets/icons/{icon_name}.svg"
+                mod_data['icon'] = f"/static/icons/{icon_name}.svg"
             
             module = Module.objects.create(code=mod_code, **mod_data)
             self.stdout.write(f"  Module '{module.name}' cree avec le code '{module.code}'.")
@@ -279,7 +279,7 @@ class Command(BaseCommand):
                     continue
                 
                 page_icon_name = page_data.get('icon', '')
-                page_icon_url = f"/apps/core/assets/icons/{page_icon_name}.svg" if page_icon_name else ""
+                page_icon_url = f"/static/icons/{page_icon_name}.svg" if page_icon_name else ""
                     
                 Page.objects.create(
                     module=module,
