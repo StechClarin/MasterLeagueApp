@@ -1,0 +1,72 @@
+/* Print specific styles */
+@media screen {
+  /* Pour l'aperçu à l'écran, on centre la page avec une ombre */
+  .bulletin-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 15mm;
+    box-sizing: border-box;
+  }
+}
+
+@media print {
+  /* On réinitialise les marges pour l'impression A4 native */
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+  
+  .bulletin-page {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: white;
+    box-shadow: none;
+    page-break-after: always; /* Force un saut de page après chaque bulletin */
+  }
+
+  .bulletin-page:last-child {
+    page-break-after: auto;
+  }
+
+  /* Cacher tout ce qui n'est pas le bulletin (si nécessaire) */
+  nav, header, footer, .no-print {
+    display: none !important;
+  }
+
+  /* Assurer que les couleurs de fond sont imprimées */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+.table-header {
+  background-color: #f1f5f9;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.table-ue-row {
+  background-color: #e2e8f0;
+  font-weight: bold;
+}
+
+.table-border {
+  border: 1px solid #cbd5e1;
+}
+
+.table-border th, .table-border td {
+  border: 1px solid #cbd5e1;
+  padding: 4px 8px;
+}

@@ -52,6 +52,8 @@ fragment EvaluationSubjectFields on EvaluationSubjectType {
   levelCoefficients {
     levelId
     coefficient
+    groupName
+    credits
   }
   subjectFile
   subject {
@@ -113,7 +115,7 @@ fragment GradeFields on GradeType {
   id
   value
   comment
-  isAbsent
+  absenceStatus
   student {
     id
     matricule
@@ -145,9 +147,12 @@ fragment GradeFields on GradeType {
     levelCoefficients {
       levelId
       coefficient
+      groupName
+      credits
     }
     session {
       id
+      title
       evaluationType {
         code
         weight

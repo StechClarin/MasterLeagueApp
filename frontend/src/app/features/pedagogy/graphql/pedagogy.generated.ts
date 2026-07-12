@@ -12,7 +12,17 @@ export type GetAllPlanningsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllPlanningsQuery = { __typename?: 'Query', plannings?: { __typename?: 'PlanningTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'PlanningType', id: any, nom: string, dateStart?: any | null, dateEnd?: any | null, isTemplate: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string }, details: Array<{ __typename?: 'PlanningDetailType', id: any, date: any, heureDebut: any, heureFin: any, enseignant: { __typename?: 'PersonnelType', id: any, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: any, name: string }, matiere: { __typename?: 'SubjectType', id: any, name: string }, salle?: { __typename?: 'RoomType', id: any, name: string } | null }> } | null> | null } | null };
+export type GetAllPlanningsQuery = { __typename?: 'Query', plannings?: { __typename?: 'PlanningTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'PlanningType', id: any, nom: string, dateStart?: any | null, dateEnd?: any | null, isGlobal: boolean, isSpecific: boolean, isConge: boolean, isTemplate: boolean, targetClasses: Array<{ __typename?: 'ClassRoomType', id: any, name: string }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string }, details: Array<{ __typename?: 'PlanningDetailType', id: any, date: any, heureDebut: any, heureFin: any, isCancelled: boolean, enseignant: { __typename?: 'PersonnelType', id: any, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: any, name: string }, matiere: { __typename?: 'SubjectType', id: any, name: string }, salle?: { __typename?: 'RoomType', id: any, name: string } | null }> } | null> | null } | null };
+
+export type GetCompiledScheduleQueryVariables = Types.Exact<{
+  startDate: Types.Scalars['Date']['input'];
+  endDate: Types.Scalars['Date']['input'];
+  classroomId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
+  personnelId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
+}>;
+
+
+export type GetCompiledScheduleQuery = { __typename?: 'Query', compiledSchedule?: Array<any | null> | null };
 
 export type GetPlanningDetailsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -24,14 +34,14 @@ export type GetPlanningDetailsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetPlanningDetailsQuery = { __typename?: 'Query', planningDetails?: { __typename?: 'PlanningDetailTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'PlanningDetailType', id: any, date: any, heureDebut: any, heureFin: any, enseignant: { __typename?: 'PersonnelType', id: any, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: any, name: string }, matiere: { __typename?: 'SubjectType', id: any, name: string }, salle?: { __typename?: 'RoomType', id: any, name: string } | null } | null> | null } | null };
+export type GetPlanningDetailsQuery = { __typename?: 'Query', planningDetails?: { __typename?: 'PlanningDetailTypePaginated', totalCount?: number | null, numPages?: number | null, items?: Array<{ __typename?: 'PlanningDetailType', id: any, date: any, heureDebut: any, heureFin: any, enseignant: { __typename?: 'PersonnelType', id: any, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: any, name: string }, matiere: { __typename?: 'SubjectType', id: any, name: string }, salle?: { __typename?: 'RoomType', id: any, name: string } | null, planning: { __typename?: 'PlanningType', isGlobal: boolean } } | null> | null } | null };
 
 export type GetPlanningByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetPlanningByIdQuery = { __typename?: 'Query', planning?: { __typename?: 'PlanningType', id: any, nom: string, dateStart?: any | null, dateEnd?: any | null, isTemplate: boolean, details: Array<{ __typename?: 'PlanningDetailType', id: any, date: any, heureDebut: any, heureFin: any, enseignant: { __typename?: 'PersonnelType', id: any, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: any, name: string }, matiere: { __typename?: 'SubjectType', id: any, name: string }, salle?: { __typename?: 'RoomType', id: any, name: string } | null }> } | null };
+export type GetPlanningByIdQuery = { __typename?: 'Query', planning?: { __typename?: 'PlanningType', id: any, nom: string, dateStart?: any | null, dateEnd?: any | null, isGlobal: boolean, isSpecific: boolean, isConge: boolean, isTemplate: boolean, targetClasses: Array<{ __typename?: 'ClassRoomType', id: any, name: string }>, details: Array<{ __typename?: 'PlanningDetailType', id: any, date: any, heureDebut: any, heureFin: any, isCancelled: boolean, enseignant: { __typename?: 'PersonnelType', id: any, matricule: string, user?: { __typename?: 'UserType', firstName: string, lastName: string } | null }, classe: { __typename?: 'ClassRoomType', id: any, name: string }, matiere: { __typename?: 'SubjectType', id: any, name: string }, salle?: { __typename?: 'RoomType', id: any, name: string } | null }> } | null };
 
 export type GetPlanningDependenciesQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
@@ -68,7 +78,14 @@ export const GetAllPlanningsDocument = gql`
       nom
       dateStart
       dateEnd
+      isGlobal
+      isSpecific
+      isConge
       isTemplate
+      targetClasses {
+        id
+        name
+      }
       establishment {
         id
         name
@@ -78,6 +95,7 @@ export const GetAllPlanningsDocument = gql`
         date
         heureDebut
         heureFin
+        isCancelled
         enseignant {
           id
           matricule
@@ -111,6 +129,27 @@ export const GetAllPlanningsDocument = gql`
   })
   export class GetAllPlanningsGQL extends Apollo.Query<GetAllPlanningsQuery, GetAllPlanningsQueryVariables> {
     document = GetAllPlanningsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetCompiledScheduleDocument = gql`
+    query GetCompiledSchedule($startDate: Date!, $endDate: Date!, $classroomId: ID, $personnelId: ID) {
+  compiledSchedule(
+    startDate: $startDate
+    endDate: $endDate
+    classroomId: $classroomId
+    personnelId: $personnelId
+  )
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetCompiledScheduleGQL extends Apollo.Query<GetCompiledScheduleQuery, GetCompiledScheduleQueryVariables> {
+    document = GetCompiledScheduleDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -151,6 +190,9 @@ export const GetPlanningDetailsDocument = gql`
         id
         name
       }
+      planning {
+        isGlobal
+      }
     }
     totalCount
     numPages
@@ -175,12 +217,20 @@ export const GetPlanningByIdDocument = gql`
     nom
     dateStart
     dateEnd
+    isGlobal
+    isSpecific
+    isConge
     isTemplate
+    targetClasses {
+      id
+      name
+    }
     details {
       id
       date
       heureDebut
       heureFin
+      isCancelled
       enseignant {
         id
         matricule

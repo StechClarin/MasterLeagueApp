@@ -4,12 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { PlanningService } from '../../../pedagogy/services/planning.service';
 import { EvaluationService } from '../../../evaluations/services/evaluation.service';
 import { ClassRoomService } from '../../../structure/services/classroom.service';
+import { RoomService } from '../../../structure/services/room.service';
 import { firstValueFrom } from 'rxjs';
+import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
+import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
+import { ToastService } from '@core/services/toast.service';
 
 @Component({
     selector: 'app-student-timetable',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, UiConfirmModalComponent, UiModalComponent],
     template: `
     <div class="flex flex-col h-full bg-gray-50/50 rounded-xl overflow-hidden shadow-sm border border-gray-200">
         
@@ -126,25 +130,35 @@ import { firstValueFrom } from 'rxjs';
                                 <span class="font-black text-[11px] uppercase tracking-wider truncate">
                                     {{ evt.matiere?.name }}
                                 </span>
-                                <span *ngIf="evt.isEvaluation" class="text-[8px] font-black text-white bg-red-600 px-1 rounded-sm w-fit mt-0.5">
-                                    ÉVALUATION
-                                </span>
                             </div>
                             <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/40 whitespace-nowrap">
-                                {{ evt.heureDebut }} - {{ evt.heureFin }}
+                                {{ evt.heureDebut?.substring(0,5) }} - {{ evt.heureFin?.substring(0,5) }}
                             </span>
                         </div>
                         
                         <!-- Middle/Bottom Info -->
                         <div class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
-                            <!-- Teacher -->
-                            <div class="flex items-center gap-1.5 min-w-0">
+                            <!-- Status Badges -->
+                            <div class="flex gap-1 flex-wrap">
+                                <div *ngIf="evt.isExam" class="bg-red-100 text-red-700 text-[8px] font-bold px-1 rounded animate-pulse">EXAMEN</div>
+                                <div *ngIf="evt.type === 'HOLIDAY'" class="bg-orange-100 text-orange-700 text-[8px] font-bold px-1 rounded">CONGÉ</div>
+                                <div *ngIf="evt.type === 'RESCHEDULED'" class="bg-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm uppercase">REPORTÉ / {{ formatDateStr(evt.rescheduledTo) }}</div>
+                                <div *ngIf="evt.type === 'CANCELLED'" class="bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">ANNULÉ</div>
+                            </div>
+
+                            <!-- Teacher (Hidden if cancelled/rescheduled) -->
+                            <div *ngIf="evt.type !== 'RESCHEDULED' && evt.type !== 'CANCELLED'" class="flex items-center gap-1.5 min-w-0">
                                 <div class="w-5 h-5 rounded-full bg-white/50 flex items-center justify-center shrink-0 border border-white/20 shadow-sm">
                                     <svg class="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 </div>
                                 <span class="text-[10px] font-semibold truncate opacity-90 leading-tight">
-                                    {{ evt.isEvaluation ? 'Évaluation' : (evt.enseignant?.user?.firstName + ' ' + evt.enseignant?.user?.lastName) }}
+                                    {{ evt.isExam ? 'Évaluation' : (evt.enseignant?.user?.firstName + ' ' + evt.enseignant?.user?.lastName) }}
                                 </span>
+                            </div>
+
+                            <!-- Rescheduled / Cancelled Message -->
+                            <div *ngIf="evt.type === 'CANCELLED'" class="text-[10px] font-bold mt-1 italic opacity-90">
+                                Ce cours n'aura pas lieu
                             </div>
 
                             <!-- Bottom Row: Room & Class -->
@@ -166,6 +180,16 @@ import { firstValueFrom } from 'rxjs';
 
                         <!-- Hover Overlay -->
                         <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-md pointer-events-none"></div>
+                        
+                        <!-- ACTIONS OVERLAY -->
+                        <div *ngIf="evt.type !== 'RESCHEDULED' && evt.type !== 'CANCELLED' && evt.type !== 'HOLIDAY'" class="absolute top-8 right-1.5 hidden group-hover:flex gap-1.5 z-50">
+                            <button (click)="promptReschedule(evt, $event)" title="Reporter" class="w-6 h-6 flex items-center justify-center bg-white/90 hover:bg-white text-blue-600 rounded-full shadow-sm border border-gray-200 transition-all hover:scale-110">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </button>
+                            <button (click)="promptCancel(evt, $event)" title="Annuler ce cours" class="w-6 h-6 flex items-center justify-center bg-white/90 hover:bg-white text-red-600 rounded-full shadow-sm border border-gray-200 transition-all hover:scale-110">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- No Data State (if empty grid) -->
@@ -180,6 +204,65 @@ import { firstValueFrom } from 'rxjs';
             </div>
         </div>
     </div>
+
+    <!-- CANCEL CONFIRMATION -->
+    <app-ui-confirm-modal *ngIf="showCancelModal()"
+        title="Annuler l'événement"
+        message="Voulez-vous vraiment annuler ce cours pour cette journée ? Cette action affichera le cours comme annulé avec un badge dans l'emploi du temps."
+        type="danger"
+        confirmLabel="Oui, annuler"
+        (confirm)="confirmCancel()"
+        (cancel)="showCancelModal.set(false)">
+    </app-ui-confirm-modal>
+
+    <!-- RESCHEDULE MODAL -->
+    <app-ui-modal *ngIf="showRescheduleModal()" [isOpen]="true" title="Reporter l'événement" (close)="showRescheduleModal.set(false)">
+        <div class="p-4">
+            <div class="mb-5 p-3 bg-blue-50/50 rounded-lg border border-blue-100 flex items-start gap-3">
+                <div class="mt-0.5 text-blue-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-blue-900">
+                        {{ selectedEvent()?.isExam ? 'Report d\\'examen' : 'Report de cours' }}
+                    </h4>
+                    <p class="text-xs text-blue-700 mt-0.5">
+                        Vous modifiez l'horaire pour <strong>{{ selectedEvent()?.matiere?.name }}</strong>
+                        <span *ngIf="selectedEvent()?.classe">, avec la classe de <strong>{{ selectedEvent()?.classe?.name }}</strong></span>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nouvelle Date</label>
+                <input type="date" [ngModel]="newDate()" (ngModelChange)="newDate.set($event)" class="block w-full px-4 py-2 border border-gray-200 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Heure de début</label>
+                    <input type="time" [ngModel]="newStartTime()" (ngModelChange)="newStartTime.set($event)" class="block w-full px-4 py-2 border border-gray-200 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Heure de fin</label>
+                    <input type="time" [ngModel]="newEndTime()" (ngModelChange)="newEndTime.set($event)" class="block w-full px-4 py-2 border border-gray-200 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nouvelle Salle</label>
+                <select [ngModel]="newRoomId()" (ngModelChange)="newRoomId.set($event)" class="block w-full px-4 py-2 border border-gray-200 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Conserver la salle d'origine</option>
+                    <option *ngFor="let r of rooms()" [value]="r.id">{{ r.name }}</option>
+                </select>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-4">
+                <button (click)="showRescheduleModal.set(false)" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Abandonner</button>
+                <button (click)="confirmReschedule()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg hover:bg-indigo-700 shadow-sm">Confirmer le report</button>
+            </div>
+        </div>
+    </app-ui-modal>
     `,
     styles: [`
     .calendar-bg {
@@ -199,7 +282,6 @@ import { firstValueFrom } from 'rxjs';
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
       overflow: hidden;
-      backdrop-filter: blur(8px);
     }
     .event-card:hover {
       z-index: 50;
@@ -215,6 +297,17 @@ export class StudentTimetableComponent implements OnInit {
     planningService = inject(PlanningService);
     evaluationService = inject(EvaluationService);
     classroomService = inject(ClassRoomService);
+    roomService = inject(RoomService);
+    toastService = inject(ToastService);
+
+    // Modals state
+    showCancelModal = signal(false);
+    showRescheduleModal = signal(false);
+    selectedEvent = signal<any>(null);
+    newDate = signal<string>('');
+    newStartTime = signal<string>('');
+    newEndTime = signal<string>('');
+    newRoomId = signal<string>('');
 
     // Filter States
     currentDate = signal(new Date());
@@ -223,6 +316,7 @@ export class StudentTimetableComponent implements OnInit {
     // Data States
     loading = signal(false);
     classrooms = signal<any[]>([]);
+    rooms = signal<any[]>([]);
 
     // Derived Data
     days = computed(() => {
@@ -265,6 +359,10 @@ export class StudentTimetableComponent implements OnInit {
             evts = evts.filter(e => String(e.classe?.id) === String(classId));
         }
 
+        // Sort by start time so later courses are rendered later in the DOM
+        // This naturally gives them a higher z-index, ensuring their header covers the footer of the course above.
+        evts = evts.sort((a, b) => a.heureDebut.localeCompare(b.heureDebut));
+
         return this.mapEventsToGrid(evts);
     });
 
@@ -277,6 +375,7 @@ export class StudentTimetableComponent implements OnInit {
 
     ngOnInit() {
         this.loadClassrooms();
+        this.loadRooms();
     }
 
     async loadClassrooms() {
@@ -285,6 +384,15 @@ export class StudentTimetableComponent implements OnInit {
             if (res) this.classrooms.set(res);
         } catch (e) {
             console.error('Failed to load classrooms', e);
+        }
+    }
+
+    async loadRooms() {
+        try {
+            const res: any = await firstValueFrom(this.roomService.list());
+            if (res) this.rooms.set(res);
+        } catch (e) {
+            console.error('Failed to load rooms', e);
         }
     }
 
@@ -298,50 +406,19 @@ export class StudentTimetableComponent implements OnInit {
         const maxDate = end.toISOString().split('T')[0];
 
         try {
-            // Load both regular planning and evaluation planning in parallel
-            const [regRes, evalRes] = await Promise.all([
-                firstValueFrom(this.planningService.getDetailsGQL.fetch({
-                    minDate,
-                    maxDate,
-                    classeId: classId || null,
-                    pageSize: 200
-                }, { fetchPolicy: 'network-only' })),
-                firstValueFrom(this.evaluationService.evaluationPlanningsGQL.fetch({
-                    minDate,
-                    maxDate,
-                    classeId: classId || null,
-                    pageSize: 100
-                }, { fetchPolicy: 'network-only' }))
-            ]);
+            const res = await firstValueFrom(this.planningService.getCompiledSchedule(minDate, maxDate, classId || undefined));
+            
+            const compiled = (res?.data?.compiledSchedule || []).filter((item: any) => item != null).map((item: any) => {
+                const parsed = typeof item === 'string' ? JSON.parse(item) : item;
+                return parsed;
+            });
 
-            const details = (regRes.data.planningDetails?.items || []).map((d: any) => ({ ...d, isEvaluation: false }));
-            const evals = (evalRes.data.evaluationPlannings?.items || []).map((e: any) => ({
-                ...e,
-                isEvaluation: true,
-                heureDebut: e.startTime,
-                // Calculate end time for evaluations
-                heureFin: this.calculateEndTime(e.startTime, e.durationMinutes),
-                matiere: e.evaluationSubject?.subject,
-                enseignant: null, // Supervisors not yet in this view
-                classe: e.classrooms?.[0] || { name: 'Multi' }
-            }));
-
-            this.rawEvents.set([...details, ...evals]);
-
+            this.rawEvents.set(compiled);
         } catch (e) {
             console.error('Failed to load timetable events', e);
         } finally {
             this.loading.set(false);
         }
-    }
-
-    calculateEndTime(startTime: string, duration: number): string {
-        if (!startTime || !duration) return startTime;
-        const [h, m] = startTime.split(':').map(Number);
-        const totalMinutes = (h * 60) + m + duration;
-        const endH = Math.floor(totalMinutes / 60);
-        const endM = totalMinutes % 60;
-        return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
     }
 
     mapEventsToGrid(details: any[]) {
@@ -389,23 +466,113 @@ export class StudentTimetableComponent implements OnInit {
         return dateStr === new Date().toISOString().split('T')[0];
     }
 
+    formatDateStr(dateStr: string) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    }
+
     getTheme(event: any) {
         const themes = [
             { bg: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', accent: '#3b82f6', text: '#1e40af' }, // Blue
             { bg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', accent: '#22c55e', text: '#15803d' }, // Green
-            { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', accent: '#f97316', text: '#c2410c' }, // Orange
             { bg: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)', accent: '#a855f7', text: '#7e22ce' }, // Purple
-            { bg: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)', accent: '#f43f5e', text: '#be123c' }, // Pink
+            { bg: 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)', accent: '#ec4899', text: '#be185d' }, // Pink
             { bg: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)', accent: '#eab308', text: '#854d0e' }, // Yellow
         ];
 
-        if (event.isEvaluation) {
+        if (event.type === 'RESCHEDULED' || event.type === 'CANCELLED') {
+            return { bg: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)', accent: '#9ca3af', text: '#4b5563' }; // Gray for cancelled
+        }
+
+        if (event.isExam) {
             return { bg: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', accent: '#f97316', text: '#c2410c' }; // Orange for eval
         }
 
-        const subject = event.matiere;
-        if (!subject?.id) return themes[0];
-        const idx = (typeof subject.id === 'number' ? subject.id : subject.id.charCodeAt(0)) % themes.length;
+        const matiere = event.matiere;
+        if (!matiere?.id) return themes[0];
+        const idx = (typeof matiere.id === 'number' ? matiere.id : matiere.id.charCodeAt(0)) % themes.length;
         return themes[idx];
+    }
+
+    // --- ACTIONS ---
+
+    getEventType(evt: any): string {
+        return evt.type || 'SPECIFIC';
+    }
+
+    promptCancel(evt: any, event: Event) {
+        event.stopPropagation();
+        this.selectedEvent.set(evt);
+        this.showCancelModal.set(true);
+    }
+
+    confirmCancel() {
+        const evt = this.selectedEvent();
+        if (!evt) return;
+
+        const evtType = this.getEventType(evt);
+
+        this.planningService.cancelEvent(evt.real_id || evt.id, evt.date, evtType).subscribe({
+            next: (res) => {
+                this.toastService.success('Événement annulé avec succès.');
+                this.showCancelModal.set(false);
+                this.selectedEvent.set(null);
+                this.loadEventsForWeek(this.currentDate(), this.selectedClassId());
+            },
+            error: (err) => {
+                this.toastService.error('Impossible d\'annuler l\'événement.');
+            }
+        });
+    }
+
+    promptReschedule(evt: any, event: Event) {
+        event.stopPropagation();
+        this.selectedEvent.set(evt);
+        this.newDate.set(evt.date); // Par défaut la même date
+        this.newStartTime.set(evt.heureDebut || '');
+        this.newEndTime.set(evt.heureFin || '');
+        this.newRoomId.set(evt.salle?.id || '');
+        this.showRescheduleModal.set(true);
+    }
+
+    confirmReschedule() {
+        const evt = this.selectedEvent();
+        const date = this.newDate();
+        const start = this.newStartTime();
+        const end = this.newEndTime();
+        const roomId = this.newRoomId();
+        if (!evt || !date || !start || !end) {
+            this.toastService.error("Veuillez remplir tous les champs (date, heure de début et heure de fin).");
+            return;
+        }
+
+        // Validation 1: L'heure de fin doit être après l'heure de début
+        if (start >= end) {
+            this.toastService.error("L'heure de fin doit être supérieure à l'heure de début.");
+            return;
+        }
+
+        // Validation 2: La nouvelle date ne doit pas être dans le passé
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (date < todayStr) {
+            this.toastService.error("Vous ne pouvez pas reporter un cours à une date passée.");
+            return;
+        }
+
+        const evtType = this.getEventType(evt);
+
+        // Attention : Utiliser real_id fourni par le compilateur
+        this.planningService.rescheduleEvent(evt.real_id || evt.id, evt.date, date, evtType, start, end, roomId).subscribe({
+            next: (res) => {
+                this.toastService.success('Événement reporté avec succès.');
+                this.showRescheduleModal.set(false);
+                this.selectedEvent.set(null);
+                this.loadEventsForWeek(this.currentDate(), this.selectedClassId());
+            },
+            error: (err) => {
+                this.toastService.error(err.error?.detail || 'Impossible de reporter l\'événement.');
+            }
+        });
     }
 }

@@ -7,6 +7,7 @@ export enum AppRoutes {
   ANNEES_SCOLAIRES = '/years',
   OPTIONS__FILIERES = '/options',
   CLASSES = '/classes',
+  GROUPES_AND_UES = '/subject-groups',
   MATIERES = '/subjects',
   PERIODES_ACADEMIQUES = '/academic-periods',
   SALLES = '/rooms',

@@ -36,7 +36,7 @@ def track_sync_save(sender, instance, created, **kwargs):
         payload_json = json.dumps(full_dict, default=custom_serializer)
         
         SyncLog.objects.create(
-            model_name=sender.__name__,
+            model_name=sender._meta.model_name,
             object_uuid=instance.pk,
             action=action,
             payload=json.loads(payload_json)
@@ -52,7 +52,7 @@ def track_sync_delete(sender, instance, **kwargs):
 
     try:
         SyncLog.objects.create(
-            model_name=sender.__name__,
+            model_name=sender._meta.model_name,
             object_uuid=instance.pk,
             action='DELETE',
             payload=None

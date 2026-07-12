@@ -11,6 +11,7 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/users': () => import('@features/profilmanagement/components/user-list/user-list.component').then(m => m.UserListComponent),
   '/roles': () => import('@features/profilmanagement/components/role-list/role-list.component').then(m => m.RoleListComponent),
   '/years': () => import('@features/structure/components/academic-year-list/academic-year-list.component').then(m => m.AcademicYearListComponent),
+  '/subject-groups': () => import('@features/structure/components/subject-group-list/subject-group-list.component').then(m => m.SubjectGroupListComponent),
   '/subjects': () => import('@features/structure/components/subject-list/subject-list.component').then(m => m.SubjectListComponent),
   '/classes': () => import('@features/structure/components/classroom-list/classroom-list.component').then(m => m.ClassRoomListComponent),
   '/establishments': () => import('@features/structure/components/establishment-list/establishment-list.component').then(m => m.EstablishmentListComponent),

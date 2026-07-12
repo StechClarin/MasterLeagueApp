@@ -12,6 +12,7 @@ import { ToastService } from '@core/services/toast.service';
 import { AppRoutes } from '@core/routing/routes.enum';
 import { ClassRoomService } from '../../../structure/services/classroom.service';
 import { BulletinPdfService } from '../../services/bulletin-pdf.service';
+import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
 
 interface SubjectGradeEntry {
     evaluationSubjectId: string;
@@ -48,7 +49,8 @@ export type ClassStats = {
         CommonModule,
         ReactiveFormsModule,
         UiInputComponent,
-        UiListPageComponent
+        UiListPageComponent,
+        UiModalComponent
     ],
     templateUrl: './grade-entry.component.html'
 })
@@ -72,6 +74,18 @@ export class GradeEntryComponent implements OnInit {
     gradeRows = signal<StudentGradeRow[]>([]);
     searchQuery = signal<string>('');
     selectedClassroomId = signal<string | null>(null);
+
+    hasUnsavedChanges = signal(false);
+    showUnsavedModal = signal(false);
+
+    @HostListener('window:beforeunload', ['$event'])
+    unloadNotification($event: any) {
+        if (this.hasUnsavedChanges()) {
+            $event.returnValue = "Vous avez des notes non sauvegardées. Voulez-vous vraiment quitter ?";
+            return $event.returnValue;
+        }
+        return true;
+    }
 
     // Metadata map for Classroom -> Level
     classroomToLevelMap = signal<Map<string, string>>(new Map());
@@ -214,7 +228,7 @@ export class GradeEntryComponent implements OnInit {
 
         const studentPromises = classroomMetadata.map(async meta => {
             try {
-                const list = await firstValueFrom(this.studentService.list({ classroomId: meta.id }));
+                const list = await firstValueFrom(this.studentService.list({ classroomId: meta.id, status: 'REGISTERED' }));
                 return list.map((s: any) => ({
                     ...s,
                     classroomId: meta.id,
@@ -250,16 +264,21 @@ export class GradeEntryComponent implements OnInit {
                     Validators.min(0),
                     Validators.max(maxVal)
                 ]);
-                const absentControl = this.fb.nonNullable.control(grade?.isAbsent ?? false);
+                const isAbsentBool = grade?.absenceStatus === 'UNJUSTIFIED' || grade?.absenceStatus === 'JUSTIFIED';
+                const absentControl = this.fb.nonNullable.control(isAbsentBool);
 
                 // Listen for changes to update average and clamp values
                 control.valueChanges.subscribe((val: any) => {
+                    this.hasUnsavedChanges.set(true);
                     if (val !== null && val > maxVal) {
                         control.setValue(maxVal, { emitEvent: false });
                     }
                     this.updateCalculations(student.id);
                 });
-                absentControl.valueChanges.subscribe(() => this.updateCalculations(student.id));
+                absentControl.valueChanges.subscribe(() => {
+                    this.hasUnsavedChanges.set(true);
+                    this.updateCalculations(student.id);
+                });
 
                 return {
                     evaluationSubjectId: subj.id,
@@ -372,6 +391,7 @@ export class GradeEntryComponent implements OnInit {
             });
 
             await firstValueFrom(this.gradeService.bulkSave(this.evaluationId()!, payload));
+            this.hasUnsavedChanges.set(false);
             this.toast.success('Toutes les notes ont été enregistrées avec succès.');
         } catch (e) {
             console.error('Error saving grades', e);
@@ -416,7 +436,27 @@ export class GradeEntryComponent implements OnInit {
     }
 
     backToSessions() {
+        if (this.hasUnsavedChanges()) {
+            this.showUnsavedModal.set(true);
+        } else {
+            this.router.navigate([AppRoutes.NOTES_AND_BULLETINS]);
+        }
+    }
+
+    confirmLeaveWithoutSaving() {
+        this.showUnsavedModal.set(false);
+        this.hasUnsavedChanges.set(false);
         this.router.navigate([AppRoutes.NOTES_AND_BULLETINS]);
+    }
+
+    async confirmSaveAndLeave() {
+        this.showUnsavedModal.set(false);
+        await this.save();
+        this.router.navigate([AppRoutes.NOTES_AND_BULLETINS]);
+    }
+    
+    cancelLeave() {
+        this.showUnsavedModal.set(false);
     }
 
     // PDF GENERATION USING THE NEW DELEGATE SERVICE
@@ -452,6 +492,26 @@ export class GradeEntryComponent implements OnInit {
                 this.subjects(),
                 this.selectedClassroomId() || '',
                 this.classroomToLevelMap(),
+                this.availableClassrooms()
+            );
+        } finally {
+            this.isLoading.set(false);
+        }
+    }
+
+    async printClassRanking() {
+        const rows = this.filteredGradeRows();
+        if (rows.length === 0) {
+            this.toast.warning('Aucun étudiant à imprimer.');
+            return;
+        }
+
+        this.isLoading.set(true);
+        try {
+            await this.bulletinPdfService.printClassRanking(
+                rows as any[],
+                this.session(),
+                this.selectedClassroomId() || '',
                 this.availableClassrooms()
             );
         } finally {

@@ -67,6 +67,15 @@ fragment LevelFields on LevelType {
   }
 }
 
+fragment SubjectGroupFields on SubjectGroupType {
+  id
+  name
+  establishment {
+    id
+    name
+  }
+}
+
 fragment ClassRoomFields on ClassRoomType {
   id
   name
@@ -88,6 +97,10 @@ fragment LevelSubjectFields on LevelSubjectType {
   id
   coefficient
   hourlyQuota
+  credits
+  group {
+    ...SubjectGroupFields
+  }
   level {
     id
     name
@@ -216,7 +229,7 @@ query GetAllSubjects($search: String, $levelId: ID, $page: Int, $pageSize: Int) 
   }
 }
 
-query GetAllAcademicPeriods($search: String, $academicYearId: Int, $page: Int, $pageSize: Int) {
+query GetAllAcademicPeriods($search: String, $academicYearId: ID, $page: Int, $pageSize: Int) {
   academicPeriods(search: $search, academicYearId: $academicYearId, page: $page, pageSize: $pageSize) {
     items {
       ...AcademicPeriodFields
@@ -238,8 +251,8 @@ query GetAllRooms($search: String, $page: Int, $pageSize: Int) {
   }
 }
 
-query GetAllOptions($search: String, $parentId: ID, $establishmentId: ID, $page: Int, $pageSize: Int) {
-  options(search: $search, parentId: $parentId, establishmentId: $establishmentId, page: $page, pageSize: $pageSize) {
+query GetAllOptions($search: String, $parentId: ID, $cycleId: ID, $establishmentId: ID, $page: Int, $pageSize: Int) {
+  options(search: $search, parentId: $parentId, cycleId: $cycleId, establishmentId: $establishmentId, page: $page, pageSize: $pageSize) {
     items {
       ...OptionFields
     }
@@ -252,6 +265,17 @@ query GetAllOptions($search: String, $parentId: ID, $establishmentId: ID, $page:
 query GetOptionById($id: ID!) {
   option(id: $id) {
     ...OptionFields
+  }
+}
+
+query GetAllSubjectGroups($search: String, $page: Int, $pageSize: Int) {
+  subjectgroups(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...SubjectGroupFields
+    }
+    totalCount
+    numPages
+    currentPage
   }
 }
 

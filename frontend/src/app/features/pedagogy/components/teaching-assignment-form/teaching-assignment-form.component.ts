@@ -1,7 +1,17 @@
 import { Component, EventEmitter, Output, Input, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
 import { BaseModalFormComponent } from '../../../../core/abstracts/base-modal-form.component';
+
+export function dateRangeValidator(group: AbstractControl): ValidationErrors | null {
+    const start = group.get('start_date')?.value;
+    const end = group.get('end_date')?.value;
+
+    if (start && end && start > end) {
+        return { dateRange: true };
+    }
+    return null;
+}
 import { TeachingAssignmentService } from '../../services/teaching-assignment.service';
 import { TeachingAssignmentType } from '@app/graphql/types';
 
@@ -44,7 +54,14 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
     private personnelService = inject(PersonnelService);
 
     // Dropdown Data Observables
-    years$ = this.yearService.list();
+    years$ = this.yearService.listActive().pipe(
+        map(items => {
+            if (items.length > 0 && !this.form.get('academic_year_id')?.value) {
+                this.form.get('academic_year_id')?.setValue(items[0]?.id);
+            }
+            return items;
+        })
+    );
     levels$ = this.levelService.getAll().pipe(map(res => res.data.levels?.items || []));
 
     // Reactive Dropdowns based on Level
@@ -134,7 +151,7 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
             start_date: [null],
             end_date: [null],
             hours_scheduled: [0, [Validators.min(0)]]
-        });
+        }, { validators: [dateRangeValidator] });
     }
 
     save() {

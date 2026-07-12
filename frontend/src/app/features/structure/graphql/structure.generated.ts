@@ -11,11 +11,13 @@ export type OptionFieldsFragment = { __typename?: 'OptionType', id: any, name: s
 
 export type LevelFieldsFragment = { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } };
 
+export type SubjectGroupFieldsFragment = { __typename?: 'SubjectGroupType', id: any, name: string, establishment: { __typename?: 'EstablishmentType', id: any, name: string } };
+
 export type ClassRoomFieldsFragment = { __typename?: 'ClassRoomType', id: any, name: string, capacity: number, isActive: boolean, level: { __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }, option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } };
 
-export type LevelSubjectFieldsFragment = { __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null };
+export type LevelSubjectFieldsFragment = { __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, credits?: any | null, group?: { __typename?: 'SubjectGroupType', id: any, name: string, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null };
 
-export type SubjectFieldsFragment = { __typename?: 'SubjectType', id: any, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null } | null> | null };
+export type SubjectFieldsFragment = { __typename?: 'SubjectType', id: any, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, credits?: any | null, group?: { __typename?: 'SubjectGroupType', id: any, name: string, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null } | null> | null };
 
 export type AcademicPeriodFieldsFragment = { __typename?: 'AcademicPeriodType', id: any, name: string, startDate: any, endDate: any, isActive: boolean, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } };
 
@@ -88,11 +90,11 @@ export type GetAllSubjectsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllSubjectsQuery = { __typename?: 'Query', subjects?: { __typename?: 'SubjectTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'SubjectType', id: any, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null } | null> | null } | null> | null } | null };
+export type GetAllSubjectsQuery = { __typename?: 'Query', subjects?: { __typename?: 'SubjectTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'SubjectType', id: any, name: string, code: string, isOptional: boolean, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, credits?: any | null, group?: { __typename?: 'SubjectGroupType', id: any, name: string, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null } | null> | null } | null> | null } | null };
 
 export type GetAllAcademicPeriodsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
-  academicYearId?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  academicYearId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
 }>;
@@ -112,6 +114,7 @@ export type GetAllRoomsQuery = { __typename?: 'Query', rooms?: { __typename?: 'R
 export type GetAllOptionsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
   parentId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
+  cycleId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
   establishmentId?: Types.InputMaybe<Types.Scalars['ID']['input']>;
   page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
   pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
@@ -126,6 +129,15 @@ export type GetOptionByIdQueryVariables = Types.Exact<{
 
 
 export type GetOptionByIdQuery = { __typename?: 'Query', option?: { __typename?: 'OptionType', id: any, name: string, code?: string | null, isActive: boolean, cycle?: { __typename?: 'CycleType', id: any, name: string } | null, parent?: { __typename?: 'OptionType', id: any, name: string } | null, establishment: { __typename?: 'EstablishmentType', id: any } } | null };
+
+export type GetAllSubjectGroupsQueryVariables = Types.Exact<{
+  search?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+}>;
+
+
+export type GetAllSubjectGroupsQuery = { __typename?: 'Query', subjectgroups?: { __typename?: 'SubjectGroupTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'SubjectGroupType', id: any, name: string, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
 
 export type GetActiveStructureQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
@@ -205,11 +217,25 @@ export const ClassRoomFieldsFragmentDoc = gql`
 }
     ${LevelFieldsFragmentDoc}
 ${OptionFieldsFragmentDoc}`;
+export const SubjectGroupFieldsFragmentDoc = gql`
+    fragment SubjectGroupFields on SubjectGroupType {
+  id
+  name
+  establishment {
+    id
+    name
+  }
+}
+    `;
 export const LevelSubjectFieldsFragmentDoc = gql`
     fragment LevelSubjectFields on LevelSubjectType {
   id
   coefficient
   hourlyQuota
+  credits
+  group {
+    ...SubjectGroupFields
+  }
   level {
     id
     name
@@ -219,7 +245,7 @@ export const LevelSubjectFieldsFragmentDoc = gql`
     name
   }
 }
-    `;
+    ${SubjectGroupFieldsFragmentDoc}`;
 export const SubjectFieldsFragmentDoc = gql`
     fragment SubjectFields on SubjectType {
   id
@@ -461,7 +487,7 @@ export const GetAllSubjectsDocument = gql`
     }
   }
 export const GetAllAcademicPeriodsDocument = gql`
-    query GetAllAcademicPeriods($search: String, $academicYearId: Int, $page: Int, $pageSize: Int) {
+    query GetAllAcademicPeriods($search: String, $academicYearId: ID, $page: Int, $pageSize: Int) {
   academicPeriods(
     search: $search
     academicYearId: $academicYearId
@@ -512,10 +538,11 @@ export const GetAllRoomsDocument = gql`
     }
   }
 export const GetAllOptionsDocument = gql`
-    query GetAllOptions($search: String, $parentId: ID, $establishmentId: ID, $page: Int, $pageSize: Int) {
+    query GetAllOptions($search: String, $parentId: ID, $cycleId: ID, $establishmentId: ID, $page: Int, $pageSize: Int) {
   options(
     search: $search
     parentId: $parentId
+    cycleId: $cycleId
     establishmentId: $establishmentId
     page: $page
     pageSize: $pageSize
@@ -553,6 +580,29 @@ export const GetOptionByIdDocument = gql`
   })
   export class GetOptionByIdGQL extends Apollo.Query<GetOptionByIdQuery, GetOptionByIdQueryVariables> {
     document = GetOptionByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetAllSubjectGroupsDocument = gql`
+    query GetAllSubjectGroups($search: String, $page: Int, $pageSize: Int) {
+  subjectgroups(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...SubjectGroupFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+    ${SubjectGroupFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetAllSubjectGroupsGQL extends Apollo.Query<GetAllSubjectGroupsQuery, GetAllSubjectGroupsQueryVariables> {
+    document = GetAllSubjectGroupsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

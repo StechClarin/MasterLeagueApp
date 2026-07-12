@@ -6,7 +6,14 @@ query GetAllPlannings($search: String, $minDate: Date, $maxDate: Date, $page: In
       nom
       dateStart
       dateEnd
+      isGlobal
+      isSpecific
+      isConge
       isTemplate
+      targetClasses {
+        id
+        name
+      }
       establishment {
         id
         name
@@ -16,6 +23,7 @@ query GetAllPlannings($search: String, $minDate: Date, $maxDate: Date, $page: In
         date
         heureDebut
         heureFin
+        isCancelled
         enseignant { 
             id 
             matricule 
@@ -29,6 +37,10 @@ query GetAllPlannings($search: String, $minDate: Date, $maxDate: Date, $page: In
     totalCount
     numPages
   }
+}
+
+query GetCompiledSchedule($startDate: Date!, $endDate: Date!, $classroomId: ID, $personnelId: ID) {
+  compiledSchedule(startDate: $startDate, endDate: $endDate, classroomId: $classroomId, personnelId: $personnelId)
 }
 
 query GetPlanningDetails($search: String, $classeId: ID, $minDate: Date, $maxDate: Date, $page: Int, $pageSize: Int) {
@@ -46,6 +58,7 @@ query GetPlanningDetails($search: String, $classeId: ID, $minDate: Date, $maxDat
       classe { id name }
       matiere { id name }
       salle { id name }
+      planning { isGlobal }
     }
     totalCount
     numPages
@@ -58,12 +71,20 @@ query GetPlanningById($id: ID!) {
     nom
     dateStart
     dateEnd
+    isGlobal
+    isSpecific
+    isConge
     isTemplate
+    targetClasses {
+      id
+      name
+    }
     details {
        id
        date
        heureDebut
        heureFin
+       isCancelled
        enseignant { 
            id 
            matricule 

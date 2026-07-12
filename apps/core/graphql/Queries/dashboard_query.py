@@ -50,9 +50,15 @@ class DashboardQuery(graphene.ObjectType):
         avg_grade = Grade.objects.filter(establishment_id=est_id).aggregate(Avg('value'))['value__avg'] or 0.0
         
         # 4. Evolution des notes
-        evolution_data = Grade.objects.filter(establishment_id=est_id).values(
-            'evaluation_subject__session__academic_period__name'
-        ).annotate(avg=Avg('value')).order_by('evaluation_subject__session__academic_period__id')
+        active_year = AcademicYear.objects.filter(establishment_id=est_id, is_active=True).first()
+        
+        evolution_data = Grade.objects.filter(
+            establishment_id=est_id,
+            evaluation_subject__session__academic_period__academic_year=active_year
+        ).values(
+            'evaluation_subject__session__academic_period__name',
+            'evaluation_subject__session__academic_period__start_date'
+        ).annotate(avg=Avg('value')).order_by('evaluation_subject__session__academic_period__start_date')
         
         grade_evolution = [
             EvolutionPointType(label=item['evaluation_subject__session__academic_period__name'] or 'N/A', value=round(item['avg'], 2))
@@ -60,7 +66,6 @@ class DashboardQuery(graphene.ObjectType):
         ]
         
         # 5. Distribution des élèves par Classe
-        active_year = AcademicYear.objects.filter(establishment_id=est_id, is_active=True).first()
         distribution_data = Enrollment.objects.filter(
             establishment_id=est_id, academic_year=active_year, status='REGISTERED'
         ).values('classroom__name').annotate(count=Count('id')).order_by('-count')[:5]
@@ -90,13 +95,22 @@ class DashboardQuery(graphene.ObjectType):
             for item in payment_dist
         ]
 
-        # 8. Top Students
-        top_students_data = Grade.objects.filter(
+        # 8. Top Students (issu du dernier examen fait)
+        last_exam_session = EvaluationSession.objects.filter(
             establishment_id=est_id,
-            student__isnull=False
-        ).values(
-            'student__first_name', 'student__last_name', 'student__matricule'
-        ).annotate(avg=Avg('value')).filter(avg__isnull=False).order_by('-avg')[:5]
+            evaluation_type__code='EXAM'
+        ).order_by('-academic_period__start_date', '-created_at').first()
+
+        if last_exam_session:
+            top_students_data = Grade.objects.filter(
+                establishment_id=est_id,
+                student__isnull=False,
+                evaluation_subject__session=last_exam_session
+            ).values(
+                'student__first_name', 'student__last_name', 'student__matricule'
+            ).annotate(avg=Avg('value')).filter(avg__isnull=False).order_by('-avg')[:5]
+        else:
+            top_students_data = []
         
         top_students = [
             StudentPerformanceType(

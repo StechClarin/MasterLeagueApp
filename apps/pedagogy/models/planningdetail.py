@@ -33,6 +33,10 @@ class PlanningDetail(EstablishmentAwareModel):
     date = models.DateField()
     heure_debut = models.TimeField()
     heure_fin = models.TimeField()
+    
+    # Gestion des annulations (Exception de planning)
+    is_cancelled = models.BooleanField(default=False, help_text="Marque ce cours spécifique comme annulé (utile pour les absences)")
+    rescheduled_to = models.DateField(null=True, blank=True, help_text="Date à laquelle le cours a été reporté")
 
     class Meta:
         verbose_name = "Détail du Planning"

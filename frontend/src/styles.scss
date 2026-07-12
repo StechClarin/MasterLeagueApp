@@ -53,3 +53,64 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.15) transparent;
 }
+@media print {
+  /* On libère le conteneur principal */
+  html, body, app-root {
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    min-height: 0 !important;
+    display: block !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Cacher tout ce qui n'est pas la modale ou les pages d'impression */
+  app-root > *:not(app-ui-modal):not(app-idcard-print):not(app-certificate-print):not(app-evaluation-planning-print):not(app-bulletin-print):not(app-payment-receipt):not(app-invoice-receipt) {
+    display: none !important;
+  }
+
+  /* Si app-ui-modal n'est pas un enfant direct, on cache juste le layout principal */
+  app-layout-sidebar, 
+  app-layout-header, 
+  .navbar, 
+  .sidebar {
+    display: none !important;
+  }
+  
+  /* Cacher le rideau noir de fond du modal */
+  app-ui-modal .bg-black {
+    display: none !important;
+  }
+  
+  /* Extraire la modale de son confinement */
+  app-ui-modal > div.fixed {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    width: 100% !important;
+    display: block !important;
+    background: white !important;
+  }
+  
+  /* Retirer le centrage flex qui bloque la hauteur */
+  app-ui-modal .min-h-screen {
+    min-height: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  
+  /* Autoriser le contenu à s'étendre librement */
+  app-ui-modal .inline-block {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+}

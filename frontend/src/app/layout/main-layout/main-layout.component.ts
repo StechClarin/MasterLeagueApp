@@ -33,11 +33,11 @@ import { StructureStateService } from '@core/services/structure-state.service';
           <div class="text-center space-y-6 animate-in slide-in-from-top-10 duration-1000">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-400/20 backdrop-blur-md">
               <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
-              <span class="text-xs font-black tracking-[0.2em] text-indigo-300 uppercase">Onboarding GigaCore</span>
+              <span class="text-xs font-black tracking-[0.2em] text-indigo-300 uppercase">Onboarding Eteyelo</span>
             </div>
             
             <h2 class="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
-              Bienvenue chez <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">GigaCore</span>
+              Bienvenue chez <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Eteyelo</span>
             </h2>
             
             <p class="text-slate-300/80 text-lg md:text-xl max-w-2xl mx-auto font-medium">
@@ -176,14 +176,14 @@ export class MainLayoutComponent {
   getLogoUrl(path: string | null | undefined): string {
     if (!path) return '';
     if (path.startsWith('http') || path.startsWith('data:')) return path;
-    
+
     let cleanPath = path.startsWith('/') ? path.substring(1) : path;
     const host = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
-    
+
     if (!cleanPath.startsWith('media/')) {
-        cleanPath = 'media/' + cleanPath;
+      cleanPath = 'media/' + cleanPath;
     }
-    
+
     return `${host}/${cleanPath}`;
   }
 }

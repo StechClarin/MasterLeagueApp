@@ -14,6 +14,7 @@ class EnrollmentQuery(graphene.ObjectType):
         search=graphene.String(),
         classroom_id=graphene.ID(),
         academic_year_id=graphene.ID(),
+        status=graphene.String(),
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
@@ -27,7 +28,7 @@ class EnrollmentQuery(graphene.ObjectType):
         except Enrollment.DoesNotExist:
             return None
 
-    def resolve_enrollments(root, info, search=None, classroom_id=None, academic_year_id=None, page=1, page_size=10, **kwargs):
+    def resolve_enrollments(root, info, search=None, classroom_id=None, academic_year_id=None, status=None, page=1, page_size=10, **kwargs):
         queryset = Enrollment.objects.filter(is_active=True).order_by('-created_at')
 
         if hasattr(info.context, 'establishment_id') and info.context.establishment_id:
@@ -45,6 +46,9 @@ class EnrollmentQuery(graphene.ObjectType):
         
         if academic_year_id:
             queryset = queryset.filter(academic_year_id=academic_year_id)
+
+        if status:
+            queryset = queryset.filter(status=status)
 
         paginated_data = paginate_queryset(queryset, page, page_size)
         return EnrollmentPaginatedType(**paginated_data)

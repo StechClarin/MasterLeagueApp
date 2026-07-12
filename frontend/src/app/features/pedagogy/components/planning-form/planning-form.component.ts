@@ -21,6 +21,16 @@ export function timeRangeValidator(group: AbstractControl): ValidationErrors | n
     return null;
 }
 
+export function dateRangeValidator(group: AbstractControl): ValidationErrors | null {
+    const start = group.get('date_start')?.value;
+    const end = group.get('date_end')?.value;
+
+    if (start && end && start > end) {
+        return { dateRange: true };
+    }
+    return null;
+}
+
 import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
 import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
 import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
@@ -178,12 +188,46 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
         this.form = this.fb.group({
             id: [null],
             nom: ['', Validators.required],
-            date_start: [null, Validators.required],
-            date_end: [null, Validators.required],
+            date_start: [null],
+            date_end: [null],
+            is_global: [true],
+            is_specific: [false],
+            is_conge: [false],
+            target_classes: [[]],
             is_template: [false],
             establishment_id: [this.structureState.currentEstablishmentId()],
             details: this.fb.array([])
+        }, { validators: [dateRangeValidator] });
+
+        // Setup dynamic validations
+        this.form.get('is_global')?.valueChanges.subscribe(val => {
+             if(val) this.form.patchValue({ is_specific: false, is_conge: false }, {emitEvent: false});
+             this.updateValidators();
         });
+        this.form.get('is_specific')?.valueChanges.subscribe(val => {
+             if(val) this.form.patchValue({ is_global: false }, {emitEvent: false});
+             this.updateValidators();
+        });
+        this.form.get('is_conge')?.valueChanges.subscribe(val => {
+             if(val) {
+                  this.form.patchValue({ is_specific: true, is_global: false }, {emitEvent: false});
+                  this.details.clear();
+             }
+             this.updateValidators();
+        });
+        
+        // Initial call
+        this.updateValidators();
+    }
+
+    updateValidators() {
+        const start = this.form.get('date_start');
+        const end = this.form.get('date_end');
+        start?.setValidators([Validators.required]);
+        end?.setValidators([Validators.required]);
+        
+        start?.updateValueAndValidity({emitEvent: false});
+        end?.updateValueAndValidity({emitEvent: false});
     }
 
     override fieldLabels = {
@@ -264,6 +308,10 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
                 nom: val.nom,
                 date_start: val.dateStart,
                 date_end: val.dateEnd,
+                is_global: val.isGlobal,
+                is_specific: val.isSpecific,
+                is_conge: val.isConge,
+                target_classes: val.targetClasses?.map((c: any) => c.id) || [],
                 is_template: val.isTemplate,
                 establishment_id: val.establishment?.id || this.structureState.currentEstablishmentId()
             });
@@ -280,6 +328,7 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
                         matiere_id: d.matiere?.id,
                         classe_id: d.classe?.id,
                         salle_id: d.salle?.id,
+                        is_cancelled: d.isCancelled || false,
                         establishment_id: d.establishment?.id || this.structureState.currentEstablishmentId()
                     }, { validators: [timeRangeValidator] }));
                 });

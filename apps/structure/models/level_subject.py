@@ -3,6 +3,7 @@ from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 from .level import Level
 from .subject import Subject
 from .option import Option
+from .subject_group import SubjectGroup
 
 class LevelSubject(EstablishmentAwareModel):
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='level_subjects')
@@ -10,6 +11,8 @@ class LevelSubject(EstablishmentAwareModel):
     option = models.ForeignKey(Option, on_delete=models.CASCADE, null=True, blank=True, related_name='level_subjects')
     coefficient = models.DecimalField(max_digits=5, decimal_places=2, default=1.0)
     hourly_quota = models.PositiveIntegerField(default=0, help_text="Volume horaire annuel")
+    group = models.ForeignKey(SubjectGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='level_subjects')
+    credits = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0.0)
 
     class Meta:
         verbose_name = "Matière par Niveau"

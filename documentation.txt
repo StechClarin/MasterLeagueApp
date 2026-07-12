@@ -535,3 +535,40 @@ d) Migration des Fichiers et Permissions
       `chmod -R 755 /home/<user>/launcher/releases/`
 
 ==============================================================================
+
+12. SYNCHRONISATION HYBRIDE (CLOUD <-> LOCAL) MULTI-TENANT
+==============================================================================
+Le système permet une synchronisation bidirectionnelle (JSON + Fichiers Médias)
+entre les instances Locales (déployées dans les écoles via le Hub) et l'instance Cloud (VPS).
+
+L'architecture est orchestrée par le Frontend Angular (Hub) qui agit comme un pont :
+- Le serveur Local et le Cloud ne communiquent jamais directement.
+- Le Hub (Angular) consomme les API des deux serveurs et transfère les données.
+
+a) Synchronisation des Données (JSON)
+   ----------------------------------
+   Fichier Backend : `apps/core/api/views/sync.py`
+   - InitialSyncView (Cloud -> Local) : Génère l'arbre complet des données (Pull).
+   - SyncInView (Local) : Ingère l'arbre de données complet.
+   - SyncDeltaView (Local -> Cloud) : Expose les modifications locales (Deltas).
+   - PushDeltaView (Cloud) : Reçoit et intègre les Deltas locaux.
+
+b) Synchronisation des Fichiers Binaires (Images, Documents)
+   ---------------------------------------------------------
+   Fichier Backend : `apps/core/api/views/sync_assets.py`
+   - AssetManifestView : Liste tous les fichiers d'un établissement avec leur Hash MD5.
+     Le filtrage est STRICTEMENT multi-tenant : l'API filtre tout avec `establishment=est`,
+     garantissant qu'un tenant (ex: École A) ne télécharge que SES fichiers (logos, 
+     photos de profil de son personnel, documents liés, etc.).
+   - AssetTransferView : Gère l'upload et le download granulaire des fichiers binaires.
+
+c) Le Pont Frontend (Le Chef d'Orchestre)
+   --------------------------------------
+   Fichier Frontend (Hub) : `ui/src/app/core/services/hub/hub-sync.service.ts`
+   - executeDeepSync() : Point d'entrée.
+   - pushSync() / pullSync() : Gèrent l'échange JSON.
+   - syncAssets() : Compare les deux Manifestes MD5 (Local vs Cloud). Si une différence 
+     est détectée (fichier manquant ou modifié), le Hub télécharge l'image depuis la source 
+     et l'upload vers la destination (via des requêtes POST/GET multipart).
+
+==============================================================================

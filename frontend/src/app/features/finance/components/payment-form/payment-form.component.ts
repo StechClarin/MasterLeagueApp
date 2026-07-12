@@ -126,7 +126,12 @@ export class PaymentFormComponent extends BaseFormComponent implements OnInit {
         return "⚠️ Ce montant solde la totalité de la facture.";
     }
 
-    if (this.item?.customInstallments?.length) {
+    let customInst = this.item?.customInstallments;
+    if (typeof customInst === 'string') {
+        try { customInst = JSON.parse(customInst); } catch(e) { customInst = []; }
+    }
+
+    if (Array.isArray(customInst) && customInst.length > 0) {
        return "Le montant sera imputé sur les tranches selon l'ordre défini.";
     }
 
@@ -169,9 +174,20 @@ export class PaymentFormComponent extends BaseFormComponent implements OnInit {
     
     if (instCount <= 1) return;
 
-    let tranches = [];
-    if (this.item?.customInstallments?.length) {
-       tranches = [...this.item.customInstallments].sort((a: any, b: any) => a.tranche - b.tranche);
+    let tranches: any[] = [];
+    let customInst = this.item?.customInstallments;
+    
+    // Parse if it's a JSON string
+    if (typeof customInst === 'string') {
+        try {
+            customInst = JSON.parse(customInst);
+        } catch (e) {
+            customInst = [];
+        }
+    }
+
+    if (Array.isArray(customInst) && customInst.length > 0) {
+       tranches = [...customInst].sort((a: any, b: any) => a.tranche - b.tranche);
     } else {
        const instAmount = totalAmount / instCount;
        for (let i = 1; i <= instCount; i++) {

@@ -39,7 +39,7 @@ interface SidebarModule {
           <a href="/dashboard">
           <div class="flex flex-col">
             <span class="text-xl font-bold text-white tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-indigo-200 transition-all duration-300">
-              GigaCore
+              Eteyelo
             </span>
             <span class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Admin Panel</span>
           </div>
@@ -155,7 +155,7 @@ export class SidebarComponent implements OnInit {
   async ngOnInit() {
     // On charge les modules via le service central
     await this.moduleState.fetchModules();
-    
+
     // Auto-expand basé sur la route actuelle
     const currentUrl = this.router.url;
     this.modules().forEach((module: SidebarModule) => {

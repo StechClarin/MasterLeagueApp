@@ -49,7 +49,8 @@ a = Analysis(
         ('frontend_build', 'frontend_build'),
         ('ethernanos.json', '.'),
         ('hub_security.py', '.'),
-        ('media', 'media'), 
+        ('media', 'media'),
+        ('apps/core/assets', 'apps/core/assets'),
     ] + collect_data_files('django') + \
         collect_data_files('rest_framework') + \
         collect_data_files('graphene_django') + \

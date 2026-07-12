@@ -20,6 +20,7 @@ export class EnrollmentService extends BaseService {
         search: filters.search || undefined,
         classroomId: filters.classroomId || undefined,
         academicYearId: filters.academicYearId || undefined,
+        status: filters.status || undefined,
         page: filters.page || 1, 
         pageSize: filters.pageSize || 20 
     }, { fetchPolicy: 'network-only' }).pipe(

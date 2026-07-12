@@ -272,26 +272,46 @@ class PushDeltaView(APIView):
         # Logique d'application des deltas (similaire à SyncInView mais pour des petits morceaux)
         # TODO: Implémenter la résolution de conflits basique (Last Write Wins)
         
+        ack_deltas = []
         for delta in deltas:
-            model_name = delta.get('model')
-            action = delta.get('action') # 'create', 'update', 'delete'
-            data = delta.get('data')
-            
+            model_name = delta.get('model') or delta.get('model_name')
+            action = delta.get('action')  # 'create', 'update', 'delete'
+            data = delta.get('data') if delta.get('data') is not None else delta.get('payload')
+            if not isinstance(data, dict):
+                data = {}
+
+            ack_deltas.append({
+                'model': model_name,
+                'action': action,
+                'fields': dict(list(data.items())[:4])
+            })
+
             try:
-                # Resolve model
-                for model in apps.get_models():
-                    if model._meta.model_name == model_name:
-                        if action in ['create', 'update']:
-                            # Sécurité : on retire 'id' des defaults
-                            rec_id = data.pop('id', None)
-                            mgr = getattr(model, 'objects', None)
-                            if rec_id and mgr:
-                                mgr.update_or_create(id=rec_id, defaults=data)
-                        elif action == 'delete':
-                            mgr = getattr(model, 'objects', None)
-                            if mgr:
-                                mgr.filter(id=data.get('id')).delete()
+                # Resolve model by meta name or class/object name
+                target_model = next(
+                    (m for m in apps.get_models()
+                     if m._meta.model_name == model_name
+                     or m.__name__.lower() == (model_name or '').lower()
+                     or m._meta.object_name.lower() == (model_name or '').lower()),
+                    None
+                )
+
+                if not target_model:
+                    print(f"Push warning: model '{model_name}' not found")
+                    continue
+
+                mgr = getattr(target_model, 'objects', None)
+                if action in ['create', 'update'] and mgr:
+                    rec_id = data.get('id')
+                    payload = {k: v for k, v in data.items() if k != 'id'}
+                    if rec_id:
+                        mgr.update_or_create(id=rec_id, defaults=payload)
+                elif action == 'delete' and mgr:
+                    mgr.filter(id=data.get('id')).delete()
             except Exception as e:
                 print(f"Push error for {model_name}: {e}")
 
-        return Response({"status": "Cloud deltas applied"}, status=status.HTTP_200_OK)
+        return Response({
+            "status": "Cloud deltas applied",
+            "acknowledged_deltas": ack_deltas
+        }, status=status.HTTP_200_OK)

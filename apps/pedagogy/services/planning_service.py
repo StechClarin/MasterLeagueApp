@@ -12,6 +12,25 @@ class PlanningService(BaseService):
         # Appel parent (injection establishment, etc.)
         data = super().before_validate(data, instance)
         
+        # --- Règles de Validation pour les Types de Planning ---
+        is_global = str(data.get('is_global', getattr(instance, 'is_global', False))).lower() == 'true' or data.get('is_global') is True
+        is_specific = str(data.get('is_specific', getattr(instance, 'is_specific', False))).lower() == 'true' or data.get('is_specific') is True
+        is_conge = str(data.get('is_conge', getattr(instance, 'is_conge', False))).lower() == 'true' or data.get('is_conge') is True
+
+        from django.core.exceptions import ValidationError
+
+        if is_conge and not is_specific:
+            raise ValidationError({"is_conge": "Un congé doit obligatoirement être un planning spécifique."})
+
+        if not data.get('date_start') or not data.get('date_end'):
+            raise ValidationError("Les dates de début et de fin sont obligatoires (semaine type pour un planning global, période réelle pour un spécifique/congé).")
+
+        if is_conge:
+            # Si c'est un congé, on ignore et on vide les détails envoyés
+            if 'details' in data:
+                data['details'] = []
+        # --------------------------------------------------------
+        
         details = data.get('details', [])
         if details and isinstance(details, list):
             for detail in details:

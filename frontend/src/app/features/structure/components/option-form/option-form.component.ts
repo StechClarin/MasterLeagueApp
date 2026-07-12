@@ -19,6 +19,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class OptionFormComponent extends BaseFormComponent implements OnChanges, OnInit, OnDestroy {
     private fb = inject(FormBuilder);
     private service = inject(OptionService);
+    private cycleService = inject(CycleService);
     private cdr = inject(ChangeDetectorRef);
     private destroy$ = new Subject<void>();
 
@@ -52,8 +53,7 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
     }
 
     private loadCycles() {
-        const cycleService = inject(CycleService);
-        cycleService.getAllCycles().valueChanges.pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+        this.cycleService.getAllCycles().valueChanges.pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
             const items = res.data.cycles?.items || [];
             this.cycles = items
                 .filter((c: any) => !!c)
@@ -75,8 +75,8 @@ export class OptionFormComponent extends BaseFormComponent implements OnChanges,
         const selectedCycleId = this.form.controls.cycleId.value;
         
         // Obtenir toutes les filières qui pourraient être parentes
-        // On filtre par cycle pour garder une hiérarchie cohérente
-        this.service.getAll(undefined, selectedCycleId || undefined).pipe(takeUntil(this.destroy$)).subscribe(res => {
+        // On filtre par cycle pour garder une hiérarchie cohérente (parentId="", pour les racines)
+        this.service.getAll(undefined, "", selectedCycleId || undefined).pipe(takeUntil(this.destroy$)).subscribe(res => {
             const items = res.data.options?.items || [];
             this.parentOptions = items
                 .filter(o => !!o && !o.parent && o.id !== this.option?.id) 

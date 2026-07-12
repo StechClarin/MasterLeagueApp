@@ -14,3 +14,4 @@ __all__ = [
     'SubjectType', 'StructureResponseType', 'LevelSubjectType', 
     'RoomType', 'AcademicCycleConfigType', 'OptionType'
 ]
+from .subject_group_type import SubjectGroupType

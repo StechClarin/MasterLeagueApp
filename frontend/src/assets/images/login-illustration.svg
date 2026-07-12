@@ -7,7 +7,7 @@
     <animateTransform attributeName="transform" type="rotate" from="360 400 400" to="0 400 400" dur="60s" repeatCount="indefinite" />
   </circle>
 
-  <!-- Central Core (GigaCore) -->
+  <!-- Central Core (Eteyelo) -->
   <defs>
     <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(400 400) rotate(90) scale(150)">
       <stop stop-color="#6366F1" />

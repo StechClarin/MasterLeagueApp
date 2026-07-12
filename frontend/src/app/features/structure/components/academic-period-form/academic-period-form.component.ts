@@ -31,7 +31,14 @@ export class AcademicPeriodFormComponent extends BaseModalFormComponent implemen
     @Input() item: AcademicPeriodType | null = null;
     @Input() isReadOnly: boolean = false;
 
-    academicYears$ = this.academicYearService.list();
+    academicYears$ = this.academicYearService.listActive().pipe(
+        map(items => {
+            if (items.length > 0 && !this.form.get('academic_year')?.value) {
+                this.form.get('academic_year')?.setValue(items[0]?.id);
+            }
+            return items;
+        })
+    );
 
     override form = inject(FormBuilder).nonNullable.group({
         name: ['', [Validators.required]],

@@ -29,10 +29,16 @@ class Grade(EstablishmentAwareModel):
     )
     comment = models.TextField(null=True, blank=True)
     
-    # Suivi de présence spécifique à l'épreuve
-    is_absent = models.BooleanField(
-        default=False, 
-        help_text="Marquer si l'élève était absent à l'évaluation"
+    ABSENCE_CHOICES = [
+        ('NONE', 'Présent'),
+        ('JUSTIFIED', 'Absence Justifiée (Neutre)'),
+        ('UNJUSTIFIED', 'Absence Non-Justifiée (Zéro)'),
+    ]
+    absence_status = models.CharField(
+        max_length=20,
+        choices=ABSENCE_CHOICES,
+        default='NONE',
+        help_text="Statut de présence à l'évaluation"
     )
 
     class Meta:
@@ -43,7 +49,13 @@ class Grade(EstablishmentAwareModel):
         ordering = ['evaluation_subject', 'student']
 
     def __str__(self):
-        status = "ABS" if self.is_absent else self.value
+        if self.absence_status == 'JUSTIFIED':
+            status_text = "ABS (Justifiée)"
+        elif self.absence_status == 'UNJUSTIFIED':
+            status_text = "ABS (Non-Justifiée)"
+        else:
+            status_text = str(self.value)
+            
         # Use evaluation_subject instead of evaluation
         session_title = self.evaluation_subject.session.title if self.evaluation_subject else "Sans Session"
-        return f"{self.student} - {session_title} : {status}"
+        return f"{self.student} - {session_title} : {status_text}"

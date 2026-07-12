@@ -16,3 +16,4 @@ __all__ = [
 ]
 from .room_serializer import RoomSerializer
 from .option_serializer import OptionSerializer
+from .subject_group_serializer import SubjectGroupSerializer

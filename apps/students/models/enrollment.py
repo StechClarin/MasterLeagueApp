@@ -33,21 +33,34 @@ class Enrollment(EstablishmentAwareModel):
 
     def clean(self):
         # Validation Cross-Establishment
-        if self.student.establishment_id != self.classroom.establishment_id:
+        # pyrefly: ignore[missing-attribute]
+        if str(self.student.establishment_id) != str(self.classroom.establishment_id):
             raise ValidationError("L'élève et la classe doivent appartenir au même établissement.")
             
-        if self.establishment_id and self.establishment_id != self.classroom.establishment_id:
+        # pyrefly: ignore[missing-attribute]
+        if self.establishment_id and str(self.establishment_id) != str(self.classroom.establishment_id):
              raise ValidationError("L'inscription doit être liée au même établissement que la classe.")
         
         # Auto-set establishment from classroom if not set (convenience)
         if not self.establishment_id:
+            # pyrefly: ignore[missing-attribute]
             self.establishment = self.classroom.establishment
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
+        
+        old_classroom_id = None
+        if not is_new:
+            old_enrollment = Enrollment.objects.filter(pk=self.pk).first()
+            if old_enrollment:
+                old_classroom_id = old_enrollment.classroom_id
+
         self.clean()
         super().save(*args, **kwargs)
         
+        from apps.finance.services.finance_service import FinanceService
         if is_new:
-            from apps.finance.services.finance_service import FinanceService
             FinanceService.generate_invoices_for_enrollment(self)
+        elif old_classroom_id and old_classroom_id != self.classroom_id:
+            if self.status == 'PENDING':
+                FinanceService.recalculate_invoices_on_class_change(self)
