@@ -71,7 +71,6 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
     override form = this.fb.group({
         name: ['', [Validators.required]],
         code: ['', [Validators.required]],
-        isOptional: [false],
         levelSubjects: this.fb.array([]) // FormArray for dynamic assignments
     });
 
@@ -154,6 +153,7 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             coefficient: [data?.coefficient || 1, [Validators.required, Validators.min(0)]],
             hourlyQuota: [data?.hourlyQuota || 0, [Validators.required, Validators.min(0)]],
             credits: [data?.credits || 0, [Validators.required, Validators.min(0)]],
+            isOptional: [!!data?.isOptional],
             // UI Helpers
             availableOptions: [ [] as any[] ]
         });
@@ -206,14 +206,13 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             if (this.subject) {
                 const patch = {
                     name: this.subject.name || '',
-                    code: this.subject.code || '',
-                    isOptional: !!this.subject.isOptional
+                    code: this.subject.code || ''
                 };
                 this.form.patchValue(patch);
                 // Re-init levels if data already loaded
                 this.initLevelControls();
             } else {
-                this.form.reset({ isOptional: false });
+                this.form.reset();
                 this.initLevelControls(); // Reset checkboxes
             }
         }
@@ -233,13 +232,13 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             group: ls.groupId,
             coefficient: ls.coefficient,
             hourly_quota: ls.hourlyQuota,
-            credits: ls.credits
+            credits: ls.credits,
+            is_optional: ls.isOptional
         }));
 
         const payload: any = {
             name: formValue.name,
             code: formValue.code,
-            is_optional: formValue.isOptional,
             level_subjects: assignments
         };
 

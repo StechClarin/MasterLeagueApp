@@ -206,14 +206,8 @@
 
   <!-- Modals -->
   <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && !isMode('delete')" (close)="closeModal()">
       <ng-container [ngSwitch]="true">
-        <app-ui-confirm-modal *ngSwitchCase="isMode('delete')" 
-           title="Supprimer l'élève ?" 
-           [message]="'Attention, cela supprimera aussi tout son historique scolaire.'"
-           (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
-
-
         <app-student-detail *ngSwitchCase="isMode('detail')"
            [data]="selectedItem()"
            (closeParams)="closeModal()">
@@ -226,6 +220,12 @@
         </app-student-form>
       </ng-container>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && isMode('delete')" 
+       title="Supprimer l'élève ?" 
+       [message]="'Attention, cela supprimera aussi tout son historique scolaire.'"
+       (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
 
     <!-- Export Modal -->
     <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"

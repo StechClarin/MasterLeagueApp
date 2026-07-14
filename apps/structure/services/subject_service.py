@@ -10,7 +10,39 @@ class SubjectService(BaseService):
         self._level_subjects_payload = []
 
     def before_save(self, data, instance=None):
-        # 0. Interception des level_subjects avant le save
+        # 0. Appel du parent pour exécuter le nettoyage et l'injection (ex: establishment_id, users)
+        data = super().before_save(data, instance)
+
+        # 1. Validation de l'unicité du nom et du code de la matière dans l'établissement
+        name = data.get('name')
+        code = data.get('code')
+        if instance:
+            if name is None: name = instance.name
+            if code is None: code = instance.code
+
+        est_id = data.get('establishment_id') or data.get('establishment')
+        if not est_id and instance:
+            est_id = instance.establishment_id
+
+        if name:
+            self.validate_uniqueness(
+                establishment_id=est_id,
+                instance=instance,
+                field_name='name',
+                message=f"Une matière nommée '{name}' existe déjà dans cet établissement.",
+                name=name
+            )
+
+        if code:
+            self.validate_uniqueness(
+                establishment_id=est_id,
+                instance=instance,
+                field_name='code',
+                message=f"Une matière avec le code '{code}' existe déjà dans cet établissement.",
+                code=code
+            )
+
+        # 0.5. Interception des level_subjects avant le save
         print(f"DEBUG: SubjectService.before_save keys: {list(data.keys())}")
         if 'level_subjects' in data:
             print("DEBUG: Popping level_subjects from data")
@@ -60,7 +92,8 @@ class SubjectService(BaseService):
                              'group_id': actual_group_id if actual_group_id else None,
                              'coefficient': item.get('coefficient', 1),
                              'hourly_quota': item.get('hourly_quota') or item.get('weekly_hours', 0),
-                             'credits': item.get('credits', 0)
+                             'credits': item.get('credits', 0),
+                             'is_optional': item.get('is_optional', False)
                          }
                          new_links.append(LevelSubject(**kwargs))
                      except (ValueError, TypeError):

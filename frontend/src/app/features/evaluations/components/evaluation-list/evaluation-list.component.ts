@@ -244,4 +244,8 @@ export class EvaluationListComponent extends BaseModalListComponent<EvaluationSe
             error: () => this.toast.error('Erreur lors de la mise à jour du statut')
         });
     }
+
+    isChangeStatusMode(): boolean {
+        return (this.modalMode() as any) === 'change-status';
+    }
 }

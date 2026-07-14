@@ -4,7 +4,6 @@ from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 class Subject(EstablishmentAwareModel):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=50)
-    is_optional = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Matière"

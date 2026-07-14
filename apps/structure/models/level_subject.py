@@ -13,6 +13,7 @@ class LevelSubject(EstablishmentAwareModel):
     hourly_quota = models.PositiveIntegerField(default=0, help_text="Volume horaire annuel")
     group = models.ForeignKey(SubjectGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='level_subjects')
     credits = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0.0)
+    is_optional = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Matière par Niveau"

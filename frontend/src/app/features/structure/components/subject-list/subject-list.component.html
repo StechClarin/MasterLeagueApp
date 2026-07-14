@@ -67,14 +67,9 @@
 
 <!-- Modals -->
 <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
         <ng-container *ngIf="isModalOpen()">
             <ng-container [ngSwitch]="modalMode()">
-
-                <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer la matière ?"
-                    message="Êtes-vous sûr de vouloir supprimer cette matière ? Cette action est irréversible."
-                    (confirm)="confirmDelete()" (cancel)="closeModal()">
-                </app-ui-confirm-modal>
 
                 <app-subject-form *ngSwitchDefault [subject]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
                     (success)="onSave()" (cancel)="closeModal()">
@@ -83,6 +78,12 @@
             </ng-container>
         </ng-container>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer la matière ?"
+        message="Êtes-vous sûr de vouloir supprimer cette matière ? Cette action est irréversible."
+        (confirm)="confirmDelete()" (cancel)="closeModal()">
+    </app-ui-confirm-modal>
 
     <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"
         (confirm)="confirmExport($event)">

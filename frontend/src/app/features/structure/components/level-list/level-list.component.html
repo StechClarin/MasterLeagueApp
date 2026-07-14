@@ -60,18 +60,19 @@
 </ng-template>
 
 <ng-template #modalContent>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
         <ng-container [ngSwitch]="modalMode()">
-            <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer le niveau ?"
-                message="Êtes-vous sûr de vouloir supprimer ce niveau ?" (confirm)="confirmDelete()"
-                (cancel)="closeModal()">
-            </app-ui-confirm-modal>
-
             <!-- Create/Edit Mode -->
             <app-level-form *ngSwitchDefault [level]="selectedItem()" (success)="onSave()" (cancel)="closeModal()">
             </app-level-form>
         </ng-container>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer le niveau ?"
+        message="Êtes-vous sûr de vouloir supprimer ce niveau ?" (confirm)="confirmDelete()"
+        (cancel)="closeModal()">
+    </app-ui-confirm-modal>
 </ng-template>
 
 <ng-template #nameCell let-item>

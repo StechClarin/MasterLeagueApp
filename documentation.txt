@@ -108,7 +108,7 @@ e) Configuration du Menu (Navigation)
    Ne PAS utiliser de script temporaire.
    Fichier : apps/core/management/commands/seed_navigation.py
    Action  : Ajoutez votre page dans la structure MODULE_STRUCTURE.
-   Commande : ./snake seed:navigation (ou python3 manage.py seed_navigation)
+   Commande : ./snake seed_navigation (ou python3 manage.py seed_navigation)
 
 ------------------------------------------------------------------------------
 
@@ -132,9 +132,8 @@ b) Générer le code TypeScript
    1. Récupérer un Token (si besoin, via script ou login).
    2. Lancer la génération :
       export JWT_TOKEN="<votre_token>" && npm run codegen
-   
-   (vous pouvez utiliser la commande ./snake updategql)
-   Résultat : De nouveaux services sont créés dans `frontend/src/app/graphql/generated.ts`.
+      (vous pouvez utiliser la commande ./snake updategql)
+    Résultat : Les types TypeScript généraux sont créés dans `frontend/src/app/graphql/types.ts` et les services GQL Angular spécifiques à chaque module sont générés à côté des fichiers `.graphql` correspondants (ex: `frontend/src/app/features/hr/graphql/hr.generated.ts` grâce au preset `near-operation-file`).
 
 ------------------------------------------------------------------------------
 
@@ -142,7 +141,7 @@ b) Générer le code TypeScript
 -----------------------------------
 
 a) Service Angular
-   Créez un service qui étend `BaseService` et injecte le service généré par Codegen.
+   Créez un service qui étend `BaseService` et injecte le service généré par Codegen. Notez que la lecture de liste s'effectue via GraphQL (les routes CUD classiques n'exposent pas directement d'endpoint REST `list` sans méthode). Si vous devez interroger une liste, surchargez `list()` dans le service pour appeler le service GQL, ou utilisez la Query GraphQL directement dans votre composant.
    
    Fichier : frontend/src/app/features/<module>/services/<entite>.service.ts
    Exemple :
@@ -183,11 +182,11 @@ RÉSUMÉ DES COMMANDES UTILES
 # Backend
 ./snake craft scaffold <Entite> <App>   # Créer une entité
 ./snake craft automigrate               # Appliquer les migrations
-python3 manage.py seed_navigation       # Mettre à jour le menu
+./snake seed_navigation                 # Mettre à jour le menu (ou python3 manage.py seed_navigation)
 
 # Frontend
 npm start                               # Lancer le serveur de dev
-.snake updategql                         # Générer les types GQL (nécessite JWT_TOKEN)
+./snake updategql                       # Générer les types GQL (nécessite JWT_TOKEN)
 
 ==============================================================================
 CONVENTIONS
@@ -294,7 +293,7 @@ b) Backend : Nested Writes (Écritures Imbriquées)
            fields = '__all__'
    ------------------------------------------------------------
    
-   Note : Le `BaseSerializer` détecte automatiquement les champs relationnels et gère le `create` et `update` des enfants (via `saved_id` du parent).
+   Note : Contrairement à l'automatisme complet, les écritures imbriquées (Nested Writes) nécessitent d'appeler explicitement la méthode helper `create_nested(self, parent_instance, relation_name, data_list)` de `BaseSerializer` dans le cycle de sauvegarde de vos serializers spécifiques.
 
 ==============================================================================
 
@@ -394,7 +393,7 @@ a) Architecture (Back)
    -------------------
    - Modèle Unique : `apps.documents.models.Document`.
    - Polymorphisme : Utilise `GenericForeignKey` pour s'attacher à n'importe quelle entité (Student, Employee...).
-   - Stockage : Dossier `/media/` (Non versionné). Organisé par app/model/id (ex: `media/documents/students/student/12/photo.jpg`).
+   - Stockage : Dossier `/media/` (Non versionné). Organisé par identifiant de tenant et type de média : `media/<hub_id>/<establishment_id>/<category>/<filename>`.
 
 b) Upload (Front & Back)
    ---------------------
@@ -507,10 +506,9 @@ b) Configuration de Nginx sur le nouveau VPS
    ------------------------------------------
    1. Installez Nginx sur le nouveau serveur :
       `sudo apt update && sudo apt install nginx`
-   2. Copiez le fichier `vps/nginx.conf` du dépôt vers la configuration Nginx :
-      `sudo cp vps/nginx.conf /etc/nginx/sites-available/updates.ethernanos`
-   3. Ajustez les chemins absolus (comme `/home/stech/launcher`) dans ce fichier 
-      si le nom d'utilisateur du nouveau VPS est différent.
+    2. Créez ou copiez la configuration de serveur Nginx pour le sous-domaine de mise à jour (ex: `frontend/nginx.conf` ou un fichier Nginx personnalisé) :
+       `sudo nano /etc/nginx/sites-available/updates.ethernanos`
+    3. Ajustez les chemins absolus (comme la racine de stockage des fichiers de release `/home/stech/launcher/releases/`) et les directives de reverse proxy.
    4. Activez la configuration en créant le lien symbolique :
       `sudo ln -s /etc/nginx/sites-available/updates.ethernanos /etc/nginx/sites-enabled/`
    5. Testez la syntaxe Nginx et rechargez le service :

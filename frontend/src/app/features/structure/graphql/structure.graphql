@@ -98,6 +98,7 @@ fragment LevelSubjectFields on LevelSubjectType {
   coefficient
   hourlyQuota
   credits
+  isOptional
   group {
     ...SubjectGroupFields
   }
@@ -115,7 +116,6 @@ fragment SubjectFields on SubjectType {
   id
   name
   code
-  isOptional
   isActive
   levelSubjects {
     ...LevelSubjectFields

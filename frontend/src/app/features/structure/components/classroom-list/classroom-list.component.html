@@ -97,20 +97,20 @@
 </app-ui-list-page>
 
 <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
         <ng-container [ngSwitch]="modalMode()">
-            <!-- Delete Mode -->
-            <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer la classe ?"
-                message="Êtes-vous sûr de vouloir supprimer cette classe ?" (confirm)="confirmDelete()"
-                (cancel)="closeModal()">
-            </app-ui-confirm-modal>
-
             <!-- Create/Edit Mode -->
             <app-classroom-form *ngSwitchDefault [classroom]="selectedItem()" (success)="onSave()"
                 (cancel)="closeModal()">
             </app-classroom-form>
         </ng-container>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer la classe ?"
+        message="Êtes-vous sûr de vouloir supprimer cette classe ?" (confirm)="confirmDelete()"
+        (cancel)="closeModal()">
+    </app-ui-confirm-modal>
 
     <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"
         (confirm)="confirmExport($event)">

@@ -58,14 +58,8 @@
 
     <!-- Unified Modal -->
     <ng-container modals>
-        <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+        <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
             <ng-container [ngSwitch]="modalMode()">
-
-                <!-- Delete Mode -->
-                <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer l'option ?"
-                    message="Êtes-vous sûr de vouloir supprimer cette option ? Cette action est irréversible."
-                    (confirm)="confirmDelete()" (cancel)="closeModal()">
-                </app-ui-confirm-modal>
 
                 <!-- Create/Edit Mode -->
                 <app-option-form *ngSwitchDefault [option]="selectedItem()" (success)="onSave()"
@@ -74,7 +68,14 @@
 
             </ng-container>
         </app-ui-modal>
+
+        <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+        <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer l'option ?"
+            message="Êtes-vous sûr de vouloir supprimer cette option ? Cette action est irréversible."
+            (confirm)="confirmDelete()" (cancel)="closeModal()">
+        </app-ui-confirm-modal>
     </ng-container>
+
 
 </app-ui-list-page>
 

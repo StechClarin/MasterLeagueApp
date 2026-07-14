@@ -779,6 +779,7 @@ export type LevelSubjectType = {
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
   isDeleted: Scalars['Boolean']['output'];
+  isOptional: Scalars['Boolean']['output'];
   level: LevelType;
   option?: Maybe<OptionType>;
   subject: SubjectType;
@@ -1692,7 +1693,6 @@ export type SubjectType = {
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
   isDeleted: Scalars['Boolean']['output'];
-  isOptional: Scalars['Boolean']['output'];
   levelSubjects?: Maybe<Array<Maybe<LevelSubjectType>>>;
   name: Scalars['String']['output'];
   pedagogyAssignments: Array<TeachingAssignmentType>;

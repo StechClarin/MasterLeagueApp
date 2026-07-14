@@ -199,16 +199,8 @@
   </ng-container>
 </app-ui-list-page>
 
-<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+<app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
   <ng-container [ngSwitch]="modalMode()">
-    <app-ui-confirm-modal
-      *ngSwitchCase="'delete'"
-      title="Supprimer le personnel"
-      [message]="'Êtes-vous sûr de vouloir supprimer ' + ((selectedItem()?.user?.firstName || '') + ' ' + (selectedItem()?.user?.lastName || '')) + ' ?'"
-      (confirm)="confirmDelete()"
-      (cancel)="closeModal()"
-    ></app-ui-confirm-modal>
-
     <app-personnel-detail
       *ngSwitchCase="'view'"
       [data]="selectedItem()"
@@ -223,6 +215,15 @@
     ></app-personnel-form>
   </ng-container>
 </app-ui-modal>
+
+<!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+<app-ui-confirm-modal
+  *ngIf="isModalOpen() && modalMode() === 'delete'"
+  title="Supprimer le personnel"
+  [message]="'Êtes-vous sûr de vouloir supprimer ' + ((selectedItem()?.user?.firstName || '') + ' ' + (selectedItem()?.user?.lastName || '')) + ' ?'"
+  (confirm)="confirmDelete()"
+  (cancel)="closeModal()"
+></app-ui-confirm-modal>
 
 <app-ui-export-modal
     [isOpen]="showExportModal()"

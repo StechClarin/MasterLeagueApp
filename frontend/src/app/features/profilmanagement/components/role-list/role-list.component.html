@@ -111,7 +111,7 @@
 
     <!-- Modals -->
     <ng-container modals>
-        <app-ui-modal [isOpen]="isModalOpen()" [maxWidth]="'sm:max-w-4xl'" (close)="closeModal()">
+        <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" [maxWidth]="'sm:max-w-4xl'" (close)="closeModal()">
             <ng-container [ngSwitch]="modalMode()">
 
                 <!-- Mode Détail -->
@@ -140,13 +140,6 @@
                     </div>
                 </div>
 
-                <!-- Mode Suppression -->
-                <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Confirmer la suppression"
-                    [message]="'Voulez-vous vraiment supprimer le rôle \'' + selectedItem()?.name + '\' ?'"
-                    confirmLabel="Supprimer" cancelLabel="Annuler" type="danger" (confirm)="confirmDelete()"
-                    (cancel)="closeModal()">
-                </app-ui-confirm-modal>
-
                 <!-- Mode Création / Édition -->
                 <div *ngSwitchDefault class="h-[80vh]">
                      <app-role-form [role]="selectedItem()" (cancel)="closeModal()" (success)="onSave()" class="h-full block">
@@ -155,6 +148,13 @@
 
             </ng-container>
         </app-ui-modal>
+
+        <!-- Mode Suppression (outside app-ui-modal to prevent transform/overflow clipping) -->
+        <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Confirmer la suppression"
+            [message]="'Voulez-vous vraiment supprimer le rôle \'' + selectedItem()?.name + '\' ?'"
+            confirmLabel="Supprimer" cancelLabel="Annuler" type="danger" (confirm)="confirmDelete()"
+            (cancel)="closeModal()">
+        </app-ui-confirm-modal>
 
         <!-- Export Modal -->
         <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"

@@ -1,4 +1,4 @@
-from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ValidationError
 from apps.core.services.BaseService import BaseService
 from ..models.level import Level
 
@@ -27,7 +27,7 @@ class LevelService(BaseService):
                 if instance: qs_name = qs_name.exclude(pk=instance.pk)
                 if qs_name.exists():
                     raise ValidationError({
-                        "name": [f"Le niveau '{name}' existe déjà dans le cycle {cycle}."]
+                        "name": f"Le niveau '{name}' existe déjà dans le cycle {cycle}."
                     })
 
             # Check Short Name (Code)
@@ -36,7 +36,26 @@ class LevelService(BaseService):
                 if instance: qs_code = qs_code.exclude(pk=instance.pk)
                 if qs_code.exists():
                     raise ValidationError({
-                        "short_name": [f"Le code '{short_name}' est déjà utilisé dans le cycle {cycle}."]
+                        "short_name": f"Le code '{short_name}' est déjà utilisé dans le cycle {cycle}."
                     })
 
+        # 2. Validation de l'ordre unique du niveau dans l'établissement
+        order = data.get('order')
+        if instance and order is None:
+            order = instance.order
+
+        if order is not None:
+            est_id = data.get('establishment_id') or data.get('establishment')
+            if not est_id and instance:
+                est_id = instance.establishment_id
+
+            self.validate_uniqueness(
+                establishment_id=est_id,
+                instance=instance,
+                field_name='order',
+                message=f"Un niveau avec l'ordre {order} existe déjà dans cet établissement.",
+                order=order
+            )
+
         return data
+

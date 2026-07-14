@@ -245,18 +245,11 @@
 
   <!-- Modals -->
   <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
       <ng-container [ngSwitch]="modalMode()">
 
         <!-- Mode Détail -->
         <app-user-detail *ngSwitchCase="'detail'" [user]="selectedItem()" (close)="closeModal()"></app-user-detail>
-
-        <!-- Mode Suppression -->
-        <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Confirmer la suppression"
-          [message]="'Êtes-vous sûr de vouloir supprimer l\'utilisateur ' + selectedItem()?.username + ' ? Cette action est irréversible.'"
-          confirmLabel="Supprimer" cancelLabel="Annuler" type="danger" (confirm)="confirmDelete()"
-          (cancel)="closeModal()">
-        </app-ui-confirm-modal>
 
         <!-- Mode Création / Édition -->
         <app-user-form *ngSwitchDefault [user]="selectedItem()" (cancel)="closeModal()"
@@ -264,6 +257,13 @@
 
       </ng-container>
     </app-ui-modal>
+
+    <!-- Mode Suppression (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Confirmer la suppression"
+      [message]="'Êtes-vous sûr de vouloir supprimer l\'utilisateur ' + selectedItem()?.username + ' ? Cette action est irréversible.'"
+      confirmLabel="Supprimer" cancelLabel="Annuler" type="danger" (confirm)="confirmDelete()"
+      (cancel)="closeModal()">
+    </app-ui-confirm-modal>
 
     <!-- Modale d'Export -->
     <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"

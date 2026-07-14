@@ -152,15 +152,8 @@
 </app-ui-list-page>
 
 <!-- Edit/Create Modal -->
-<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+<app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
   <ng-container [ngSwitch]="modalMode()">
-      <app-ui-confirm-modal *ngSwitchCase="'delete'"
-          title="Supprimer le planning ?"
-          message="Cette action est irréversible."
-          (confirm)="confirmDelete()"
-          (cancel)="closeModal()"
-      ></app-ui-confirm-modal>
-      
       <app-planning-form *ngSwitchDefault
          [item]="selectedItem()"
          (cancel)="closeModal()"
@@ -168,3 +161,11 @@
       ></app-planning-form>
   </ng-container>
 </app-ui-modal>
+
+<!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+<app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'"
+    title="Supprimer le planning ?"
+    message="Cette action est irréversible."
+    (confirm)="confirmDelete()"
+    (cancel)="closeModal()"
+></app-ui-confirm-modal>
