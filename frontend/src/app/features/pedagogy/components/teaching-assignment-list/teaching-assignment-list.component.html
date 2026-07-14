@@ -43,20 +43,20 @@
 
 <!-- Modals -->
 <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
         <ng-container [ngSwitch]="modalMode()">
-            <!-- Delete Mode -->
-            <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer l'affectation ?"
-                message="Êtes-vous sûr de vouloir supprimer cette affectation ?" (confirm)="confirmDelete()"
-                (cancel)="closeModal()">
-            </app-ui-confirm-modal>
-
             <!-- Create/Edit Mode -->
             <app-teaching-assignment-form *ngSwitchDefault [data]="selectedItem()" (success)="onSave()"
                 (cancel)="closeModal()">
             </app-teaching-assignment-form>
         </ng-container>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer l'affectation ?"
+        message="Êtes-vous sûr de vouloir supprimer cette affectation ?" (confirm)="confirmDelete()"
+        (cancel)="closeModal()">
+    </app-ui-confirm-modal>
 </ng-container>
 
 <!-- Cell Templates -->

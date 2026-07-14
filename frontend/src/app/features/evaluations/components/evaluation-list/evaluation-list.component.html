@@ -249,23 +249,24 @@
 
     <!-- Modals -->
     <ng-container modals>
-        <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+        <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete' && !isChangeStatusMode()" (close)="closeModal()">
             <ng-container [ngSwitch]="modalMode()">
-                <!-- Suppression -->
-                <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer l'évaluation"
-                    [message]="'Êtes-vous sûr de vouloir supprimer l\'évaluation ' + (selectedItem()?.title || '') + ' ? Toutes les notes associées seront supprimées.'"
-                    (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
-
                 <!-- Formulaire -->
                 <app-evaluation-form *ngSwitchDefault [item]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
                     [isClone]="modalMode() === 'clone'" (cancel)="closeModal()" (success)="onSave()"></app-evaluation-form>
-
-                <app-ui-confirm-modal *ngSwitchCase="'change-status'"
-                    [title]="'Changer le statut : ' + (selectedItem()?.title || '')" [message]="statusConfirmMessage"
-                    confirmLabel="Confirmer" type="info" (confirm)="confirmStatusChange()"
-                    (cancel)="closeModal()"></app-ui-confirm-modal>
             </ng-container>
         </app-ui-modal>
+
+        <!-- Suppression (outside app-ui-modal to prevent transform/overflow clipping) -->
+        <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer l'évaluation"
+            [message]="'Êtes-vous sûr de vouloir supprimer l\'évaluation ' + (selectedItem()?.title || '') + ' ? Toutes les notes associées seront supprimées.'"
+            (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
+
+        <!-- Changement de statut (outside app-ui-modal to prevent transform/overflow clipping) -->
+        <app-ui-confirm-modal *ngIf="isModalOpen() && isChangeStatusMode()"
+            [title]="'Changer le statut : ' + (selectedItem()?.title || '')" [message]="statusConfirmMessage"
+            confirmLabel="Confirmer" type="info" (confirm)="confirmStatusChange()"
+            (cancel)="closeModal()"></app-ui-confirm-modal>
     </ng-container>
 
 </app-ui-list-page>

@@ -49,15 +49,22 @@ export abstract class BaseFormComponent implements OnInit {
                     this.isSubmitting = false;
                     
                     // Injection et récupération des erreurs structurées
-                    this.formErrors = FormUtils.setErrors(this.form, err, this.fieldLabels);
+                    const allErrors = FormUtils.setErrors(this.form, err, this.fieldLabels);
                     
-                    if (this.formErrors.length > 0) {
-                        // On construit un message riche et explicite pour le Toast
-                        const richMessage = this.formErrors
-                            .map(e => `${e.field} : ${e.message}`)
-                            .join('\n');
-                        
+                    // Séparer les erreurs de validation globales (ex: "Global", "global")
+                    const globalErrors = allErrors.filter(e => e.field.toLowerCase() === 'global');
+                    const fieldErrors = allErrors.filter(e => e.field.toLowerCase() !== 'global');
+                    
+                    // Seules les erreurs de champs spécifiques restent dans le formulaire
+                    this.formErrors = fieldErrors;
+                    
+                    if (globalErrors.length > 0) {
+                        // Les erreurs globales s'affichent sous forme de Toast
+                        const richMessage = globalErrors.map(e => e.message).join('\n');
                         this.toastService.error(richMessage);
+                    } else if (fieldErrors.length > 0) {
+                        // S'il n'y a que des erreurs de champs, on alerte pour corriger le formulaire
+                        this.toastService.warning('Veuillez corriger les erreurs de saisie.');
                     } else {
                         this.toastService.error(FormUtils.getError(err));
                     }

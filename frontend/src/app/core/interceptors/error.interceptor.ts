@@ -52,7 +52,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             }
 
             // On affiche le toast pour les erreurs significatives
-            if (error.status !== 422) {
+            // On évite d'afficher un toast générique si c'est une erreur de validation 400 (qui sera gérée par le composant de formulaire)
+            const isValidationError400 = error.status === 400 && error.error && typeof error.error === 'object' && !error.error.detail;
+
+            if (error.status !== 422 && !isValidationError400) {
                 toastService.error(errorMessage);
             }
 

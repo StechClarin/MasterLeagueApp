@@ -59,18 +59,18 @@
 </app-ui-list-page>
 
 <!-- Modale de formulaire -->
-<app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+<app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
     <ng-container [ngSwitch]="modalMode()">
-        <!-- Suppression -->
-        <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer le type"
-            [message]="'Êtes-vous sûr de vouloir supprimer le type \'' + selectedItem()?.name + '\' ? Cette action est irréversible.'"
-            (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
-
         <!-- Formulaire -->
         <app-evaluation-type-form *ngSwitchDefault [item]="selectedItem()" [isReadOnly]="modalMode() === 'detail'"
             (cancel)="closeModal()" (success)="onSave()"></app-evaluation-type-form>
     </ng-container>
 </app-ui-modal>
+
+<!-- Suppression (outside app-ui-modal to prevent transform/overflow clipping) -->
+<app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer le type"
+    [message]="'Êtes-vous sûr de vouloir supprimer le type \'' + selectedItem()?.name + '\' ? Cette action est irréversible.'"
+    (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
 
 <!-- Cell Templates -->
 <ng-template #nameCell let-item>

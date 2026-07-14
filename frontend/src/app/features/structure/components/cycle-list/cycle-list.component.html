@@ -45,17 +45,18 @@
 </ng-template>
 
 <ng-template #modalContent>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
         <ng-container [ngSwitch]="modalMode()">
-            <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer le cycle ?"
-                message="Êtes-vous sûr de vouloir supprimer ce cycle ?" (confirm)="confirmDelete()"
-                (cancel)="closeModal()">
-            </app-ui-confirm-modal>
-
             <app-cycle-form *ngSwitchDefault [cycle]="selectedItem()" (success)="onSave()" (cancel)="closeModal()">
             </app-cycle-form>
         </ng-container>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer le cycle ?"
+        message="Êtes-vous sûr de vouloir supprimer ce cycle ?" (confirm)="confirmDelete()"
+        (cancel)="closeModal()">
+    </app-ui-confirm-modal>
 </ng-template>
 
 <ng-template #nameCell let-item>

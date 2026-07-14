@@ -69,15 +69,9 @@
 
 <!-- MODALS -->
 <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
         <ng-container *ngIf="isModalOpen()">
             <ng-container [ngSwitch]="modalMode()">
-                <app-ui-confirm-modal *ngSwitchCase="'delete'" 
-                    title="Supprimer ce groupe"
-                    message="Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible."
-                    (confirm)="confirmDelete()"
-                    (cancel)="closeModal()">
-                </app-ui-confirm-modal>
 
                 <app-subject-group-form *ngSwitchDefault
                     [subjectGroup]="selectedItem()"
@@ -88,6 +82,14 @@
             </ng-container>
         </ng-container>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" 
+        title="Supprimer ce groupe"
+        message="Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible."
+        (confirm)="confirmDelete()"
+        (cancel)="closeModal()">
+    </app-ui-confirm-modal>
 
     <!-- EXPORT -->
     <app-ui-export-modal

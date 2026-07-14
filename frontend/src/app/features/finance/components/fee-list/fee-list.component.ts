@@ -120,22 +120,23 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
       </ng-container>
     </app-ui-list-page>
 
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()" [title]="'Tarif'">
+    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()" [title]="'Tarif'">
       <app-fee-form
         *ngIf="isModalOpen() && modalMode() !== 'delete'"
         [item]="selectedItem()"
         (cancel)="closeModal()"
         (success)="onSave()">
       </app-fee-form>
-      
-      <app-ui-confirm-modal
-        *ngIf="isModalOpen() && modalMode() === 'delete'"
-        [title]="'Supprimer le tarif'"
-        [message]="'Êtes-vous sûr de vouloir supprimer ce tarif ?'"
-        (confirm)="confirmDelete()"
-        (cancel)="closeModal()">
-      </app-ui-confirm-modal>
     </app-ui-modal>
+      
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal
+      *ngIf="isModalOpen() && modalMode() === 'delete'"
+      [title]="'Supprimer le tarif'"
+      [message]="'Êtes-vous sûr de vouloir supprimer ce tarif ?'"
+      (confirm)="confirmDelete()"
+      (cancel)="closeModal()">
+    </app-ui-confirm-modal>
   `
 })
 export class FeeListComponent extends BaseModalListComponent<any> implements OnInit, AfterViewInit, OnDestroy {

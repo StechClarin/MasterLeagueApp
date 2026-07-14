@@ -434,6 +434,68 @@ class BaseService:
         pass
 
     # ==========================================================================
+    # 4.5. VALIDATEURS GÉNÉRIQUES REUTILISABLES (DRY)
+    # ==========================================================================
+
+    def validate_chronological_dates(self, start_date, end_date, field_name='global', message=None):
+        """
+        Vérifie que la date de début est antérieure à la date de fin.
+        """
+        if start_date and end_date and start_date > end_date:
+            err_msg = message or "La date de début doit être antérieure à la date de fin."
+            raise ValidationError({field_name: err_msg})
+
+    def validate_no_date_overlap(self, start_date, end_date, establishment_id, instance=None, extra_filters=None, field_name='global', message=None):
+        """
+        Vérifie qu'il n'y a pas de chevauchement de dates pour ce modèle dans l'établissement.
+        """
+        if not start_date or not end_date or not establishment_id:
+            return
+            
+        from django.db.models import Q
+        
+        # Filtre de base : même établissement
+        query = self.model.objects.filter(
+            establishment_id=establishment_id
+        )
+        
+        # Exclure l'instance actuelle si modification
+        if instance and instance.pk:
+            query = query.exclude(pk=instance.pk)
+            
+        # Filtres supplémentaires
+        if extra_filters:
+            query = query.filter(**extra_filters)
+            
+        # Vérification du chevauchement de dates (A_debut <= B_fin et A_fin >= B_debut)
+        query = query.filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+        
+        overlapping = query.first()
+        if overlapping:
+            err_msg = message or f"Les dates saisies chevauchent celles de l'élément '{overlapping}'."
+            raise ValidationError({field_name: err_msg})
+
+    def validate_uniqueness(self, establishment_id, instance=None, field_name='global', message=None, **fields):
+        """
+        Vérifie l'unicité d'une combinaison de champs au sein de l'établissement.
+        """
+        if not establishment_id:
+            return
+            
+        query = self.model.objects.filter(
+            establishment_id=establishment_id,
+            **fields
+        )
+        
+        if instance and instance.pk:
+            query = query.exclude(pk=instance.pk)
+            
+        if query.exists():
+            fields_str = ", ".join([f"{k}='{v}'" for k, v in fields.items()])
+            err_msg = message or f"Un élément avec ces critères ({fields_str}) existe déjà dans votre établissement."
+            raise ValidationError({field_name: err_msg})
+
+    # ==========================================================================
     # 5. GÉNÉRATION DE TRAME (Template)
     # ==========================================================================
 

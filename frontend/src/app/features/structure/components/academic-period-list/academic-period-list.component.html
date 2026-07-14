@@ -178,14 +178,9 @@
 
     <!-- Modals (Inside app-ui-list-page) -->
     <ng-container modals>
-        <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
+        <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
             <ng-container *ngIf="isModalOpen()">
                 <ng-container [ngSwitch]="modalMode()">
-                    <!-- Suppression -->
-                    <app-ui-confirm-modal *ngSwitchCase="'delete'" title="Supprimer la période"
-                        [message]="'Êtes-vous sûr de vouloir supprimer la période \'' + selectedItem()?.name + '\' ? Cette action est irréversible.'"
-                        (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
-
                     <!-- Formulaire -->
                     <app-academic-period-form *ngSwitchDefault [item]="selectedItem()"
                         [isReadOnly]="modalMode() === 'detail'" (cancel)="closeModal()" (success)="onSave()">
@@ -193,6 +188,11 @@
                 </ng-container>
             </ng-container>
         </app-ui-modal>
+
+        <!-- Suppression (outside app-ui-modal to prevent transform/overflow clipping) -->
+        <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer la période"
+            [message]="'Êtes-vous sûr de vouloir supprimer la période \'' + selectedItem()?.name + '\' ? Cette action est irréversible.'"
+            (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
 
         <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"
             (confirm)="confirmExport($event)">

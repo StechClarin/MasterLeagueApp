@@ -197,19 +197,7 @@ import { StudentReportModalComponent } from '../student-report-modal/student-rep
 
     </app-ui-list-page>
 
-    <app-ui-modal [isOpen]="isModalOpen()" (close)="closeModal()">
-        <app-ui-confirm-modal *ngIf="isMode('delete')"
-            title="Supprimer l'inscription"
-            message="Êtes-vous sûr de vouloir supprimer cette inscription ? Cette action est irréversible."
-            (confirm)="confirmDelete()"
-            (cancel)="closeModal()"></app-ui-confirm-modal>
-
-        <app-ui-confirm-modal *ngIf="isMode('expel')"
-            title="Renvoyer l'élève"
-            message="Confirmez-vous le renvoi de cet élève ? Son statut passera à 'Renvoyé'."
-            (confirm)="confirmExpel()"
-            (cancel)="closeModal()"></app-ui-confirm-modal>
-
+    <app-ui-modal [isOpen]="isModalOpen() && !isMode('delete') && !isMode('expel')" (close)="closeModal()">
         <div *ngIf="isMode('transfer')" class="p-8">
             <div class="flex items-center gap-4 mb-6">
                 <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -283,6 +271,20 @@ import { StudentReportModalComponent } from '../student-report-modal/student-rep
             </button>
         </div>
     </app-ui-modal>
+
+    <!-- Delete Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && isMode('delete')"
+        title="Supprimer l'inscription"
+        message="Êtes-vous sûr de vouloir supprimer cette inscription ? Cette action est irréversible."
+        (confirm)="confirmDelete()"
+        (cancel)="closeModal()"></app-ui-confirm-modal>
+
+    <!-- Expel Mode (outside app-ui-modal to prevent transform/overflow clipping) -->
+    <app-ui-confirm-modal *ngIf="isModalOpen() && isMode('expel')"
+        title="Renvoyer l'élève"
+        message="Confirmez-vous le renvoi de cet élève ? Son statut passera à 'Renvoyé'."
+        (confirm)="confirmExpel()"
+        (cancel)="closeModal()"></app-ui-confirm-modal>
     
     <app-student-report-modal 
       [isOpen]="isReportModalOpen()" 
