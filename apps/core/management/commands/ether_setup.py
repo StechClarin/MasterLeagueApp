@@ -4,6 +4,7 @@ import json
 import traceback
 import urllib.request
 import urllib.error
+import urllib.parse
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.db.transaction import atomic
@@ -34,7 +35,6 @@ class Command(BaseCommand):
             try:
                 import psycopg2
                 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-                import urllib.parse
                 
                 # Parse and unquote URL safely
                 result = urllib.parse.urlparse(db_url)

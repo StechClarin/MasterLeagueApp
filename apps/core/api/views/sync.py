@@ -125,9 +125,16 @@ class SyncInView(APIView):
         establishments = data.get('establishments', [])
 
         try:
+            from django.db.models import Q
             user = None
             # 1. Ingestion de l'Admin
             if admin_data:
+                # Si un utilisateur existe déjà avec ce username ou cet email mais un ID différent,
+                # on le supprime d'abord pour éviter l'erreur d'unicité (l'ingestion du cloud va le recréer).
+                User.objects.filter(
+                    Q(username=admin_data['username']) | Q(email=admin_data['email'])
+                ).exclude(id=admin_data['id']).delete()
+
                 user, created = User.objects.update_or_create(
                     id=admin_data['id'],
                     defaults={
@@ -145,6 +152,10 @@ class SyncInView(APIView):
 
             # 2. Ingestion des Etablissements et Relations
             for est_data in establishments:
+                # Si un établissement existe déjà avec ce code mais un ID différent,
+                # on le supprime d'abord pour éviter l'erreur d'unicité (l'ingestion du cloud va le recréer).
+                Establishment.objects.filter(code=est_data['code']).exclude(id=est_data['id']).delete()
+
                 # Créer/Update l'établissement
                 est, _ = Establishment.objects.update_or_create(
                     id=est_data['id'],
