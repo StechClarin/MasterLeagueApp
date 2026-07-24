@@ -21,7 +21,7 @@ export type LevelSubjectFieldsFragment = { __typename?: 'LevelSubjectType', id: 
 
 export type SubjectFieldsFragment = { __typename?: 'SubjectType', id: any, name: string, code: string, isActive: boolean, levelSubjects?: Array<{ __typename?: 'LevelSubjectType', id: any, coefficient: any, hourlyQuota: number, credits?: any | null, isOptional: boolean, group?: { __typename?: 'SubjectGroupType', id: any, name: string, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null, level: { __typename?: 'LevelType', id: any, name: string }, option?: { __typename?: 'OptionType', id: any, name: string } | null } | null> | null };
 
-export type AcademicPeriodFieldsFragment = { __typename?: 'AcademicPeriodType', id: any, name: string, startDate: any, endDate: any, isActive: boolean, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } };
+export type AcademicPeriodFieldsFragment = { __typename?: 'AcademicPeriodType', id: any, name: string, startDate: any, endDate: any, isActive: boolean, isClosed: boolean, academicYear: { __typename?: 'AcademicYearType', id: any, name: string }, cycles: Array<{ __typename?: 'CycleType', id: any, name: string }> };
 
 export type RoomFieldsFragment = { __typename?: 'RoomType', id: any, name: string, capacity?: number | null };
 
@@ -122,7 +122,7 @@ export type GetAllAcademicPeriodsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllAcademicPeriodsQuery = { __typename?: 'Query', academicPeriods?: { __typename?: 'AcademicPeriodTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicPeriodType', id: any, name: string, startDate: any, endDate: any, isActive: boolean, academicYear: { __typename?: 'AcademicYearType', id: any, name: string } } | null> | null } | null };
+export type GetAllAcademicPeriodsQuery = { __typename?: 'Query', academicPeriods?: { __typename?: 'AcademicPeriodTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'AcademicPeriodType', id: any, name: string, startDate: any, endDate: any, isActive: boolean, isClosed: boolean, academicYear: { __typename?: 'AcademicYearType', id: any, name: string }, cycles: Array<{ __typename?: 'CycleType', id: any, name: string }> } | null> | null } | null };
 
 export type GetAllRoomsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -309,7 +309,12 @@ export const AcademicPeriodFieldsFragmentDoc = gql`
   startDate
   endDate
   isActive
+  isClosed
   academicYear {
+    id
+    name
+  }
+  cycles {
     id
     name
   }

@@ -39,12 +39,14 @@ class AcademicYearService(BaseService):
         self.validate_no_date_overlap(
             parsed_start, parsed_end, 
             establishment_id=est_id, instance=instance,
+            field_name='start_date',
             message="Les dates saisies chevauchent une autre année scolaire existante."
         )
         
         # 3. Validation de l'unicité du nom
         self.validate_uniqueness(
             establishment_id=est_id, instance=instance,
+            field_name='name',
             name=data.get('name'),
             message=f"Une année scolaire nommée '{data.get('name')}' existe déjà dans cet établissement."
         )

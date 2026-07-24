@@ -5,6 +5,31 @@ from apps.core.models.user_audit_model import UserAuditModel
 from apps.core.models.sync_log import SyncLog
 import json
 import uuid
+import os
+import threading
+from contextlib import contextmanager
+
+_local = threading.local()
+
+@contextmanager
+def skip_sync_tracking():
+    old = getattr(_local, 'disabled', False)
+    _local.disabled = True
+    try:
+        yield
+    finally:
+        _local.disabled = old
+
+def disable_sync_tracking():
+    _local.disabled = True
+
+def enable_sync_tracking():
+    _local.disabled = False
+
+def is_sync_tracking_disabled():
+    if os.environ.get('SKIP_SYNC_TRACKING') == '1':
+        return True
+    return getattr(_local, 'disabled', False)
 
 def custom_serializer(obj):
     if isinstance(obj, uuid.UUID):
@@ -18,6 +43,9 @@ def custom_serializer(obj):
 
 @receiver(post_save)
 def track_sync_save(sender, instance, created, **kwargs):
+    if is_sync_tracking_disabled():
+        return
+
     # On ignore le SyncLog lui-même et les modèles sans PK UUID
     if isinstance(instance, SyncLog):
         return
@@ -47,6 +75,9 @@ def track_sync_save(sender, instance, created, **kwargs):
 
 @receiver(post_delete)
 def track_sync_delete(sender, instance, **kwargs):
+    if is_sync_tracking_disabled():
+        return
+
     if isinstance(instance, SyncLog) or not isinstance(instance.pk, uuid.UUID):
         return
 

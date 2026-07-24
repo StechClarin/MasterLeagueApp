@@ -1,6 +1,7 @@
 from django.db import models
 from apps.core.models.establishment_aware_model import EstablishmentAwareModel
 from apps.structure.models.academic_year import AcademicYear
+from .cycle import Cycle
 
 
 class AcademicPeriod(EstablishmentAwareModel):
@@ -13,11 +14,20 @@ class AcademicPeriod(EstablishmentAwareModel):
         on_delete=models.CASCADE, 
         related_name='periods'
     )
+    cycles = models.ManyToManyField(
+        Cycle,
+        related_name='periods',
+        blank=True
+    )
     start_date = models.DateField()
     end_date = models.DateField()
     is_active = models.BooleanField(
         default=False, 
         help_text="Définit si c'est la période de saisie actuelle"
+    )
+    is_closed = models.BooleanField(
+        default=False,
+        help_text="Indique si la période est définitivement clôturée et verrouillée."
     )
 
     class Meta:

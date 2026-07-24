@@ -55,8 +55,8 @@ export abstract class BaseFormComponent implements OnInit {
                     const globalErrors = allErrors.filter(e => e.field.toLowerCase() === 'global');
                     const fieldErrors = allErrors.filter(e => e.field.toLowerCase() !== 'global');
                     
-                    // Seules les erreurs de champs spécifiques restent dans le formulaire
-                    this.formErrors = fieldErrors;
+                    // On conserve toutes les erreurs (y compris globales) dans le formulaire pour un affichage complet
+                    this.formErrors = allErrors;
                     
                     if (globalErrors.length > 0) {
                         // Les erreurs globales s'affichent sous forme de Toast

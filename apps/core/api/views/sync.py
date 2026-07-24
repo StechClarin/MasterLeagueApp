@@ -124,6 +124,11 @@ class SyncInView(APIView):
         admin_data = data.get('admin')
         establishments = data.get('establishments', [])
 
+        from apps.core.signals.sync_handlers import skip_sync_tracking
+        with skip_sync_tracking():
+            return self._post_ingest(request, admin_data, establishments, data)
+
+    def _post_ingest(self, request, admin_data, establishments, data):
         try:
             from django.db.models import Q
             user = None
@@ -216,8 +221,8 @@ class SyncInView(APIView):
 
                 # Alimenter la table TenantLicense locale pour la validation des droits
                 if user:
-                    TenantLicense.objects.filter(user=user).delete()
-                    for code in unlocked_codes:
+                    TenantLicense.all_objects.filter(user=user).hard_delete()
+                    for code in set(unlocked_codes):
                         if code:
                             TenantLicense.objects.create(
                                 user=user,
@@ -280,6 +285,12 @@ class PushDeltaView(APIView):
             return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
             
         deltas = request.data.get('deltas', [])
+        
+        from apps.core.signals.sync_handlers import skip_sync_tracking
+        with skip_sync_tracking():
+            return self._post_ingest(request, deltas)
+
+    def _post_ingest(self, request, deltas):
         # Logique d'application des deltas (similaire à SyncInView mais pour des petits morceaux)
         # TODO: Implémenter la résolution de conflits basique (Last Write Wins)
         

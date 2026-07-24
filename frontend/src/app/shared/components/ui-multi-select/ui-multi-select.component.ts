@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit, ElementRef, HostListener, signal, computed, ViewChild, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ElementRef, HostListener, signal, computed, ViewChild, ChangeDetectorRef, OnChanges, SimpleChanges, Self, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -20,7 +20,10 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
         [class.ring-2]="isOpen()"
         [class.ring-indigo-500]="isOpen()"
         [class.border-indigo-500]="isOpen()"
-        (click)="toggleOpen()">
+        [class.bg-gray-50]="disabled"
+        [class.cursor-not-allowed]="disabled"
+        [class.opacity-75]="disabled"
+        (click)="!disabled && toggleOpen()">
         
         <div class="flex flex-wrap gap-2 items-center">
             <span *ngIf="selectedObjects.length === 0" class="text-gray-400 text-sm">{{ placeholder }}</span>
@@ -28,12 +31,12 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
             <!-- Chips -->
             <div *ngFor="let item of selectedObjects" class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-lg text-sm font-medium flex items-center gap-1">
                 <span>{{ item[bindLabel] }}</span>
-                <button type="button" (click)="removeItem($event, item)" class="text-indigo-400 hover:text-indigo-900 rounded-full p-0.5 transition-colors">
+                <button type="button" *ngIf="!disabled" (click)="removeItem($event, item)" class="text-indigo-400 hover:text-indigo-900 rounded-full p-0.5 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
         </div>
-
+        
          <!-- Chevron -->
          <div class="absolute right-3 top-[38px] pointer-events-none text-gray-400">
             <svg class="w-5 h-5 transition-transform duration-200" [class.rotate-180]="isOpen()" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -135,15 +138,13 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
       </div>
 
       <p *ngIf="hint" class="mt-1 text-sm text-gray-500">{{ hint }}</p>
+
+      <div *ngIf="control.invalid && (control.dirty || control.touched)" class="text-red-600 text-sm mt-1">
+        <div *ngIf="control.errors?.['required']">Ce champ est requis.</div>
+        <div *ngIf="control.errors?.['serverError']">{{ control.errors?.['serverError'] }}</div>
+      </div>
     </div>
-  `,
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: UiMultiSelectComponent,
-            multi: true
-        }
-    ]
+  `
 })
 export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnChanges {
     @Input() label: string = '';
@@ -179,13 +180,24 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
     selectedObjects: any[] = [];
 
     groupedOptions: { key: string, items: any[] }[] = [];
+    disabled = false;
 
     onChange: any = () => { };
     onTouch: any = () => { };
     
     private searchSubject = new Subject<string>();
 
-    constructor(private elementRef: ElementRef, private cdr: ChangeDetectorRef) { }
+    @Input() control: FormControl = new FormControl();
+
+    constructor(
+        private elementRef: ElementRef, 
+        private cdr: ChangeDetectorRef,
+        @Self() @Optional() public ngControl?: NgControl
+    ) { 
+        if (this.ngControl) {
+            this.ngControl.valueAccessor = this;
+        }
+    }
 
     ngOnInit() {
         this.searchSubject.pipe(
@@ -193,6 +205,12 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
             distinctUntilChanged()
         ).subscribe(val => {
             this.search.emit(val);
+        });
+
+        this.control.valueChanges.subscribe(value => {
+            this.value = value || [];
+            this.syncSelectedObjects();
+            this.onChange(value);
         });
     }
 
@@ -339,6 +357,9 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
     }
 
     writeValue(val: any[]): void {
+        if (this.control.value !== val) {
+            this.control.setValue(val, { emitEvent: false });
+        }
         this.value = val || [];
         this.syncSelectedObjects();
     }
@@ -349,5 +370,11 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
 
     registerOnTouched(fn: any): void {
         this.onTouch = fn;
+    }
+
+    setDisabledState(isDisabled: boolean): void {
+        isDisabled ? this.control.disable() : this.control.enable();
+        this.disabled = isDisabled;
+        this.cdr.markForCheck();
     }
 }

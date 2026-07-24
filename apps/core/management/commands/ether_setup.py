@@ -16,6 +16,14 @@ class Command(BaseCommand):
         parser.add_argument('--admin-pass', type=str, help='Default admin password')
 
     def handle(self, *args, **options):
+        import os
+        os.environ['SKIP_SYNC_TRACKING'] = '1'
+        try:
+            self._handle(*args, **options)
+        finally:
+            os.environ.pop('SKIP_SYNC_TRACKING', None)
+
+    def _handle(self, *args, **options):
         self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('--- ETHER-SETUP STARTING ---'))
         
         # 1. Verification of the Database Engine
