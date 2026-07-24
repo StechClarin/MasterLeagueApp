@@ -346,12 +346,25 @@ class PushDeltaView(APIView):
 
                 mgr = getattr(target_model, 'objects', None)
                 if action in ['create', 'update'] and mgr:
-                    rec_id = data.get('id')
-                    payload = {k: v for k, v in data.items() if k != 'id'}
+                    rec_id = data.get('id') or delta.get('object_uuid')
                     if rec_id:
-                        mgr.update_or_create(id=rec_id, defaults=payload)
+                        payload = {}
+                        for k, v in data.items():
+                            if k == 'id':
+                                continue
+                            field = next((f for f in target_model._meta.fields if f.name == k), None)
+                            if field:
+                                payload[field.attname] = v
+                            else:
+                                payload[k] = v
+                        
+                        all_mgr = getattr(target_model, 'all_objects', mgr)
+                        all_mgr.update_or_create(id=rec_id, defaults=payload)
                 elif action == 'delete' and mgr:
-                    mgr.filter(id=data.get('id')).delete()
+                    rec_id = data.get('id') or delta.get('object_uuid')
+                    if rec_id:
+                        all_mgr = getattr(target_model, 'all_objects', mgr)
+                        all_mgr.filter(id=rec_id).delete()
             except Exception as e:
                 print(f"Push error for {model_name}: {e}")
 
