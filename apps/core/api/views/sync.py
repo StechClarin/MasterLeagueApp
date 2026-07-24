@@ -324,11 +324,8 @@ class PushDeltaView(APIView):
             if not isinstance(data, dict):
                 data = {}
 
-            ack_deltas.append({
-                'model': model_name,
-                'action': action,
-                'fields': dict(list(data.items())[:4])
-            })
+            status_info = "SAVED"
+            error_message = None
 
             try:
                 # Resolve model by meta name or class/object name
@@ -341,8 +338,7 @@ class PushDeltaView(APIView):
                 )
 
                 if not target_model:
-                    print(f"Push warning: model '{model_name}' not found")
-                    continue
+                    raise ValueError(f"Model '{model_name}' not found on server")
 
                 mgr = getattr(target_model, 'objects', None)
                 if action in ['create', 'update'] and mgr:
@@ -358,15 +354,29 @@ class PushDeltaView(APIView):
                             else:
                                 payload[k] = v
                         
-                        all_mgr = getattr(target_model, 'all_objects', mgr)
+                        all_mgr = getattr(target_model, 'all_objects', None) or mgr
                         all_mgr.update_or_create(id=rec_id, defaults=payload)
+                    else:
+                        raise ValueError("No record ID (id or object_uuid) provided")
                 elif action == 'delete' and mgr:
                     rec_id = data.get('id') or delta.get('object_uuid')
                     if rec_id:
-                        all_mgr = getattr(target_model, 'all_objects', mgr)
+                        all_mgr = getattr(target_model, 'all_objects', None) or mgr
                         all_mgr.filter(id=rec_id).delete()
+                    else:
+                        raise ValueError("No record ID (id or object_uuid) provided")
             except Exception as e:
                 print(f"Push error for {model_name}: {e}")
+                status_info = "FAILED"
+                error_message = str(e)
+
+            ack_deltas.append({
+                'model': model_name,
+                'action': action,
+                'status': status_info,
+                'error': error_message,
+                'fields': dict(list(data.items())[:4])
+            })
 
         return Response({
             "status": "Cloud deltas applied",
