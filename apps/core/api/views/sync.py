@@ -68,6 +68,17 @@ class InitialSyncView(APIView):
                     "id": str(est.id),
                     "code": est.code,
                     "name": est.name,
+                    "logo": est.logo.name if est.logo else None,
+                    "address": est.address,
+                    "phone": est.phone,
+                    "email": est.email,
+                    "slogan": est.slogan,
+                    "website": est.website,
+                    "tax_id": est.tax_id,
+                    "city": est.city,
+                    "country": est.country,
+                    "print_header": est.print_header.name if est.print_header else None,
+                    "print_footer": est.print_footer,
                     "type": getattr(est, 'type', None),
                     "created_at": est.created_at.isoformat() if est.created_at else None,
                     "related_elements": get_deep_establishment_data(est)
@@ -167,6 +178,17 @@ class SyncInView(APIView):
                     defaults={
                         'name': est_data['name'],
                         'code': est_data['code'],
+                        'logo': est_data.get('logo'),
+                        'address': est_data.get('address'),
+                        'phone': est_data.get('phone'),
+                        'email': est_data.get('email'),
+                        'slogan': est_data.get('slogan'),
+                        'website': est_data.get('website'),
+                        'tax_id': est_data.get('tax_id'),
+                        'city': est_data.get('city'),
+                        'country': est_data.get('country', 'Cameroun'),
+                        'print_header': est_data.get('print_header'),
+                        'print_footer': est_data.get('print_footer'),
                         'user': user
                     }
                 )
