@@ -68,6 +68,17 @@ class InitialSyncView(APIView):
                     "id": str(est.id),
                     "code": est.code,
                     "name": est.name,
+                    "logo": est.logo.name if est.logo else None,
+                    "address": est.address,
+                    "phone": est.phone,
+                    "email": est.email,
+                    "slogan": est.slogan,
+                    "website": est.website,
+                    "tax_id": est.tax_id,
+                    "city": est.city,
+                    "country": est.country,
+                    "print_header": est.print_header.name if est.print_header else None,
+                    "print_footer": est.print_footer,
                     "type": getattr(est, 'type', None),
                     "created_at": est.created_at.isoformat() if est.created_at else None,
                     "related_elements": get_deep_establishment_data(est)
@@ -124,10 +135,22 @@ class SyncInView(APIView):
         admin_data = data.get('admin')
         establishments = data.get('establishments', [])
 
+        from apps.core.signals.sync_handlers import skip_sync_tracking
+        with skip_sync_tracking():
+            return self._post_ingest(request, admin_data, establishments, data)
+
+    def _post_ingest(self, request, admin_data, establishments, data):
         try:
+            from django.db.models import Q
             user = None
             # 1. Ingestion de l'Admin
             if admin_data:
+                # Si un utilisateur existe déjà avec ce username ou cet email mais un ID différent,
+                # on le supprime d'abord pour éviter l'erreur d'unicité (l'ingestion du cloud va le recréer).
+                User.objects.filter(
+                    Q(username=admin_data['username']) | Q(email=admin_data['email'])
+                ).exclude(id=admin_data['id']).delete()
+
                 user, created = User.objects.update_or_create(
                     id=admin_data['id'],
                     defaults={
@@ -145,12 +168,27 @@ class SyncInView(APIView):
 
             # 2. Ingestion des Etablissements et Relations
             for est_data in establishments:
+                # Si un établissement existe déjà avec ce code mais un ID différent,
+                # on le supprime d'abord pour éviter l'erreur d'unicité (l'ingestion du cloud va le recréer).
+                Establishment.objects.filter(code=est_data['code']).exclude(id=est_data['id']).delete()
+
                 # Créer/Update l'établissement
                 est, _ = Establishment.objects.update_or_create(
                     id=est_data['id'],
                     defaults={
                         'name': est_data['name'],
                         'code': est_data['code'],
+                        'logo': est_data.get('logo'),
+                        'address': est_data.get('address'),
+                        'phone': est_data.get('phone'),
+                        'email': est_data.get('email'),
+                        'slogan': est_data.get('slogan'),
+                        'website': est_data.get('website'),
+                        'tax_id': est_data.get('tax_id'),
+                        'city': est_data.get('city'),
+                        'country': est_data.get('country', 'Cameroun'),
+                        'print_header': est_data.get('print_header'),
+                        'print_footer': est_data.get('print_footer'),
                         'user': user
                     }
                 )
@@ -205,8 +243,8 @@ class SyncInView(APIView):
 
                 # Alimenter la table TenantLicense locale pour la validation des droits
                 if user:
-                    TenantLicense.objects.filter(user=user).delete()
-                    for code in unlocked_codes:
+                    TenantLicense.all_objects.filter(user=user).hard_delete()
+                    for code in set(unlocked_codes):
                         if code:
                             TenantLicense.objects.create(
                                 user=user,
@@ -269,22 +307,25 @@ class PushDeltaView(APIView):
             return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
             
         deltas = request.data.get('deltas', [])
+        
+        from apps.core.signals.sync_handlers import skip_sync_tracking
+        with skip_sync_tracking():
+            return self._post_ingest(request, deltas)
+
+    def _post_ingest(self, request, deltas):
         # Logique d'application des deltas (similaire à SyncInView mais pour des petits morceaux)
         # TODO: Implémenter la résolution de conflits basique (Last Write Wins)
         
         ack_deltas = []
         for delta in deltas:
             model_name = delta.get('model') or delta.get('model_name')
-            action = delta.get('action')  # 'create', 'update', 'delete'
+            action = (delta.get('action') or '').lower()  # 'create', 'update', 'delete'
             data = delta.get('data') if delta.get('data') is not None else delta.get('payload')
             if not isinstance(data, dict):
                 data = {}
 
-            ack_deltas.append({
-                'model': model_name,
-                'action': action,
-                'fields': dict(list(data.items())[:4])
-            })
+            status_info = "SAVED"
+            error_message = None
 
             try:
                 # Resolve model by meta name or class/object name
@@ -297,19 +338,45 @@ class PushDeltaView(APIView):
                 )
 
                 if not target_model:
-                    print(f"Push warning: model '{model_name}' not found")
-                    continue
+                    raise ValueError(f"Model '{model_name}' not found on server")
 
                 mgr = getattr(target_model, 'objects', None)
                 if action in ['create', 'update'] and mgr:
-                    rec_id = data.get('id')
-                    payload = {k: v for k, v in data.items() if k != 'id'}
+                    rec_id = data.get('id') or delta.get('object_uuid')
                     if rec_id:
-                        mgr.update_or_create(id=rec_id, defaults=payload)
+                        payload = {}
+                        for k, v in data.items():
+                            if k == 'id':
+                                continue
+                            field = next((f for f in target_model._meta.fields if f.name == k), None)
+                            if field:
+                                payload[field.attname] = v
+                            else:
+                                payload[k] = v
+                        
+                        all_mgr = getattr(target_model, 'all_objects', None) or mgr
+                        all_mgr.update_or_create(id=rec_id, defaults=payload)
+                    else:
+                        raise ValueError("No record ID (id or object_uuid) provided")
                 elif action == 'delete' and mgr:
-                    mgr.filter(id=data.get('id')).delete()
+                    rec_id = data.get('id') or delta.get('object_uuid')
+                    if rec_id:
+                        all_mgr = getattr(target_model, 'all_objects', None) or mgr
+                        all_mgr.filter(id=rec_id).delete()
+                    else:
+                        raise ValueError("No record ID (id or object_uuid) provided")
             except Exception as e:
                 print(f"Push error for {model_name}: {e}")
+                status_info = "FAILED"
+                error_message = str(e)
+
+            ack_deltas.append({
+                'model': model_name,
+                'action': action,
+                'status': status_info,
+                'error': error_message,
+                'fields': dict(list(data.items())[:4])
+            })
 
         return Response({
             "status": "Cloud deltas applied",

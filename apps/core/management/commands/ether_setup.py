@@ -4,6 +4,7 @@ import json
 import traceback
 import urllib.request
 import urllib.error
+import urllib.parse
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.db.transaction import atomic
@@ -15,6 +16,14 @@ class Command(BaseCommand):
         parser.add_argument('--admin-pass', type=str, help='Default admin password')
 
     def handle(self, *args, **options):
+        import os
+        os.environ['SKIP_SYNC_TRACKING'] = '1'
+        try:
+            self._handle(*args, **options)
+        finally:
+            os.environ.pop('SKIP_SYNC_TRACKING', None)
+
+    def _handle(self, *args, **options):
         self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('--- ETHER-SETUP STARTING ---'))
         
         # 1. Verification of the Database Engine
@@ -34,7 +43,6 @@ class Command(BaseCommand):
             try:
                 import psycopg2
                 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-                import urllib.parse
                 
                 # Parse and unquote URL safely
                 result = urllib.parse.urlparse(db_url)

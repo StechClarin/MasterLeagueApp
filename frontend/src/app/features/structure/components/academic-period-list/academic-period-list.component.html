@@ -16,8 +16,47 @@
     </div>
 </ng-template>
 
+<ng-template #cyclesCell let-item>
+    <div class="flex flex-wrap gap-1">
+        <span *ngFor="let cycle of item.cycles" 
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+            {{ cycle.name }}
+        </span>
+        <span *ngIf="!item.cycles || item.cycles.length === 0" class="text-xs text-gray-400 italic">
+            Aucun cycle
+        </span>
+    </div>
+</ng-template>
+
 <ng-template #statusCell let-item>
-    <app-ui-status-badge [isActive]="item.isActive" activeLabel="Active" inactiveLabel="Inactive"></app-ui-status-badge>
+    <ng-container [ngSwitch]="getPeriodStatus(item)">
+        <!-- Active -->
+        <span *ngSwitchCase="'ACTIVE'" 
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+            Active
+        </span>
+        <!-- En clôture -->
+        <span *ngSwitchCase="'CLOSING'" 
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100 shadow-sm"
+              title="Date de fin théorique dépassée, en cours de clôture.">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-bounce"></span>
+            En clôture
+        </span>
+        <!-- Clôturée -->
+        <span *ngSwitchCase="'CLOSED'" 
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-600 border border-gray-200 shadow-sm">
+            <svg class="w-3.5 h-3.5 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+            Clôturée
+        </span>
+        <!-- Inactive -->
+        <span *ngSwitchDefault 
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200 shadow-sm">
+            Inactive
+        </span>
+    </ng-container>
 </ng-template>
 
 <ng-template #actionsCell let-item>
@@ -57,21 +96,50 @@
 
             <div class="w-px h-6 bg-gray-200 mx-1"></div>
 
-            <button (click)="toggleStatus(item); closeMenu()"
-                class="p-2 rounded-full transition-colors relative group/btn"
-                [title]="item.isActive ? 'Désactiver' : 'Activer'" [class.text-red-500]="item.isActive"
-                [class.hover:bg-red-50]="item.isActive" [class.text-green-500]="!item.isActive"
-                [class.hover:bg-green-50]="!item.isActive">
-                <svg *ngIf="item.isActive" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636">
-                    </path>
-                </svg>
-                <svg *ngIf="!item.isActive" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </button>
+            <!-- Activité (Activer / Clôturer / Réouvrir) -->
+            <ng-container [ngSwitch]="getPeriodStatus(item)">
+                <!-- Si Active ou En Clôture: Option de clôturer -->
+                <button *ngSwitchCase="'ACTIVE'" (click)="onClosePeriod(item); closeMenu()"
+                    class="p-2 rounded-full text-amber-600 hover:bg-amber-50 transition-colors"
+                    title="Clôturer la période">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                </button>
+                
+                <button *ngSwitchCase="'CLOSING'" (click)="onClosePeriod(item); closeMenu()"
+                    class="p-2 rounded-full text-amber-600 hover:bg-amber-50 transition-colors"
+                    title="Clôturer la période">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                </button>
+
+                <!-- Si Clôturée: Option de réouvrir -->
+                <button *ngSwitchCase="'CLOSED'" (click)="onReopenPeriod(item); closeMenu()"
+                    class="p-2 rounded-full text-emerald-600 hover:bg-emerald-50 transition-colors"
+                    title="Réouvrir la période">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </button>
+
+                <!-- Si Inactive: Option de l'activer -->
+                <button *ngSwitchDefault (click)="toggleStatus(item); closeMenu()"
+                    class="p-2 rounded-full text-emerald-600 hover:bg-emerald-50 transition-colors"
+                    title="Activer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </button>
+            </ng-container>
 
             <button (click)="openModal(item, 'delete')"
                 class="p-2 rounded-full text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"

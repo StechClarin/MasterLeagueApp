@@ -128,7 +128,12 @@ fragment AcademicPeriodFields on AcademicPeriodType {
   startDate
   endDate
   isActive
+  isClosed
   academicYear {
+    id
+    name
+  }
+  cycles {
     id
     name
   }

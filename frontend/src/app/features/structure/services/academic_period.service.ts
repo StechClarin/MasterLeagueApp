@@ -19,4 +19,14 @@ export class AcademicPeriodService extends BaseService {
             map((res: any) => res.data.academicPeriods?.items || [])
         );
     }
+
+    close(id: string): import('rxjs').Observable<any> {
+        const url = `${this.apiUrl}/close/${id}/`;
+        return this.http.post(url, {});
+    }
+
+    reopen(id: string): import('rxjs').Observable<any> {
+        const url = `${this.apiUrl}/reopen/${id}/`;
+        return this.http.post(url, {});
+    }
 }

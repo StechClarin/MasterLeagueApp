@@ -61,6 +61,7 @@ export class AcademicPeriodListComponent extends BaseModalListComponent<Academic
     @ViewChild('nameCell', { static: true }) nameCell!: TemplateRef<any>;
     @ViewChild('yearCell', { static: true }) yearCell!: TemplateRef<any>;
     @ViewChild('dateCell', { static: true }) dateCell!: TemplateRef<any>;
+    @ViewChild('cyclesCell', { static: true }) cyclesCell!: TemplateRef<any>;
     @ViewChild('statusCell', { static: true }) statusCell!: TemplateRef<any>;
     @ViewChild('actionsCell', { static: true }) actionsCell!: TemplateRef<any>;
 
@@ -72,6 +73,7 @@ export class AcademicPeriodListComponent extends BaseModalListComponent<Academic
                 { header: 'Nom', template: this.nameCell },
                 { header: 'Année Scolaire', template: this.yearCell },
                 { header: 'Dates', template: this.dateCell },
+                { header: 'Cycles', template: this.cyclesCell },
                 { header: 'Statut', template: this.statusCell },
             ];
             this.cdr.detectChanges();
@@ -193,5 +195,56 @@ export class AcademicPeriodListComponent extends BaseModalListComponent<Academic
         link.download = `academic_periods_export_${new Date().toISOString().split('T')[0]}.xlsx`;
         link.click();
         window.URL.revokeObjectURL(url);
+    }
+
+    getPeriodStatus(item: AcademicPeriodType): 'CLOSED' | 'CLOSING' | 'ACTIVE' | 'INACTIVE' {
+        if (item.isClosed) {
+            return 'CLOSED';
+        }
+        if (!item.isActive) {
+            return 'INACTIVE';
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const endDate = new Date(item.endDate);
+        endDate.setHours(0, 0, 0, 0);
+        
+        if (today > endDate) {
+            return 'CLOSING';
+        }
+        return 'ACTIVE';
+    }
+
+    onClosePeriod(item: AcademicPeriodType) {
+        if (!item.id) return;
+        this.isLoading.set(true);
+        this.service.close(item.id).subscribe({
+            next: () => {
+                this.toastService.success(`La période ${item.name} a été clôturée.`);
+                this.refresh();
+            },
+            error: (err) => {
+                console.error('Error closing period:', err);
+                this.toastService.error('Erreur lors de la clôture de la période.');
+                this.isLoading.set(false);
+            }
+        });
+    }
+
+    onReopenPeriod(item: AcademicPeriodType) {
+        if (!item.id) return;
+        this.isLoading.set(true);
+        this.service.reopen(item.id).subscribe({
+            next: () => {
+                this.toastService.success(`La période ${item.name} a été réouverte.`);
+                this.refresh();
+            },
+            error: (err) => {
+                console.error('Error reopening period:', err);
+                this.toastService.error('Erreur lors de la réouverture de la période.');
+                this.isLoading.set(false);
+            }
+        });
     }
 }

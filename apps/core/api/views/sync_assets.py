@@ -32,7 +32,15 @@ class AssetManifestView(APIView):
         from django.apps import apps
 
         try:
-            est = Establishment.objects.get(code=tenant_id)
+            est = Establishment.objects.filter(code=tenant_id).first()
+            if not est:
+                from apps.profilmanagement.models import User
+                user = User.objects.filter(hub_id=tenant_id).first()
+                if user:
+                    est = Establishment.objects.filter(user=user).first()
+            
+            if not est:
+                raise Establishment.DoesNotExist()
         except Establishment.DoesNotExist:
             return Response({"error": "Tenant not found"}, status=status.HTTP_404_NOT_FOUND)
 

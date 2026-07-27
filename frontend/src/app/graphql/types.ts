@@ -38,6 +38,7 @@ export type AcademicPeriodType = {
   academicYear: AcademicYearType;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
+  cycles: Array<CycleType>;
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
   endDate: Scalars['Date']['output'];
   establishment: EstablishmentType;
@@ -45,6 +46,8 @@ export type AcademicPeriodType = {
   id: Scalars['UUID']['output'];
   /** Définit si c'est la période de saisie actuelle */
   isActive: Scalars['Boolean']['output'];
+  /** Indique si la période est définitivement clôturée et verrouillée. */
+  isClosed: Scalars['Boolean']['output'];
   isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   startDate: Scalars['Date']['output'];
@@ -181,6 +184,7 @@ export type CycleType = {
   name: Scalars['String']['output'];
   options: Array<OptionType>;
   order: Scalars['Int']['output'];
+  periods: Array<AcademicPeriodType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
 };
