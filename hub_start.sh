@@ -1,4 +1,4 @@
-#!/bin/bash
+œ#!/bin/bash
 # Startup script for School Manager (Ethernanos Hub)
 
 # Force UTF-8 encoding for Python to avoid migration decoding errors
@@ -37,5 +37,5 @@ python3 manage.py ether_setup --admin-pass "${ADMIN_DEFAULT_PASSWORD:-admin1234}
 
 # 5. Start Server
 echo "🎯 Launching School Manager on port ${APP_PORT}..."
-# Using runserver for now as it's a local desktop app context
-exec python3 manage.py runserver 0.0.0.0:${APP_PORT}
+# Using runserver with --insecure to force serving static assets in production mode
+exec python3 manage.py runserver 0.0.0.0:${APP_PORT} --insecure
