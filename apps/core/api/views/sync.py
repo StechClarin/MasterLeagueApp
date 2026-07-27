@@ -319,7 +319,7 @@ class PushDeltaView(APIView):
         ack_deltas = []
         for delta in deltas:
             model_name = delta.get('model') or delta.get('model_name')
-            action = delta.get('action')  # 'create', 'update', 'delete'
+            action = (delta.get('action') or '').lower()  # 'create', 'update', 'delete'
             data = delta.get('data') if delta.get('data') is not None else delta.get('payload')
             if not isinstance(data, dict):
                 data = {}
