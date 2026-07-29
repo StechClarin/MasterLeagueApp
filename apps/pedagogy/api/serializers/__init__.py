@@ -1,3 +1,0 @@
-from .teaching_assignment_serializer import TeachingAssignmentSerializer
-from .planning_serializer import PlanningSerializer
-from .planning_detail_serializer import PlanningDetailSerializer

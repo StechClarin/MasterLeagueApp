@@ -1,7 +1,7 @@
 {
-  "id": "930e2a6f-7dfb-4541-b607-7b520053b9b4",
-  "name": "School Manager",
+  "id": "a155bb90-9e8a-48f9-89ef-0f0ec2aa3f4d",
+  "name": "Hub Starter",
   "version": "1.0.0",
   "port": 8000,
-  "exec_command": "./hub_start.sh"
+  "exec_command": "./snake start"
 }

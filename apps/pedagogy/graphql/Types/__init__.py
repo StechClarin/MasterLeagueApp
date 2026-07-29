@@ -1,3 +1,0 @@
-from .teaching_assignment_type import TeachingAssignmentType
-from .planning_type import PlanningType
-from .planning_detail_type import PlanningDetailType

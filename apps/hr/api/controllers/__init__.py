@@ -1,3 +1,0 @@
-from .contract_type_controller import ContractTypeController
-from .personnel_controller import PersonnelController
-# from .teacher_controller import TeacherController

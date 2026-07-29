@@ -1,3 +1,0 @@
-from .teaching_assignment_controller import TeachingAssignmentController
-from .planning_controller import PlanningController
-from .planning_detail_controller import PlanningDetailController

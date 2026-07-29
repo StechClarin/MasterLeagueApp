@@ -65,7 +65,7 @@ def main():
         print("\n🗑️  Nettoyage des modules de démonstration scolaire (Backend et Frontend)...")
         
         # Liste des modules à supprimer
-        demo_modules = ['students', 'finance', 'hr', 'structure', 'evaluations', 'pedagogy', 'attendance']
+        demo_modules = ['students', 'finance', 'hr', 'structure', 'evaluations', 'pedagogy', 'attendance', 'cars', 'shop']
 
         # A. Suppression dans le Backend (apps/)
         for mod in demo_modules:
