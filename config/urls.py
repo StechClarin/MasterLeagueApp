@@ -27,10 +27,7 @@ urlpatterns = [
     path("api/<str:model_name>/<str:method_name>/<int:pk>/", csrf_exempt(RouterView.as_view()), name="api_router_pk"),
     path("api/<str:model_name>/<str:method_name>/<uuid:pk>/", csrf_exempt(RouterView.as_view()), name="api_router_uuid"),
     
-    # 4. API READ (GraphQL - Lecture)
-    # --- CORRECTION : On utilise GraphQLController ---
-    # Il gère la sécurité JWT et désactive le CSRF automatiquement
-    re_path(r'^graphql.*', GraphQLController.as_view(graphiql=True)),
+    re_path(r'^graphql.*', GraphQLController.as_view(graphql_ide='graphiql')),
 ]
 
 from django.conf import settings

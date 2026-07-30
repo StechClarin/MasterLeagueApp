@@ -1,10 +1,12 @@
-import graphene
-from graphene_django import DjangoObjectType
-from ...models import Page
+import strawberry
+import strawberry_django
+from apps.core.models import Page
 
-class PageType(DjangoObjectType):
-    class Meta:
-        model = Page
-        fields = "__all__"
-        # Note : Graphene convertit automatiquement JSONField (permission_tags) 
-        # en GenericScalar ou JSONString. C'est géré.
+@strawberry_django.type(Page)
+class PageType:
+    id: strawberry.ID
+    title: strawberry.auto
+    icon: strawberry.auto
+    order: strawberry.auto
+    link: strawberry.auto
+    permission_tags: strawberry.scalars.JSON

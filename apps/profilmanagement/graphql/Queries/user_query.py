@@ -1,71 +1,56 @@
-import graphene
+import strawberry
 from django.core.paginator import Paginator
 from ...models import User
 from ..Types.user_type import UserType
-
-
-# Importation standard pour la pagination
-from apps.core.graphql.Types.paginated_type import get_paginated_type
+from apps.core.graphql.Types.paginated_type import PaginatedType
 from apps.core.utils.pagination import paginate_queryset
 
-# Création du type paginé
-UserPaginatedType = get_paginated_type(UserType)
-
-class UserQuery(graphene.ObjectType):
-    users = graphene.Field(
-        UserPaginatedType,
-        username=graphene.String(),
-        email=graphene.String(),
-        role=graphene.String(),
-        is_active=graphene.Boolean(),
-        page=graphene.Int(default_value=1),
-        page_size=graphene.Int(default_value=10)
-    )
-    user = graphene.Field(UserType, id=graphene.Int())
-    me = graphene.Field(UserType)
-
+@strawberry.type
+class UserQuery:
     HIDDEN_USERNAMES = ['ethernanos']
 
-    @staticmethod
-    def resolve_users(root, info, **kwargs):
-        # On instancie le service
+    @strawberry.field
+    def users(
+        self,
+        info: strawberry.Info,
+        username: str | None = None,
+        email: str | None = None,
+        role: str | None = None,
+        is_active: bool | None = None,
+        page: int = 1,
+        page_size: int = 10
+    ) -> PaginatedType[UserType]:
         from ...services.user_service import UserService
         service = UserService()
         
-        # Construction des filtres avec les bons lookups (icontains)
         filters = {}
-        if kwargs.get('username'):
-            filters['username__icontains'] = kwargs['username']
-        if kwargs.get('email'):
-            filters['email__icontains'] = kwargs['email']
-        if kwargs.get('role'):
-            filters['memberships__roles__name__iexact'] = kwargs['role']
-        if 'is_active' in kwargs and kwargs['is_active'] is not None:
-            filters['is_active'] = kwargs['is_active']
+        if username:
+            filters['username__icontains'] = username
+        if email:
+            filters['email__icontains'] = email
+        if role:
+            filters['memberships__roles__name__iexact'] = role
+        if is_active is not None:
+            filters['is_active'] = is_active
 
-        # On délègue le filtrage au service
         queryset = service.list(filters=filters)
         
-        # Isolation multi-tenant (EstablishmentMembership)
-        est_id = getattr(info.context, 'establishment_id', None)
+        request = info.context.request if hasattr(info.context, 'request') else info.context
+        est_id = getattr(request, 'establishment_id', None)
         if est_id:
             queryset = queryset.filter(memberships__establishment_id=est_id, memberships__status='active').distinct()
 
         for hidden_username in UserQuery.HIDDEN_USERNAMES:
             queryset = queryset.exclude(username__iexact=hidden_username)
         
-        # On gère le tri par défaut
         queryset = queryset.order_by('-date_joined')
 
-        # Utilisation de l'utilitaire de pagination (DRY)
-        page = kwargs.get('page', 1)
-        page_size = kwargs.get('page_size', 10)
         paginated_data = paginate_queryset(queryset, page, page_size)
+        paginated_data['items'] = list(paginated_data['items'])
+        return PaginatedType[UserType](**paginated_data)
 
-        return UserPaginatedType(**paginated_data)
-
-    @staticmethod
-    def resolve_user(root, info, id):
+    @strawberry.field
+    def user(self, info: strawberry.Info, id: int) -> UserType | None:
         from ...services.user_service import UserService
         service = UserService()
         try:
@@ -73,8 +58,8 @@ class UserQuery(graphene.ObjectType):
             if user and user.username.lower() in UserQuery.HIDDEN_USERNAMES:
                 return None
                 
-            # Isolation multi-tenant
-            est_id = getattr(info.context, 'establishment_id', None)
+            request = info.context.request if hasattr(info.context, 'request') else info.context
+            est_id = getattr(request, 'establishment_id', None)
             if est_id and user:
                 has_access = user.memberships.filter(establishment_id=est_id, status='active').exists()
                 if not has_access:
@@ -84,9 +69,10 @@ class UserQuery(graphene.ObjectType):
         except Exception:
             return None
 
-    @staticmethod
-    def resolve_me(root, info):
-        user = getattr(info.context, 'user', None)
+    @strawberry.field
+    def me(self, info: strawberry.Info) -> UserType | None:
+        request = info.context.request if hasattr(info.context, 'request') else info.context
+        user = getattr(request, 'user', None)
         if user and user.is_authenticated:
             return user
         return None

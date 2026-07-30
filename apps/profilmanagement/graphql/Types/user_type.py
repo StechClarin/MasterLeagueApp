@@ -1,28 +1,32 @@
-import graphene
-from graphene_django import DjangoObjectType
+import strawberry
+import strawberry_django
 from ...models import User
 from .role_type import RoleType
 
-class UserType(DjangoObjectType):
-    roles = graphene.List(RoleType)
+@strawberry_django.type(User)
+class UserType:
+    id: strawberry.ID
+    username: strawberry.auto
+    email: strawberry.auto
+    first_name: strawberry.auto
+    last_name: strawberry.auto
+    phone: strawberry.auto
+    photo: strawberry.auto
 
-    class Meta:
-        model = User
-        exclude = ('password',) # Sécurité : on ne renvoie jamais le hash du mot de passe
-
-    def resolve_roles(self, info):
+    @strawberry.field
+    def roles(self, info: strawberry.Info) -> list[RoleType]:
         from apps.profilmanagement.models.role import Role
-        request = info.context
+        request = info.context.request if hasattr(info.context, 'request') else info.context
         establishment_id = getattr(request, 'establishment_id', None)
         
         if establishment_id:
             membership = self.memberships.filter(establishment_id=establishment_id, status='active').first()
             if membership:
-                return membership.roles.exclude(name__iexact='Admin Master')
-            return Role.objects.none()
+                return list(membership.roles.exclude(name__iexact='Admin Master'))
+            return []
             
         # Si pas de contexte d'établissement, on retourne tous les rôles actifs distincts
-        return Role.objects.filter(
+        return list(Role.objects.filter(
             memberships__user=self,
             memberships__status='active'
-        ).distinct().exclude(name__iexact='Admin Master')
+        ).distinct().exclude(name__iexact='Admin Master'))

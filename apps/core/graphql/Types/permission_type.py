@@ -1,8 +1,10 @@
-import graphene
-from graphene_django.types import DjangoObjectType
+import strawberry
+import strawberry_django
 from apps.core.models.permission import Permission
 
-class PermissionType(DjangoObjectType):
-    class Meta:
-        model = Permission
-        fields = "__all__"
+@strawberry_django.type(Permission)
+class PermissionType:
+    id: strawberry.ID
+    name: strawberry.auto
+    codename: strawberry.auto
+    tag: strawberry.auto

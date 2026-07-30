@@ -1,17 +1,18 @@
-import graphene
+import strawberry
 from ...models import Module
 from ..Types.module_type import ModuleType
 from apps.core.models import Permission, Group
 
-class ModuleQuery(graphene.ObjectType):
-    modules = graphene.List(ModuleType)
-
-    def resolve_modules(root, info, **kwargs):
-        user = getattr(info.context, 'user', None)
+@strawberry.type
+class ModuleQuery:
+    @strawberry.field
+    def modules(self, info: strawberry.Info) -> list[ModuleType]:
+        request = info.context.request if hasattr(info.context, 'request') else info.context
+        user = getattr(request, 'user', None)
 
         # 1. SÉCURITÉ : Si pas connecté, liste vide
         if not user or not user.is_authenticated:
-            return Module.objects.none()
+            return []
 
         from django.db.models import Prefetch
         from apps.core.models import Page
@@ -20,7 +21,7 @@ class ModuleQuery(graphene.ObjectType):
         pages_prefetch = Prefetch('pages', queryset=Page.objects.order_by('order'))
 
         # --- GESTION DES LICENCES PAR PROPRIÉTAIRE (TENANT) ---
-        est_id = getattr(info.context, 'establishment_id', None)
+        est_id = getattr(request, 'establishment_id', None)
         
         license_restrictions = {}
         if est_id:
@@ -91,28 +92,22 @@ class ModuleQuery(graphene.ObjectType):
             
             for page in module.pages.all():
                 # 3.1. Vérification au niveau de la licence du Tenant
-                # Si la licence a des pages spécifiques définies, on doit s'assurer que la page a un tag correspondant
                 if mod_license_pages:
                     page_tags = set(page.permission_tags) if page.permission_tags else set()
-                    # Si aucun tag de la page ne correspond aux allowed_pages de la licence, on cache la page
                     if not page_tags.intersection(set(mod_license_pages)):
                         continue
 
                 # 3.2. Vérification au niveau de l'utilisateur
                 if is_admin:
-                    # Le directeur / superuser voit toutes les pages autorisées par la licence
                     allowed_pages_in_module.append(page)
                 else:
-                    # Utilisateur standard : vérification des tags
                     if not page.permission_tags:
-                        # Page publique (mais autorisée par la licence)
                         allowed_pages_in_module.append(page)
                     else:
                         page_tags = set(page.permission_tags)
                         if page_tags.intersection(allowed_tags):
                             allowed_pages_in_module.append(page)
             
-            # Si le module contient des pages visibles, on l'ajoute
             if allowed_pages_in_module:
                 module._prefetched_objects_cache = {'pages': allowed_pages_in_module}
                 filtered_modules.append(module)
