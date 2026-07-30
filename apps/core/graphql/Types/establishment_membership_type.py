@@ -1,8 +1,9 @@
-# apps/core/graphql/Types/establishment_membership_type.py
-from graphene_django import DjangoObjectType
+import strawberry
+import strawberry_django
 from apps.core.models import EstablishmentMembership
 
-class EstablishmentMembershipType(DjangoObjectType):
-    class Meta:
-        model = EstablishmentMembership
-        fields = "__all__"
+@strawberry_django.type(EstablishmentMembership)
+class EstablishmentMembershipType:
+    id: strawberry.ID
+    status: strawberry.auto
+    is_owner: strawberry.auto

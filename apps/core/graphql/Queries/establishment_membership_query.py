@@ -1,45 +1,44 @@
-# apps/core/graphql/Queries/establishment_membership_query.py
-import graphene
+import strawberry
 from ..Types.establishment_membership_type import EstablishmentMembershipType
-from ..Types.paginated_type import get_paginated_type
+from apps.core.graphql.Types.paginated_type import PaginatedType
 from apps.core.models import EstablishmentMembership
 from apps.core.utils.pagination import paginate_queryset
 
-class EstablishmentMembershipQuery(graphene.ObjectType):
-    memberships = graphene.Field(
-        get_paginated_type(EstablishmentMembershipType),
-        user_id=graphene.ID(),
-        establishment_id=graphene.ID(),
-        status=graphene.String(),
-        page=graphene.Int(default_value=1),
-        page_size=graphene.Int(default_value=10)
-    )
-    membership = graphene.Field(EstablishmentMembershipType, id=graphene.ID(required=True))
-
-    def resolve_memberships(self, info, page=1, page_size=10, **kwargs):
-        user = info.context.user
+@strawberry.type
+class EstablishmentMembershipQuery:
+    @strawberry.field
+    def memberships(
+        self,
+        info: strawberry.Info,
+        user_id: strawberry.ID | None = None,
+        establishment_id: strawberry.ID | None = None,
+        status: str | None = None,
+        page: int = 1,
+        page_size: int = 10
+    ) -> PaginatedType[EstablishmentMembershipType] | None:
+        request = info.context.request if hasattr(info.context, 'request') else info.context
+        user = request.user
         if not user.is_authenticated:
             return None
             
-        queryset = EstablishmentMembership.objects.all().order_by('-created_at')
+        queryset = EstablishmentMembership.objects.all().order_by('-id')
         
         # Filtres
-        user_id = kwargs.get('user_id')
         if user_id:
             queryset = queryset.filter(user_id=user_id)
-            
-        establishment_id = kwargs.get('establishment_id')
         if establishment_id:
             queryset = queryset.filter(establishment_id=establishment_id)
-            
-        status = kwargs.get('status')
         if status:
             queryset = queryset.filter(status=status)
 
-        return paginate_queryset(queryset, page, page_size)
+        paginated_data = paginate_queryset(queryset, page, page_size)
+        paginated_data['items'] = list(paginated_data['items'])
+        return PaginatedType[EstablishmentMembershipType](**paginated_data)
 
-    def resolve_membership(self, info, id):
-        user = info.context.user
+    @strawberry.field
+    def membership(self, info: strawberry.Info, id: strawberry.ID) -> EstablishmentMembershipType | None:
+        request = info.context.request if hasattr(info.context, 'request') else info.context
+        user = request.user
         if not user.is_authenticated:
             return None
         try:

@@ -64,12 +64,12 @@ class Command(BaseCommand):
         serv.add_argument('model_name', type=str)
         serv.add_argument('app_name', type=str)
 
-        # --- Briques GraphQL (Read) --- (CE QUI TE MANQUAIT)
-        gt = sub.add_parser('graphene:type', help='Crée un Type Graphene')
+        # --- Briques GraphQL (Read) ---
+        gt = sub.add_parser('strawberry:type', help='Crée un Type Strawberry')
         gt.add_argument('model_name', type=str)
         gt.add_argument('app_name', type=str)
 
-        gq = sub.add_parser('graphene:query', help='Crée une Query Graphene')
+        gq = sub.add_parser('strawberry:query', help='Crée une Query Strawberry')
         gq.add_argument('model_name', type=str)
         gq.add_argument('app_name', type=str)
 
@@ -92,9 +92,10 @@ class Command(BaseCommand):
     def _check_dependencies(self):
         try:
             import rest_framework
-            import graphene_django
+            import strawberry
+            import strawberry_django
         except ImportError:
-            raise CommandError("Installez djangorestframework et graphene-django.")
+            raise CommandError("Installez djangorestframework, strawberry-graphql et strawberry-graphql-django.")
 
     def _prepare_app_layout(self, app_name_simple: str, *, create_bridge=True):
         try:
@@ -195,48 +196,28 @@ class {model_name}Service(BaseService):
 """
 
     def _tpl_gql_type(self, model_name: str) -> str:
-        return f"""import graphene
-from graphene_django.types import DjangoObjectType
+        return f"""import strawberry
+import strawberry_django
 from ...models import {model_name}
 
-class {model_name}Type(DjangoObjectType):
-    class Meta:
-        model = {model_name}
-        fields = "__all__"
+@strawberry_django.type({model_name})
+class {model_name}Type:
+    id: strawberry.ID
+    name: strawberry.auto
+    created_at: strawberry.auto
+    updated_at: strawberry.auto
 """
 
     def _tpl_gql_query(self, model_name: str) -> str:
-        return f"""import graphene
-from apps.core.graphql.Types.paginated_type import get_paginated_type
-from apps.core.utils.pagination import paginate_queryset
+        return f"""import strawberry
+import strawberry_django
 from ..Types.{model_name.lower()}_type import {model_name}Type
 from ...models import {model_name}
 
-{model_name}PaginatedType = get_paginated_type({model_name}Type)
-
-class {model_name}Query(graphene.ObjectType):
-    {model_name.lower()} = graphene.Field({model_name}Type, id=graphene.ID(required=True))
-    {pluralize(model_name.lower())} = graphene.Field(
-        {model_name}PaginatedType,
-        search=graphene.String(),
-        page=graphene.Int(default_value=1),
-        page_size=graphene.Int(default_value=10)
-    )
-
-    def resolve_{model_name.lower()}(root, info, id):
-        try:
-            return {model_name}.objects.get(pk=id)
-        except {model_name}.DoesNotExist:
-            return None
-
-    def resolve_{pluralize(model_name.lower())}(root, info, search=None, page=1, page_size=10, **kwargs):
-        queryset = {model_name}.objects.all().order_by('-created_at')
-
-        if search:
-            queryset = queryset.filter(name__icontains=search)
-
-        paginated_data = paginate_queryset(queryset, page, page_size)
-        return {model_name}PaginatedType(**paginated_data)
+@strawberry.type
+class {model_name}Query:
+    {model_name.lower()}: {model_name}Type | None = strawberry_django.field()
+    {pluralize(model_name.lower())}: list[{model_name}Type] = strawberry_django.field()
 """
 
     def automigrate(self, app_name_simple=None, name=None):
@@ -304,7 +285,7 @@ class {model_name}Query(graphene.ObjectType):
                 self.stdout.write(self.style.SUCCESS(f"[OK] Service cree"))
             return
 
-        if cmd == 'graphene:type':
+        if cmd == 'strawberry:type':
             self._check_dependencies()
             model_name = normalize_model_name(opt['model_name'])
             file_basename = snake_case(model_name)
@@ -313,10 +294,10 @@ class {model_name}Query(graphene.ObjectType):
             if not file.exists():
                 file.write_text(self._tpl_gql_type(model_name), encoding="utf-8")
                 append_unique_line(layout['gql_types_dir'] / "__init__.py", self._tpl_init_import(f"{file_basename}_type", f"{model_name}Type"))
-                self.stdout.write(self.style.SUCCESS(f"[OK] Graphene Type cree"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Strawberry Type cree"))
             return
 
-        if cmd == 'graphene:query':
+        if cmd == 'strawberry:query':
             self._check_dependencies()
             model_name = normalize_model_name(opt['model_name'])
             file_basename = snake_case(model_name)
@@ -325,7 +306,7 @@ class {model_name}Query(graphene.ObjectType):
             if not file.exists():
                 file.write_text(self._tpl_gql_query(model_name), encoding="utf-8")
                 append_unique_line(layout['gql_queries_dir'] / "__init__.py", self._tpl_init_import(f"{file_basename}_query", f"{model_name}Query"))
-                self.stdout.write(self.style.SUCCESS(f"[OK] Graphene Query cree"))
+                self.stdout.write(self.style.SUCCESS(f"[OK] Strawberry Query cree"))
             return
 
         if cmd == 'scaffold':
@@ -340,8 +321,8 @@ class {model_name}Query(graphene.ObjectType):
             call_command('craft', 'controller', model_name, app_name_simple)
             
             # 2. GraphQL
-            call_command('craft', 'graphene:type', model_name, app_name_simple)
-            call_command('craft', 'graphene:query', model_name, app_name_simple)
+            call_command('craft', 'strawberry:type', model_name, app_name_simple)
+            call_command('craft', 'strawberry:query', model_name, app_name_simple)
             
             # 3. DB
             self.stdout.write(self.style.NOTICE("* Migrations..."))

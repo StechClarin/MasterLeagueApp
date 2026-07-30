@@ -1,32 +1,31 @@
-import graphene
+import strawberry
 from ..Types.establishment_type import EstablishmentType
-from ..Types.paginated_type import get_paginated_type
+from apps.core.graphql.Types.paginated_type import PaginatedType
 from apps.core.models import Establishment
 from apps.core.utils.pagination import paginate_queryset
 
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 
-class EstablishmentQuery(graphene.ObjectType):
-    establishments = graphene.Field(
-        get_paginated_type(EstablishmentType),
-        search=graphene.String(),
-        city=graphene.String(),
-        phone=graphene.String(),
-        is_active=graphene.Boolean(),
-        user_id=graphene.ID(),
-        page=graphene.Int(default_value=1),
-        page_size=graphene.Int(default_value=10)
-    )
-    establishment = graphene.Field(EstablishmentType, id=graphene.ID(required=True))
-
-    def resolve_establishments(self, info, search=None, page=1, page_size=10, **kwargs):
-        user = info.context.user
+@strawberry.type
+class EstablishmentQuery:
+    @strawberry.field
+    def establishments(
+        self,
+        info: strawberry.Info,
+        search: str | None = None,
+        city: str | None = None,
+        phone: str | None = None,
+        is_active: bool | None = None,
+        user_id: strawberry.ID | None = None,
+        page: int = 1,
+        page_size: int = 10
+    ) -> PaginatedType[EstablishmentType] | None:
+        request = info.context.request if hasattr(info.context, 'request') else info.context
+        user = request.user
         if not user.is_authenticated:
-            return None # Or an empty paginated response, depending on the error handling policy
+            return None
             
-        # 0. Base Filter (Access for owned or context membership establishments)
-        user_id = kwargs.get('user_id')
         target_user_id = user_id if user_id else user.id
         
         if user.is_superuser:
@@ -38,7 +37,6 @@ class EstablishmentQuery(graphene.ObjectType):
                 Q(q_owner, q_member, _connector=Q.OR)
             ).distinct().order_by('name')
         
-        # 1. Global Search "FIND" (OR conditions)
         if search:
             q_name = Q(name__icontains=search)
             q_city = Q(city__icontains=search)
@@ -47,23 +45,21 @@ class EstablishmentQuery(graphene.ObjectType):
                 Q(q_name, q_city, q_phone, _connector=Q.OR)
             )
 
-        # 2. Specific Filters (AND conditions)
-        city = kwargs.get('city')
         if city:
             queryset = queryset.filter(city__icontains=city)
-            
-        phone = kwargs.get('phone')
         if phone:
             queryset = queryset.filter(phone__icontains=phone)
-
-        is_active = kwargs.get('is_active')
         if is_active is not None:
              queryset = queryset.filter(is_active=is_active)
 
-        return paginate_queryset(queryset, page, page_size)
+        paginated_data = paginate_queryset(queryset, page, page_size)
+        paginated_data['items'] = list(paginated_data['items'])
+        return PaginatedType[EstablishmentType](**paginated_data)
 
-    def resolve_establishment(self, info, id):
-        user = info.context.user
+    @strawberry.field
+    def establishment(self, info: strawberry.Info, id: strawberry.ID) -> EstablishmentType | None:
+        request = info.context.request if hasattr(info.context, 'request') else info.context
+        user = request.user
         if not user.is_authenticated:
             return None
         if user.is_superuser:

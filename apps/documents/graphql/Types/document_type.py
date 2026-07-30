@@ -1,16 +1,17 @@
-import graphene
-from graphene_django import DjangoObjectType
+import strawberry
+import strawberry_django
 from apps.documents.models.document import Document
 
-class DocumentType(DjangoObjectType):
-    class Meta:
-        model = Document
-        fields = "__all__"
+@strawberry_django.type(Document)
+class DocumentType:
+    id: strawberry.ID
+    title: strawberry.auto
+    document_type: strawberry.auto
+    object_id: strawberry.auto
+    uploaded_at: strawberry.auto
     
-    file_url = graphene.String()
-
-    def resolve_file_url(self, info):
+    @strawberry.field
+    def file_url(self) -> str | None:
         if self.file:
-            # Assure returning an absolute or relative URL usable by frontend
             return self.file.url
         return None

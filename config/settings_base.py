@@ -111,7 +111,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'graphene_django',
+    'strawberry_django',
     'channels',
 ]
 
@@ -200,6 +200,4 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-GRAPHENE = {
-    "SCHEMA": "apps.core.graphql.schema.schema" 
-}
+

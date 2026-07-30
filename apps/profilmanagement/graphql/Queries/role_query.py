@@ -1,25 +1,15 @@
-import graphene
+import strawberry
 from ..Types.role_type import RoleType
 from ...models import Role
-
-
-from apps.core.graphql.Types.paginated_type import get_paginated_type
+from apps.core.graphql.Types.paginated_type import PaginatedType
 from apps.core.utils.pagination import paginate_queryset
 
-RolePaginatedType = get_paginated_type(RoleType)
-
-class RoleQuery(graphene.ObjectType):
-    role = graphene.Field(RoleType, id=graphene.ID(required=True))
-    roles = graphene.Field(
-        RolePaginatedType,
-        name=graphene.String(required=False),
-        page=graphene.Int(default_value=1),
-        page_size=graphene.Int(default_value=10)
-    )
-
+@strawberry.type
+class RoleQuery:
     HIDDEN_ROLE_NAMES = ['Admin Master']
 
-    def resolve_role(root, info, id):
+    @strawberry.field
+    def role(self, id: strawberry.ID) -> RoleType | None:
         from ...services.role_service import RoleService
         service = RoleService()
         try:
@@ -30,7 +20,13 @@ class RoleQuery(graphene.ObjectType):
         except Exception:
             return None
 
-    def resolve_roles(root, info, name=None, page=1, page_size=10, **kwargs):
+    @strawberry.field
+    def roles(
+        self,
+        name: str | None = None,
+        page: int = 1,
+        page_size: int = 10
+    ) -> PaginatedType[RoleType]:
         from ...services.role_service import RoleService
         service = RoleService()
         
@@ -44,4 +40,5 @@ class RoleQuery(graphene.ObjectType):
             queryset = queryset.exclude(name__iexact=hidden_role)
         
         paginated_data = paginate_queryset(queryset, page, page_size)
-        return RolePaginatedType(**paginated_data)
+        paginated_data['items'] = list(paginated_data['items'])
+        return PaginatedType[RoleType](**paginated_data)

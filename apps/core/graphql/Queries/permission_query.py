@@ -1,9 +1,9 @@
-import graphene
+import strawberry
 from apps.core.models.permission import Permission
 from apps.core.graphql.Types.permission_type import PermissionType
 
-class PermissionQuery(graphene.ObjectType):
-    permissions = graphene.List(PermissionType)
-
-    def resolve_permissions(self, info):
-        return Permission.objects.all().order_by('tag', 'name')
+@strawberry.type
+class PermissionQuery:
+    @strawberry.field
+    def permissions(self) -> list[PermissionType]:
+        return list(Permission.objects.all().order_by('tag', 'name'))

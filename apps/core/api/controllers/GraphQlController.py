@@ -1,39 +1,26 @@
-from django.http import HttpResponseForbidden, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from graphene_django.views import GraphQLView
+from strawberry.django.views import GraphQLView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
+from apps.core.graphql.schema import schema
 
 class GraphQLController(GraphQLView):
     """
-    Notre Contrôleur GraphQL personnalisé.
+    Notre Contrôleur GraphQL personnalisé pour Strawberry.
     Il remplace la vue par défaut pour forcer la sécurité JWT.
     """
+    schema = schema
 
-    # On désactive le CSRF car on utilise des Tokens, pas des Cookies de session
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        
-        # 1. GESTION DE L'INTERFACE GRAPHIQL (Navigateur)
-        # Si on est en mode debug et que c'est une requête GET, 
-        # on laisse passer pour afficher l'interface GraphiQL.
-        if request.method == "GET" and self.graphiql:
-            return super().dispatch(request, *args, **kwargs)
+        # Authentification JWT silencieuse si l'en-tête Authorization est présent
+        try:
+            authenticator = JWTAuthentication()
+            auth_result = authenticator.authenticate(request)
+            if auth_result:
+                request.user, request.auth = auth_result
+        except Exception:
+            pass
 
-
-        authentication_classes = [JWTAuthentication]
-        permission_classes = [IsAuthenticated]
-        # if not request.user.is_authenticated:
-        #     return JsonResponse(
-        #         {"errors": [{"message": "Authentification requise (Token invalide ou absent)."}]}, 
-        #         status=401
-        #     )
-        # 2. SÉCURITÉ
-        # On laisse passer tout le monde ici.
-        # L'utilisateur est identifié via le Middleware JWT si le header est présent.
-        # L'autorisation fine (can user see X?) se fera dans les Resolvers.   
-        # 3. SUCCÈS
-        # On laisse Graphene faire son travail magique
         return super().dispatch(request, *args, **kwargs)
     

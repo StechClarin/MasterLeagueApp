@@ -4,7 +4,6 @@ import inspect
 import pkgutil
 import importlib
 from django.apps import apps
-import graphene
 
 def load_all_queries():
     """
@@ -54,8 +53,8 @@ def load_all_queries():
                 for member_name, member_obj in inspect.getmembers(module):
                     if (inspect.isclass(member_obj) 
                         and member_name.endswith("Query") # Convention: doit finir par "Query"
-                        and member_obj is not graphene.ObjectType # Ce n'est pas la classe de base
-                        and issubclass(member_obj, graphene.ObjectType)): # C'est bien un objet Graphene
+                        and member_name != "Query"
+                        and hasattr(member_obj, "_type_definition")): # C'est bien un type Strawberry
                         
                         # Bingo ! On a trouvé une classe Query (ex: UserQuery)
                         queries.append(member_obj)

@@ -1,22 +1,17 @@
-import graphene
-from graphene_django import DjangoObjectType
-from ...models import Module
+import strawberry
+import strawberry_django
+from apps.core.models import Module
+from .page_type import PageType
 
-# ✅ IMPORTATION (Au lieu de redéfinition)
-# On va chercher le fichier voisin page_type.py
-from .page_type import PageType 
+@strawberry_django.type(Module)
+class ModuleType:
+    id: strawberry.ID
+    code: strawberry.auto
+    name: strawberry.auto
+    order: strawberry.auto
+    display_mod: strawberry.auto
+    icon: strawberry.auto
 
-class ModuleType(DjangoObjectType):
-    class Meta:
-        model = Module
-        fields = "__all__"
-    
-    # On déclare la liste de pages en utilisant le Type importé
-    pages = graphene.List(PageType)
-
-    def resolve_pages(self, info):
-        # ✅ CORRECT : 
-        # Dans ton model Page, tu as mis related_name="pages".
-        # Donc Django crée l'attribut inverse '.pages' sur Module.
-        # (Si tu n'avais pas mis related_name, ce serait .page_set.all())
-        return self.pages.all()
+    @strawberry.field
+    def pages(self) -> list[PageType]:
+        return list(self.pages.all())

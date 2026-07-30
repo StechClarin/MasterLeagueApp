@@ -1,22 +1,21 @@
-import graphene
-from graphene_django.types import DjangoObjectType
+import strawberry
+import strawberry_django
 from ...models import Role
-
 from apps.core.graphql.Types.permission_type import PermissionType
+from apps.core.models.permission import Permission
 
-class RoleType(DjangoObjectType):
-    class Meta:
-        model = Role
-        fields = "__all__"
+@strawberry_django.type(Role)
+class RoleType:
+    id: strawberry.ID
+    name: strawberry.auto
 
-    permissions = graphene.List(PermissionType)
-
-    def resolve_permissions(self, info):
+    @strawberry.field
+    def permissions(self) -> list[PermissionType]:
         # 1. Permissions directes
         direct_perms = self.permissions.all()
         
         # 2. Permissions via les groupes
-        group_perms = PermissionType._meta.model.objects.filter(group__in=self.groups.all())
+        group_perms = Permission.objects.filter(group__in=self.groups.all())
         
         # 3. Union (sans doublons)
-        return (direct_perms | group_perms).distinct()
+        return list((direct_perms | group_perms).distinct())
