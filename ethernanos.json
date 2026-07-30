@@ -1,6 +1,6 @@
 {
-  "id": "a155bb90-9e8a-48f9-89ef-0f0ec2aa3f4d",
-  "name": "Hub Starter",
+  "id": "1d45546f-a175-42ae-9056-92b72ecf5882",
+  "name": "transportpark",
   "version": "1.0.0",
   "port": 8000,
   "exec_command": "./snake start"

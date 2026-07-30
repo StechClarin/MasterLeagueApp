@@ -17,6 +17,10 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('@features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'profils/roles',
+        loadChildren: () => import('@features/profilmanagement/profil.routes').then(m => m.PROFIL_ROUTES)
       }
     ]
   },
