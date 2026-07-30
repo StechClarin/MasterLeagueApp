@@ -550,8 +550,14 @@ export const routes: Routes = [
     if not keep_demo:
         print("\n🔄 Regénération automatique des enums de routes...")
         try:
+            # Auto-detect venv python to avoid ModuleNotFoundError when running via system python
+            python_exec = sys.executable
+            for venv_path in ['./.venv/bin/python3', './venv/bin/python3', './.venv/bin/python', './venv/bin/python']:
+                if os.path.exists(venv_path):
+                    python_exec = venv_path
+                    break
             # On lance la commande Django pour générer le fichier routes.enum.ts propre
-            subprocess.run([sys.executable, 'manage.py', 'start_generate_routes'], check=True)
+            subprocess.run([python_exec, 'manage.py', 'start_generate_routes'], check=True)
             print("✅ Enums de routes régénérés dans 'routes.enum.ts'.")
         except Exception as e:
             print(f"⚠️  Impossible de régénérer automatiquement les routes.enum.ts : {e}")

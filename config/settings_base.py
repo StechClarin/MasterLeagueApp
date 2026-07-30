@@ -86,8 +86,17 @@ if env_path.exists():
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-ethernanos-hub-local-secret-key-2026')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
+# --- GEOSPATIAL DATABASE SUPPORT DETECTION ---
+HAS_GDAL = False
+try:
+    from django.contrib.gis.gdal import GDAL_VERSION
+    HAS_GDAL = True
+except Exception:
+    pass
+
 # Application definition
 INSTALLED_APPS = [
+    'daphne',  # Must be at the top to override runserver for WebSockets development
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -102,8 +111,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'graphene_django', 
+    'graphene_django',
+    'channels',
 ]
+
+if HAS_GDAL:
+    INSTALLED_APPS.append('django.contrib.gis')
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -119,6 +132,7 @@ SIMPLE_JWT = {
 ROOT_URLCONF = 'config.urls'
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
 
 TEMPLATES = [
     {
@@ -138,8 +152,21 @@ TEMPLATES = [
     },
 ]
 
+# Setup DB engine dynamically depending on GDAL support
+db_engine = 'django.contrib.gis.db.backends.postgis' if HAS_GDAL else 'django.db.backends.postgresql'
+
 DATABASES = {
-    'default': env.db('DATABASE_URL', default=f'sqlite:///{PROJECT_DATA_DIR / "db.sqlite3"}')
+    'default': env.db('DATABASE_URL', engine=db_engine, default=f'sqlite:///{PROJECT_DATA_DIR / "db.sqlite3"}')
+}
+
+# --- DJANGO CHANNELS (WEBSOCKETS) CHANNEL LAYERS ---
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [env.str('REDIS_URL', default='redis://127.0.0.1:6379/0')],
+        },
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
