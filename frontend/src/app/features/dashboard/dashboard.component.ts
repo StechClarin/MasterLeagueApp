@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { GetDashboardDataGQL } from './graphql/dashboard.generated';
 import { StructureStateService } from '@core/services/structure-state.service';
-import { map } from 'rxjs/operators';
-// ... (imports remain the same)
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -54,24 +52,20 @@ export class DashboardComponent implements OnInit {
   isLoading = signal(true);
 
   // Chart configs
-  public evolutionChartOptions!: Partial<ChartOptions>;
-  public distributionChartOptions!: Partial<ChartOptions>;
+  public fleetChartOptions!: Partial<ChartOptions>;
+  public serviceChartOptions!: Partial<ChartOptions>;
   public revenueChartOptions!: Partial<ChartOptions>;
-  public paymentMethodsChartOptions!: Partial<ChartOptions>;
 
   constructor() {
-    // Re-fetch data whenever the establishment changes
     effect(() => {
       const id = this.structureState.currentEstablishmentId();
       if (id) {
-        console.log('[Dashboard] Etablissement détecté, chargement des données:', id);
         this.fetchData();
       }
     }, { allowSignalWrites: true });
   }
 
   ngOnInit() {
-    // Data is handled by the effect on initialization
   }
 
   fetchData() {
@@ -93,25 +87,25 @@ export class DashboardComponent implements OnInit {
   }
 
   initCharts(data: any) {
-    // 1. Evolution Chart (Area/Line) - Grades
-    this.evolutionChartOptions = {
+    // 1. Revenue Evolution (Area) - Chiffre d'affaires global
+    this.revenueChartOptions = {
       series: [
         {
-          name: "Moyenne Générale",
-          data: data.gradeEvolution.map((p: any) => p.value)
+          name: "Recettes Globales (FCFA)",
+          data: data.revenueEvolution.map((p: any) => p.value)
         }
       ],
       chart: {
-        height: 300,
+        height: 320,
         type: "area",
         toolbar: { show: false },
         animations: { enabled: true, speed: 800 }
       },
-      colors: ["#6366f1"], // indigo-500
-      dataLabels: { enabled: false },
+      colors: ["#10b981"], // emerald-500
       stroke: { curve: "smooth", width: 3 },
+      dataLabels: { enabled: false },
       xaxis: {
-        categories: data.gradeEvolution.map((p: any) => p.label),
+        categories: data.revenueEvolution.map((p: any) => p.label),
         axisBorder: { show: false },
         axisTicks: { show: false }
       },
@@ -121,50 +115,21 @@ export class DashboardComponent implements OnInit {
         gradient: {
           shadeIntensity: 1,
           opacityFrom: 0.45,
-          opacityTo: 0.05,
-          stops: [20, 100, 100, 100]
+          opacityTo: 0.05
         }
       },
       grid: { borderColor: "#f1f5f9" }
     };
 
-    // 2. Revenue Evolution (Area)
-    this.revenueChartOptions = {
-      series: [
-        {
-          name: "Recettes",
-          data: data.revenueEvolution.map((p: any) => p.value)
-        }
-      ],
-      chart: {
-        height: 300,
-        type: "area",
-        toolbar: { show: false }
-      },
-      colors: ["#10b981"], // emerald-500
-      stroke: { curve: "smooth", width: 3 },
-      xaxis: {
-        categories: data.revenueEvolution.map((p: any) => p.label)
-      },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.45,
-          opacityTo: 0.05
-        }
-      }
-    };
-
-    // 3. Distribution Chart (Donut) - Students
-    this.distributionChartOptions = {
-      series: data.studentDistribution.map((p: any) => p.count),
-      labels: data.studentDistribution.map((p: any) => p.category),
+    // 2. Fleet Status Distribution (Donut)
+    this.fleetChartOptions = {
+      series: data.fleetStatusDistribution.map((p: any) => p.count),
+      labels: data.fleetStatusDistribution.map((p: any) => p.category),
       chart: {
         type: "donut",
         height: 300
       },
-      colors: ["#6366f1", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"],
+      colors: ["#10b981", "#3b82f6", "#f59e0b", "#ef4444"], // Green, Blue, Amber, Red
       legend: { position: "bottom" },
       plotOptions: {
         pie: {
@@ -172,22 +137,22 @@ export class DashboardComponent implements OnInit {
             size: "75%",
             labels: {
               show: true,
-              total: { show: true, label: 'TOTAL', color: '#64748b' }
+              total: { show: true, label: 'FLOTTE', color: '#64748b' }
             }
           }
         }
       }
     };
 
-    // 4. Payment Methods Distribution (Pie/Donut)
-    this.paymentMethodsChartOptions = {
-      series: data.paymentMethodsDistribution.map((p: any) => p.count),
-      labels: data.paymentMethodsDistribution.map((p: any) => p.category),
+    // 3. Service Revenue Distribution (Pie)
+    this.serviceChartOptions = {
+      series: data.serviceRevenueDistribution.map((p: any) => p.count),
+      labels: data.serviceRevenueDistribution.map((p: any) => p.category),
       chart: {
         type: "pie",
         height: 300
       },
-      colors: ["#8b5cf6", "#ec4899", "#f43f5e", "#fb923c"],
+      colors: ["#6366f1", "#3b82f6", "#f59e0b"], // Indigo, Blue, Amber
       legend: { position: "bottom" }
     };
   }
