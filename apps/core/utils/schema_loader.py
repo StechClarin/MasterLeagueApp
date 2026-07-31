@@ -54,7 +54,7 @@ def load_all_queries():
                     if (inspect.isclass(member_obj) 
                         and member_name.endswith("Query") # Convention: doit finir par "Query"
                         and member_name != "Query"
-                        and hasattr(member_obj, "_type_definition")): # C'est bien un type Strawberry
+                        and hasattr(member_obj, "__strawberry_definition__")): # C'est bien un type Strawberry
                         
                         # Bingo ! On a trouvé une classe Query (ex: UserQuery)
                         queries.append(member_obj)

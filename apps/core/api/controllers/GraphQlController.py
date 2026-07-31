@@ -11,6 +11,9 @@ class GraphQLController(GraphQLView):
     """
     schema = schema
 
+    def __init__(self, schema=None, **kwargs):
+        super().__init__(schema=schema or self.schema, **kwargs)
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         # Authentification JWT silencieuse si l'en-tête Authorization est présent

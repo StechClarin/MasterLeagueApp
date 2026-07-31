@@ -10,7 +10,7 @@ export type GetDocumentsByEntityQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetDocumentsByEntityQuery = { __typename?: 'Query', documentsByEntity?: Array<{ __typename?: 'DocumentType', id: any, title: string, fileUrl?: string | null, documentType: Types.DocumentsDocumentDocumentTypeChoices, uploadedAt: any } | null> | null };
+export type GetDocumentsByEntityQuery = { __typename?: 'Query', documentsByEntity: Array<{ __typename?: 'DocumentType', id: string, title: string, fileUrl?: string | null, documentType: string, uploadedAt: any }> };
 
 export const GetDocumentsByEntityDocument = gql`
     query GetDocumentsByEntity($appLabel: String!, $modelName: String!, $objectId: ID!) {
