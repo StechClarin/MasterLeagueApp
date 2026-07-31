@@ -6,7 +6,7 @@ import * as Apollo from 'apollo-angular';
 export type GetDashboardDataQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetDashboardDataQuery = { __typename?: 'Query', dashboardData: { __typename?: 'DashboardDataType', activeTaxis: number, totalTaxis: number, rentalRate: number, totalRevenue: number, storeOrders: number, pendingMaintenance: number, totalVehicles: number, vehiclesToRent: number, vehiclesRented: number, providerVehicles: number, companyTaxis: number, totalDrivers: number, brokenVehicles: number, activeVehicles: number, revenueEvolution: Array<{ __typename?: 'ChartDataItem', label: string, value: number }>, fleetStatusDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, serviceRevenueDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, topPerformers: Array<{ __typename?: 'TopPerformerItem', driverName: string, tripsCount: number, revenue: number, vehiclePlate: string }> } };
+export type GetDashboardDataQuery = { __typename?: 'Query', dashboardData: { __typename?: 'DashboardDataType', activeTaxis: number, totalTaxis: number, rentalRate: number, totalRevenue: number, storeOrders: number, pendingMaintenance: number, totalVehicles: number, vehiclesToRent: number, vehiclesRented: number, providerVehicles: number, companyTaxis: number, totalDrivers: number, brokenVehicles: number, activeVehicles: number, fuelConsumption: number, fuelCosts: number, clientSatisfaction: number, activeAlertsCount: number, upcomingMaintenances: number, availableVehiclesCount: number, utilizationRate: number, revenueEvolution: Array<{ __typename?: 'ChartDataItem', label: string, value: number }>, fleetStatusDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, serviceRevenueDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, topPerformers: Array<{ __typename?: 'TopPerformerItem', driverName: string, tripsCount: number, revenue: number, vehiclePlate: string }> } };
 
 export const GetDashboardDataDocument = gql`
     query GetDashboardData {
@@ -25,6 +25,13 @@ export const GetDashboardDataDocument = gql`
     totalDrivers
     brokenVehicles
     activeVehicles
+    fuelConsumption
+    fuelCosts
+    clientSatisfaction
+    activeAlertsCount
+    upcomingMaintenances
+    availableVehiclesCount
+    utilizationRate
     revenueEvolution {
       label
       value
