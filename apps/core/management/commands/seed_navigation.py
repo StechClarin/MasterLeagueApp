@@ -23,6 +23,13 @@ MODULE_STRUCTURE = [
                 "order": 1,
                 "link": "/roles",
                 "tags": ["role"]
+            },
+            {
+                "title": "Carte Live",
+                "icon": "map-icon",
+                "order": 2,
+                "link": "/map-tracking",
+                "tags": ["map"]
             }
         ]
     }
