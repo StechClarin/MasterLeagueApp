@@ -55,6 +55,7 @@ export class DashboardComponent implements OnInit {
   public fleetChartOptions!: Partial<ChartOptions>;
   public serviceChartOptions!: Partial<ChartOptions>;
   public revenueChartOptions!: Partial<ChartOptions>;
+  public boutiqueChartOptions!: Partial<ChartOptions>;
 
   constructor() {
     effect(() => {
@@ -154,6 +155,34 @@ export class DashboardComponent implements OnInit {
       },
       colors: ["#6366f1", "#3b82f6", "#f59e0b"], // Indigo, Blue, Amber
       legend: { position: "bottom" }
+    };
+
+    // 4. Boutique Stock Distribution (Bar Chart - horizontal)
+    this.boutiqueChartOptions = {
+      series: [
+        {
+          name: "Articles en Stock",
+          data: data.storeStockDistribution.map((p: any) => p.count)
+        }
+      ],
+      chart: {
+        type: "bar",
+        height: 300,
+        toolbar: { show: false }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: "55%",
+          borderRadius: 6
+        }
+      },
+      colors: ["#10b981"], // Emerald-500
+      dataLabels: { enabled: true },
+      xaxis: {
+        categories: data.storeStockDistribution.map((p: any) => p.category)
+      },
+      grid: { borderColor: "#f1f5f9" }
     };
   }
 }

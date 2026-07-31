@@ -46,6 +46,10 @@ export type DashboardDataType = {
   revenueEvolution: Array<ChartDataItem>;
   serviceRevenueDistribution: Array<CategoryCountItem>;
   storeOrders: Scalars['Int']['output'];
+  storeOutOfStock: Scalars['Int']['output'];
+  storeStockDistribution: Array<CategoryCountItem>;
+  storeStockValue: Scalars['Float']['output'];
+  storeTotalItems: Scalars['Int']['output'];
   topPerformers: Array<TopPerformerItem>;
   totalDrivers: Scalars['Int']['output'];
   totalRevenue: Scalars['Float']['output'];

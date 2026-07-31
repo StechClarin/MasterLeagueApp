@@ -45,6 +45,12 @@ class DashboardDataType:
     available_vehicles_count: int # Véhicules libres immédiatement
     utilization_rate: float      # Taux d'utilisation globale
 
+    # Métriques Boutique & Stock
+    store_total_items: int       # Nombre total de pièces en stock
+    store_stock_value: float     # Valeur monétaire du stock
+    store_out_of_stock: int      # Nombre d'articles en rupture
+    store_stock_distribution: list[CategoryCountItem]
+
     revenue_evolution: list[ChartDataItem]
     fleet_status_distribution: list[CategoryCountItem]
     service_revenue_distribution: list[CategoryCountItem]
@@ -80,6 +86,18 @@ class DashboardQuery:
             upcoming_maintenances=5,
             available_vehicles_count=12,
             utilization_rate=88.2,
+
+            # Statistiques Boutique & Pièces auto
+            store_total_items=1420,
+            store_stock_value=18500000.0,
+            store_out_of_stock=3,
+            store_stock_distribution=[
+                CategoryCountItem(category="Pneumatiques", count=340),
+                CategoryCountItem(category="Pièces Moteur", count=580),
+                CategoryCountItem(category="Lubrifiants / Huiles", count=280),
+                CategoryCountItem(category="Freinage / Sécurité", count=140),
+                CategoryCountItem(category="Accessoires", count=80)
+            ],
 
             revenue_evolution=[
                 ChartDataItem(label="Jan", value=18500000),
