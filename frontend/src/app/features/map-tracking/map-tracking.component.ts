@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
+interface City {
+  name: string;
+  coords: [number, number];
+  country: string;
+}
+
 interface Vehicle {
   id: string;
   driverName: string;
@@ -15,6 +21,7 @@ interface Vehicle {
   hexColor: string;
   clientName: string;
   coords: [number, number];
+  offset: [number, number];
   marker?: any;
 }
 
@@ -111,18 +118,35 @@ interface Vehicle {
       <div class="flex-1 relative bg-[#e5e9f0]">
         <div id="map-container" class="absolute inset-0 z-0"></div>
 
-        <!-- Glassmorphic Map Control Overlay (Floating Indicator) -->
-        <div class="absolute top-6 left-6 z-10 p-4 bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl flex items-center gap-4 max-w-xs animate-in">
-          <div class="h-10 w-10 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center">
+        <!-- Floating City Selector Panel -->
+        <div class="absolute top-6 left-6 z-10 p-4 bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl flex items-center gap-4 min-w-[240px] animate-in">
+          <div class="h-10 w-10 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <div>
-            <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Suivi GPS Yaoundé</h4>
-            <p class="text-[10px] text-slate-500 mt-0.5">Données synchronisées en temps réel.</p>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ville Sélectionnée</h4>
+            <div class="relative mt-1">
+              <select 
+                [ngModel]="selectedCity" 
+                (ngModelChange)="onCityChange($event)"
+                class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 pl-2.5 pr-8 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 appearance-none cursor-pointer"
+              >
+                <option *ngFor="let city of cities" [ngValue]="city">
+                  {{ city.name }} ({{ city.country }})
+                </option>
+              </select>
+              <div class="absolute right-2.5 top-2.5 pointer-events-none text-slate-400">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
+
       </div>
 
     </div>
@@ -148,6 +172,14 @@ interface Vehicle {
 export class MapTrackingComponent implements OnInit, OnDestroy {
   private router = inject(Router);
 
+  cities: City[] = [
+    { name: 'Yaoundé', coords: [3.848, 11.5021], country: 'Cameroun' },
+    { name: 'Douala', coords: [4.05, 9.7], country: 'Cameroun' },
+    { name: 'Libreville', coords: [0.39, 9.45], country: 'Gabon' },
+    { name: 'Paris', coords: [48.8566, 2.3522], country: 'France' }
+  ];
+  selectedCity: City = this.cities[0];
+
   vehicles: Vehicle[] = [
     {
       id: 'v1',
@@ -160,7 +192,8 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
       colorClass: 'bg-red-500',
       hexColor: '#ef4444',
       clientName: 'Aucun',
-      coords: [3.856, 11.512]
+      coords: [0, 0],
+      offset: [0.008, 0.0099]
     },
     {
       id: 'v2',
@@ -173,7 +206,8 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
       colorClass: 'bg-orange-500',
       hexColor: '#f97316',
       clientName: 'M. Ngoa Jean',
-      coords: [3.842, 11.492]
+      coords: [0, 0],
+      offset: [-0.006, -0.0101]
     },
     {
       id: 'v3',
@@ -186,7 +220,8 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
       colorClass: 'bg-emerald-500',
       hexColor: '#10b981',
       clientName: 'Mme Eboa Suzanne',
-      coords: [3.862, 11.501]
+      coords: [0, 0],
+      offset: [0.014, -0.0011]
     },
     {
       id: 'v4',
@@ -199,7 +234,8 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
       colorClass: 'bg-blue-500',
       hexColor: '#3b82f6',
       clientName: 'Technicien Ndong',
-      coords: [3.831, 11.520]
+      coords: [0, 0],
+      offset: [-0.017, 0.0179]
     },
     {
       id: 'v5',
@@ -212,7 +248,8 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
       colorClass: 'bg-purple-500',
       hexColor: '#a855f7',
       clientName: 'Chauffeur Biyogo (Crevaison)',
-      coords: [3.850, 11.480]
+      coords: [0, 0],
+      offset: [0.002, -0.0221]
     },
     {
       id: 'v6',
@@ -225,7 +262,8 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
       colorClass: 'bg-slate-400',
       hexColor: '#94a3b8',
       clientName: 'Aucun',
-      coords: [3.875, 11.530]
+      coords: [0, 0],
+      offset: [0.027, 0.0279]
     }
   ];
 
@@ -237,6 +275,8 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
   private simInterval: any;
 
   ngOnInit() {
+    // Distribute vehicles initially based on the default selected city
+    this.updateVehicleCoords();
     this.filteredVehicles = [...this.vehicles];
     this.loadLeaflet().then(() => {
       this.initMap();
@@ -247,6 +287,15 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
     if (this.simInterval) {
       clearInterval(this.simInterval);
     }
+  }
+
+  updateVehicleCoords() {
+    this.vehicles.forEach(vehicle => {
+      vehicle.coords = [
+        this.selectedCity.coords[0] + vehicle.offset[0],
+        this.selectedCity.coords[1] + vehicle.offset[1]
+      ];
+    });
   }
 
   async loadLeaflet(): Promise<void> {
@@ -272,21 +321,19 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
     const L = (window as any).L;
     if (!L) return;
 
-    // Center map around Yaoundé Cameroon
     this.map = L.map('map-container', {
       zoomControl: false
-    }).setView([3.848, 11.5021], 13.5);
+    }).setView(this.selectedCity.coords, 13.5);
 
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    // Google Maps white-gray look tile layer (CartoDB Voyager)
+    // Google Maps white-gray style (CartoDB Voyager)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap contributors, CartoDB'
     }).addTo(this.map);
 
     // Add vehicles to map
     this.vehicles.forEach(vehicle => {
-      // Premium Taxi Cab SVG inside a status colored circle marker
       const customMarkup = `
         <div class="relative flex items-center justify-center p-1.5 rounded-full border-2 border-white shadow-md text-white transition-transform hover:scale-110" style="background-color: ${vehicle.hexColor}; width: 34px; height: 34px;">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -348,6 +395,23 @@ export class MapTrackingComponent implements OnInit, OnDestroy {
         }
       });
     }, 4000);
+  }
+
+  onCityChange(city: City) {
+    this.selectedCity = city;
+    this.updateVehicleCoords();
+    
+    // Move marker positions instantly on the map
+    this.vehicles.forEach(vehicle => {
+      if (vehicle.marker) {
+        vehicle.marker.setLatLng(vehicle.coords);
+      }
+    });
+
+    // Animate map view change to the new city center
+    if (this.map) {
+      this.map.setView(city.coords, 13.5, { animate: true, duration: 1.5 });
+    }
   }
 
   filterVehicles() {
