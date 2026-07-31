@@ -6,38 +6,34 @@ import * as Apollo from 'apollo-angular';
 export type GetDashboardDataQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetDashboardDataQuery = { __typename?: 'Query', dashboardData: { __typename?: 'DashboardDataType', totalStudents: number, totalStaff: number, totalClassrooms: number, totalActiveEvaluations: number, averageGrade: number, totalRevenue: number, totalPending: number, gradeEvolution: Array<{ __typename?: 'ChartDataItem', label: string, value: number }>, studentDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, revenueEvolution: Array<{ __typename?: 'ChartDataItem', label: string, value: number }>, paymentMethodsDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, topStudents: Array<{ __typename?: 'TopStudentItem', studentName: string, averageGrade: number, matricule: string }> } };
+export type GetDashboardDataQuery = { __typename?: 'Query', dashboardData: { __typename?: 'DashboardDataType', activeTaxis: number, totalTaxis: number, rentalRate: number, totalRevenue: number, storeOrders: number, pendingMaintenance: number, revenueEvolution: Array<{ __typename?: 'ChartDataItem', label: string, value: number }>, fleetStatusDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, serviceRevenueDistribution: Array<{ __typename?: 'CategoryCountItem', category: string, count: number }>, topPerformers: Array<{ __typename?: 'TopPerformerItem', driverName: string, tripsCount: number, revenue: number, vehiclePlate: string }> } };
 
 export const GetDashboardDataDocument = gql`
     query GetDashboardData {
   dashboardData {
-    totalStudents
-    totalStaff
-    totalClassrooms
-    totalActiveEvaluations
-    averageGrade
+    activeTaxis
+    totalTaxis
+    rentalRate
     totalRevenue
-    totalPending
-    gradeEvolution {
-      label
-      value
-    }
-    studentDistribution {
-      category
-      count
-    }
+    storeOrders
+    pendingMaintenance
     revenueEvolution {
       label
       value
     }
-    paymentMethodsDistribution {
+    fleetStatusDistribution {
       category
       count
     }
-    topStudents {
-      studentName
-      averageGrade
-      matricule
+    serviceRevenueDistribution {
+      category
+      count
+    }
+    topPerformers {
+      driverName
+      tripsCount
+      revenue
+      vehiclePlate
     }
   }
 }

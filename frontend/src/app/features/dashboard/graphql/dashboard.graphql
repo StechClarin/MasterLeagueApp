@@ -1,32 +1,28 @@
 query GetDashboardData {
   dashboardData {
-    totalStudents
-    totalStaff
-    totalClassrooms
-    totalActiveEvaluations
-    averageGrade
+    activeTaxis
+    totalTaxis
+    rentalRate
     totalRevenue
-    totalPending
-    gradeEvolution {
-      label
-      value
-    }
-    studentDistribution {
-      category
-      count
-    }
+    storeOrders
+    pendingMaintenance
     revenueEvolution {
       label
       value
     }
-    paymentMethodsDistribution {
+    fleetStatusDistribution {
       category
       count
     }
-    topStudents {
-      studentName
-      averageGrade
-      matricule
+    serviceRevenueDistribution {
+      category
+      count
+    }
+    topPerformers {
+      driverName
+      tripsCount
+      revenue
+      vehiclePlate
     }
   }
 }

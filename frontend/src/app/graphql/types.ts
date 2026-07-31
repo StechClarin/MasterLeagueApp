@@ -30,18 +30,16 @@ export type ChartDataItem = {
 
 export type DashboardDataType = {
   __typename?: 'DashboardDataType';
-  averageGrade: Scalars['Float']['output'];
-  gradeEvolution: Array<ChartDataItem>;
-  paymentMethodsDistribution: Array<CategoryCountItem>;
+  activeTaxis: Scalars['Int']['output'];
+  fleetStatusDistribution: Array<CategoryCountItem>;
+  pendingMaintenance: Scalars['Int']['output'];
+  rentalRate: Scalars['Float']['output'];
   revenueEvolution: Array<ChartDataItem>;
-  studentDistribution: Array<CategoryCountItem>;
-  topStudents: Array<TopStudentItem>;
-  totalActiveEvaluations: Scalars['Int']['output'];
-  totalClassrooms: Scalars['Int']['output'];
-  totalPending: Scalars['Float']['output'];
+  serviceRevenueDistribution: Array<CategoryCountItem>;
+  storeOrders: Scalars['Int']['output'];
+  topPerformers: Array<TopPerformerItem>;
   totalRevenue: Scalars['Float']['output'];
-  totalStaff: Scalars['Int']['output'];
-  totalStudents: Scalars['Int']['output'];
+  totalTaxis: Scalars['Int']['output'];
 };
 
 export type DocumentType = {
@@ -226,11 +224,12 @@ export type RoleTypePaginatedType = {
   totalCount: Scalars['Int']['output'];
 };
 
-export type TopStudentItem = {
-  __typename?: 'TopStudentItem';
-  averageGrade: Scalars['Float']['output'];
-  matricule: Scalars['String']['output'];
-  studentName: Scalars['String']['output'];
+export type TopPerformerItem = {
+  __typename?: 'TopPerformerItem';
+  driverName: Scalars['String']['output'];
+  revenue: Scalars['Float']['output'];
+  tripsCount: Scalars['Int']['output'];
+  vehiclePlate: Scalars['String']['output'];
 };
 
 export type UserType = {

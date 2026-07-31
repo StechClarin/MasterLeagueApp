@@ -11,41 +11,59 @@ class CategoryCountItem:
     count: int
 
 @strawberry.type
-class TopStudentItem:
-    student_name: str
-    average_grade: float
-    matricule: str
+class TopPerformerItem:
+    driver_name: str
+    trips_count: int
+    revenue: float
+    vehicle_plate: str
 
 @strawberry.type
 class DashboardDataType:
-    total_students: int
-    total_staff: int
-    total_classrooms: int
-    total_active_evaluations: int
-    average_grade: float
+    active_taxis: int
+    total_taxis: int
+    rental_rate: float
     total_revenue: float
-    total_pending: float
-    grade_evolution: list[ChartDataItem]
-    student_distribution: list[CategoryCountItem]
+    store_orders: int
+    pending_maintenance: int
     revenue_evolution: list[ChartDataItem]
-    payment_methods_distribution: list[CategoryCountItem]
-    top_students: list[TopStudentItem]
+    fleet_status_distribution: list[CategoryCountItem]
+    service_revenue_distribution: list[CategoryCountItem]
+    top_performers: list[TopPerformerItem]
 
 @strawberry.type
 class DashboardQuery:
     @strawberry.field
     def dashboard_data(self) -> DashboardDataType:
         return DashboardDataType(
-            total_students=0,
-            total_staff=0,
-            total_classrooms=0,
-            total_active_evaluations=0,
-            average_grade=0.0,
-            total_revenue=0.0,
-            total_pending=0.0,
-            grade_evolution=[],
-            student_distribution=[],
-            revenue_evolution=[],
-            payment_methods_distribution=[],
-            top_students=[]
+            active_taxis=42,
+            total_taxis=50,
+            rental_rate=84.5,
+            total_revenue=24850000.0,
+            store_orders=156,
+            pending_maintenance=4,
+            revenue_evolution=[
+                ChartDataItem(label="Jan", value=18500000),
+                ChartDataItem(label="Fév", value=19200000),
+                ChartDataItem(label="Mar", value=21000000),
+                ChartDataItem(label="Avr", value=20500000),
+                ChartDataItem(label="Mai", value=22800000),
+                ChartDataItem(label="Jun", value=24850000)
+            ],
+            fleet_status_distribution=[
+                CategoryCountItem(category="En Service", count=35),
+                CategoryCountItem(category="Disponible", count=8),
+                CategoryCountItem(category="En Maintenance", count=4),
+                CategoryCountItem(category="En Panne", count=3)
+            ],
+            service_revenue_distribution=[
+                CategoryCountItem(category="Taxi Service", count=12400000),
+                CategoryCountItem(category="Location de voitures", count=8650000),
+                CategoryCountItem(category="Boutique & Pièces", count=3800000)
+            ],
+            top_performers=[
+                TopPerformerItem(driver_name="Abessolo Jean-Pierre", trips_count=342, revenue=1450000.0, vehicle_plate="LT-982-AA"),
+                TopPerformerItem(driver_name="Fouda Marie-Thérèse", trips_count=310, revenue=1320000.0, vehicle_plate="CE-443-BB"),
+                TopPerformerItem(driver_name="Kamga Simplice", trips_count=298, revenue=1280000.0, vehicle_plate="LT-102-CC"),
+                TopPerformerItem(driver_name="Nguema Paul", trips_count=285, revenue=1210000.0, vehicle_plate="CE-765-DD")
+            ]
         )
