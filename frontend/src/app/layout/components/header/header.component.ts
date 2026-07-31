@@ -7,7 +7,6 @@ import { Observable, Subject, combineLatest } from 'rxjs';
 import { map, startWith, takeUntil, tap } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 
-// ✅ On utilise l'alias @core pour l'import propre
 import { AuthService } from '@core/services/auth.service';
 import { StructureStateService } from '@core/services/structure-state.service';
 import { ModuleStateService } from '@core/services/module-state.service';
@@ -17,7 +16,16 @@ interface Page {
   title: string;
   link: string;
   icon: string;
-  moduleName?: string; // Pour afficher le contexte
+  moduleName?: string;
+}
+
+interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  unread: boolean;
 }
 
 @Component({
@@ -25,12 +33,12 @@ interface Page {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
-    <header class="fixed top-0 right-0 left-72 h-20 bg-gradient-to-r from-[#0a0f1d] to-[#050811] border-b border-slate-800/60 flex items-center justify-between px-8 z-40 transition-all duration-300 shadow-md">
+    <header class="fixed top-0 right-0 left-72 h-20 bg-gradient-to-r from-[#0a0f1d] to-[#050811] border-b border-slate-800/60 flex items-center justify-between px-8 z-40 transition-all duration-300 shadow-md font-sans">
       
       <!-- Left Section: Breadcrumbs / Title -->
       <div class="flex items-center gap-4">
         <div class="flex flex-col">
-          <h1 class="text-xl font-bold text-white tracking-tight font-sans">
+          <h1 class="text-xl font-bold text-white tracking-tight">
             Administration
           </h1>
           <div class="flex items-center text-xs font-semibold text-slate-400 space-x-2 mt-0.5">
@@ -46,23 +54,23 @@ interface Page {
         
         <!-- Establishment Selector -->
         <div class="hidden md:flex items-center">
-        <div class="relative group">
+          <div class="relative group">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m8-2a2 2 0 100-4 2 2 0 000 4"></path></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m8-2a2 2 0 100-4 2 2 0 000 4"></path></svg>
             </div>
             <select 
-                [ngModel]="structureState.currentEstablishmentId()"
-                (ngModelChange)="structureState.setEstablishment($event || null)"
-                class="pl-9 pr-8 py-2 bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full appearance-none hover:bg-slate-700 hover:border-emerald-400 transition-all cursor-pointer font-medium">
-                <option [ngValue]="null">Tous les établissements</option>
-                <option *ngFor="let ets of structureState.establishments()" [ngValue]="ets?.id">
-                    {{ ets?.name }}
-                </option>
+              [ngModel]="structureState.currentEstablishmentId()"
+              (ngModelChange)="structureState.setEstablishment($event || null)"
+              class="pl-9 pr-8 py-2 bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full appearance-none hover:bg-slate-700 hover:border-emerald-400 transition-all cursor-pointer font-medium">
+              <option [ngValue]="null">Tous les établissements</option>
+              <option *ngFor="let ets of structureState.establishments()" [ngValue]="ets?.id">
+                {{ ets?.name }}
+              </option>
             </select>
             <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
-        </div>
+          </div>
         </div>
 
         <!-- Search Bar -->
@@ -100,23 +108,94 @@ interface Page {
                 Aucun résultat trouvé.
               </div>
             </ng-template>
-
           </div>
         </div>
 
         <div class="h-8 w-px bg-slate-800"></div>
 
-        <!-- Notifications -->
-        <button class="p-2.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all relative group">
-          <span class="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[#0a0f1d] animate-pulse"></span>
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-          
-          <!-- Tooltip -->
-          <div class="absolute top-full right-0 mt-2 w-48 bg-slate-800 rounded-xl shadow-xl border border-slate-700 p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
-            <p class="text-xs font-semibold text-slate-400 uppercase mb-2">Notifications</p>
-            <div class="text-sm text-slate-200 py-1">3 nouveaux messages</div>
+        <!-- Notifications Dropdown Widget Trigger -->
+        <div class="relative">
+          <button 
+            (click)="toggleNotifications($event)"
+            class="p-2.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all relative">
+            <span *ngIf="unreadCount > 0" class="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#0a0f1d] animate-pulse"></span>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+          </button>
+
+          <!-- Notifications Dropdown Panel -->
+          <div *ngIf="isNotificationsOpen" 
+               (mouseleave)="isNotificationsOpen = false"
+               class="absolute right-0 mt-2 w-96 bg-[#0c1225] rounded-2xl shadow-2xl border border-slate-800/80 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            
+            <div class="px-4 py-3 bg-[#0a0f1d] border-b border-slate-800/80 flex items-center justify-between">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">Centre de Notifications</span>
+              <button 
+                *ngIf="unreadCount > 0"
+                (click)="markAllAsRead()"
+                class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold transition-colors uppercase tracking-tight">
+                Tout marquer lu
+              </button>
+            </div>
+
+            <div class="max-h-[320px] overflow-y-auto divide-y divide-slate-800/40 scrollbar-thin">
+              <div *ngFor="let notif of notifications" 
+                   [ngClass]="notif.unread ? 'bg-slate-800/20' : ''"
+                   class="p-4 hover:bg-slate-800/40 transition-colors flex gap-3 group relative">
+                
+                <!-- Status icon with colored background -->
+                <div class="h-8 w-8 rounded-lg shrink-0 flex items-center justify-center"
+                     [ngClass]="{
+                       'bg-red-500/10 text-red-400': notif.type === 'error',
+                       'bg-amber-500/10 text-amber-400': notif.type === 'warning',
+                       'bg-emerald-500/10 text-emerald-400': notif.type === 'success',
+                       'bg-blue-500/10 text-blue-400': notif.type === 'info'
+                     }">
+                  
+                  <svg *ngIf="notif.type === 'error'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  
+                  <svg *ngIf="notif.type === 'warning'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+
+                  <svg *ngIf="notif.type === 'success'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+
+                  <svg *ngIf="notif.type === 'info'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+
+                <!-- Message Content -->
+                <div class="flex-1 min-w-0 pr-4">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs font-bold text-slate-200 group-hover:text-emerald-300 transition-colors">{{ notif.title }}</span>
+                    <span class="text-[9px] text-slate-500 font-medium whitespace-nowrap">{{ notif.time }}</span>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-1 leading-normal break-words">{{ notif.message }}</p>
+                </div>
+
+                <!-- Remove notification icon -->
+                <button 
+                  (click)="deleteNotification($event, notif.id)"
+                  class="absolute right-3 top-4 text-slate-500 hover:text-white opacity-0 group-hover:opacity-100 transition-all">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="notifications.length === 0" class="p-8 text-center text-slate-500 text-xs italic">
+              Aucune notification en attente
+            </div>
+
           </div>
-        </button>
+        </div>
 
         <!-- Profile Dropdown Trigger -->
         <div class="relative" (click)="isProfileOpen = !isProfileOpen" (mouseleave)="isProfileOpen = false">
@@ -138,7 +217,7 @@ interface Page {
             <svg class="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
           </div>
 
-          <!-- Dropdown Menu -->
+          <!-- Profile Menu -->
           <div *ngIf="isProfileOpen" 
                class="absolute right-0 mt-2 w-48 bg-slate-800 rounded-xl shadow-lg py-1 border border-slate-700 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             <a href="#" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-emerald-400">Mon Profil</a>
@@ -179,9 +258,44 @@ export class HeaderComponent implements OnInit, OnDestroy {
   searchControl = new FormControl('');
   showResults = false;
   isProfileOpen = false;
+  isNotificationsOpen = false;
   private destroy$ = new Subject<void>();
 
-  // ✅ toObservable doit être déclaré dans un contexte d'injection (initialiseur de champ ou constructeur)
+  notifications: NotificationItem[] = [
+    {
+      id: 'n1',
+      title: 'Alerte Stationnement',
+      message: 'Véhicule LT-982-AA en arrêt prolongé sans course active.',
+      time: 'Il y a 5 min',
+      type: 'error',
+      unread: true
+    },
+    {
+      id: 'n2',
+      title: 'Rappel Maintenance',
+      message: 'Révision technique requise sous 48h pour CE-765-DD.',
+      time: 'Il y a 20 min',
+      type: 'warning',
+      unread: true
+    },
+    {
+      id: 'n3',
+      title: 'Nouvelle Commande',
+      message: 'Commande boutique #2488 de lubrifiant validée.',
+      time: 'Il y a 1h',
+      type: 'success',
+      unread: false
+    },
+    {
+      id: 'n4',
+      title: 'Échéance Assurance',
+      message: 'L\'assurance de la Toyota CE-443-BB expire sous 5 jours.',
+      time: 'Il y a 3h',
+      type: 'info',
+      unread: false
+    }
+  ];
+
   private allPages$ = toObservable(this.moduleState.modules).pipe(
     map(modules => {
       const pages: Page[] = [];
@@ -199,7 +313,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   filteredPages$!: Observable<Page[]>;
 
   ngOnInit() {
-    // 2. Filtrer en fonction de la saisie
     this.filteredPages$ = combineLatest([
       this.allPages$,
       this.searchControl.valueChanges.pipe(startWith(''))
@@ -239,5 +352,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   logout() {
     this.authService.logout();
+  }
+
+  toggleNotifications(event: Event) {
+    event.stopPropagation();
+    this.isNotificationsOpen = !this.isNotificationsOpen;
+    this.isProfileOpen = false;
+  }
+
+  markAllAsRead() {
+    this.notifications.forEach(n => n.unread = false);
+  }
+
+  deleteNotification(event: Event, id: string) {
+    event.stopPropagation();
+    this.notifications = this.notifications.filter(n => n.id !== id);
+  }
+
+  get unreadCount(): number {
+    return this.notifications.filter(n => n.unread).length;
   }
 }
