@@ -81,10 +81,11 @@ interface NotificationItem {
             type="text" 
             placeholder="Recherche rapide..." 
             class="pl-9 pr-4 py-2 bg-slate-800/60 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-emerald-500/20 focus:bg-slate-800 transition-all w-64"
+            (focus)="isSearchFocused = true"
             (blur)="onBlur()">
           
           <!-- Search Results Dropdown -->
-          <div *ngIf="showResults && (filteredPages$ | async) as results" 
+          <div *ngIf="isSearchFocused && searchControl.value && (filteredPages$ | async) as results" 
                class="absolute top-full left-0 w-80 mt-2 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             
             <div *ngIf="results.length > 0; else noResults">
@@ -256,7 +257,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   searchControl = new FormControl('');
-  showResults = false;
+  isSearchFocused = false;
   isProfileOpen = false;
   isNotificationsOpen = false;
   private destroy$ = new Subject<void>();
@@ -319,7 +320,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     ]).pipe(
       map(([pages, searchTerm]) => {
         const term = (searchTerm || '').toLowerCase();
-        this.showResults = term.length > 0;
         if (!term) return [];
         return pages.filter(p => p.title.toLowerCase().includes(term));
       })
@@ -339,14 +339,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   navigateTo(link: string) {
-    this.showResults = false;
+    this.isSearchFocused = false;
     this.searchControl.setValue('');
     this.router.navigateByUrl(link);
   }
 
   onBlur() {
     setTimeout(() => {
-      this.showResults = false;
+      this.isSearchFocused = false;
     }, 200);
   }
 
