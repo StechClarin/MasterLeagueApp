@@ -7,7 +7,7 @@ Cette documentation détaille le workflow standard pour ajouter une nouvelle fon
 
 PRÉ-REQUIS
 ----------
-- Backend : Python 3.10+, Django, Graphene
+- Backend : Python 3.10+, Django, Strawberry (strawberry-graphql-django)
 - Frontend : Node 18+, Angular 18+, Apollo GraphQL
 - Outils : Script `./snake` (Wrapper manage.py)
 
@@ -76,19 +76,20 @@ c) CORRECTION CRITIQUE : IMPLÉMENTER LA PAGINATION
    
    Modèle à suivre :
    ------------------------------------------------------------
-   from apps.core.graphql.Types.paginated_type import get_paginated_type
-   
-   <Entite>PaginatedType = get_paginated_type(<Entite>Type)
+   import strawberry
+   from apps.core.graphql.Types.paginated_type import PaginatedType
+   from ..Types.<entite>_type import <Entite>Type
 
-   class <Entite>Query(graphene.ObjectType):
-       <entites> = graphene.Field(
-           <Entite>PaginatedType,
-           search=graphene.String(),
-           page=graphene.Int(default_value=1),
-           page_size=graphene.Int(default_value=10)
-       )
-
-       def resolve_<entites>(root, info, search=None, page=1, page_size=10, **kwargs):
+   @strawberry.type
+   class <Entite>Query:
+       @strawberry.field
+       def <entites>(
+           self,
+           info: strawberry.Info,
+           search: str | None = None,
+           page: int = 1,
+           page_size: int = 10
+       ) -> PaginatedType[<Entite>Type]:
            queryset = <Entite>.objects.filter(is_deleted=False).order_by('-created_at')
            
            if search:
@@ -98,7 +99,7 @@ c) CORRECTION CRITIQUE : IMPLÉMENTER LA PAGINATION
            from apps.core.utils.pagination import paginate_queryset
            paginated_data = paginate_queryset(queryset, page, page_size)
 
-           return <Entite>PaginatedType(**paginated_data)
+           return PaginatedType[<Entite>Type](**paginated_data)
    ------------------------------------------------------------
 
 d) Migrations
