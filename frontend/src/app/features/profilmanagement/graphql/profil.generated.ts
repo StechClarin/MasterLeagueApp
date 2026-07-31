@@ -3,11 +3,11 @@ import * as Types from '../../../graphql/types';
 import { gql } from 'apollo-angular';
 import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
-export type UserFieldsFragment = { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null };
+export type UserFieldsFragment = { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string, permissions: Array<{ __typename?: 'PermissionType', id: string, codename: string }> }> };
 
-export type RoleFieldsFragment = { __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, name: string, codename: string } | null> | null };
+export type RoleFieldsFragment = { __typename?: 'RoleType', id: string, name: string, permissions: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string }> };
 
-export type PermissionFieldsFragment = { __typename?: 'PermissionType', id: any, name: string, codename: string, tag: string };
+export type PermissionFieldsFragment = { __typename?: 'PermissionType', id: string, name: string, codename: string, tag: string };
 
 export type GetAllUsersQueryVariables = Types.Exact<{
   username?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -19,14 +19,14 @@ export type GetAllUsersQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllUsersQuery = { __typename?: 'Query', users?: { __typename?: 'UserTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null } | null> | null } | null };
+export type GetAllUsersQuery = { __typename?: 'Query', users: { __typename?: 'UserTypePaginatedType', totalCount: number, numPages: number, currentPage: number, items: Array<{ __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string, permissions: Array<{ __typename?: 'PermissionType', id: string, codename: string }> }> }> } };
 
 export type GetUserByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['Int']['input'];
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null } | null };
+export type GetUserByIdQuery = { __typename?: 'Query', user?: { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string, permissions: Array<{ __typename?: 'PermissionType', id: string, codename: string }> }> } | null };
 
 export type GetAllRolesQueryVariables = Types.Exact<{
   name?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -35,26 +35,26 @@ export type GetAllRolesQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllRolesQuery = { __typename?: 'Query', roles?: { __typename?: 'RoleTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, name: string, codename: string } | null> | null } | null> | null } | null };
+export type GetAllRolesQuery = { __typename?: 'Query', roles: { __typename?: 'RoleTypePaginatedType', totalCount: number, numPages: number, currentPage: number, items: Array<{ __typename?: 'RoleType', id: string, name: string, permissions: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string }> }> } };
 
 export type GetRoleByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetRoleByIdQuery = { __typename?: 'Query', role?: { __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, name: string, codename: string } | null> | null } | null };
+export type GetRoleByIdQuery = { __typename?: 'Query', role?: { __typename?: 'RoleType', id: string, name: string, permissions: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string }> } | null };
 
 export type GetAllPermissionsQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetAllPermissionsQuery = { __typename?: 'Query', permissions?: Array<{ __typename?: 'PermissionType', id: any, name: string, codename: string, tag: string } | null> | null };
+export type GetAllPermissionsQuery = { __typename?: 'Query', permissions: Array<{ __typename?: 'PermissionType', id: string, name: string, codename: string, tag: string }> };
 
 export type GetMeQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type GetMeQuery = { __typename?: 'Query', me?: { __typename?: 'UserType', id: any, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles?: Array<{ __typename?: 'RoleType', id: any, name: string, permissions?: Array<{ __typename?: 'PermissionType', id: any, codename: string } | null> | null } | null> | null } | null };
+export type GetMeQuery = { __typename?: 'Query', me?: { __typename?: 'UserType', id: string, username: string, email: string, firstName: string, lastName: string, isActive: boolean, dateJoined: any, photo?: string | null, phone?: string | null, roles: Array<{ __typename?: 'RoleType', id: string, name: string, permissions: Array<{ __typename?: 'PermissionType', id: string, codename: string }> }> } | null };
 
-export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null };
+export type EstablishmentFieldsFragment = { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: string, username: string } | null };
 
 export type GetAllEstablishmentsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;
@@ -67,14 +67,14 @@ export type GetAllEstablishmentsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllEstablishmentsQuery = { __typename?: 'Query', establishments?: { __typename?: 'EstablishmentTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null } | null> | null } | null };
+export type GetAllEstablishmentsQuery = { __typename?: 'Query', establishments?: { __typename?: 'EstablishmentTypePaginatedType', totalCount: number, numPages: number, currentPage: number, items: Array<{ __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: string, username: string } | null }> } | null };
 
 export type GetEstablishmentByIdQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
 }>;
 
 
-export type GetEstablishmentByIdQuery = { __typename?: 'Query', establishment?: { __typename?: 'EstablishmentType', id: any, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: any, username: string } | null } | null };
+export type GetEstablishmentByIdQuery = { __typename?: 'Query', establishment?: { __typename?: 'EstablishmentType', id: string, name: string, phone?: string | null, email?: string | null, address?: string | null, logo?: string | null, isActive: boolean, slogan?: string | null, website?: string | null, taxId?: string | null, city?: string | null, country?: string | null, printHeader?: string | null, printFooter?: string | null, user?: { __typename?: 'UserType', id: string, username: string } | null } | null };
 
 export const UserFieldsFragmentDoc = gql`
     fragment UserFields on UserType {

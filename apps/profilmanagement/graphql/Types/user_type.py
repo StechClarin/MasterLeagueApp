@@ -11,7 +11,18 @@ class UserType:
     first_name: strawberry.auto
     last_name: strawberry.auto
     phone: strawberry.auto
-    photo: strawberry.auto
+    is_active: strawberry.auto
+    date_joined: strawberry.auto
+
+    @strawberry.field
+    def photo(self, info: strawberry.Info) -> str | None:
+        if self.photo and hasattr(self.photo, 'url'):
+            request = info.context.request if hasattr(info.context, 'request') else info.context
+            if hasattr(request, 'build_absolute_uri'):
+                return request.build_absolute_uri(self.photo.url)
+            from django.conf import settings
+            return f"{settings.MEDIA_URL}{self.photo.name}"
+        return None
 
     @strawberry.field
     def roles(self, info: strawberry.Info) -> list[RoleType]:
