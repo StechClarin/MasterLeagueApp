@@ -26,6 +26,15 @@ query GetDashboardData {
     availableVehiclesCount
     utilizationRate
 
+    # Métriques Boutique & Stock
+    storeTotalItems
+    storeStockValue
+    storeOutOfStock
+    storeStockDistribution {
+      category
+      count
+    }
+
     revenueEvolution {
       label
       value

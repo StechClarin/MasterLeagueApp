@@ -368,7 +368,7 @@
       <div class="chart-container overflow-hidden">
         <div class="flex justify-between items-center mb-8">
             <h4 class="text-xl font-bold text-slate-800">Performances Chauffeurs</h4>
-            <svg class="w-8 h-8 text-amber-400 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
             </svg>
         </div>
@@ -430,6 +430,77 @@
           [labels]="serviceChartOptions.labels!"
           [colors]="serviceChartOptions.colors!"
           [legend]="serviceChartOptions.legend!"
+        ></apx-chart>
+      </div>
+
+    </div>
+
+    <!-- Row 6: Boutique & Gestion du Stock (Super Rich) -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      
+      <!-- Boutique Statistics Panel -->
+      <div class="chart-container group hover:shadow-lg transition-all duration-300">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h4 class="text-lg font-bold text-slate-800">Indicateurs Boutique</h4>
+            <p class="text-xs text-slate-500">Statistiques d'inventaire et valeur du stock pièces auto</p>
+          </div>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 114 0v2m-4 0h4m-4 0h4m1 4h3m-9 0h3m-3-4h3m4 0h3" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Références en Stock</span>
+              <p class="text-xl font-black text-slate-800 mt-0.5">{{ dashboardData()?.storeTotalItems | number }} <span class="text-xs font-normal text-slate-500">articles</span></p>
+            </div>
+            <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg font-bold">Actif</span>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Valeur Estimée Stock</span>
+              <p class="text-xl font-black text-slate-800 mt-0.5">{{ dashboardData()?.storeStockValue | number }} <span class="text-xs font-normal text-slate-500">FCFA</span></p>
+            </div>
+            <span class="text-[10px] text-slate-400 font-semibold">Valorisation</span>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ruptures Critiques</span>
+              <p class="text-xl font-black text-red-600 mt-0.5">{{ dashboardData()?.storeOutOfStock }} <span class="text-xs font-normal text-slate-500">pièces</span></p>
+            </div>
+            <span class="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-lg font-bold animate-pulse" *ngIf="dashboardData()?.storeOutOfStock > 0">
+              Réapprovisionner
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutique Category Stock Distribution Chart -->
+      <div class="xl:col-span-2 chart-container">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h4 class="text-lg font-bold text-slate-800">Volume de Stock par Catégorie</h4>
+            <p class="text-xs text-slate-500">Répartition des pièces de rechange et équipements disponibles</p>
+          </div>
+          <span class="text-xs bg-slate-50 text-slate-500 border border-slate-200 px-3 py-1 rounded-full font-semibold">
+            Bilan Graphique
+          </span>
+        </div>
+        <apx-chart
+          *ngIf="boutiqueChartOptions"
+          [series]="boutiqueChartOptions.series!"
+          [chart]="boutiqueChartOptions.chart!"
+          [xaxis]="boutiqueChartOptions.xaxis!"
+          [colors]="boutiqueChartOptions.colors!"
+          [plotOptions]="boutiqueChartOptions.plotOptions!"
+          [grid]="boutiqueChartOptions.grid!"
+          [dataLabels]="boutiqueChartOptions.dataLabels!"
         ></apx-chart>
       </div>
 
