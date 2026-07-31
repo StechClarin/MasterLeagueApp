@@ -125,32 +125,13 @@ interface SidebarModule {
         </div>
       </nav>
 
-      <!-- User Profile Section -->
-      <div class="p-4 border-t border-slate-800/60 bg-[#04060c]">
-        <button class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group border border-transparent hover:border-white/5">
-          <div class="relative">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full opacity-0 group-hover:opacity-100 blur transition duration-300"></div>
-            <div class="relative h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-xs text-white font-bold border border-slate-700 group-hover:border-transparent">
-              <img src="https://ui-avatars.com/api/?name=Ether+Nanos&background=10b981&color=fff" alt="Profile" class="rounded-full">
-            </div>
-            <div class="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 border-2 border-[#04060c] rounded-full"></div>
-          </div>
-          <div class="flex-1 min-w-0 text-left">
-            <p class="text-sm font-semibold text-white truncate group-hover:text-emerald-300 transition-colors">EtherNanos</p>
-            <p class="text-xs text-slate-500 truncate group-hover:text-slate-400">Super Admin</p>
-          </div>
-          <svg class="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Created by Link -->
-      <div class="px-6 py-3 bg-[#020306] text-center border-t border-slate-900/60 flex justify-center items-center gap-1 text-[10px] text-slate-500 font-semibold tracking-wider">
-        <span>Créé par</span>
-        <a href="https://ethernanos.space" target="_blank" class="text-emerald-400 hover:text-emerald-300 transition-colors font-bold underline decoration-dotted">
+      <!-- Professional Footer -->
+      <div class="px-6 py-4 bg-[#020306] text-center border-t border-slate-900/60 flex flex-col items-center justify-center gap-1 text-[10px] text-slate-500 font-semibold tracking-wider">
+        <span>POWERED BY</span>
+        <a href="https://ethernanos.space" target="_blank" class="text-emerald-400 hover:text-emerald-300 transition-colors font-black tracking-widest hover:underline uppercase">
           Ethernanos
         </a>
+        <span class="text-[8px] text-slate-600 mt-0.5">© 2026 TransportPark • All rights reserved</span>
       </div>
     </aside>
   `
