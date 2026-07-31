@@ -25,6 +25,17 @@ class DashboardDataType:
     total_revenue: float
     store_orders: int
     pending_maintenance: int
+    
+    # Métriques détaillées du Parc Auto
+    total_vehicles: int
+    vehicles_to_rent: int      # Voitures à louer (Dispo)
+    vehicles_rented: int       # Voitures en location (Actives)
+    provider_vehicles: int     # Véhicules prestataires
+    company_taxis: int         # Voitures taxis de l'entreprise
+    total_drivers: int         # Nombre de chauffeurs
+    broken_vehicles: int       # Voitures HS / en panne
+    active_vehicles: int       # Voitures en service
+
     revenue_evolution: list[ChartDataItem]
     fleet_status_distribution: list[CategoryCountItem]
     service_revenue_distribution: list[CategoryCountItem]
@@ -41,6 +52,17 @@ class DashboardQuery:
             total_revenue=24850000.0,
             store_orders=156,
             pending_maintenance=4,
+            
+            # Données statistiques très riches du Parc
+            total_vehicles=85,
+            vehicles_to_rent=15,
+            vehicles_rented=18,
+            provider_vehicles=22,
+            company_taxis=30,
+            total_drivers=68,
+            broken_vehicles=5,
+            active_vehicles=72,
+
             revenue_evolution=[
                 ChartDataItem(label="Jan", value=18500000),
                 ChartDataItem(label="Fév", value=19200000),
@@ -50,10 +72,10 @@ class DashboardQuery:
                 ChartDataItem(label="Jun", value=24850000)
             ],
             fleet_status_distribution=[
-                CategoryCountItem(category="En Service", count=35),
-                CategoryCountItem(category="Disponible", count=8),
-                CategoryCountItem(category="En Maintenance", count=4),
-                CategoryCountItem(category="En Panne", count=3)
+                CategoryCountItem(category="En Service", count=72),
+                CategoryCountItem(category="Disponible (Location)", count=8),
+                CategoryCountItem(category="En Maintenance", count=5),
+                CategoryCountItem(category="HS / En Panne", count=5)
             ],
             service_revenue_distribution=[
                 CategoryCountItem(category="Taxi Service", count=12400000),

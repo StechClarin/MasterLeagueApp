@@ -6,6 +6,17 @@ query GetDashboardData {
     totalRevenue
     storeOrders
     pendingMaintenance
+    
+    # Métriques détaillées du Parc
+    totalVehicles
+    vehiclesToRent
+    vehiclesRented
+    providerVehicles
+    companyTaxis
+    totalDrivers
+    brokenVehicles
+    activeVehicles
+
     revenueEvolution {
       label
       value
