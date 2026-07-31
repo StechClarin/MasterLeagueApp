@@ -31,15 +31,23 @@ export type ChartDataItem = {
 export type DashboardDataType = {
   __typename?: 'DashboardDataType';
   activeTaxis: Scalars['Int']['output'];
+  activeVehicles: Scalars['Int']['output'];
+  brokenVehicles: Scalars['Int']['output'];
+  companyTaxis: Scalars['Int']['output'];
   fleetStatusDistribution: Array<CategoryCountItem>;
   pendingMaintenance: Scalars['Int']['output'];
+  providerVehicles: Scalars['Int']['output'];
   rentalRate: Scalars['Float']['output'];
   revenueEvolution: Array<ChartDataItem>;
   serviceRevenueDistribution: Array<CategoryCountItem>;
   storeOrders: Scalars['Int']['output'];
   topPerformers: Array<TopPerformerItem>;
+  totalDrivers: Scalars['Int']['output'];
   totalRevenue: Scalars['Float']['output'];
   totalTaxis: Scalars['Int']['output'];
+  totalVehicles: Scalars['Int']['output'];
+  vehiclesRented: Scalars['Int']['output'];
+  vehiclesToRent: Scalars['Int']['output'];
 };
 
 export type DocumentType = {
