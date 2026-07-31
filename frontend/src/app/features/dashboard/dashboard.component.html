@@ -521,13 +521,13 @@
                     <h3 class="text-3xl font-black text-slate-900 leading-tight">Suivi temps réel & Géolocalisation</h3>
                     <p class="text-slate-500 mt-4 text-lg">Visualisez la position de vos taxis en temps réel et optimisez l'affectation des chauffeurs sur les zones à forte demande.</p>
                 </div>
-                <div class="flex gap-4">
-                    <button class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 hover:shadow-xl transition-all flex items-center gap-3">
+                 <div class="flex gap-4">
+                    <a routerLink="/map-tracking" class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 hover:shadow-xl transition-all flex items-center gap-3 cursor-pointer">
                         Activer Live Tracking
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
-                    </button>
+                    </a>
                 </div>
             </div>
             <!-- Abstract shapes -->
@@ -535,5 +535,29 @@
         </div>
     </div>
 
+  </div>
+
+  <!-- Floating Live Map Tracking Button -->
+  <div class="fixed bottom-6 right-6 z-50">
+    <a routerLink="/map-tracking" 
+       class="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-full shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300 group font-bold tracking-wide cursor-pointer">
+      
+      <!-- Pulsing radar icon -->
+      <span class="relative flex h-4 w-4">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-4 w-4 bg-white/20 flex items-center justify-center">
+          <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 0L10 15 5.05 4.05zM10 7a3 3 0 100 6 3 3 0 000-6z" clip-rule="evenodd" />
+          </svg>
+        </span>
+      </span>
+
+      <span>Carte Live</span>
+
+      <!-- Small arrow -->
+      <svg class="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+      </svg>
+    </a>
   </div>
 </div>

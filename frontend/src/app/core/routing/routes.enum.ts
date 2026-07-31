@@ -4,4 +4,5 @@
 export enum AppRoutes {
   COMPTES_UTILISATEURS = '/users',
   ROLES_AND_PERMISSIONS = '/roles',
+  CARTE_LIVE = '/map-tracking',
 }
