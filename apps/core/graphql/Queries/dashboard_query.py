@@ -36,6 +36,15 @@ class DashboardDataType:
     broken_vehicles: int       # Voitures HS / en panne
     active_vehicles: int       # Voitures en service
 
+    # Nouvelles métriques ultra-riches
+    fuel_consumption: float     # Litres / 100km moyen
+    fuel_costs: float           # FCFA mensuel
+    client_satisfaction: float   # Note clients sur 5.0
+    active_alerts_count: int     # Nombre d'alertes critiques (assurance, CT)
+    upcoming_maintenances: int   # Maintenances prévues sous 7j
+    available_vehicles_count: int # Véhicules libres immédiatement
+    utilization_rate: float      # Taux d'utilisation globale
+
     revenue_evolution: list[ChartDataItem]
     fleet_status_distribution: list[CategoryCountItem]
     service_revenue_distribution: list[CategoryCountItem]
@@ -62,6 +71,15 @@ class DashboardQuery:
             total_drivers=68,
             broken_vehicles=5,
             active_vehicles=72,
+
+            # Valeurs réelles pour simulation
+            fuel_consumption=8.4,
+            fuel_costs=2450000.0,
+            client_satisfaction=4.8,
+            active_alerts_count=3,
+            upcoming_maintenances=5,
+            available_vehicles_count=12,
+            utilization_rate=88.2,
 
             revenue_evolution=[
                 ChartDataItem(label="Jan", value=18500000),

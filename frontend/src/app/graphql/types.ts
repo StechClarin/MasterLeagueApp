@@ -30,11 +30,16 @@ export type ChartDataItem = {
 
 export type DashboardDataType = {
   __typename?: 'DashboardDataType';
+  activeAlertsCount: Scalars['Int']['output'];
   activeTaxis: Scalars['Int']['output'];
   activeVehicles: Scalars['Int']['output'];
+  availableVehiclesCount: Scalars['Int']['output'];
   brokenVehicles: Scalars['Int']['output'];
+  clientSatisfaction: Scalars['Float']['output'];
   companyTaxis: Scalars['Int']['output'];
   fleetStatusDistribution: Array<CategoryCountItem>;
+  fuelConsumption: Scalars['Float']['output'];
+  fuelCosts: Scalars['Float']['output'];
   pendingMaintenance: Scalars['Int']['output'];
   providerVehicles: Scalars['Int']['output'];
   rentalRate: Scalars['Float']['output'];
@@ -46,6 +51,8 @@ export type DashboardDataType = {
   totalRevenue: Scalars['Float']['output'];
   totalTaxis: Scalars['Int']['output'];
   totalVehicles: Scalars['Int']['output'];
+  upcomingMaintenances: Scalars['Int']['output'];
+  utilizationRate: Scalars['Float']['output'];
   vehiclesRented: Scalars['Int']['output'];
   vehiclesToRent: Scalars['Int']['output'];
 };
