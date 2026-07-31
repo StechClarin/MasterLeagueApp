@@ -90,7 +90,7 @@ interface NotificationItem {
             <div *ngIf="results.length > 0; else noResults">
               <div class="py-2">
                 <button *ngFor="let page of results" 
-                        (click)="navigateTo(page.link)"
+                        (mousedown)="navigateTo(page.link); $event.preventDefault()"
                         class="w-full text-left px-4 py-3 hover:bg-slate-700 flex items-center gap-3 group/item transition-colors">
                   <div class="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center group-hover/item:bg-emerald-500/20 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
