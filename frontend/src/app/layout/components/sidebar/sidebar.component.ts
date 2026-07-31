@@ -64,10 +64,13 @@ interface SidebarModule {
           
           <button 
             (click)="toggleModule(module.id)"
+            [ngClass]="isExpanded(module.id) ? 'text-white bg-white/5 border-slate-800/50' : ''"
             class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group focus:outline-none border border-transparent hover:border-white/5">
             
             <div class="flex items-center gap-4">
-              <span class="p-2 rounded-lg bg-slate-800/50 text-slate-400 group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-all duration-300 flex items-center justify-center">
+              <span 
+                [ngClass]="isExpanded(module.id) ? 'text-emerald-400 bg-emerald-500/10' : ''"
+                class="p-2 rounded-lg bg-slate-800/50 text-slate-400 group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-all duration-300 flex items-center justify-center">
                  <img *ngIf="module.icon; else genericModuleIcon" [src]="module.icon" class="w-5 h-5 object-contain" alt="" />
                  <ng-template #genericModuleIcon>
                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
@@ -80,6 +83,7 @@ interface SidebarModule {
               <div class="absolute inset-0 bg-emerald-500 blur-sm opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-full"></div>
               <svg 
                 [class.rotate-180]="isExpanded(module.id)"
+                [class.text-emerald-400]="isExpanded(module.id)"
                 class="w-4 h-4 transition-transform duration-300 text-slate-500 group-hover:text-white relative z-10" 
                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -87,12 +91,13 @@ interface SidebarModule {
             </div>
           </button>
 
+          <!-- Dropdown items container -->
           <div 
             *ngIf="isExpanded(module.id)"
-            class="mt-2 space-y-1 pl-4 relative">
+            class="mt-2 space-y-1 pl-4 relative bg-[#04060c]/40 py-1.5 rounded-xl border border-slate-800/30 transition-all duration-300">
             
-            <!-- Ligne guide verticale -->
-            <div class="absolute left-8 top-0 bottom-0 w-px bg-slate-800/50"></div>
+            <!-- Ligne guide verticale avec gradient -->
+            <div class="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/40 via-emerald-500/10 to-transparent"></div>
 
             <a *ngFor="let page of module.pages"
                [routerLink]="page.link" 
@@ -138,6 +143,14 @@ interface SidebarModule {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
           </svg>
         </button>
+      </div>
+
+      <!-- Created by Link -->
+      <div class="px-6 py-3 bg-[#020306] text-center border-t border-slate-900/60 flex justify-center items-center gap-1 text-[10px] text-slate-500 font-semibold tracking-wider">
+        <span>Créé par</span>
+        <a href="https://ethernanos.space" target="_blank" class="text-emerald-400 hover:text-emerald-300 transition-colors font-bold underline decoration-dotted">
+          Ethernanos
+        </a>
       </div>
     </aside>
   `
