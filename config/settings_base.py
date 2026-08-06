@@ -63,6 +63,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne',  # Must be at the top to override runserver for WebSockets development
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -84,6 +85,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'graphene_django', 
+    'channels',
 ]
 
 SIMPLE_JWT = {
@@ -100,6 +102,7 @@ SIMPLE_JWT = {
 ROOT_URLCONF = 'config.urls'
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
 
 TEMPLATES = [
     {
@@ -121,6 +124,16 @@ TEMPLATES = [
 
 DATABASES = {
     'default': env.db('DATABASE_URL', default=f'sqlite:///{PROJECT_DATA_DIR / "db.sqlite3"}')
+}
+
+# --- DJANGO CHANNELS (WEBSOCKETS) CHANNEL LAYERS ---
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [env.str('REDIS_URL', default='redis://127.0.0.1:6379/0')],
+        },
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
