@@ -8,6 +8,8 @@ import urllib.parse
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.db.transaction import atomic
+from django.conf import settings
+from django.db import connection
 
 class Command(BaseCommand):
     help = 'Initializes the local Ethernanos database (SQLite) for the Hub client.'
@@ -16,7 +18,6 @@ class Command(BaseCommand):
         parser.add_argument('--admin-pass', type=str, help='Default admin password')
 
     def handle(self, *args, **options):
-        import os
         os.environ['SKIP_SYNC_TRACKING'] = '1'
         try:
             self._handle(*args, **options)
@@ -33,6 +34,40 @@ class Command(BaseCommand):
              sys.exit(1)
         else:
              self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f'Using Database: {db_url.split("@")[-1] if "@" in db_url else "Database URL set"}'))
+
+        # Quick initial bypass check if already set up
+        base_dir = str(settings.BASE_DIR or '')
+        manifest_path = os.path.join(base_dir, 'ethernanos.json')
+        state_path = os.path.join(base_dir, '.setup_done')
+        
+        current_version = "1.0.0"
+        if os.path.exists(manifest_path):
+            try:
+                with open(manifest_path, 'r') as f:
+                    current_version = json.load(f).get('version', '1.0.0')
+            except Exception:
+                pass
+                
+        current_tenant = os.environ.get('ETHER_TENANT_ID', '')
+        current_db = db_url
+        try:
+            db_has_tables = len(connection.introspection.table_names()) > 0
+        except Exception:
+            db_has_tables = False
+            
+        if os.path.exists(state_path) and db_has_tables:
+            try:
+                with open(state_path, 'r') as f:
+                    state = json.load(f)
+                if (state.get('version') == current_version and 
+                    state.get('tenant') == current_tenant and 
+                    state.get('db') == current_db):
+                    self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('[OK] Database and configuration are already up-to-date. Skipping setup.'))
+                    self.stdout.write('[HUB_SIGNAL:SUCCESS]')
+                    self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('--- ETHER-SETUP COMPLETE ---'))
+                    return
+            except Exception:
+                pass
 
         # 2. Run Migrations
         self.stdout.write('[HUB_SIGNAL:MIGRATING]')
@@ -186,6 +221,16 @@ class Command(BaseCommand):
             sys.exit(1)
         
         # 4. Success Signal
+        try:
+            with open(state_path, 'w') as f:
+                json.dump({
+                    'version': current_version,
+                    'tenant': current_tenant,
+                    'db': current_db
+                }, f)
+        except Exception as se:
+            self.stdout.write(f"   [WARN] Could not write setup state file: {se}")
+
         self.stdout.write('[HUB_SIGNAL:SUCCESS]')
         self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('[OK] Setup finished successfully.'))
         self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)('--- ETHER-SETUP COMPLETE ---'))
