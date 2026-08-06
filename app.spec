@@ -55,7 +55,10 @@ a = Analysis(
         collect_data_files('rest_framework') + \
         collect_data_files('graphene_django') + \
         collect_data_files('environ') + \
-        collect_data_files('whitenoise'),
+        collect_data_files('whitenoise') + \
+        collect_data_files('autobahn') + \
+        collect_data_files('daphne') + \
+        collect_data_files('channels'),
     hiddenimports=[
         'django.contrib.admin',
         'django.contrib.auth',
@@ -72,6 +75,9 @@ a = Analysis(
         'environ',
         'psutil',
         'waitress',
+        'daphne',
+        'channels',
+        'autobahn',
         # Config and project setup
         'config.settings',
         'config.urls',
