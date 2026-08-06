@@ -4,6 +4,7 @@
 # Force UTF-8 encoding for Python to avoid migration decoding errors
 export PYTHONIOENCODING=utf-8
 export PYTHONDEFAULTENCODING=utf-8
+export AUTOBAHN_USE_NVX=0
 
 # 1. Parse Arguments from Hub
 while [[ $# -gt 0 ]]; do
