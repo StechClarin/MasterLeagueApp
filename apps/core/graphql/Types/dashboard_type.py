@@ -4,14 +4,23 @@ class EvolutionPointType(graphene.ObjectType):
     label = graphene.String()
     value = graphene.Float()
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class DistributionPointType(graphene.ObjectType):
     category = graphene.String()
     count = graphene.Float() # Changed to Float to support amounts as well
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 class StudentPerformanceType(graphene.ObjectType):
     student_name = graphene.String()
     average_grade = graphene.Float()
     matricule = graphene.String()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 class RecentPaymentType(graphene.ObjectType):
     id = graphene.String() # UUID as string
@@ -20,12 +29,18 @@ class RecentPaymentType(graphene.ObjectType):
     payment_method = graphene.String()
     payment_date = graphene.String()
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class RecentEnrollmentType(graphene.ObjectType):
     id = graphene.String() # UUID as string
     student_name = graphene.String()
     classroom_name = graphene.String()
     enrollment_date = graphene.String()
     status = graphene.String()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 class DashboardType(graphene.ObjectType):
     total_students = graphene.Int()
@@ -52,4 +67,7 @@ class DashboardType(graphene.ObjectType):
     invoice_status_distribution = graphene.List(DistributionPointType)
     staff_contract_distribution = graphene.List(DistributionPointType)
     enrollment_evolution = graphene.List(EvolutionPointType)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
