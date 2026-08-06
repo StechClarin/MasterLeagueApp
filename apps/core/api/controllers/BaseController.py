@@ -85,6 +85,13 @@ class BaseController(APIView):
         model_name = self.service.model._meta.model_name
         codename = f"{permission_type}_{model_name}"
 
+        # 3.1. Vérification de la licence de l'établissement pour la fonctionnalité demandée
+        from apps.core.models.tenant_license import TenantLicense
+        if not TenantLicense.verify_access(request, est_id, codename):
+            raise exceptions.PermissionDenied(
+                f"Accès refusé : Votre formule de licence d'établissement ne comprend pas la fonctionnalité '{codename}'."
+            )
+
         # 4. Vérification dans la table de jonction Membership
         from apps.core.models.establishment_membership import EstablishmentMembership
         from django.db.models import Q
