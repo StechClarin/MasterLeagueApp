@@ -1,10 +1,10 @@
 import { Component, inject, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { GetDashboardDataGQL } from './graphql/dashboard.generated';
 import { StructureStateService } from '@core/services/structure-state.service';
 import { map } from 'rxjs/operators';
-// ... (imports remain the same)
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -49,6 +49,7 @@ export type ChartOptions = {
 export class DashboardComponent implements OnInit {
   private dashboardGQL = inject(GetDashboardDataGQL);
   private structureState = inject(StructureStateService);
+  private router = inject(Router);
 
   dashboardData = signal<any>(null);
   isLoading = signal(true);
@@ -58,6 +59,11 @@ export class DashboardComponent implements OnInit {
   public distributionChartOptions!: Partial<ChartOptions>;
   public revenueChartOptions!: Partial<ChartOptions>;
   public paymentMethodsChartOptions!: Partial<ChartOptions>;
+  public genderChartOptions!: Partial<ChartOptions>;
+  public subjectGradesChartOptions!: Partial<ChartOptions>;
+  public invoiceStatusChartOptions!: Partial<ChartOptions>;
+  public staffContractChartOptions!: Partial<ChartOptions>;
+  public enrollmentEvolutionChartOptions!: Partial<ChartOptions>;
 
   constructor() {
     // Re-fetch data whenever the establishment changes
@@ -92,6 +98,30 @@ export class DashboardComponent implements OnInit {
       });
   }
 
+  navigateTo(route: string) {
+    this.router.navigate([route]);
+  }
+
+  getPaymentMethodLabel(method: string): string {
+    const labels: Record<string, string> = {
+      'CASH': 'Espèces',
+      'MOBILE_MONEY': 'Mobile Money',
+      'BANK_TRANSFER': 'Virement',
+      'CHECK': 'Chèque'
+    };
+    return labels[method] || method;
+  }
+
+  getEnrollmentStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      'PENDING': 'En attente',
+      'REGISTERED': 'Inscrit',
+      'LEFT': 'Parti',
+      'EXPELLED': 'Renvoyé'
+    };
+    return labels[status] || status;
+  }
+
   initCharts(data: any) {
     // 1. Evolution Chart (Area/Line) - Grades
     this.evolutionChartOptions = {
@@ -102,7 +132,7 @@ export class DashboardComponent implements OnInit {
         }
       ],
       chart: {
-        height: 300,
+        height: 280,
         type: "area",
         toolbar: { show: false },
         animations: { enabled: true, speed: 800 }
@@ -137,7 +167,7 @@ export class DashboardComponent implements OnInit {
         }
       ],
       chart: {
-        height: 300,
+        height: 280,
         type: "area",
         toolbar: { show: false }
       },
@@ -162,7 +192,7 @@ export class DashboardComponent implements OnInit {
       labels: data.studentDistribution.map((p: any) => p.category),
       chart: {
         type: "donut",
-        height: 300
+        height: 280
       },
       colors: ["#6366f1", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"],
       legend: { position: "bottom" },
@@ -185,10 +215,124 @@ export class DashboardComponent implements OnInit {
       labels: data.paymentMethodsDistribution.map((p: any) => p.category),
       chart: {
         type: "pie",
-        height: 300
+        height: 280
       },
       colors: ["#8b5cf6", "#ec4899", "#f43f5e", "#fb923c"],
       legend: { position: "bottom" }
+    };
+
+    // 5. Gender Demographics Chart (Donut)
+    const maleCount = data.studentGenderDistribution?.find((p: any) => p.category === 'Masculin')?.count || 0;
+    const femaleCount = data.studentGenderDistribution?.find((p: any) => p.category === 'Féminin')?.count || 0;
+    
+    this.genderChartOptions = {
+      series: [maleCount, femaleCount],
+      labels: ["Garçons", "Filles"],
+      chart: {
+        type: "donut",
+        height: 280
+      },
+      colors: ["#3b82f6", "#ec4899"],
+      legend: { position: "bottom" },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: "70%",
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: 'Filles',
+                color: '#64748b',
+                formatter: () => {
+                  const total = maleCount + femaleCount;
+                  if (total === 0) return '0%';
+                  return `${Math.round((femaleCount / total) * 100)}%`;
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+
+    // 6. Subject Grades (Bar Chart)
+    this.subjectGradesChartOptions = {
+      series: [
+        {
+          name: "Moyenne",
+          data: data.subjectGradesDistribution?.map((p: any) => p.count) || []
+        }
+      ],
+      chart: {
+        type: "bar",
+        height: 280,
+        toolbar: { show: false }
+      },
+      colors: ["#3b82f6"],
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: "55%",
+          borderRadius: 4
+        }
+      },
+      dataLabels: { enabled: true },
+      xaxis: {
+        categories: data.subjectGradesDistribution?.map((p: any) => p.category) || []
+      }
+    };
+
+    // 7. Invoice Status (Pie Chart)
+    this.invoiceStatusChartOptions = {
+      series: data.invoiceStatusDistribution?.map((p: any) => p.count) || [],
+      labels: data.invoiceStatusDistribution?.map((p: any) => p.category) || [],
+      chart: {
+        type: "pie",
+        height: 280
+      },
+      colors: ["#f59e0b", "#3b82f6", "#10b981", "#ef4444"],
+      legend: { position: "bottom" }
+    };
+
+    // 8. Staff Contract Distribution (Donut Chart)
+    this.staffContractChartOptions = {
+      series: data.staffContractDistribution?.map((p: any) => p.count) || [],
+      labels: data.staffContractDistribution?.map((p: any) => p.category) || [],
+      chart: {
+        type: "donut",
+        height: 280
+      },
+      colors: ["#6366f1", "#10b981", "#fb7185", "#f59e0b"],
+      legend: { position: "bottom" }
+    };
+
+    // 9. Enrollment Evolution (Line / Area Chart)
+    this.enrollmentEvolutionChartOptions = {
+      series: [
+        {
+          name: "Inscriptions",
+          data: data.enrollmentEvolution?.map((p: any) => p.value) || []
+        }
+      ],
+      chart: {
+        type: "area",
+        height: 280,
+        toolbar: { show: false }
+      },
+      colors: ["#ec4899"],
+      stroke: { curve: "smooth", width: 3 },
+      xaxis: {
+        categories: data.enrollmentEvolution?.map((p: any) => p.label) || []
+      },
+      fill: {
+        type: "gradient",
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.4,
+          opacityTo: 0.05
+        }
+      }
     };
   }
 }

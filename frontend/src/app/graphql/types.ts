@@ -201,10 +201,18 @@ export type CycleTypePaginated = {
 export type DashboardType = {
   __typename?: 'DashboardType';
   averageGrade?: Maybe<Scalars['Float']['output']>;
+  enrollmentEvolution?: Maybe<Array<Maybe<EvolutionPointType>>>;
   gradeEvolution?: Maybe<Array<Maybe<EvolutionPointType>>>;
+  invoiceStatusDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
   paymentMethodsDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
+  recentEnrollments?: Maybe<Array<Maybe<RecentEnrollmentType>>>;
+  recentPayments?: Maybe<Array<Maybe<RecentPaymentType>>>;
+  recoveryRate?: Maybe<Scalars['Float']['output']>;
   revenueEvolution?: Maybe<Array<Maybe<EvolutionPointType>>>;
+  staffContractDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
   studentDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
+  studentGenderDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
+  subjectGradesDistribution?: Maybe<Array<Maybe<DistributionPointType>>>;
   topStudents?: Maybe<Array<Maybe<StudentPerformanceType>>>;
   totalActiveEvaluations?: Maybe<Scalars['Int']['output']>;
   totalClassrooms?: Maybe<Scalars['Int']['output']>;
@@ -212,6 +220,7 @@ export type DashboardType = {
   totalRevenue?: Maybe<Scalars['Float']['output']>;
   totalStaff?: Maybe<Scalars['Int']['output']>;
   totalStudents?: Maybe<Scalars['Int']['output']>;
+  totalTeachers?: Maybe<Scalars['Int']['output']>;
 };
 
 export type DistributionPointType = {
@@ -1484,6 +1493,24 @@ export type QueryUsersArgs = {
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   role?: InputMaybe<Scalars['String']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type RecentEnrollmentType = {
+  __typename?: 'RecentEnrollmentType';
+  classroomName?: Maybe<Scalars['String']['output']>;
+  enrollmentDate?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Scalars['String']['output']>;
+  studentName?: Maybe<Scalars['String']['output']>;
+};
+
+export type RecentPaymentType = {
+  __typename?: 'RecentPaymentType';
+  amount?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  paymentDate?: Maybe<Scalars['String']['output']>;
+  paymentMethod?: Maybe<Scalars['String']['output']>;
+  studentName?: Maybe<Scalars['String']['output']>;
 };
 
 export type RoleType = {

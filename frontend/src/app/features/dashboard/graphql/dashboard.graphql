@@ -28,5 +28,41 @@ query GetDashboardData {
       averageGrade
       matricule
     }
+    recoveryRate
+    totalTeachers
+    studentGenderDistribution {
+      category
+      count
+    }
+    recentPayments {
+      id
+      studentName
+      amount
+      paymentMethod
+      paymentDate
+    }
+    recentEnrollments {
+      id
+      studentName
+      classroomName
+      enrollmentDate
+      status
+    }
+    subjectGradesDistribution {
+      category
+      count
+    }
+    invoiceStatusDistribution {
+      category
+      count
+    }
+    staffContractDistribution {
+      category
+      count
+    }
+    enrollmentEvolution {
+      label
+      value
+    }
   }
 }
