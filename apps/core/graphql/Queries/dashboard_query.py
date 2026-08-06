@@ -47,10 +47,13 @@ class DashboardQuery(graphene.ObjectType):
             establishment_id=est_id,
             is_active=True
         ).filter(
-            Q(roles__name__iexact="ENSEIGNANT") |
-            Q(job_title__icontains="enseignant") |
-            Q(job_title__icontains="professeur") |
-            Q(job_title__icontains="prof")
+            Q(
+                Q(roles__name__iexact="ENSEIGNANT"),
+                Q(job_title__icontains="enseignant"),
+                Q(job_title__icontains="professeur"),
+                Q(job_title__icontains="prof"),
+                _connector=Q.OR
+            )
         ).distinct().count()
         
         # 2. Finance Stats
