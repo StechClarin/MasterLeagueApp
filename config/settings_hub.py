@@ -1,13 +1,24 @@
 from .settings_base import *
 
+import logging
+from django.core.exceptions import ImproperlyConfigured
+
 # --- CONFIGURATION HUB INDUSTRIEL (v7.2) ---
 # Ce fichier est activé lors du push / empaquetage du Hub.
 DEBUG = env.bool('DEBUG', default=False)
 
+# --- SÉCURITÉ : SECRET_KEY OBLIGATOIRE EN PRODUCTION ---
+# On refuse le fallback 'django-insecure-...' de settings_base en mode Hub.
+if not env('SECRET_KEY', default=None):
+    raise ImproperlyConfigured(
+        "[settings_hub] SECRET_KEY est obligatoire en mode Hub. "
+        "Définissez-le dans .env ou transmettez-le via le Launcher."
+    )
+
 # --- SYNCHRONISATION DES CHEMINS HUB ---
 FORCE_SCRIPT_NAME = os.environ.get('ETHER_APP_PREFIX', None)
 if FORCE_SCRIPT_NAME:
-    print(f"[DEBUG] ROUTING: Hub settings anchored to prefix '{FORCE_SCRIPT_NAME}'")
+    logging.getLogger(__name__).info("ROUTING: Hub settings anchored to prefix '%s'", FORCE_SCRIPT_NAME)
 
 # 1. SÉCURITÉ PURE JWT (Pas de sessions sur l'API)
 REST_FRAMEWORK = {
@@ -21,6 +32,9 @@ REST_FRAMEWORK = {
 }
 
 # 2. HANDSHAKE HUB & MIDDLEWARE
+# ORDRE CRITIQUE : JWTMiddleware injecte request.user, EstablishmentMiddleware injecte
+# request.establishment_id, et LicenseMiddleware dépend des DEUX.
+# => JWT et Establishment DOIVENT précéder License. Ne pas réordonner sans lancer les tests.
 MIDDLEWARE = [
     'apps.core.middleware.HubPrefixMiddleware.HubPrefixMiddleware',
     'corsheaders.middleware.CorsMiddleware', 
@@ -32,9 +46,10 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'apps.core.middleware.JWTMiddleware',
+    'apps.core.middleware.EstablishmentMiddleware',
+    'apps.core.middleware.LicenseMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.EstablishmentMiddleware',
 ]
 
 # 3. RÉGLAGES IFRAME & CSRF

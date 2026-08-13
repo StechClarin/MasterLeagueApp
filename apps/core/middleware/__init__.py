@@ -10,7 +10,7 @@ from .HubHandshakeMiddleware import HubHandshakeMiddleware
 class JWTMiddleware:
     """
     Middleware personnalisé pour injecter l'utilisateur JWT dans la requête Django.
-    Indispensable pour que Graphene (GraphQL) connaisse l'utilisateur connecté via un Token.
+    Indispensable pour que Strawberry (GraphQL) connaisse l'utilisateur connecté via un Token.
     """
     def __init__(self, get_response):
         self.get_response = get_response

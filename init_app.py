@@ -16,6 +16,38 @@ import json
 import sys
 import subprocess
 
+
+# Chemin du dossier bootstrap/ (source de verite des fichiers canoniques)
+BOOTSTRAP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap')
+
+
+def _install_canonical(source_name, dest_path, syntax='python'):
+    """
+    Copie un fichier canonique depuis bootstrap/ vers dest_path.
+
+    - 'python' : valide la syntaxe via compile() AVANT ecriture (fail-fast).
+    - 'text'   : copie brute (TypeScript/HTML...).
+    Leve une exception claire si le fichier source est introuvable ou invalide.
+    """
+    source = os.path.join(BOOTSTRAP_DIR, source_name)
+    if not os.path.exists(source):
+        raise FileNotFoundError(
+            f"[init_app] Fichier canonique introuvable : '{source}'. "
+            f"Le template est incomplet."
+        )
+
+    with open(source, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    if syntax == 'python':
+        # Fail-fast : une erreur de syntaxe dans un seed est detectee a l'initialisation
+        compile(content, dest_path, 'exec')
+
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"   - '{os.path.basename(dest_path)}' reinitialise depuis le socle canonique (bootstrap/{source_name}).")
+
 def main():
     print("=" * 60)
     print("🚀 INITIALISATION D'UNE NOUVELLE APPLICATION ETHER_NANOS HUB")
@@ -65,7 +97,8 @@ def main():
         print("\n🗑️  Nettoyage des modules de démonstration scolaire (Backend et Frontend)...")
         
         # Liste des modules à supprimer
-        demo_modules = ['students', 'finance', 'hr', 'structure', 'evaluations', 'pedagogy', 'attendance', 'cars', 'shop']
+        # NOTE : dashboard et map-tracking sont CONSERVES (pages vitrine du starter).
+        demo_modules = ['students', 'finance', 'hr', 'structure', 'evaluations', 'pedagogy', 'logistics']
 
         # A. Suppression dans le Backend (apps/)
         for mod in demo_modules:
@@ -114,332 +147,16 @@ def main():
                 f.writelines(cleaned_lines)
             print("   - Références de modules supprimées dans 'config/settings_base.py'.")
 
-        # E. Réécriture de la navigation Backend (seed_navigation.py) avec le socle minimal
-        seed_nav_path = os.path.join('apps', 'core', 'management', 'commands', 'seed_navigation.py')
-        if os.path.exists(seed_nav_path):
-            clean_seed_nav = """# Fichier généré automatiquement pour structure propre.
-from django.core.management.base import BaseCommand
-from django.utils.text import slugify
-from apps.core.models import Module, Page
+        # E. Reinitialisation des seeds Backend depuis le socle canonique (bootstrap/)
+        seeds_dir = os.path.join('apps', 'core', 'management', 'commands')
+        _install_canonical('seed_navigation.py', os.path.join(seeds_dir, 'seed_navigation.py'))
+        _install_canonical('seed_data.py', os.path.join(seeds_dir, 'seed_data.py'))
+        _install_canonical('seed_access.py', os.path.join(seeds_dir, 'seed_access.py'))
+        _install_canonical('seed_roles.py', os.path.join(seeds_dir, 'seed_roles.py'))
 
-MODULE_STRUCTURE = [
-    {
-        "name": "Administration",
-        "order": 1,
-        "display_mod": "card-view",
-        "icon": "settings-icon",
-        "pages": [
-            {
-                "title": "Comptes Utilisateurs",
-                "icon": "user-icon",
-                "order": 0,
-                "link": "/users",
-                "tags": ["user"]
-            },
-            {
-                "title": "Rôles & Permissions",
-                "icon": "role-icon",
-                "order": 1,
-                "link": "/roles",
-                "tags": ["role"]
-            }
-        ]
-    }
-]
+        _install_canonical('component.registry.ts', os.path.join('frontend', 'src', 'app', 'core', 'routing', 'component.registry.ts'), syntax='text')
 
-class Command(BaseCommand):
-    help = "Crée les Modules et les Pages pour la navigation."
-
-    def handle(self, *args, **options):
-        self.stdout.write("--- Debut du seeding Navigation ---")
-        Page.all_objects.all().hard_delete()
-        Module.all_objects.all().hard_delete()
-        
-        for mod_data in MODULE_STRUCTURE:
-            pages_data = mod_data.pop('pages', [])
-            mod_code = f"mod-{slugify(str(mod_data.get('name', '')))}"
-            icon_name = mod_data.get('icon', '')
-            if icon_name:
-                mod_data['icon'] = f"/apps/core/assets/icons/{icon_name}.svg"
-            
-            module = Module.objects.create(code=mod_code, **mod_data)
-            for page_data in pages_data:
-                page_icon_name = page_data.get('icon', '')
-                page_icon_url = f"/apps/core/assets/icons/{page_icon_name}.svg" if page_icon_name else ""
-                Page.objects.create(
-                    module=module,
-                    title=page_data.get('title', ''),
-                    icon=page_icon_url,
-                    order=page_data.get('order', 1),
-                    link=page_data.get('link', ''),
-                    permission_tags=page_data.get('tags', [])
-                )
-        self.stdout.write("--- Seeding Navigation termine ---")
-"""
-            with open(seed_nav_path, 'w', encoding='utf-8') as f:
-                f.write(clean_seed_nav)
-            print("   - Fichier de navigation Backend 'seed_navigation.py' nettoyé.")
-
-        # F. Réécriture du seeder de données Backend (seed_data.py) avec le socle minimal
-        seed_data_path = os.path.join('apps', 'core', 'management', 'commands', 'seed_data.py')
-        if os.path.exists(seed_data_path):
-            clean_seed_data = """# Fichier généré automatiquement pour structure propre.
-from django.core.management.base import BaseCommand
-
-class Command(BaseCommand):
-    help = 'Seed database with initial data'
-
-    def handle(self, *args, **options):
-        self.stdout.write('Aucune donnée de démo à insérer.')
-"""
-            with open(seed_data_path, 'w', encoding='utf-8') as f:
-                f.write(clean_seed_data)
-            print("   - Fichier de données Backend 'seed_data.py' nettoyé.")
-
-        # G. Réécriture du seeder de permissions Backend (seed_access.py) avec le socle minimal
-        seed_access_path = os.path.join('apps', 'core', 'management', 'commands', 'seed_access.py')
-        if os.path.exists(seed_access_path):
-            clean_seed_access = """# Fichier généré automatiquement pour structure propre.
-from django.core.management.base import BaseCommand
-from apps.core.models import Group, Permission
-from typing import List, Dict, Any
-
-GROUP_STRUCTURE: List[Dict[str, Any]] = [
-    {
-        "name": "Gestion des Utilisateurs",
-        "tag": "user",
-        "permissions": [
-            {"name": "Lire les utilisateurs", "codename": "view_user"},
-            {"name": "Ajouter un utilisateur", "codename": "add_user"},
-            {"name": "Modifier un utilisateur", "codename": "change_user"},
-            {"name": "Supprimer un utilisateur", "codename": "delete_user"},
-        ]
-    },
-    {
-        "name": "Gestion des Rôles",
-        "tag": "role",
-        "permissions": [
-            {"name": "Lire les rôles", "codename": "view_role"},
-            {"name": "Ajouter un rôle", "codename": "add_role"},
-            {"name": "Modifier un rôle", "codename": "change_role"},
-            {"name": "Supprimer un rôle", "codename": "delete_role"},
-        ]
-    },
-    {
-        "name": "Gestion des Etablissements",
-        "tag": "establishment",
-        "permissions": [
-            {"name": "Lire les établissements", "codename": "view_establishment"},
-            {"name": "Ajouter un établissement", "codename": "add_establishment"},
-            {"name": "Modifier un établissement", "codename": "change_establishment"},
-            {"name": "Supprimer un établissement", "codename": "delete_establishment"},
-        ]
-    },
-]
-
-class Command(BaseCommand):
-    help = "Crée les Permissions et les Groupes selon la structure définie."
-
-    def handle(self, *args, **options):
-        self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Début du seeding Access (Permissions & Groups) ---"))
-        for group_data in GROUP_STRUCTURE:
-            group_name = group_data['name']
-            tag = group_data['tag']
-            group, created = Group.objects.get_or_create(name=group_name)
-            if created:
-                self.stdout.write(f"  Groupe '{group_name}' créé.")
-            group.permissions.clear()
-            for perm_data in group_data['permissions']:
-                perm, p_created = Permission.objects.get_or_create(
-                    codename=perm_data['codename'],
-                    defaults={'name': perm_data['name'], 'tag': tag}
-                )
-                if p_created:
-                    self.stdout.write(f"    Permission '{perm.codename}' créée.")
-                group.permissions.add(perm)
-            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"  ✔ Permissions pour '{group_name}' synchronisées."))
-        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("--- Seeding Access terminé ---"))
-"""
-            with open(seed_access_path, 'w', encoding='utf-8') as f:
-                f.write(clean_seed_access)
-            print("   - Fichier de permissions Backend 'seed_access.py' nettoyé.")
-
-        # H. Réécriture du seeder de rôles Backend (seed_roles.py) avec le socle minimal
-        seed_roles_path = os.path.join('apps', 'core', 'management', 'commands', 'seed_roles.py')
-        if os.path.exists(seed_roles_path):
-            clean_seed_roles = """# Fichier généré automatiquement pour structure propre.
-import os
-from pathlib import Path
-import environ
-from django.core.management.base import BaseCommand, CommandError
-from apps.profilmanagement.models import Role, User
-from apps.core.models import Group, Establishment, Module, TenantLicense
-from django.conf import settings
-
-ROLES_STRUCTURE = {
-    "superadmin": "__ALL__",
-    "admin": "__ALL__",
-}
-
-class Command(BaseCommand):
-    help = "Crée les Rôles, les lie aux Groupes, et assure l'existence du super-admin."
-
-    def add_arguments(self, parser):
-        parser.add_argument('--admin-pass', type=str, help='Default admin password')
-
-    def handle(self, *args, **options):
-        self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Début du seeding des Rôles (Consolidé) ---"))
-        all_groups = list(Group.objects.all())
-        
-        for role_name, group_names in ROLES_STRUCTURE.items():
-            role, created = Role.objects.get_or_create(name=role_name)
-            if created:
-                self.stdout.write(f"  Rôle '{role_name}' créé.")
-            role.groups.clear()
-            if group_names == "__ALL__":
-                role.groups.set(all_groups)
-                role.save()
-                self.stdout.write(f"    [OK] '{role_name}' a reçu TOUS les groupes ({len(all_groups)}).")
-
-        self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Vérification du Super-Admin 'ethernanos' ---"))
-        admin_pass = options.get('admin_pass')
-        if not admin_pass:
-            admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
-        if not admin_pass or admin_pass == "admin":
-            env = environ.Env()
-            possible_paths = [
-                Path(str(settings.BASE_DIR)) / '.env',
-                Path(str(settings.BASE_DIR)).parent / '.env'
-            ]
-            for path in possible_paths:
-                if path.exists():
-                    environ.Env.read_env(str(path))
-                    admin_pass = os.environ.get('ADMIN_DEFAULT_PASSWORD')
-                    if admin_pass:
-                        self.stdout.write(f"  [OK] Configuration chargée depuis {path}")
-                        break
-        if not admin_pass or admin_pass == "admin":
-            raise CommandError("[ERREUR] ADMIN_DEFAULT_PASSWORD n'est pas défini.")
-
-        try:
-            superadmin_role = Role.objects.get(name="superadmin")
-            establishment_code = os.environ.get('ETHER_TENANT_ID', 'ETH-NANOS-SPA001')
-            establishment_name = f"Ethernanos ({establishment_code})" if establishment_code != 'ETH-NANOS-SPA001' else 'Ethernanos'
-
-            if not User.objects.filter(username='ethernanos').exists():
-                admin_user = User.objects.create_superuser(
-                    username='ethernanos',
-                    email='ethernanos@gmail.com',
-                    password=admin_pass
-                )
-                self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("  ✔ Utilisateur 'ethernanos' créé avec succès."))
-            else:
-                admin_user = User.objects.get(username='ethernanos')
-                self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)("  [OK] Utilisateur 'ethernanos' existant mis à jour."))
-
-            admin_user.is_superuser = True
-            admin_user.is_staff = True
-            admin_user.hub_id = establishment_code
-            admin_user.save()
-
-            establishment, est_created = Establishment.objects.get_or_create(
-                code=establishment_code,
-                defaults={
-                    'name': establishment_name,
-                    'user': admin_user
-                }
-            )
-            if not est_created:
-                establishment.name = establishment_name
-                establishment.user = admin_user
-                establishment.save()
-                self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)(f"  [OK] Etablissement existant '{establishment_code}' mis à jour."))
-            else:
-                self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"  ✔ Etablissement '{establishment_name}' créé pour {establishment_code}."))
-
-            from apps.core.services.establishment_membership_service import EstablishmentMembershipService
-            membership_service = EstablishmentMembershipService()
-            membership_service.create_or_update_with_roles(
-                user=admin_user,
-                establishment=establishment,
-                roles=[superadmin_role],
-                is_owner=True,
-                status='active'
-            )
-            self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("  [OK] Utilisateur 'ethernanos' lié à l'établissement avec le rôle 'superadmin'."))
-
-            self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Déblocage des Modules pour 'ethernanos' ---"))
-            all_modules = Module.objects.all()
-            if not all_modules.exists():
-                self.stdout.write(getattr(self.style, 'WARNING', lambda x: x)("  ⚠ Aucun module trouvé. Lancez seed_navigation d'abord."))
-            else:
-                for mod in all_modules:
-                    TenantLicense.objects.update_or_create(
-                        user=admin_user,
-                        module_code=mod.code,
-                        defaults={'is_active': True}
-                    )
-                self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)(f"  ✔ {all_modules.count()} modules débloqués."))
-        except Exception as e:
-            self.stdout.write(getattr(self.style, 'ERROR', lambda x: x)(f"  [ERROR] {e}"))
-        self.stdout.write(getattr(self.style, 'SUCCESS', lambda x: x)("--- Seeding Roles termine ---"))
-"""
-            with open(seed_roles_path, 'w', encoding='utf-8') as f:
-                f.write(clean_seed_roles)
-            print("   - Fichier de rôles Backend 'seed_roles.py' nettoyé.")
-
-        # I. Réécriture du Component Registry Frontend (component.registry.ts)
-        registry_path = os.path.join('frontend', 'src', 'app', 'core', 'routing', 'component.registry.ts')
-        if os.path.exists(registry_path):
-            clean_registry = """import { Type } from '@angular/core';
-import { LoadChildrenCallback } from '@angular/router';
-
-import { AppRoutes } from './routes.enum';
-
-export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
-  '/users': () => import('@features/profilmanagement/components/user-list/user-list.component').then(m => m.UserListComponent),
-  '/roles': () => import('@features/profilmanagement/components/role-list/role-list.component').then(m => m.RoleListComponent),
-};
-"""
-            with open(registry_path, 'w', encoding='utf-8') as f:
-                f.write(clean_registry)
-            print("   - Registre des composants Frontend 'component.registry.ts' nettoyé.")
-
-        # J. Réécriture des Routes Frontend (app.routes.ts)
-        routes_path = os.path.join('frontend', 'src', 'app', 'app.routes.ts')
-        if os.path.exists(routes_path):
-            clean_routes = """import { Routes } from '@angular/router';
-import { LoginComponent } from '@features/auth/login/login.component';
-import { MainLayoutComponent } from '@layout/main-layout/main-layout.component';
-import { authGuard } from '@core/guards/auth.guard';
-
-export const routes: Routes = [
-  {
-    path: 'login',
-    component: LoginComponent
-  },
-  {
-    path: '',
-    component: MainLayoutComponent,
-    canActivate: [authGuard],
-    children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('@features/dashboard/dashboard.component').then(m => m.DashboardComponent)
-      },
-      {
-        path: 'profils/roles',
-        loadChildren: () => import('@features/profilmanagement/profil.routes').then(m => m.PROFIL_ROUTES)
-      }
-    ]
-  },
-  { path: '**', redirectTo: '' }
-];
-"""
-            with open(routes_path, 'w', encoding='utf-8') as f:
-                f.write(clean_routes)
-            print("   - Fichier de routage Frontend 'app.routes.ts' nettoyé.")
+        _install_canonical('app.routes.ts', os.path.join('frontend', 'src', 'app', 'app.routes.ts'), syntax='text')
 
     # 5. Remplacement dynamique du nom dans la Sidebar du Frontend
     sidebar_path = os.path.join('frontend', 'src', 'app', 'layout', 'components', 'sidebar', 'sidebar.component.ts')

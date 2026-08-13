@@ -38,7 +38,10 @@ class RoleQuery:
         queryset = service.list(filters=filters)
         for hidden_role in RoleQuery.HIDDEN_ROLE_NAMES:
             queryset = queryset.exclude(name__iexact=hidden_role)
-        
+
+        # Tri stable obligatoire pour une pagination cohérente
+        queryset = queryset.order_by('name')
+
         paginated_data = paginate_queryset(queryset, page, page_size)
         paginated_data['items'] = list(paginated_data['items'])
         return PaginatedType[RoleType](**paginated_data)

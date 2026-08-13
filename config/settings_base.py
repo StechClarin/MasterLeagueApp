@@ -152,22 +152,37 @@ TEMPLATES = [
     },
 ]
 
-# Setup DB engine dynamically depending on GDAL support
-db_engine = 'django.contrib.gis.db.backends.postgis' if HAS_GDAL else 'django.db.backends.postgresql'
-
+# Setup DB engine dynamically depending on GDAL support.
+# IMPORTANT : on NE force PAS 'engine=' dans env.db() : cela écraserait l'ENGINE
+# dérivé de l'URL (une URL sqlite deviendrait postgres !). La promotion PostGIS
+# est faite séparément ci-dessous, uniquement pour les vraies URLs postgres.
 DATABASES = {
-    'default': env.db('DATABASE_URL', engine=db_engine, default=f'sqlite:///{PROJECT_DATA_DIR / "db.sqlite3"}')
+    'default': env.db('DATABASE_URL', default=f'sqlite:///{PROJECT_DATA_DIR / "db.sqlite3"}')
 }
+
+# Promotion PostGIS : si l'URL pointe vers PostgreSQL et que GDAL est présent.
+if HAS_GDAL and DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+    DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 # --- DJANGO CHANNELS (WEBSOCKETS) CHANNEL LAYERS ---
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [env.str('REDIS_URL', default='redis://127.0.0.1:6379/0')],
+# Redis est OPTIONNEL : sans REDIS_URL (dev, template hors-ligne), on bascule
+# sur la couche en mémoire (InMemoryChannelLayer) pour ne pas bloquer le démarrage.
+REDIS_URL = env.str('REDIS_URL', default=None)
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [REDIS_URL],
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },

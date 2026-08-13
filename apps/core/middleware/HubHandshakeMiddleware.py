@@ -1,5 +1,9 @@
 import os
+import logging
+
 from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
 
 class HubHandshakeMiddleware:
     """
@@ -12,11 +16,11 @@ class HubHandshakeMiddleware:
     def __call__(self, request):
         # 1. IDENTIFICATION : Est-on lancé par le Hub ?
         is_hub_mode = os.environ.get('ETHER_HUB_PID') is not None
-        
+
         # 2. EXEMPTIONS CRITIQUES (Login & Admin)
         # Adaptatif : on supporte les préfixes de production
         if '/api/auth/login/' in request.path_info or '/admin/' in request.path_info:
-            print(f"[HUB] CSRF BYPASS for public route: {request.path_info}")
+            logger.debug("[HUB] CSRF BYPASS for public route: %s", request.path_info)
             return self.bypass_csrf(request)
 
         if is_hub_mode:
@@ -43,12 +47,17 @@ class HubHandshakeMiddleware:
 
             if '/api/' in effective_path or effective_path.startswith('/graphql'):
                 if not hub_token or hub_token != expected_token:
-                    print(f"[HUB] Handshake FAILED: path={request.path_info}, effective_path={effective_path}, token={hub_token}, expected={'SET' if expected_token else 'NONE'}")
+                    logger.warning(
+                        "[HUB] Handshake FAILED: path=%s, token=%s, expected=%s",
+                        request.path_info,
+                        'PRESENT' if hub_token else 'MISSING',
+                        'SET' if expected_token else 'NONE',
+                    )
                     return JsonResponse({
                         'error': 'Unauthorized Hub Handshake Failed',
                         'detail': 'Access denied: Invalid or missing Hub Session Token.'
                     }, status=403)
-                print(f"[HUB] Handshake OK: path={request.path_info}, effective_path={effective_path}")
+                logger.debug("[HUB] Handshake OK: path=%s", request.path_info)
                 # Handshake Validé -> Immunité CSRF automatique
                 return self.bypass_csrf(request)
 

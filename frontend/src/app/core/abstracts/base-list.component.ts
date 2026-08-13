@@ -79,11 +79,10 @@ export abstract class BaseListComponent<T> implements OnInit {
           return [];
         }
         const data = result.data[this.responseKey];
-        // Support both camelCase (Graphene default) and snake_case (Python raw)
+        // Support both camelCase (Strawberry default) and snake_case (Python raw)
         const totalCount = data?.totalCount ?? data?.total_count;
         const numPages = data?.numPages ?? data?.num_pages;
 
-        // Auto-update pagination metadata if available
         // Auto-update pagination metadata if available
         if (totalCount !== undefined) {
           this.totalCount.set(totalCount);

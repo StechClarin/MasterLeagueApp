@@ -1,5 +1,7 @@
 from .settings_base import *
 
+import logging
+
 # --- CONFIGURATION DÉVELOPPEMENT NAVIGATEUR (v7.1) ---
 DEBUG = env.bool('DEBUG', default=True)
 
@@ -7,7 +9,7 @@ DEBUG = env.bool('DEBUG', default=True)
 # Si un préfixe d'application est détecté (ex: /schoolmanage/test/), on force Django à l'utiliser
 FORCE_SCRIPT_NAME = os.environ.get('ETHER_APP_PREFIX', None)
 if FORCE_SCRIPT_NAME:
-    print(f"[DEBUG] ROUTING: Django is now anchored to prefix '{FORCE_SCRIPT_NAME}'")
+    logging.getLogger(__name__).info("ROUTING: Django anchored to prefix '%s'", FORCE_SCRIPT_NAME)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -19,6 +21,9 @@ REST_FRAMEWORK = {
     ),
 }
 
+# ORDRE CRITIQUE : JWTMiddleware injecte request.user, EstablishmentMiddleware injecte
+# request.establishment_id, et LicenseMiddleware dépend des DEUX.
+# => JWT et Establishment DOIVENT précéder License. Ne pas réordonner sans lancer les tests.
 MIDDLEWARE = [
     'apps.core.middleware.HubPrefixMiddleware.HubPrefixMiddleware', # <--- NETTOYEUR PRÉFIXE (v23.2)
     'corsheaders.middleware.CorsMiddleware', 
@@ -29,11 +34,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'apps.core.middleware.LicenseMiddleware',
     'apps.core.middleware.JWTMiddleware',
+    'apps.core.middleware.EstablishmentMiddleware',
+    'apps.core.middleware.LicenseMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.EstablishmentMiddleware',
 ]
 
 # --- RÉGLAGES CORS DÉVELOPPEMENT ---
