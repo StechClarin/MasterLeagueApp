@@ -1,0 +1,18 @@
+query GetMyNotifications($page: Int, $pageSize: Int) {
+  myNotifications(page: $page, pageSize: $pageSize) {
+    totalCount
+    numPages
+    currentPage
+    items {
+      id
+      title
+      message
+      isRead
+      createdAt
+    }
+  }
+}
+
+query GetUnreadNotificationsCount {
+  unreadNotificationsCount
+}

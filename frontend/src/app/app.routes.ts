@@ -42,6 +42,11 @@ export const routes: Routes = [
     loadComponent: () => import('@features/finance/components/invoice-receipt/invoice-receipt.component')
       .then(m => m.InvoiceReceiptComponent)
   },
+  {
+    path: 'prospectus',
+    loadComponent: () => import('./features/finance/components/prospectus/prospet.component')
+      .then(m => m.ProspetComponent)
+  },
 
   // --- ZONE PROTÉGÉE (Layout Admin) ---
   {

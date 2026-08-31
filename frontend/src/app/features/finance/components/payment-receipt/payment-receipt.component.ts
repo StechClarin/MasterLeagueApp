@@ -277,7 +277,7 @@ export class PaymentReceiptComponent implements OnInit {
             setTimeout(() => this.print(), 800);
         }
       },
-      error: () => this.router.navigate(['/finance/payments'])
+      error: () => this.router.navigate(['/payments'])
     });
   }
 
@@ -377,6 +377,11 @@ export class PaymentReceiptComponent implements OnInit {
   }
 
   close() {
-    this.router.navigate(['/finance/payments']);
+    if (window.opener) {
+      // Reçu ouvert dans un onglet dédié (après encaissement) : on referme l'onglet après impression
+      window.close();
+    } else {
+      this.router.navigate(['/payments']);
+    }
   }
 }

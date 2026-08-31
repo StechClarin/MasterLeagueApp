@@ -23,7 +23,7 @@ export type SubjectFieldsFragment = { __typename?: 'SubjectType', id: any, name:
 
 export type AcademicPeriodFieldsFragment = { __typename?: 'AcademicPeriodType', id: any, name: string, startDate: any, endDate: any, isActive: boolean, isClosed: boolean, academicYear: { __typename?: 'AcademicYearType', id: any, name: string }, cycles: Array<{ __typename?: 'CycleType', id: any, name: string }> };
 
-export type RoomFieldsFragment = { __typename?: 'RoomType', id: any, name: string, capacity?: number | null };
+export type RoomFieldsFragment = { __typename?: 'RoomType', id: any, name: string, capacity?: number | null, roomType: Types.StructureRoomRoomTypeChoices };
 
 export type StructureResponseFragment = { __typename?: 'StructureResponseType', activeAcademicYear?: { __typename?: 'AcademicYearType', id: any, name: string, start_date?: any | null, end_date?: any | null, isActive: boolean, isArchived: boolean } | null, cycles?: Array<{ __typename?: 'CycleType', id: any, name: string, code?: string | null, description?: string | null, order: number, isActive: boolean, hasOptions: boolean, levels: Array<{ __typename?: 'LevelType', id: any, name: string, shortName?: string | null, order: number, isActive: boolean, cycle: { __typename?: 'CycleType', id: any, name: string, hasOptions: boolean, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } }>, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null };
 
@@ -131,7 +131,7 @@ export type GetAllRoomsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllRoomsQuery = { __typename?: 'Query', rooms?: { __typename?: 'RoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'RoomType', id: any, name: string, capacity?: number | null } | null> | null } | null };
+export type GetAllRoomsQuery = { __typename?: 'Query', rooms?: { __typename?: 'RoomTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'RoomType', id: any, name: string, capacity?: number | null, roomType: Types.StructureRoomRoomTypeChoices } | null> | null } | null };
 
 export type GetAllOptionsQueryVariables = Types.Exact<{
   search?: Types.InputMaybe<Types.Scalars['String']['input']>;

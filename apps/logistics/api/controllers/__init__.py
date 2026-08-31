@@ -1,0 +1,4 @@
+from .asset_controller import AssetController
+from .stock_item_controller import StockItemController
+from .intervention_request_controller import InterventionRequestController
+from .maintenance_record_controller import MaintenanceRecordController

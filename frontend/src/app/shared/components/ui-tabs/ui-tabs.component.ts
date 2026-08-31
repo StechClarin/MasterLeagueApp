@@ -16,8 +16,10 @@ export interface Tab {
     :host { display: block; width: 100%; height: 100%; }
   `],
   template: `
-    <div [class.flex]="layout === 'vertical'" 
-         [class.h-full]="layout === 'vertical'"
+    <div [class.flex]="true"
+         [class.flex-row]="layout === 'vertical'"
+         [class.flex-col]="layout === 'horizontal'"
+         [class.h-full]="true"
          [class.w-full]="layout === 'vertical'"
          class="min-h-0 min-w-0">
       <!-- Tab Navigation -->
@@ -84,10 +86,11 @@ export interface Tab {
         </nav>
       </div>
 
-      <!-- Tab Content Area -->
+      <!-- Tab Content Area : flex-1 (hauteur restante apres la barre) pour que le scroll couvre TOUT le contenu -->
       <div [class.mt-6]="layout === 'horizontal'"
-           [class.flex-1]="layout === 'vertical'"
+           [class.flex-1]="true"
            [class.overflow-hidden]="layout === 'vertical'"
+           [class.overflow-y-auto]="layout === 'horizontal'"
            [class.bg-white]="layout === 'vertical'"
            class="min-h-0 min-w-0">
         <ng-content></ng-content>

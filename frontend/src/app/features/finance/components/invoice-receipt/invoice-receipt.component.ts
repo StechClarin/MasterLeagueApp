@@ -264,7 +264,7 @@ export class InvoiceReceiptComponent implements OnInit {
         this.invoice.set(res.data);
         this.markAsPrinted(id);
       },
-      error: () => this.router.navigate(['/finance/invoices'])
+      error: () => this.router.navigate(['/invoices'])
     });
   }
 
@@ -293,6 +293,11 @@ export class InvoiceReceiptComponent implements OnInit {
   }
 
   close() {
-    this.router.navigate(['/finance/invoices']);
+    if (window.opener) {
+      // Reçu ouvert dans un onglet dédié : on referme l'onglet après impression
+      window.close();
+    } else {
+      this.router.navigate(['/invoices']);
+    }
   }
 }

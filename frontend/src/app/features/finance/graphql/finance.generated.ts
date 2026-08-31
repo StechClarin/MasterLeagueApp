@@ -56,6 +56,25 @@ export type GetUsedFeeCategoriesQueryVariables = Types.Exact<{ [key: string]: ne
 
 export type GetUsedFeeCategoriesQuery = { __typename?: 'Query', usedFeeCategories?: Array<any | null> | null };
 
+export type ExpenseFieldsFragment = { __typename?: 'ExpenseType', id: any, title: string, category: Types.FinanceExpenseCategoryChoices, amount: any, expenseDate: any, paymentMethod: Types.FinanceExpensePaymentMethodChoices, reference: string, description: string, isActive: boolean, createdAt?: any | null };
+
+export type GetExpensesQueryVariables = Types.Exact<{
+  search?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  category?: Types.InputMaybe<Types.Scalars['String']['input']>;
+  page?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  pageSize?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+}>;
+
+
+export type GetExpensesQuery = { __typename?: 'Query', expenses?: { __typename?: 'ExpenseTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, pageSize?: number | null, items?: Array<{ __typename?: 'ExpenseType', id: any, title: string, category: Types.FinanceExpenseCategoryChoices, amount: any, expenseDate: any, paymentMethod: Types.FinanceExpensePaymentMethodChoices, reference: string, description: string, isActive: boolean, createdAt?: any | null } | null> | null } | null };
+
+export type GetExpenseByIdQueryVariables = Types.Exact<{
+  id: Types.Scalars['ID']['input'];
+}>;
+
+
+export type GetExpenseByIdQuery = { __typename?: 'Query', expense?: { __typename?: 'ExpenseType', id: any, title: string, category: Types.FinanceExpenseCategoryChoices, amount: any, expenseDate: any, paymentMethod: Types.FinanceExpensePaymentMethodChoices, reference: string, description: string, isActive: boolean, createdAt?: any | null } | null };
+
 export const FeeDefinitionFieldsFragmentDoc = gql`
     fragment FeeDefinitionFields on FeeDefinitionType {
   id
@@ -288,6 +307,62 @@ export const GetUsedFeeCategoriesDocument = gql`
   export class GetUsedFeeCategoriesGQL extends Apollo.Query<GetUsedFeeCategoriesQuery, GetUsedFeeCategoriesQueryVariables> {
     document = GetUsedFeeCategoriesDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ExpenseFieldsFragmentDoc = gql`
+    fragment ExpenseFields on ExpenseType {
+  id
+  title
+  category
+  amount
+  expenseDate
+  paymentMethod
+  reference
+  description
+  isActive
+  createdAt
+}
+    `;
+export const GetExpensesDocument = gql`
+    query GetExpenses($search: String, $category: String, $page: Int, $pageSize: Int) {
+  expenses(search: $search, category: $category, page: $page, pageSize: $pageSize) {
+    totalCount
+    numPages
+    currentPage
+    pageSize
+    items {
+      ...ExpenseFields
+    }
+  }
+}
+    ${ExpenseFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetExpensesGQL extends Apollo.Query<GetExpensesQuery, GetExpensesQueryVariables> {
+    document = GetExpensesDocument;
+
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetExpenseByIdDocument = gql`
+    query GetExpenseById($id: ID!) {
+  expense(id: $id) {
+    ...ExpenseFields
+  }
+}
+    ${ExpenseFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetExpenseByIdGQL extends Apollo.Query<GetExpenseByIdQuery, GetExpenseByIdQueryVariables> {
+    document = GetExpenseByIdDocument;
+
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
     }

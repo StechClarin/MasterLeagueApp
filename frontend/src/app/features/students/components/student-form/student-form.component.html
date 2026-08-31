@@ -14,7 +14,6 @@
   <!-- Content with Sidebar Tabs -->
   <div class="flex-1 overflow-hidden min-h-0 flex flex-col relative bg-white">
     <app-ui-tabs 
-      layout="vertical"
       [tabs]="tabs" 
       [currentTab]="currentTab()" 
       (tabChange)="currentTab.set($event)" 

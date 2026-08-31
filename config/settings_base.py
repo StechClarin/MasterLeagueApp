@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'apps.documents.apps.DocumentsConfig',
     'apps.evaluations.apps.EvaluationsConfig',
     'apps.finance.apps.FinanceConfig',
+    'apps.logistics.apps.LogisticsConfig',
 
     'rest_framework',
     'rest_framework_simplejwt',

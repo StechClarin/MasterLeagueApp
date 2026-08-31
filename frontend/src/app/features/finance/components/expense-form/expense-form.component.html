@@ -1,0 +1,35 @@
+<app-ui-form [formErrors]="formErrors" [title]="expense ? 'Modifier la Dépense' : 'Nouvelle Dépense'"
+    [formGroup]="form" [isLoading]="isSubmitting" [errorMessage]="errorMessage"
+    [submitLabel]="expense ? 'Modifier' : 'Enregistrer'"
+    description="Enregistrez une dépense de l'établissement." (submitForm)="submit()" (cancel)="onCancel()">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-6">
+        <!-- Libellé -->
+        <app-ui-input label="Libellé de la dépense" [control]="form.controls.title" [required]="true"
+            placeholder="Ex: Achat de fournitures, Salaires..." class="md:col-span-1"></app-ui-input>
+
+        <!-- Catégorie -->
+        <app-ui-select label="Catégorie" [control]="form.controls.category" [options]="categoryOptions"
+            [required]="true" class="md:col-span-1"></app-ui-select>
+
+        <!-- Montant -->
+        <app-ui-input label="Montant (FCFA)" type="number" [control]="form.controls.amount" [required]="true"
+            placeholder="0" class="md:col-span-1"></app-ui-input>
+
+        <!-- Date -->
+        <app-ui-input label="Date de la dépense" type="date" [control]="form.controls.expense_date" [required]="true"
+            class="md:col-span-1"></app-ui-input>
+
+        <!-- Mode de paiement -->
+        <app-ui-select label="Mode de paiement" [control]="form.controls.payment_method" [options]="paymentMethodOptions"
+            [required]="true" class="md:col-span-1"></app-ui-select>
+
+        <!-- Référence -->
+        <app-ui-input label="Référence / Justificatif" [control]="form.controls.reference"
+            placeholder="Ex: Reçu, Facture fournisseur..." class="md:col-span-1"></app-ui-input>
+
+        <!-- Description -->
+        <app-ui-input label="Description" [control]="form.controls.description"
+            placeholder="Détails de la dépense..." class="md:col-span-2"></app-ui-input>
+    </div>
+</app-ui-form>

@@ -173,6 +173,7 @@ fragment RoomFields on RoomType {
   id
   name
   capacity
+  roomType
 }
 
 fragment StructureResponse on StructureResponseType {

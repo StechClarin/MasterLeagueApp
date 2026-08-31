@@ -1,0 +1,99 @@
+<app-ui-list-page title="Gestion des Dépenses" description="Suivez et gérez les dépenses de l'établissement."
+    [isLoading]="isLoading()" [isEmpty]="(items$ | async)?.length === 0">
+
+    <ng-container header-actions>
+        <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher (Nom, Matricule)..."></app-ui-toolbar>
+        <button (click)="openModal()"
+            class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg flex items-center justify-center font-medium text-sm">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Nouvelle dépense
+        </button>
+    </ng-container>
+
+
+
+    <ng-container table>
+        <app-ui-table [columns]="tableColumns" [data]="(items$ | async) || []" [actionsTemplate]="actionsCell">
+
+            <!-- Cell Templates -->
+            <ng-template #titleCell let-item>
+                <div class="font-bold text-slate-900">{{ item.title }}</div>
+                <div class="text-xs text-slate-400">{{ item.reference }}</div>
+            </ng-template>
+
+            <ng-template #categoryCell let-item>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="categoryBadgeClass(item.category)">
+                    {{ categoryLabel(item.category) }}
+                </span>
+            </ng-template>
+
+            <ng-template #amountCell let-item>
+                <div class="font-black text-red-600">{{ formatAmount(item.amount) }}</div>
+            </ng-template>
+
+            <ng-template #dateCell let-item>
+                <div class="text-sm text-slate-600">{{ formatDate(item.expenseDate) }}</div>
+            </ng-template>
+
+            <ng-template #actionsCell let-item>
+                <app-ui-dropdown [isOpen]="activeMenuId() === item.id" direction="horizontal"
+                    (isOpenChange)="$event ? toggleMenu(item.id) : closeMenu()">
+
+                    <button trigger
+                        class="bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
+                        [ngClass]="{'ring-4 ring-emerald-500/30': activeMenuId() === item.id}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+
+                    <div menu class="flex items-center gap-1">
+                        <button (click)="onEdit(item); closeMenu()"
+                            class="p-2 rounded-full text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                            title="Modifier">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </button>
+
+                        <div class="w-px h-6 bg-gray-200 mx-1"></div>
+
+                        <button (click)="onDelete(item); closeMenu()"
+                            class="p-2 rounded-full text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
+                            title="Supprimer">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </app-ui-dropdown>
+            </ng-template>
+        </app-ui-table>
+    </ng-container>
+
+    <!-- Pagination -->
+    <ng-container pagination>
+        <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
+            [numPages]="numPages()" (prev)="prevPage()" (next)="nextPage()" (goTo)="goToPage($event)">
+        </app-ui-pagination>
+    </ng-container>
+
+    <!-- Modals -->
+    <ng-container modals>
+        <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
+            <ng-container [ngSwitch]="modalMode()">
+                <app-expense-form *ngSwitchDefault [expense]="selectedItem()" (cancel)="closeModal()"
+                    (success)="onSave()"></app-expense-form>
+            </ng-container>
+        </app-ui-modal>
+
+        <!-- Suppression -->
+        <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Supprimer la dépense"
+            [message]="'Êtes-vous sûr de vouloir supprimer la dépense ' + (selectedItem()?.title || '') + ' ?'"
+            (confirm)="confirmDelete()" (cancel)="closeModal()"></app-ui-confirm-modal>
+    </ng-container>
+</app-ui-list-page>
+

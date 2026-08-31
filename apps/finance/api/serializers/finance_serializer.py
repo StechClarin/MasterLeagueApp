@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.core.api.serializers.BaseSerializer import BaseSerializer
-from apps.finance.models import FeeDefinition, Invoice, Payment
+from apps.finance.models import FeeDefinition, Invoice, Payment, Expense
 
 
 class FeeDefinitionSerializer(BaseSerializer):
@@ -36,3 +36,9 @@ class PaymentReadSerializer(BaseSerializer):
         model = Payment
         fields = '__all__'
         depth = 2
+
+class ExpenseSerializer(BaseSerializer):
+    """ Serializer pour les dépenses de l'établissement """
+    class Meta:
+        model = Expense
+        fields = '__all__'

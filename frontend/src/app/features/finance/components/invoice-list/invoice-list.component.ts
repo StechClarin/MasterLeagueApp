@@ -450,6 +450,13 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
     this.openModal(invoice, 'create');
   }
 
+  // Après un encaissement réussi : on reste sur la page factures et on rafraîchit
+  // la liste en conservant les filtres actifs (le formulaire émet 'success').
+  override onSave() {
+    this.closeModal();
+    this.refresh();
+  }
+
   getStatusLabel(status: string): string {
     const labels: any = {
       'UNPAID': 'Impayé',

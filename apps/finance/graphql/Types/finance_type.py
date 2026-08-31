@@ -1,6 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
-from apps.finance.models import FeeDefinition, Invoice, Payment
+from apps.finance.models import FeeDefinition, Invoice, Payment, Expense
 
 class FeeDefinitionType(DjangoObjectType):
     class Meta:
@@ -20,4 +20,9 @@ class InvoiceType(DjangoObjectType):
 class PaymentType(DjangoObjectType):
     class Meta:
         model = Payment
+        fields = "__all__"
+
+class ExpenseType(DjangoObjectType):
+    class Meta:
+        model = Expense
         fields = "__all__"

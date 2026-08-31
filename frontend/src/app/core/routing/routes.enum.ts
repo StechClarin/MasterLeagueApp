@@ -23,8 +23,11 @@ export enum AppRoutes {
   TYPES_DE_CONTRAT = '/contract-types',
   COMPTES_UTILISATEURS = '/users',
   ROLES_AND_PERMISSIONS = '/roles',
+  MATERIELEQUIPEMENT = '/materiel',
+  FOURNITURESCONSOMMABLES = '/consommables',
   CONFIGURATION_TARIFS = '/fees',
   FACTURATION = '/invoices',
   ENCAISSEMENTS = '/payments',
   ETAT_DE_RECOUVREMENT = '/collection-report',
+  DEPENSES = '/expenses',
 }

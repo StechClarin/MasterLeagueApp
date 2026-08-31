@@ -202,6 +202,28 @@ MODULE_STRUCTURE = [
         ]
     },
     {
+        "name": "Logistique",
+        "order": 7,
+        "display_mod": "card-view",
+        "icon": "logistic-icon",
+        "pages":[
+            {
+                "title": "Materiel/Equipement",
+                "icon": "materiel-icon",
+                "order": 0,
+                "link": "/materiel",
+                "tags": ["logistique"]
+            },
+            {
+                "title": "Fournitures/Consommables",
+                "icon": "inventory-icon",
+                "order": 1,
+                "link": "/consommables",
+                "tags": ["logistique"]
+            }
+        ]
+    },
+    {
         "name": "Finance",
         "order": 6,
         "display_mod": "card-view",
@@ -234,6 +256,13 @@ MODULE_STRUCTURE = [
                 "order": 3,
                 "link": "/collection-report",
                 "tags": ["payment"]
+            },
+            {
+                "title": "Dépenses",
+                "icon": "cash-icon",
+                "order": 4,
+                "link": "/expenses",
+                "tags": ["expense"]
             },
         ]
     },

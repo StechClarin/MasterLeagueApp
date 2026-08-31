@@ -8,7 +8,7 @@
 
     <!-- Tabs & Content -->
     <div class="flex-1 min-h-0 flex flex-col relative w-full">
-        <app-ui-tabs [tabs]="tabs" [currentTab]="currentTab()" (tabChange)="currentTab.set($event)" layout="vertical">
+        <app-ui-tabs [tabs]="tabs" [currentTab]="currentTab()" (tabChange)="currentTab.set($event)">
 
             <form [formGroup]="form" (ngSubmit)="submit()" class="h-full overflow-y-auto pr-4 custom-scrollbar p-8">
 

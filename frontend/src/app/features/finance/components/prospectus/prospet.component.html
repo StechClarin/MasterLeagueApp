@@ -1,0 +1,373 @@
+<!-- ==========================================================================
+     PROSPECTUS ETEYELO — A4 paysage · 3 volets (1/3) · 6 pages recto-verso
+     Feuille 1 (recto) : [ P5 Modules | P6 Avantages & Contact | P1 Couverture ]
+     Feuille 2 (verso) : [ P2 Modules | P3 Nos packs | P4 Pack Premium ]
+     ========================================================================== -->
+
+<!-- ================= BARRE D'OUTILS (non imprimée) ================= -->
+<div class="prospet-toolbar">
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 font-black text-white shadow-lg shadow-indigo-500/30">E</span>
+        <div>
+          <h1 class="text-base font-extrabold text-slate-900 tracking-tight">Prospectus Eteyelo <span class="ml-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-indigo-600">Brochure client</span></h1>
+          <p class="text-xs text-slate-500">A4 paysage · 3 volets (1/3) · 6 pages recto-verso · pliage en C</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button (click)="showGuides.set(!showGuides())"
+          class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-600"
+          [ngClass]="showGuides() ? '!border-indigo-400 !text-indigo-600' : ''">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          Repères de pliage
+        </button>
+        <button (click)="print()"
+          class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-600">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+          Imprimer
+        </button>
+        <button (click)="downloadPdf()" [disabled]="pdfBusy()"
+          class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          {{ pdfBusy() ? 'Génération…' : 'Télécharger le PDF' }}
+        </button>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-slate-500">
+      <span><b class="text-slate-700">Feuille 1 · Recto :</b> volet 1 → P5 (Modules) · volet 2 → P6 (Avantages &amp; Contact) · volet 3 → P1 (Couverture)</span>
+      <span><b class="text-slate-700">Feuille 2 · Verso :</b> volet 1 → P2 (Modules) · volet 2 → P3 (Nos packs) · volet 3 → P4 (Pack Premium)</span>
+      <span><b class="text-slate-700">Pliage :</b> ramenez le volet 3 (P1) sur le centre, puis le volet 1 (P5) par-dessus.</span>
+    </div>
+    @if (pdfStatus()) {
+      <div class="rounded-lg border border-emerald-400/25 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-600">{{ pdfStatus() }}</div>
+    }
+  </div>
+</div>
+<div class="prospet-viewport">
+  <div class="prospet-stage" [class.guides-off]="!showGuides()">
+
+    <!-- ============ FEUILLE 1 — RECTO ============ -->
+    <div class="sheet-label"><span class="sl-pill">Feuille 1</span> Recto — imprimez ce côté au recto</div>
+    <div class="sheet-frame" [style.width.px]="1123 * previewScale()" [style.height.px]="794 * previewScale()">
+      <div class="sheet-scale" [style.transform]="'scale(' + previewScale() + ')'">
+        <section class="prospet-sheet">
+
+          <!-- P5 · MODULES (SUITE) -->
+          <article class="panel panel--p5">
+            <span class="p-glow"></span>
+            <header class="p-head">
+              <span class="p-eyebrow">Modules · La suite</span>
+              <h3 class="p-title">Évaluations, RH<br>&amp; pilotage</h3>
+              <p class="p-desc">Des outils puissants pour l'enseignement et le pilotage — inclus dès le pack Standard.</p>
+            </header>
+            <div class="p-body">
+              @for (m of opsModules; track m.name) {
+                <div class="mod-card">
+                  <span class="mod-icon" [style.--mc]="m.color" [style.--ms]="m.soft">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      @for (p of m.paths; track p) { <path [attr.d]="p"></path> }
+                    </svg>
+                  </span>
+                  <div class="mod-info">
+                    <h4 class="mod-name">{{ m.name }}</h4>
+                    <p class="mod-desc">{{ m.desc }}</p>
+                    <div class="mod-tags">
+                      @for (t of m.tags; track t) { <span class="tag">{{ t }}</span> }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <footer class="p-foot">
+              <div class="spaces-box">
+                <span class="spaces-label">Aussi inclus — Logistique, Administration &amp; espaces</span>
+                <div class="spaces-chips">
+                  <span class="space-chip">Logistique</span>
+                  <span class="space-chip">Administration</span>
+                  @for (s of spaces; track s.label) {
+                    <span class="space-chip" [class.space-chip--prof]="s.cls === 'prof'" [class.space-chip--student]="s.cls === 'student'" [class.space-chip--parent]="s.cls === 'parent'">{{ s.label }}</span>
+                  }
+                </div>
+              </div>
+              <p class="p-note">Portails élève &amp; professeur inclus dès le pack Premium.</p>
+            </footer>
+          </article>
+          <!-- P6 · AVANTAGES & ACCOMPAGNEMENT (dernière page) -->
+          <article class="panel panel--p6">
+            <span class="orb orb--a"></span>
+            <span class="orb orb--b"></span>
+            <div class="p6-body">
+              <header class="p-head">
+                <span class="p-eyebrow">Avantages</span>
+                <h3 class="p-title">Pourquoi choisir<br>Eteyelo&nbsp;?</h3>
+                <p class="p-desc">Un ERP moderne, pensé pour les écoles, lycées et universités exigeants.</p>
+              </header>
+              <div class="p-body">
+                @for (b of benefits; track b.title) {
+                  <div class="benefit">
+                    <span class="ben-icon" [style.--mc]="b.color" [style.--ms]="b.soft">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        @for (p of b.paths; track p) { <path [attr.d]="p"></path> }
+                      </svg>
+                    </span>
+                    <div>
+                      <h4 class="ben-title">{{ b.title }}</h4>
+                      <p class="ben-desc">{{ b.desc }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="prox-box">
+                <h4 class="prox-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  Un accompagnement de proximité
+                </h4>
+                <p class="prox-desc">Démonstration gratuite, formation de vos équipes et support dédié EtherNanos tout au long de l'année.</p>
+                <div class="prox-contact">
+                  <div class="contact-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>
+                    {{ contact.email }}
+                  </div>
+                  <div class="contact-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    {{ contact.phone }} · {{ contact.phoneAlt }}
+                  </div>
+                  <div class="contact-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                    {{ contact.site }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="qr-wrap">
+              <div class="qr">
+                @for (cell of qrCells; track $index) { <i [class.on]="cell"></i> }
+              </div>
+              <span class="qr-caption">Scannez pour découvrir Eteyelo</span>
+            </div>
+            <footer class="p-foot" style="margin-top:12px;">
+              <span class="p6-brand">Eteyelo · Développé par {{ contact.brand }}</span>
+              <span class="p6-copy">© {{ year }} — Tous droits réservés</span>
+            </footer>
+          </article>
+          <!-- P1 · COUVERTURE -->
+          <article class="panel panel--p1">
+            <span class="orb orb--a"></span>
+            <span class="orb orb--b"></span>
+            <span class="grid-overlay"></span>
+            <header class="cover-head">
+              <div class="logo-lockup">
+                <span class="logo-tile">E</span>
+                <div>
+                  <span class="logo-name">Eteyelo</span>
+                  <span class="logo-sub">ERP scolaire unifié</span>
+                </div>
+              </div>
+              <span class="badge-pill">
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+                Le standard de l'excellence éducative
+              </span>
+            </header>
+            <div class="cover-body">
+              <h2 class="cover-title">La gestion de votre école,<br><span>enfin unifiée.</span></h2>
+              <p class="cover-sub">Scolarité, finance, pédagogie &amp; ressources humaines : une seule plateforme pour piloter votre établissement avec sérénité.</p>
+              <div class="mockup">
+                <div class="mockup-bar">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  <span class="mockup-url">app.eteyelo.space</span>
+                </div>
+                <div class="mockup-body">
+                  <div class="mockup-side">
+                    <span class="ms-logo">E</span>
+                    <i class="ms-nav active"></i><i class="ms-nav"></i><i class="ms-nav"></i><i class="ms-nav"></i>
+                  </div>
+                  <div class="mockup-main">
+                    <div class="stat-row">
+                      <div class="stat"><b>2 450</b><small>Élèves</small></div>
+                      <div class="stat"><b>12,8M</b><small>Encaissés</small></div>
+                      <div class="stat"><b>92%</b><small>Réussite</small></div>
+                    </div>
+                    <div class="chart"><i style="height:34%"></i><i style="height:55%"></i><i style="height:42%"></i><i style="height:70%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:95%"></i></div>
+                  </div>
+                </div>
+              </div>
+              <div class="trust-chips">
+                @for (c of trustChips; track c.label) {
+                  <span class="trust-chip">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      @for (p of c.paths; track p) { <path [attr.d]="p"></path> }
+                    </svg>
+                    {{ c.label }}
+                  </span>
+                }
+              </div>
+            </div>
+            <footer class="cover-foot">
+              <span>Prospectus {{ year }}</span>
+              <span>eteyelo.ethernanos.space</span>
+            </footer>
+          </article>
+
+          <div class="fold-mark fold-mark--1"><span>pliure 1/3</span></div>
+          <div class="fold-mark fold-mark--2"><span>pliure 2/3</span></div>
+          <span class="page-tag" style="left:10px;bottom:10px;">Page 5 · Modules</span>
+          <span class="page-tag" style="left:384px;bottom:10px;">Page 6 · Avantages &amp; Contact</span>
+          <span class="page-tag" style="right:10px;bottom:10px;">Page 1 · Couverture</span>
+        </section>
+      </div>
+    </div>
+    <!-- ============ FEUILLE 2 — VERSO ============ -->
+    <div class="sheet-label"><span class="sl-pill sl-pill--alt">Feuille 2</span> Verso — imprimez ce côté au verso</div>
+    <div class="sheet-frame" [style.width.px]="1123 * previewScale()" [style.height.px]="794 * previewScale()">
+      <div class="sheet-scale" [style.transform]="'scale(' + previewScale() + ')'">
+        <section class="prospet-sheet">
+
+          <!-- P2 · MODULES (SOCLE STARTER) -->
+          <article class="panel panel--p2">
+            <span class="p-glow"></span>
+            <header class="p-head">
+              <span class="p-eyebrow">Modules · Le socle</span>
+              <h3 class="p-title">Référentiel, élèves<br>&amp; finance</h3>
+              <p class="p-desc">Les briques essentielles de votre établissement — incluses dans le pack Starter.</p>
+            </header>
+            <div class="p-body">
+              @for (m of coreModules; track m.name) {
+                <div class="mod-card">
+                  <span class="mod-icon" [style.--mc]="m.color" [style.--ms]="m.soft">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      @for (p of m.paths; track p) { <path [attr.d]="p"></path> }
+                    </svg>
+                  </span>
+                  <div class="mod-info">
+                    <h4 class="mod-name">{{ m.name }}</h4>
+                    <p class="mod-desc">{{ m.desc }}</p>
+                    <div class="mod-tags">
+                      @for (t of m.tags; track t) { <span class="tag">{{ t }}</span> }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <footer class="p-foot">
+              <div class="stats-strip">
+                @for (s of stats; track s.label) {
+                  <div class="stat-cell">
+                    <b>{{ s.value }}</b>
+                    <span>{{ s.label }}</span>
+                  </div>
+                }
+              </div>
+              <p class="p-note">Besoin de plus ? Passez au pack Standard ou Premium — voir pages 3 &amp; 4.</p>
+            </footer>
+          </article>
+          <!-- P3 · NOS PACKS (STARTER & STANDARD) -->
+          <article class="panel panel--p3">
+            <span class="p-glow"></span>
+            <header class="p-head">
+              <span class="p-eyebrow">Nos packs</span>
+              <h3 class="p-title">Des offres claires<br>&amp; adaptées</h3>
+              <p class="p-desc">Un abonnement annuel par établissement, avec formation et support inclus.</p>
+            </header>
+            <div class="p-body">
+              @for (p of packs; track p.name; let i = $index) {
+                @if (i < 2) {
+                  <div class="pack-card" [class.pack-card--hot]="p.highlight">
+                    <div class="pack-head">
+                      <h4 class="pack-name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          @for (d of p.paths; track d) { <path [attr.d]="d"></path> }
+                        </svg>
+                        {{ p.name }}
+                      </h4>
+                      @if (p.badge) { <span class="pack-badge">{{ p.badge }}</span> }
+                    </div>
+                    <p class="pack-desc">{{ p.desc }}</p>
+                    <div class="pack-price"><b>{{ p.price }}</b><span>{{ p.period }}</span></div>
+                    <div class="pack-feats">
+                      @for (f of p.features; track f) {
+                        <div class="pack-feat">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          {{ f }}
+                        </div>
+                      }
+                    </div>
+                    <!-- <span class="pack-cta" [class.pack-cta--primary]="i === 1" [class.pack-cta--ghost]="i === 0">{{ p.cta }}</span> -->
+                  </div>
+                }
+              }
+            </div>
+            <footer class="p-foot">
+              <p class="p-note">+ Frais d'adhésion unique de <b>{{ adhesion }} FCFA</b> à la souscription.</p>
+            </footer>
+          </article>
+          <!-- P4 · PACK PREMIUM & ADHÉSION -->
+          <article class="panel panel--p4">
+            <span class="p-glow"></span>
+            <header class="p-head">
+              <span class="p-eyebrow">Pack Premium</span>
+              <h3 class="p-title">L'école 100 %<br>connectée</h3>
+              <p class="p-desc">Tous les modules, les portails élève &amp; professeur, et bien plus encore.</p>
+            </header>
+            <div class="p-body">
+              @for (p of packs; track p.name) {
+                @if (p.highlight) {
+                  <div class="pack-card pack-card--hot">
+                    <div class="pack-head">
+                      <h4 class="pack-name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          @for (d of p.paths; track d) { <path [attr.d]="d"></path> }
+                        </svg>
+                        {{ p.name }}
+                      </h4>
+                      @if (p.badge) { <span class="pack-badge">{{ p.badge }}</span> }
+                    </div>
+                    <p class="pack-desc">{{ p.desc }}</p>
+                    <div class="pack-price"><b>{{ p.price }}</b><span>{{ p.period }}</span></div>
+                    <div class="pack-feats">
+                      @for (f of p.features; track f) {
+                        <div class="pack-feat">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          {{ f }}
+                        </div>
+                      }
+                    </div>
+                    <!-- <span class="pack-cta pack-cta--primary">{{ p.cta }}</span> -->
+                  </div>
+                }
+              }
+              <div class="adh-box">
+                <p><b>Frais d'adhésion : {{ adhesion }} FCFA</b>Montant unique à l'installation de la plateforme.</p>
+              </div>
+              <div class="incl-list">
+                <span>Tous les packs incluent</span>
+                <ul>
+                  @for (item of includedInAll; track item) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+            <footer class="p-foot">
+              <p class="pack-contact-note">Une question, un besoin spécifique ?<br>Contactez-nous : <b>{{ contact.email }}</b> · <b>{{ contact.phone }}</b></p>
+            </footer>
+          </article>
+
+          <div class="fold-mark fold-mark--1"><span>pliure 1/3</span></div>
+          <div class="fold-mark fold-mark--2"><span>pliure 2/3</span></div>
+          <span class="page-tag" style="left:10px;bottom:10px;">Page 2 · Modules</span>
+          <span class="page-tag" style="left:384px;bottom:10px;">Page 3 · Nos packs</span>
+          <span class="page-tag" style="right:10px;bottom:10px;">Page 4 · Pack Premium</span>
+        </section>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
+
+

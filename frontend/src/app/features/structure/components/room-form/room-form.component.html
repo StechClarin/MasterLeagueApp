@@ -8,6 +8,10 @@
         <app-ui-input label="Nom de la salle" [control]="form.controls.name" [required]="true"
             placeholder="Ex: Salle 101, Laboratoire..." class="md:col-span-1"></app-ui-input>
 
+        <!-- Type de local -->
+        <app-ui-select label="Type de local" [control]="form.controls.room_type" [options]="roomTypeOptions"
+            [required]="true" class="md:col-span-1"></app-ui-select>
+
         <!-- Capacité -->
         <app-ui-input label="Capacité (Élèves)" type="number" [control]="form.controls.capacity" [required]="true"
             placeholder="30" class="md:col-span-1"></app-ui-input>

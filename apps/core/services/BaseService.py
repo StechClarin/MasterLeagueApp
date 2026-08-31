@@ -128,17 +128,18 @@ class BaseService:
         if 'establishment' in data and not hasattr(data['establishment'], '_meta'):
             data['establishment_id'] = data.pop('establishment')
 
-        # [SAFETY NET] Injection de l'établissement si manquant
+        # [SAFETY NET] Injection de l'établissement si manquant ou vide/None.
+        # NB: le serializer peut produire establishment_id=None (FK allow_null=True),
+        # ce qui empêchait l'injection précédente ("establishment_id" présent).
         if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
             should_inject = False
             if not instance:
                 should_inject = True # Création
             elif not instance.establishment_id:
                 should_inject = True # Instance orpheline (rare)
-            
-            if should_inject:
-                if 'establishment' not in data and 'establishment_id' not in data:
-                     data['establishment_id'] = self.establishment_id
+
+            if should_inject and not data.get('establishment_id'):
+                data['establishment_id'] = self.establishment_id
 
         # [AUDIT] Injection automatique de l'utilisateur (Pattern Global)
         if hasattr(self, 'user') and self.user:

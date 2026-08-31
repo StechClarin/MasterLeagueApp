@@ -36,4 +36,11 @@ export const COMPONENT_REGISTRY: Record<string, () => Promise<any>> = {
   '/invoices': () => import('@features/finance/components/invoice-list/invoice-list.component').then(m => m.InvoiceListComponent),
   '/payments': () => import('@features/finance/components/payment-list/payment-list.component').then(m => m.PaymentListComponent),
   '/collection-report': () => import('@features/finance/components/collection-report/collection-report.component').then(m => m.CollectionReportComponent),
+
+  // Finance - Dépenses
+  '/expenses': () => import('@features/finance/components/expense-list/expense-list.component').then(m => m.ExpenseListComponent),
+
+  // Logistique
+  '/materiel': () => import('@features/logistics/components/asset-list/asset-list.component').then(m => m.AssetListComponent),
+  '/consommables': () => import('@features/logistics/components/stock-item-list/stock-item-list.component').then(m => m.StockItemListComponent),
 };

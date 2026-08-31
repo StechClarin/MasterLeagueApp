@@ -12,7 +12,7 @@
             <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
         </div>
         
-        <app-ui-tabs [tabs]="tabs" [currentTab]="activeTabId()" (tabChange)="onTabChange($event)" layout="vertical">
+        <app-ui-tabs [tabs]="tabs" [currentTab]="activeTabId()" (tabChange)="onTabChange($event)">
             <form [formGroup]="form" (ngSubmit)="submit()" class="h-full overflow-y-auto pr-2 custom-scrollbar px-8 py-6">
 
                 <!-- TAB 1: GENERAL INFO -->

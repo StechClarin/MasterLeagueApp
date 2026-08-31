@@ -150,3 +150,34 @@ query GetPaymentById($id: ID!) {
 query GetUsedFeeCategories {
   usedFeeCategories
 }
+
+fragment ExpenseFields on ExpenseType {
+  id
+  title
+  category
+  amount
+  expenseDate
+  paymentMethod
+  reference
+  description
+  isActive
+  createdAt
+}
+
+query GetExpenses($search: String, $category: String, $page: Int, $pageSize: Int) {
+  expenses(search: $search, category: $category, page: $page, pageSize: $pageSize) {
+    totalCount
+    numPages
+    currentPage
+    pageSize
+    items {
+      ...ExpenseFields
+    }
+  }
+}
+
+query GetExpenseById($id: ID!) {
+  expense(id: $id) {
+    ...ExpenseFields
+  }
+}

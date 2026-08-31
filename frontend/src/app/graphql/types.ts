@@ -97,6 +97,41 @@ export type AcademicYearTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+export type AssetType = {
+  __typename?: 'AssetType';
+  category: LogisticsAssetCategoryChoices;
+  cost: Scalars['Decimal']['output'];
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  deploymentDate?: Maybe<Scalars['Date']['output']>;
+  establishment: EstablishmentType;
+  id: Scalars['UUID']['output'];
+  interventions: Array<InterventionRequestType>;
+  isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  maintenanceFrequency: Scalars['Int']['output'];
+  maintenances: Array<MaintenanceRecordType>;
+  name: Scalars['String']['output'];
+  nextMaintenanceDate?: Maybe<Scalars['Date']['output']>;
+  notificationThresholdDays: Scalars['Int']['output'];
+  purchaseDate?: Maybe<Scalars['Date']['output']>;
+  room?: Maybe<RoomType>;
+  serialNumber?: Maybe<Scalars['String']['output']>;
+  status: LogisticsAssetStatusChoices;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type AssetTypePaginated = {
+  __typename?: 'AssetTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<AssetType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type ClassRoomType = {
   __typename?: 'ClassRoomType';
   academicYear: AcademicYearType;
@@ -322,6 +357,7 @@ export type EstablishmentType = {
   academicperiodSet: Array<AcademicPeriodType>;
   academicyearSet: Array<AcademicYearType>;
   address?: Maybe<Scalars['String']['output']>;
+  assetSet: Array<AssetType>;
   city?: Maybe<Scalars['String']['output']>;
   classroomSet: Array<ClassRoomType>;
   code?: Maybe<Scalars['String']['output']>;
@@ -342,12 +378,14 @@ export type EstablishmentType = {
   gradeSet: Array<GradeType>;
   guardianSet: Array<GuardianType>;
   id: Scalars['UUID']['output'];
+  interventionrequestSet: Array<InterventionRequestType>;
   invoiceSet: Array<InvoiceType>;
   isActive: Scalars['Boolean']['output'];
   isDeleted: Scalars['Boolean']['output'];
   levelSet: Array<LevelType>;
   levelsubjectSet: Array<LevelSubjectType>;
   logo?: Maybe<Scalars['String']['output']>;
+  maintenancerecordSet: Array<MaintenanceRecordType>;
   memberships: Array<EstablishmentMembershipType>;
   name: Scalars['String']['output'];
   optionSet: Array<OptionType>;
@@ -361,6 +399,7 @@ export type EstablishmentType = {
   printHeader?: Maybe<Scalars['String']['output']>;
   roomSet: Array<RoomType>;
   slogan?: Maybe<Scalars['String']['output']>;
+  stockitemSet: Array<StockItemType>;
   studentSet: Array<StudentType>;
   studenthealthSet: Array<StudentHealthType>;
   subjectSet: Array<SubjectType>;
@@ -664,6 +703,36 @@ export enum FinancePaymentPaymentMethodChoices {
   MobileMoney = 'MOBILE_MONEY'
 }
 
+/** An enumeration. */
+export enum FinanceExpenseCategoryChoices {
+  /** Autre */
+  Autre = 'AUTRE',
+  /** Communication */
+  Communication = 'COMMUNICATION',
+  /** Entretien & Réparations */
+  Maintenance = 'MAINTENANCE',
+  /** Salaires */
+  Salaries = 'SALARIES',
+  /** Fournitures */
+  Supplies = 'SUPPLIES',
+  /** Transport */
+  Transport = 'TRANSPORT',
+  /** Factures (Eau, Élec, Internet) */
+  Utilities = 'UTILITIES'
+}
+
+/** An enumeration. */
+export enum FinanceExpensePaymentMethodChoices {
+  /** Virement Bancaire */
+  BankTransfer = 'BANK_TRANSFER',
+  /** Espèces */
+  Cash = 'CASH',
+  /** Chèque */
+  Check = 'CHECK',
+  /** Mobile Money */
+  MobileMoney = 'MOBILE_MONEY'
+}
+
 export type GradeType = {
   __typename?: 'GradeType';
   /** Statut de présence à l'évaluation */
@@ -730,6 +799,32 @@ export enum HrPersonnelGenderChoices {
   /** Masculin */
   M = 'M'
 }
+
+export type InterventionRequestType = {
+  __typename?: 'InterventionRequestType';
+  asset: AssetType;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  description: Scalars['String']['output'];
+  establishment: EstablishmentType;
+  id: Scalars['UUID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  reportedAt: Scalars['DateTime']['output'];
+  resolvedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type InterventionRequestTypePaginated = {
+  __typename?: 'InterventionRequestTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<InterventionRequestType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
 
 export type InvoiceType = {
   __typename?: 'InvoiceType';
@@ -834,6 +929,59 @@ export type LevelTypePaginated = {
   __typename?: 'LevelTypePaginated';
   currentPage?: Maybe<Scalars['Int']['output']>;
   items?: Maybe<Array<Maybe<LevelType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+/** An enumeration. */
+export enum LogisticsAssetCategoryChoices {
+  /** Matériel Audiovisuel */
+  Audiovisuel = 'AUDIOVISUEL',
+  /** Autre */
+  Autre = 'AUTRE',
+  /** Matériel Informatique */
+  Informatique = 'INFORMATIQUE',
+  /** Mobilier */
+  Mobilier = 'MOBILIER',
+  /** Équipement Sportif */
+  Sport = 'SPORT'
+}
+
+/** An enumeration. */
+export enum LogisticsAssetStatusChoices {
+  /** Affecté */
+  Affecte = 'AFFECTE',
+  /** Disponible */
+  Disponible = 'DISPONIBLE',
+  /** En Panne */
+  EnPanne = 'EN_PANNE',
+  /** Mis au Rebut */
+  Rebut = 'REBUT',
+  /** En Réparation */
+  Reparation = 'REPARATION'
+}
+
+export type MaintenanceRecordType = {
+  __typename?: 'MaintenanceRecordType';
+  asset: AssetType;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  description: Scalars['String']['output'];
+  establishment: EstablishmentType;
+  id: Scalars['UUID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  performedAt: Scalars['DateTime']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type MaintenanceRecordTypePaginated = {
+  __typename?: 'MaintenanceRecordTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<MaintenanceRecordType>>>;
   numPages?: Maybe<Scalars['Int']['output']>;
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
@@ -1061,6 +1209,8 @@ export type Query = {
   academicyear?: Maybe<AcademicYearType>;
   academicyears?: Maybe<AcademicYearTypePaginated>;
   activeStructure?: Maybe<StructureResponseType>;
+  asset?: Maybe<AssetType>;
+  assets?: Maybe<AssetTypePaginated>;
   classroom?: Maybe<ClassRoomType>;
   classrooms?: Maybe<ClassRoomTypePaginated>;
   compiledSchedule?: Maybe<Array<Maybe<Scalars['JSONString']['output']>>>;
@@ -1082,9 +1232,13 @@ export type Query = {
   grades?: Maybe<GradeTypePaginated>;
   guardian?: Maybe<GuardianType>;
   guardians?: Maybe<GuardianTypePaginated>;
+  intervention?: Maybe<InterventionRequestType>;
+  interventions?: Maybe<InterventionRequestTypePaginated>;
   invoices?: Maybe<InvoiceTypePaginated>;
   level?: Maybe<LevelType>;
   levels?: Maybe<LevelTypePaginated>;
+  maintenance?: Maybe<MaintenanceRecordType>;
+  maintenances?: Maybe<MaintenanceRecordTypePaginated>;
   me?: Maybe<UserType>;
   membership?: Maybe<EstablishmentMembershipType>;
   memberships?: Maybe<EstablishmentMembershipTypePaginated>;
@@ -1104,6 +1258,8 @@ export type Query = {
   roles?: Maybe<RoleTypePaginated>;
   room?: Maybe<RoomType>;
   rooms?: Maybe<RoomTypePaginated>;
+  stockItem?: Maybe<StockItemType>;
+  stockItems?: Maybe<StockItemTypePaginated>;
   student?: Maybe<StudentType>;
   students?: Maybe<StudentTypePaginated>;
   subject?: Maybe<SubjectType>;
@@ -1134,6 +1290,18 @@ export type QueryAcademicyearArgs = {
 export type QueryAcademicyearsArgs = {
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
   isArchived?: InputMaybe<Scalars['Boolean']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryAssetArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryAssetsArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -1289,6 +1457,18 @@ export type QueryGuardiansArgs = {
 };
 
 
+export type QueryInterventionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryInterventionsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryInvoicesArgs = {
   category?: InputMaybe<Scalars['String']['input']>;
   classroomId?: InputMaybe<Scalars['ID']['input']>;
@@ -1309,6 +1489,18 @@ export type QueryLevelArgs = {
 export type QueryLevelsArgs = {
   cycleId?: InputMaybe<Scalars['ID']['input']>;
   establishmentId?: InputMaybe<Scalars['ID']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryMaintenanceArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryMaintenancesArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -1428,6 +1620,18 @@ export type QueryRoomsArgs = {
 };
 
 
+export type QueryStockItemArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryStockItemsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryStudentArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1537,6 +1741,7 @@ export type RoleTypePaginated = {
 
 export type RoomType = {
   __typename?: 'RoomType';
+  assets: Array<AssetType>;
   capacity?: Maybe<Scalars['Int']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
@@ -1548,6 +1753,7 @@ export type RoomType = {
   isDeleted: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   planningDetails: Array<PlanningDetailType>;
+  roomType: StructureRoomRoomTypeChoices;
   supervisions: Array<EvaluationSupervisionType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
@@ -1562,11 +1768,51 @@ export type RoomTypePaginated = {
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
+export type StockItemType = {
+  __typename?: 'StockItemType';
+  cost: Scalars['Decimal']['output'];
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  establishment: EstablishmentType;
+  id: Scalars['UUID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  minThreshold: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  quantity: Scalars['Int']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type StockItemTypePaginated = {
+  __typename?: 'StockItemTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<StockItemType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type StructureResponseType = {
   __typename?: 'StructureResponseType';
   activeAcademicYear?: Maybe<AcademicYearType>;
   cycles?: Maybe<Array<Maybe<CycleType>>>;
 };
+
+/** An enumeration. */
+export enum StructureRoomRoomTypeChoices {
+  /** Salle de classe */
+  Classroom = 'CLASSROOM',
+  /** Laboratoire */
+  Laboratory = 'LABORATORY',
+  /** Bibliothèque */
+  Library = 'LIBRARY',
+  /** Bureau */
+  Office = 'OFFICE',
+  /** Autre / Stockage */
+  Storage = 'STORAGE'
+}
 
 export type StudentHealthType = {
   __typename?: 'StudentHealthType';
@@ -1778,6 +2024,7 @@ export type UserType = {
   createdAcademiccycleconfigSet: Array<AcademicCycleConfigType>;
   createdAcademicperiodSet: Array<AcademicPeriodType>;
   createdAcademicyearSet: Array<AcademicYearType>;
+  createdAssetSet: Array<AssetType>;
   createdByUser?: Maybe<UserType>;
   createdClassroomSet: Array<ClassRoomType>;
   createdContracttypeSet: Array<ContractTypeType>;
@@ -1794,9 +2041,11 @@ export type UserType = {
   createdFeedefinitionSet: Array<FeeDefinitionType>;
   createdGradeSet: Array<GradeType>;
   createdGuardianSet: Array<GuardianType>;
+  createdInterventionrequestSet: Array<InterventionRequestType>;
   createdInvoiceSet: Array<InvoiceType>;
   createdLevelSet: Array<LevelType>;
   createdLevelsubjectSet: Array<LevelSubjectType>;
+  createdMaintenancerecordSet: Array<MaintenanceRecordType>;
   createdModuleSet: Array<ModuleType>;
   createdOptionSet: Array<OptionType>;
   createdPageSet: Array<PageType>;
@@ -1807,6 +2056,7 @@ export type UserType = {
   createdPlanningdetailSet: Array<PlanningDetailType>;
   createdRoleSet: Array<RoleType>;
   createdRoomSet: Array<RoomType>;
+  createdStockitemSet: Array<StockItemType>;
   createdStudentSet: Array<StudentType>;
   createdStudenthealthSet: Array<StudentHealthType>;
   createdSubjectSet: Array<SubjectType>;
@@ -1838,6 +2088,7 @@ export type UserType = {
   updatedAcademiccycleconfigSet: Array<AcademicCycleConfigType>;
   updatedAcademicperiodSet: Array<AcademicPeriodType>;
   updatedAcademicyearSet: Array<AcademicYearType>;
+  updatedAssetSet: Array<AssetType>;
   updatedByUser?: Maybe<UserType>;
   updatedClassroomSet: Array<ClassRoomType>;
   updatedContracttypeSet: Array<ContractTypeType>;
@@ -1854,9 +2105,11 @@ export type UserType = {
   updatedFeedefinitionSet: Array<FeeDefinitionType>;
   updatedGradeSet: Array<GradeType>;
   updatedGuardianSet: Array<GuardianType>;
+  updatedInterventionrequestSet: Array<InterventionRequestType>;
   updatedInvoiceSet: Array<InvoiceType>;
   updatedLevelSet: Array<LevelType>;
   updatedLevelsubjectSet: Array<LevelSubjectType>;
+  updatedMaintenancerecordSet: Array<MaintenanceRecordType>;
   updatedModuleSet: Array<ModuleType>;
   updatedOptionSet: Array<OptionType>;
   updatedPageSet: Array<PageType>;
@@ -1867,6 +2120,7 @@ export type UserType = {
   updatedPlanningdetailSet: Array<PlanningDetailType>;
   updatedRoleSet: Array<RoleType>;
   updatedRoomSet: Array<RoomType>;
+  updatedStockitemSet: Array<StockItemType>;
   updatedStudentSet: Array<StudentType>;
   updatedStudenthealthSet: Array<StudentHealthType>;
   updatedSubjectSet: Array<SubjectType>;

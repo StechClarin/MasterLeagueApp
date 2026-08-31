@@ -1,0 +1,51 @@
+<app-ui-form [formErrors]="formErrors" [title]="asset ? 'Modifier le Matériel' : 'Nouveau Matériel'" [formGroup]="form"
+  [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="asset ? 'Modifier' : 'Créer'"
+  description="Gérez les informations d'identification, de catégorie et de statut de l'équipement."
+  (submitForm)="submit()" (cancel)="onCancel()">
+
+  <div class="mb-6">
+    <app-ui-tabs 
+      [tabs]="tabs" 
+      [currentTab]="currentTab()" 
+      (tabChange)="currentTab.set($event)">
+      
+      <!-- CONTENU ONGLET 1: GENERAL -->
+      <div *ngIf="currentTab() === 'general'" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pt-4 animate-in fade-in duration-200">
+        <!-- Nom -->
+        <app-ui-input label="Nom de l'équipement" [control]="form.controls.name" [required]="true"
+          placeholder="Ex: Projecteur EPSON, PC Portable Dell..." class="md:col-span-1"></app-ui-input>
+
+        <!-- Numéro de Série -->
+        <app-ui-input label="Numéro de série / Code-barres" [control]="form.controls.serial_number"
+          placeholder="Ex: SN-8472910" class="md:col-span-1"></app-ui-input>
+
+        <!-- Catégorie -->
+        <app-ui-select label="Catégorie" [control]="form.controls.category" [options]="categoryOptions"
+          bindLabel="label" bindValue="value" [required]="true" class="md:col-span-1"></app-ui-select>
+
+        <!-- Coût d'acquisition -->
+        <app-ui-input label="Coût d'acquisition" type="number" [control]="form.controls.cost" [required]="true"
+          placeholder="Ex: 250000" class="md:col-span-1"></app-ui-input>
+      </div>
+
+      <!-- CONTENU ONGLET 2: MAINTENANCE -->
+      <div *ngIf="currentTab() === 'maintenance'" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pt-4 animate-in fade-in duration-200">
+        <!-- Date d'achat -->
+        <app-ui-input label="Date d'achat" type="date" [control]="form.controls.purchase_date"
+          class="md:col-span-1"></app-ui-input>
+
+        <!-- Date de déploiement -->
+        <app-ui-input label="Date de déploiement" type="date" [control]="form.controls.deployment_date"
+          class="md:col-span-1"></app-ui-input>
+
+        <!-- Fréquence de maintenance -->
+        <app-ui-input label="Fréquence de maintenance (en jours)" type="number" [control]="form.controls.maintenance_frequency"
+          placeholder="Ex: 30" class="md:col-span-1"></app-ui-input>
+
+        <!-- Seuil d'alerte de notification -->
+        <app-ui-input label="Seuil d'alerte (en jours)" type="number" [control]="form.controls.notification_threshold_days"
+          placeholder="Ex: 3" class="md:col-span-1"></app-ui-input>
+      </div>
+    </app-ui-tabs>
+  </div>
+</app-ui-form>

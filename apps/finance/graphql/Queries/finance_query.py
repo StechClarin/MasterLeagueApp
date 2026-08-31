@@ -1,13 +1,14 @@
 import graphene
 from django.db.models import Q
-from apps.finance.models import FeeDefinition, Invoice, Payment
-from ..Types.finance_type import FeeDefinitionType, InvoiceType, PaymentType
+from apps.finance.models import FeeDefinition, Invoice, Payment, Expense
+from ..Types.finance_type import FeeDefinitionType, InvoiceType, PaymentType, ExpenseType
 from apps.core.graphql.Types.paginated_type import get_paginated_type
 from apps.core.utils.pagination import paginate_queryset
 
 FeeDefinitionPaginatedType = get_paginated_type(FeeDefinitionType)
 InvoicePaginatedType = get_paginated_type(InvoiceType)
 PaymentPaginatedType = get_paginated_type(PaymentType)
+ExpensePaginatedType = get_paginated_type(ExpenseType)
 
 class FinanceQuery(graphene.ObjectType):
     # Fee Definitions
@@ -41,6 +42,18 @@ class FinanceQuery(graphene.ObjectType):
         page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10)
     )
+
+    # Expenses
+    expenses = graphene.Field(
+        ExpensePaginatedType,
+        search=graphene.String(),
+        category=graphene.String(),
+        page=graphene.Int(default_value=1),
+        page_size=graphene.Int(default_value=10)
+    )
+
+    # Single Expense
+    expense = graphene.Field(ExpenseType, id=graphene.ID(required=True))
 
     # Dynamic Filter Categories (based on created FeeDefinitions)
     used_fee_categories = graphene.List(graphene.JSONString)
@@ -113,6 +126,29 @@ class FinanceQuery(graphene.ObjectType):
             queryset = queryset.filter(payment_date__date=payment_date)
             
         return PaymentPaginatedType(**paginate_queryset(queryset, page, page_size))  # type: ignore
+
+    def resolve_expenses(self, info, search=None, category=None, page=1, page_size=10):
+        est_id = info.context.establishment_id
+        queryset = Expense.objects.filter(establishment_id=est_id).order_by('-expense_date')
+
+        if search:
+            import operator
+            from functools import reduce
+            conditions = [
+                Q(title__icontains=search),
+                Q(reference__icontains=search),
+                Q(description__icontains=search),
+            ]
+            queryset = queryset.filter(reduce(operator.or_, conditions))
+
+        if category:
+            queryset = queryset.filter(category=category)
+
+        return ExpensePaginatedType(**paginate_queryset(queryset, page, page_size))  # type: ignore
+
+    def resolve_expense(self, info, id):
+        est_id = info.context.establishment_id
+        return Expense.objects.get(id=id, establishment_id=est_id)
 
     def resolve_used_fee_categories(self, info):
         """

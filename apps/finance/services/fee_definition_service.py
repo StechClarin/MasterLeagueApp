@@ -40,33 +40,33 @@ class FeeDefinitionService(BaseService):
     def apply_to_existing_enrollments(self, fee):
         """
         Scanne les inscriptions existantes et génère les factures manquantes.
+        Ciblage par spécificité décroissante : Élèves > Classes > Option > Niveau.
+        NB : on ne croise JAMAIS classroom__level avec un ciblage par classe/élève,
+        car le niveau du tarif peut différer du niveau réel de la classe ciblée.
         """
         from apps.students.models import Enrollment
         from apps.finance.services.finance_service import FinanceService
-        from django.db.models import Q
 
-        # 1. Identifier les inscriptions cibles
-        enrollments = Enrollment.objects.filter(
-            classroom__level=fee.level,
-            academic_year=fee.academic_year,
-            establishment=fee.establishment,
-            status='REGISTERED'
-        )
+        # 1. Base commune : année, établissement, statuts actifs
+        # PENDING (en attente) + REGISTERED (inscrits) : les élèves en attente ont
+        # besoin de la facture pour payer leurs frais et passer 'Inscrit'.
+        base_kwargs = {
+            'academic_year': fee.academic_year,
+            'establishment': fee.establishment,
+            'status__in': ['PENDING', 'REGISTERED'],
+        }
 
-        # 2. Filtrer par ciblage spécifique si nécessaire
-        if fee.classrooms.exists():
-            enrollments = enrollments.filter(classroom__in=fee.classrooms.all())
-        
-        # Note: Si fee.students est défini (M2M), on filtrera dans la boucle 
-        # ou via une requête complexe. Plus simple ici : filtrer dans la boucle.
-        
-        specific_students_ids = list(fee.students.values_list('id', flat=True))
+        # 2. Ciblage par spécificité décroissante
+        if fee.students.exists():
+            enrollments = Enrollment.objects.filter(student__in=fee.students.all(), **base_kwargs)
+        elif fee.classrooms.exists():
+            enrollments = Enrollment.objects.filter(classroom__in=fee.classrooms.all(), **base_kwargs)
+        elif fee.option_id:
+            enrollments = Enrollment.objects.filter(classroom__option=fee.option, **base_kwargs)
+        else:
+            # Ciblage global par niveau (cas standard)
+            enrollments = Enrollment.objects.filter(classroom__level=fee.level, **base_kwargs)
 
+        # 3. Générer les factures manquantes (dédup géré par generate_invoices_for_enrollment)
         for enrollment in enrollments:
-            # Si le tarif cible des élèves précis, vérifier si celui-ci en fait partie
-            if specific_students_ids and enrollment.student_id not in specific_students_ids:
-                continue
-                
-            # Appeler le moteur de facturation pour cette inscription
-            # generate_invoices_for_enrollment vérifie déjà l'existence pour éviter les doublons
             FinanceService.generate_invoices_for_enrollment(enrollment)

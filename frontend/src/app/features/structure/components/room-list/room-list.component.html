@@ -35,6 +35,13 @@
             </div>
         </ng-template>
 
+        <ng-template #roomTypeCell let-item>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                [ngClass]="roomTypeBadgeClass(item.roomType)">
+                {{ roomTypeLabel(item.roomType) }}
+            </span>
+        </ng-template>
+
         <ng-template #actionsCell let-item>
             <app-ui-dropdown [isOpen]="activeMenuId() === item.id" direction="horizontal"
                 (isOpenChange)="$event ? toggleMenu(item.id) : closeMenu()">

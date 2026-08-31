@@ -114,6 +114,8 @@
       </div>
     </app-ui-filter-panel>
   </ng-container>
+
+  <!--list-->
   <ng-container table>
     <app-ui-table [data]="(items$ | async) || []" [columns]="tableColumns" [actionsTemplate]="actionsCell">
     </app-ui-table>

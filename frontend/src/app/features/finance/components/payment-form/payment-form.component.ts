@@ -270,15 +270,24 @@ export class PaymentFormComponent extends BaseFormComponent implements OnInit {
   override submit() {
     if (this.form.valid) {
       this.isSubmitting = true;
+      // Ouverture synchrone d'un onglet vierge (geste utilisateur) pour le reçu :
+      // évite le blocage des popups quand on naviguerait après la réponse HTTP.
+      const receiptWindow = window.open('', '_blank');
       this.save().subscribe({
         next: (res: any) => {
           this.isSubmitting = false;
           const paymentId = res.data.id;
           this.toastService.success('Paiement enregistré avec succès.');
-          this.router.navigate(['/print/receipt', paymentId]);
+          // Reçu dans l'onglet dédié (impression) SANS quitter la page factures
+          if (receiptWindow) {
+            receiptWindow.location.href = `/print/receipt/${paymentId}`;
+          }
+          // Reste sur la page : ferme la modale + rafraîchit la liste (filtres conservés)
+          this.success.emit();
         },
         error: (err) => {
           this.isSubmitting = false;
+          if (receiptWindow) { receiptWindow.close(); }
           this.toastService.error("Erreur lors de l'enregistrement du paiement.");
         }
       });

@@ -51,4 +51,6 @@ class TeachingAssignmentService(BaseService):
         if start_date and end_date and start_date > end_date:
              raise ValidationError("La date de début ne peut pas être après la date de fin.")
              
-        return data
+        # [FIX] Appel du parent : injection de l'établissement + audit user.
+        # Sans ce super(), l'établissement n'est jamais injecté → NOT NULL violation.
+        return super().before_save(data, instance)

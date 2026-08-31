@@ -1,0 +1,23 @@
+<app-ui-form [formErrors]="formErrors" [title]="stockItem ? 'Modifier l\'Article' : 'Nouvel Article'" [formGroup]="form"
+  [isLoading]="isSubmitting" [errorMessage]="errorMessage" [submitLabel]="stockItem ? 'Modifier' : 'Créer'"
+  description="Gérez les consommables scolaires et ajustez leurs niveaux d'alerte."
+  (submitForm)="submit()" (cancel)="onCancel()">
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 mb-6">
+    <!-- Nom -->
+    <app-ui-input label="Nom de l'article" [control]="form.controls.name" [required]="true"
+      placeholder="Ex: Rames de papier A4, Marqueurs noirs..." class="md:col-span-1"></app-ui-input>
+
+    <!-- Quantité -->
+    <app-ui-input label="Quantité en stock" type="number" [control]="form.controls.quantity" [required]="true"
+      placeholder="0" class="md:col-span-1"></app-ui-input>
+
+    <!-- Seuil d'alerte -->
+    <app-ui-input label="Seuil d'alerte" type="number" [control]="form.controls.min_threshold" [required]="true"
+      placeholder="5" class="md:col-span-1"></app-ui-input>
+
+    <!-- Coût unitaire -->
+    <app-ui-input label="Coût unitaire" type="number" [control]="form.controls.cost" [required]="true"
+      placeholder="Ex: 2500" class="md:col-span-1"></app-ui-input>
+  </div>
+</app-ui-form>

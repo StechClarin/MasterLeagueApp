@@ -255,6 +255,26 @@ GROUP_STRUCTURE: List[Dict[str, Any]] = [
             {"name": "Supprimer un type d'évaluation", "codename": "delete_evaluationtype"},
         ]
     },
+    {
+        "name": "Gestion des Équipements",
+        "tag": "asset",
+        "permissions": [
+            {"name": "Lire les équipements", "codename": "view_asset"},
+            {"name": "Ajouter un équipement", "codename": "add_asset"},
+            {"name": "Modifier un équipement", "codename": "change_asset"},
+            {"name": "Supprimer un équipement", "codename": "delete_asset"},
+        ]
+    },
+    {
+        "name": "Gestion des Stocks / Consommables",
+        "tag": "stockitem",
+        "permissions": [
+            {"name": "Lire les articles de stock", "codename": "view_stockitem"},
+            {"name": "Ajouter un article de stock", "codename": "add_stockitem"},
+            {"name": "Modifier un article de stock", "codename": "change_stockitem"},
+            {"name": "Supprimer un article de stock", "codename": "delete_stockitem"},
+        ]
+    },
 ]
 
 class Command(BaseCommand):

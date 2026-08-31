@@ -1,0 +1,74 @@
+# ==============================================================================
+# FRAGMENTS
+# ==============================================================================
+
+fragment AssetFields on AssetType {
+  id
+  name
+  serialNumber
+  category
+  status
+  purchaseDate
+  deploymentDate
+  maintenanceFrequency
+  notificationThresholdDays
+  nextMaintenanceDate
+  cost
+  room {
+    id
+    name
+    roomType
+  }
+  isActive
+  createdAt
+  updatedAt
+}
+
+fragment StockItemFields on StockItemType {
+  id
+  name
+  quantity
+  minThreshold
+  cost
+  isActive
+  createdAt
+  updatedAt
+}
+
+# ==============================================================================
+# QUERIES
+# ==============================================================================
+
+query GetAllAssets($search: String, $page: Int, $pageSize: Int) {
+  assets(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...AssetFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetAssetById($id: ID!) {
+  asset(id: $id) {
+    ...AssetFields
+  }
+}
+
+query GetAllStockItems($search: String, $page: Int, $pageSize: Int) {
+  stockItems(search: $search, page: $page, pageSize: $pageSize) {
+    items {
+      ...StockItemFields
+    }
+    totalCount
+    numPages
+    currentPage
+  }
+}
+
+query GetStockItemById($id: ID!) {
+  stockItem(id: $id) {
+    ...StockItemFields
+  }
+}
