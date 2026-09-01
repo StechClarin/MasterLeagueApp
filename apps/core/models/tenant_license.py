@@ -67,7 +67,19 @@ class TenantLicense(UserAuditModel):
             return True
 
         # 2. Récupération de la page et du module liés à ce tag
-        page = Page.objects.filter(permission_tags__contains=perm.tag).first()
+        # IMPORTANT : le lookup JSON `__contains` (opérateur `@>` de PostgreSQL)
+        # n'est PAS supporté sur SQLite (mode par défaut du Hub local).
+        # On filtre donc en Python pour rester compatible avec les deux backends :
+        # le nombre de pages de navigation est faible et le résultat est mis en
+        # cache par requête via `_license_access_cache`.
+        page = next(
+            (
+                p
+                for p in Page.objects.select_related("module")
+                if perm.tag in (p.permission_tags or [])
+            ),
+            None,
+        )
         if not page:
             request._license_access_cache[cache_key] = True
             return True

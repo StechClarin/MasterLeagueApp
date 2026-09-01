@@ -203,17 +203,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // 2. Filtrer en fonction de la saisie
+    // ⚠️ IMPORTANT : le map() ne doit PAS muter l'état du composant (showResults)
+    // ici, sinon on déclenche NG0100 (ExpressionChangedAfterItHasBeenCheckedError)
+    // car ce flux est consommé par le pipe async pendant la détection de changement.
     this.filteredPages$ = combineLatest([
       this.allPages$,
       this.searchControl.valueChanges.pipe(startWith(''))
     ]).pipe(
       map(([pages, searchTerm]) => {
         const term = (searchTerm || '').toLowerCase();
-        this.showResults = term.length > 0;
         if (!term) return [];
-        return pages.filter(p => p.title.toLowerCase().includes(term));
+        return pages.filter(p => (p.title || '').toLowerCase().includes(term));
       })
     );
+
+    // 3. Afficher/masquer le menu de suggestions via un abonnement dédié
+    // (exécuté hors de la détection de changement => pas d'erreur NG0100)
+    this.searchControl.valueChanges.pipe(
+      startWith(''),
+      map(v => (v || '').length > 0),
+      takeUntil(this.destroy$)
+    ).subscribe(hasText => {
+      this.showResults = hasText;
+    });
   }
 
   ngOnDestroy() {
