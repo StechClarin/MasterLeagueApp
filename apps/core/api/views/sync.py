@@ -99,6 +99,7 @@ class InitialSyncView(APIView):
                     "first_name": admin_user.first_name,
                     "last_name": admin_user.last_name,
                     "password_hash": admin_user.password, # Le Hub a besoin du Hash pour l'Auth locale !
+                    "hub_id": admin_user.hub_id, # CRITIQUE : aligne les chemins médias locaux (document_upload_path) sur ceux du Cloud
                     "is_staff": admin_user.is_staff,
                     "is_active": admin_user.is_active,
                     "is_superuser": admin_user.is_superuser,
@@ -159,6 +160,7 @@ class SyncInView(APIView):
                         'first_name': admin_data['first_name'],
                         'last_name': admin_data['last_name'],
                         'password': admin_data['password_hash'], # Password Hash DIRECT !
+                        'hub_id': admin_data.get('hub_id'), # CRITIQUE : chemins médias locaux alignés sur le Cloud (<hub_id>/<est_id>/...)
                         'is_staff': admin_data['is_staff'],
                         'is_active': admin_data['is_active'],
                         'is_superuser': admin_data.get('is_superuser', False)

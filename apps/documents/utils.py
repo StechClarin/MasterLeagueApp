@@ -28,16 +28,26 @@ def document_upload_path(instance, filename):
         obj = instance.content_object
         
     # Extraction des identifiants (Tenant & Establishment)
+    est = None
     if hasattr(obj, 'establishment') and obj.establishment:
-        est_id = str(obj.establishment.id)
-        if obj.establishment.user:
-            hub_id = obj.establishment.user.hub_id or "global"
+        est = obj.establishment
+        est_id = str(est.id)
     elif hasattr(obj, 'user') and obj.user and hasattr(obj.user, 'hub_id'):
         # Si l'objet métier est l'Etablissement lui-même
-        hub_id = obj.user.hub_id or "global"
+        est = obj
         est_id = str(getattr(obj, 'id', 'global'))
     elif hasattr(obj, 'hub_id'):
         # Si l'objet métier est l'Utilisateur
         hub_id = obj.hub_id or "global"
-        
+    
+    # CRITIQUE SYNC ASSETS : le hub_id détermine le dossier racine des médias.
+    # Pour que les chemins soient IDENTIQUES entre Cloud et Local, on privilégie
+    # `user.hub_id` (présent sur le Cloud), puis on se rabat sur `establishment.code`
+    # (identique des deux côtés après sync-in) avant le fallback "global".
+    # Sans cela, les fichiers locaux partaient sous "global/..." et ne pouvaient
+    # jamais être mis en correspondance avec les manifestes du Cloud.
+    if est is not None:
+        est_user = getattr(est, 'user', None)
+        hub_id = (getattr(est_user, 'hub_id', None) or "") or (getattr(est, 'code', None) or "") or "global"
+    
     return f"{hub_id}/{est_id}/{category}/{final_filename}"
