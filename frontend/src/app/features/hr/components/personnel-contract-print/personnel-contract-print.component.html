@@ -1,0 +1,73 @@
+<div class="toolbar no-print sticky top-0 z-10 bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center justify-between">
+    <p class="text-sm text-slate-500" *ngIf="!data">Aucune donnée de contrat trouvée. Revenez au formulaire puis cliquez « Imprimer le contrat ».</p>
+    <p class="text-sm text-slate-500" *ngIf="data">Aperçu du contrat — la boîte d'impression s'ouvre automatiquement.</p>
+    <button type="button" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm" (click)="printNow()">Imprimer</button>
+</div>
+
+<div class="contract-sheet" *ngIf="data">
+    <!-- En-tête établissement -->
+    <div class="text-center border-b-2 border-black pb-4 mb-6">
+        <h1 class="text-2xl font-bold uppercase tracking-widest">{{ data.establishment || 'Établissement' }}</h1>
+        <p class="text-sm">République du Cameroun — Paix – Travail – Patrie</p>
+    </div>
+
+    <h2 class="text-center text-xl font-bold uppercase tracking-widest my-6">Contrat de Travail</h2>
+
+    <!-- Parties -->
+    <p class="mb-6">
+        Entre les soussignés :<br>
+        <strong>{{ data.establishment || '____________________' }}</strong>, représenté par son responsable légal, ci-après dénommé <strong>« l'Employeur »</strong> d'une part,
+        et <strong>{{ fullName() }}</strong>, matricule {{ data.personnel?.matricule || '____' }}, demeurant à ………………, ci-après dénommé <strong>« le Salarié »</strong> d'autre part.
+    </p>
+
+    <p class="mb-4">Il a été convenu et arrêté ce qui suit :</p>
+
+    <ol class="list-decimal pl-6 space-y-2 mb-6">
+        <li>
+            <strong>Embauche :</strong> l'Employeur engage le Salarié en qualité de
+            <strong>{{ data.personnel?.jobTitle || '…………………………' }}</strong>, à compter du {{ formatDate(data.personnel?.dateHired) }}.
+        </li>
+        <li>
+            <strong>Lieu de travail :</strong> {{ data.establishment || '____________________' }}
+            <span *ngIf="data.attachedEstablishments?.length">
+                (rattachements : {{ data.attachedEstablishments.join(', ') }})
+            </span>.
+        </li>
+        <li>
+            <strong>Obligations :</strong> le Salarié s'engage à exercer ses fonctions avec loyauté, diligence et dans le respect du règlement intérieur de l'établissement.
+        </li>
+        <li>
+            <strong>Rémunération :</strong> modalité « {{ paymentLabel() }} » — montant : <strong>{{ paymentDetail() }}</strong>.
+            <span *ngIf="data.contract?.socialSecurityNumber"> — N° CNPS : {{ data.contract.socialSecurityNumber }}</span>
+        </li>
+        <li>
+            <strong>Durée :</strong> le contrat est conclu pour une durée déterminée/indéterminée selon la législation en vigueur, renouvelable par accord des parties.
+        </li>
+        <li>
+            <strong>Résiliation :</strong> chacune des parties peut mettre fin au contrat dans le respect des préavis légaux.
+        </li>
+        <li>
+            <strong>Litiges :</strong> tout différend sera soumis à la juridiction compétente.
+        </li>
+    </ol>
+
+    <p class="text-justify mb-8">
+        Fait en deux exemplaires originaux, à {{ data.establishment || '____________________' }}, le {{ generatedDate() }}.
+    </p>
+
+    <!-- Signatures -->
+    <div class="grid grid-cols-2 gap-10 mt-12">
+        <div class="text-center">
+            <p class="mb-2">Le Salarié<br><span class="text-xs">(lu et approuvé, précédé de la mention « lu et approuvé »)</span></p>
+            <p class="sign-line pt-2 text-sm">{{ fullName() }}</p>
+        </div>
+        <div class="text-center">
+            <p class="mb-2">L'Employeur<br><span class="text-xs">(nom &amp; qualité du signataire)</span></p>
+            <p class="sign-line pt-2 text-sm">{{ data.establishment || '' }}</p>
+        </div>
+    </div>
+
+    <p class="text-center text-xs text-gray-500 mt-12">
+        Document généré le {{ generatedDate() }} via Ethernanos — à faire signer puis importer (scan) dans le dossier du personnel.
+    </p>
+</div>

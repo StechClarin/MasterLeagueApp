@@ -36,4 +36,15 @@ export class PersonnelService extends BaseService {
             establishment: this.structureState.currentEstablishmentId() 
         });
     }
+
+    /**
+     * Import du contrat signé (scanné) via un POST multipart.
+     * POST /api/personnel/upload_contract/{id}/
+     */
+    uploadContract(id: string, file: File): Observable<any> {
+        const url = `${this.apiUrl}/upload_contract/${id}/`;
+        const formData = new FormData();
+        formData.append('contract_file', file, file.name);
+        return this.http.post(url, formData);
+    }
 }

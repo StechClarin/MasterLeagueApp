@@ -1,16 +1,16 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Apollo } from 'apollo-angular';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Observable, Subject, combineLatest } from 'rxjs';
-import { map, startWith, takeUntil, tap } from 'rxjs/operators';
+import { map, startWith, takeUntil } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 
 // ✅ On utilise l'alias @core pour l'import propre
 import { AuthService } from '@core/services/auth.service';
 import { StructureStateService } from '@core/services/structure-state.service';
 import { ModuleStateService } from '@core/services/module-state.service';
+import { EstablishmentSelectorComponent } from '../establishment-selector/establishment-selector.component';
 
 interface Page {
   id: string;
@@ -23,7 +23,7 @@ interface Page {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, EstablishmentSelectorComponent],
   template: `
     <header class="fixed top-0 right-0 left-72 h-20 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 z-40 transition-all duration-300">
       
@@ -46,25 +46,9 @@ interface Page {
       <!-- Right Section: Actions & Profile -->
       <div class="flex items-center gap-6">
         
-        <!-- Establishment Selector -->
+        <!-- Establishment Selector (recherche distante / combobox) -->
         <div class="hidden md:flex items-center">
-        <div class="relative group">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m8-2a2 2 0 100-4 2 2 0 000 4"></path></svg>
-            </div>
-            <select 
-                [ngModel]="structureState.currentEstablishmentId()"
-                (ngModelChange)="structureState.setEstablishment($event || null)"
-                class="pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full appearance-none hover:bg-white hover:border-indigo-300 transition-all cursor-pointer font-medium">
-                <option [ngValue]="null">Tous les établissements</option>
-                <option *ngFor="let ets of structureState.establishments()" [ngValue]="ets?.id">
-                    {{ ets?.name }}
-                </option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </div>
-        </div>
+          <app-establishment-selector></app-establishment-selector>
         </div>
 
         <!-- Search Bar -->
@@ -231,13 +215,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  onEstablishmentSelect(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const val = select.value || null;
-    console.log('[Header] Selection changed to:', val);
-    this.structureState.setEstablishment(val);
   }
 
   navigateTo(link: string) {

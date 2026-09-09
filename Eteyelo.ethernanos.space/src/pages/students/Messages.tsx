@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, Send, User } from 'lucide-react';
+import { Mail, Send, User, ArrowLeft } from 'lucide-react';
 
 const Messages: React.FC = () => {
   const [activeMessage, setActiveMessage] = useState<number | null>(0);
+  const [detailMode, setDetailMode] = useState(false);
 
   const messages = [
     {
@@ -32,15 +33,15 @@ const Messages: React.FC = () => {
   ];
 
   return (
-    <div className="animate-fade-in" style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
+    <div className="animate-fade-in messages-page" style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
       <div className="page-header" style={{ marginBottom: '24px' }}>
         <h1 className="page-title">Messagerie</h1>
         <p className="page-subtitle">Communiquez avec l'administration et vos professeurs.</p>
       </div>
 
-      <div className="glass-panel" style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+      <div className={`glass-panel mail-shell ${detailMode ? 'show-detail' : 'show-list'}`} style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
         {/* Inbox List */}
-        <div style={{ width: '350px', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
+        <div className="mail-list" style={{ width: '350px', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '20px', borderBottom: '1px solid var(--glass-border)' }}>
             <button style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'background 0.2s' }}>
               <Mail size={18} /> Nouveau Message
@@ -51,7 +52,10 @@ const Messages: React.FC = () => {
             {messages.map((msg, idx) => (
               <div 
                 key={msg.id} 
-                onClick={() => setActiveMessage(idx)}
+                onClick={() => {
+                  setActiveMessage(idx);
+                  setDetailMode(true);
+                }}
                 style={{ 
                   padding: '20px', 
                   borderBottom: '1px solid var(--glass-border)', 
@@ -77,11 +81,28 @@ const Messages: React.FC = () => {
         </div>
 
         {/* Message Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.1)' }}>
+        <div className="mail-view" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.1)' }}>
           {activeMessage !== null ? (
             <>
               <div style={{ padding: '24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                <button
+                  className="mail-back"
+                  onClick={() => setDetailMode(false)}
+                  title="Retour à la liste"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--glass-border)',
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', flexShrink: 0 }}>
                   <User size={24} />
                 </div>
                 <div>

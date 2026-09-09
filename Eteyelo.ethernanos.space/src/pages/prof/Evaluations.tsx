@@ -84,7 +84,7 @@ const EvaluationsProf: React.FC = () => {
 
   return (
     <div className="animate-fade-in" style={{ position: 'relative' }}>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="page-header page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">Évaluations</h1>
           <p className="page-subtitle">Gérez vos devoirs et examens.</p>
@@ -101,7 +101,7 @@ const EvaluationsProf: React.FC = () => {
       </div>
 
       <div className="glass-panel" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div className="ev-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ background: 'rgba(236, 72, 153, 0.2)', padding: '8px', borderRadius: '8px' }}>
               <FileText size={24} color="var(--secondary)" />
@@ -109,7 +109,7 @@ const EvaluationsProf: React.FC = () => {
             <h2 style={{ fontSize: '20px', fontWeight: 600 }}>Liste des Évaluations</h2>
           </div>
 
-          <div style={{ position: 'relative', width: '300px' }}>
+          <div className="ev-search" style={{ position: 'relative', width: '300px' }}>
             <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input 
               type="text" 
@@ -212,7 +212,7 @@ const EvaluationsProf: React.FC = () => {
             
             <form onSubmit={handleCreateEvaluation} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+              <div className="modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                 
                 {/* COLONNE GAUCHE : IDENTIFICATION */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

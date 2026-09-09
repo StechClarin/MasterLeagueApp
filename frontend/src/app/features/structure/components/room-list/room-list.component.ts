@@ -77,7 +77,15 @@ export class RoomListComponent extends BaseModalListComponent<any> implements Af
     }
 
     // --- Helpers d'affichage du type de local ---
-    roomTypeLabel(value: string): string {
+    private resolveRoomType(item: any): string {
+        // La query GraphQL renvoie `roomType` (camelCase). On tolère `room_type`
+        // (snake_case) et tout format de casse pour rester robuste.
+        const raw = item?.roomType ?? item?.room_type ?? '';
+        return raw ? String(raw).trim().toUpperCase() : '';
+    }
+
+    roomTypeLabel(item: any): string {
+        const value = this.resolveRoomType(item);
         const labels: Record<string, string> = {
             CLASSROOM: 'Salle de classe',
             OFFICE: 'Bureau',
@@ -85,10 +93,11 @@ export class RoomListComponent extends BaseModalListComponent<any> implements Af
             LIBRARY: 'Bibliothèque',
             STORAGE: 'Autre / Stockage'
         };
-        return labels[value] || value || '—';
+        return labels[value] || (value || '—');
     }
 
-    roomTypeBadgeClass(value: string): string {
+    roomTypeBadgeClass(item: any): string {
+        const value = this.resolveRoomType(item);
         const classes: Record<string, string> = {
             CLASSROOM: 'bg-indigo-100 text-indigo-700',
             OFFICE: 'bg-emerald-100 text-emerald-700',

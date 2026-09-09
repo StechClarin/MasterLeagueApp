@@ -67,7 +67,7 @@
   }
   
   /* Cacher tout ce qui n'est pas la modale ou les pages d'impression */
-  app-root > *:not(app-ui-modal):not(app-idcard-print):not(app-certificate-print):not(app-evaluation-planning-print):not(app-bulletin-print):not(app-payment-receipt):not(app-invoice-receipt) {
+  app-root > *:not(app-ui-modal):not(app-idcard-print):not(app-certificate-print):not(app-evaluation-planning-print):not(app-bulletin-print):not(app-payment-receipt):not(app-invoice-receipt):not(app-personnel-contract-print) {
     display: none !important;
   }
 
@@ -112,5 +112,33 @@
     max-width: 100% !important;
     margin: 0 !important;
     box-shadow: none !important;
+  }
+
+  /* ---------- Impression du « Rapport d'Évolution » (modale interne) ----------
+     Le rapport est ouvert depuis une page routée (ex. Inscriptions) -> il faut
+     réafficher le layout, masquer le chrome & la liste, et ne garder que la modale. */
+  html.printing-student-report app-root > app-main-layout {
+    display: block !important;
+  }
+  html.printing-student-report app-main-layout,
+  html.printing-student-report app-main-layout > div,
+  html.printing-student-report app-main-layout main {
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    background: white !important;
+    display: block !important;
+  }
+  html.printing-student-report app-main-layout app-sidebar,
+  html.printing-student-report app-main-layout app-header {
+    display: none !important;
+  }
+  /* Ne conserver que le rapport : on masque la liste et les modales sœurs. */
+  html.printing-student-report app-enrollment-list > app-ui-list-page,
+  html.printing-student-report app-enrollment-list > app-ui-modal,
+  html.printing-student-report app-enrollment-list > app-ui-confirm-modal,
+  html.printing-student-report app-enrollment-list > app-ui-export-modal,
+  html.printing-student-report app-main-layout router-outlet {
+    display: none !important;
   }
 }

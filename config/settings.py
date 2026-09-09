@@ -29,8 +29,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'apps.core.middleware.LicenseMiddleware',
+    # [FIX v1.0] JWTMiddleware DOIT passer AVANT LicenseMiddleware :
+    # l'injection de l'utilisateur JWT doit être faite avant le contrôle de licence,
+    # sinon le bypass superuser ne fonctionne jamais en mode API (Bearer).
     'apps.core.middleware.JWTMiddleware',
+    'apps.core.middleware.LicenseMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.middleware.EstablishmentMiddleware',

@@ -1,0 +1,109 @@
+==============================================================================
+MAIL ADAPTÉ — VERSION CAPTIVANTE (Eteyelo × MTN / Airtel)
+==============================================================================
+
+> RÈGLES APPLIQUÉES POUR CAPTIVER :
+> 1. Objet = bénéfice concret + curiosité, jamais de description.
+> 2. Première phrase = accroche problème/opportunité (pas "Je me présente").
+> 3. Le produit est vendu par la valeur pour l'opérateur, pas par ses fonctionnalités.
+> 4. Chaque argument = un bénéfice chiffrable / actionnable pour l'opérateur.
+> 5. CTA à faible engagement ("20 minutes de démo") + fenêtre idéale (rentrée).
+>
+> AVANT ENVOI (personnalisation) :
+> - Remplacez [Prénom] par le prénom du contact ciblé
+>   (idéal : Directeur Mobile Money / Head of B2B ou VAS).
+> - Remplacez [Opérateur] par MTN MoMo ou Airtel Money.
+> - Si vous disposez d'un chiffre marché réel (volume scolarité via ARCEP/BCEAO,
+>   nombre d'écoles), glissez-le dans l'accroche : ça décuple l'impact.
+
+------------------------------------------------------------------------------
+OBJET (au choix)
+------------------------------------------------------------------------------
+
+1. [Prénom], les frais de scolarité : le flux récurrent qui échappe à MoMo
+2. Et si 100 000 paiements de scolarité passaient par [MTN MoMo / Airtel Money] ?
+3. [Opérateur] × écoles : un canal de transactions qui se construit maintenant
+4. Offre B2B clé en main : le ERP qui digitalise l'encaissement des écoles
+5. 20 min pour voir l'école du futur payer via votre réseau
+
+------------------------------------------------------------------------------
+CORPS DU MAIL
+------------------------------------------------------------------------------
+
+Bonjour [Prénom],
+
+Chaque rentrée, des milliards de francs CFA de frais de scolarité circulent
+encore en espèces : hors de tout radar, hors de votre réseau, hors de votre
+chiffre d'affaires. Pourtant, c'est l'un des flux les plus prévisibles qui
+soit : une échéance fixe, des dizaines de milliers de payeurs, trois pics
+massifs par an.
+
+Je l'ai équipé.
+
+J'ai conçu Eteyelo, l'ERP unifié des écoles, lycées et universités :
+scolarité, pédagogie, vie scolaire et finance de bout en bout (tarification
+→ facturation → encaissements → recouvrement en temps réel), avec le Mobile
+Money comme mode de paiement natif. Une plateforme déjà fonctionnelle, avec
+un portail direction, un portail professeurs et une gestion multi-
+établissements (groupes scolaires, réseaux d'académies).
+
+Pour [MTN / Airtel], c'est un canal de transactions structuré qui s'ajoute à
+votre réseau :
+
+1. Du volume, mécaniquement.
+   Chaque école équipée convertit des milliers de frais de scolarité en
+   encaissements digitaux récurrents — avec des pics massifs à la rentrée
+   et aux périodes d'examens.
+
+2. Une base de parents prête pour vos services.
+   Chaque élève est relié à ses tuteurs (nom, téléphone). Une audience
+   qualifiée, immédiatement adressable par vos offres VAS, assurances,
+   épargne ou data.
+
+3. Un ancrage durable dans le quotidien scolaire.
+   Élèves, enseignants et directions utilisent la plateforme toute l'année :
+   votre solution devient un réflexe, pas une option.
+
+4. Un déploiement à l'échelle d'un réseau.
+   Eteyelo gère nativement plusieurs établissements : une école pilote
+   aujourd'hui, un réseau entier demain, sans friction technique.
+
+5. Une offre VAS B2B clé en main.
+   En co-marquage, en marque blanche ou par API, votre opérateur équipe les
+   écoles sans développer — et enrichit son catalogue services numériques.
+
+Je ne vous demande pas de me croire sur parole : la plateforme est en
+production, et le circuit complet (facture générée → encaissement Mobile
+Money → état de recouvrement en temps réel) se démontre en 20 minutes.
+
+Seriez-vous disponible pour une courte démonstration cette semaine, en
+présentiel ou en visioconférence ? Nous pourrons y voir la solution en
+action et parler concrètement du modèle de partenariat : intégration API,
+partage de revenus ou marque blanche.
+
+Cordialement,
+
+Stech Clarin Bodern MOLINGUI
+Développeur Logiciel Indépendant — Créateur d'Eteyelo
+Téléphone : [Votre numéro]
+LinkedIn / Portfolio : [Lien]
+
+P.S. : Ce mail arrive volontairement avant le pic des réinscriptions : c'est
+le meilleur moment pour équiper une école pilote avant la prochaine rentrée.
+
+------------------------------------------------------------------------------
+VARIANTE ULTRA-COURTE (LinkedIn / message direct)
+------------------------------------------------------------------------------
+
+Bonjour [Prénom],
+
+Nous ne nous connaissons pas encore, mais vos équipes Mobile Money et moi
+partageons un intérêt : les flux de scolarité. Mon ERP scolaire Eteyelo
+digitalise la facturation et l'encaissement des écoles (Mobile Money natif,
+multi-établissements, recouvrement temps réel). Objectif : que chaque
+parent paie via [MTN MoMo / Airtel Money].
+
+Une démo de 15 minutes vous en dira plus qu'un long message. Dispo cette
+semaine ?
+
+Stech Clarin Bodern MOLINGUI — Créateur d'Eteyelo

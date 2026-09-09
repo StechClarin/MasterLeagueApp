@@ -155,10 +155,20 @@ query GetAllTeachingAssignments($search: String, $page: Int, $pageSize: Int) {
       classroom {
         id
         name
+        level {
+          id
+          name
+        }
       }
       subject {
         id
         name
+        levelSubjects {
+          level {
+            id
+            name
+          }
+        }
       }
       academicYear {
         id

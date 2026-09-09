@@ -1,12 +1,29 @@
 import csv
+import uuid
+from decimal import Decimal
 import openpyxl
 from django.http import HttpResponse
-from datetime import datetime
+from datetime import datetime, date
 
 class ExportFile:
     """
     Utilitaire générique pour transformer une liste de dicts en fichier.
     """
+
+    @staticmethod
+    def _normalize_value(val):
+        """
+        [FIX v1.0] Normalise les valeurs non sérialisables (UUID, Decimal, date, bool)
+        pour openpyxl / csv. Sans cela, l'export plante avec
+        'Cannot convert UUID(...) to Excel'.
+        """
+        if isinstance(val, (uuid.UUID, Decimal)):
+            return str(val)
+        if isinstance(val, bool):
+            return "Oui" if val else "Non"
+        if isinstance(val, (datetime, date)):
+            return val.replace(tzinfo=None) if isinstance(val, datetime) else val
+        return val
 
     @staticmethod
     def _get_timestamp():
@@ -92,10 +109,7 @@ class ExportFile:
         for row_num, item in enumerate(rows_to_generate, start=2):
             ws.row_dimensions[row_num].height = 22
             for col_num, h in enumerate(headers, start=1):
-                val = item.get(h, '')
-                if isinstance(val, datetime):
-                    val = val.replace(tzinfo=None)
-                
+                val = ExportFile._normalize_value(item.get(h, ''))
                 cell = ws.cell(row=row_num, column=col_num, value=val)
                 cell.font = data_font
                 cell.alignment = data_alignment

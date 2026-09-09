@@ -100,8 +100,25 @@ MODULE_STRUCTURE = [
         ]
     },
     {
-        "name": "Académique",
+        "name": "Pedagogie",
         "order": 3,
+        "display_mod": "card-view",
+        "icon": "pedagogy-icon",
+        "pages": [
+
+            {
+                "title": "Affectations Profs",
+                "icon": "assignment-icon",
+                "order": 1,
+                "link": "/assignments",
+                "tags": ["teachingassignment"]
+            },
+
+        ]
+    },
+    {
+        "name": "Planning & suivi",
+        "order": 4,
         "display_mod": "card-view",
         "icon": "pedagogy-icon",
         "pages": [
@@ -113,24 +130,19 @@ MODULE_STRUCTURE = [
                 "tags": ["planning"] 
             },
             {
-                "title": "Affectations Profs",
-                "icon": "assignment-icon",
-                "order": 1,
-                "link": "/assignments",
-                "tags": ["teachingassignment"]
-            },
-            {
                 "title": "Plannings Pédagogiques",
                 "icon": "pedagogy-icon",
                 "order": 2,
                 "link": "/plannings",
                 "tags": ["planning"]
             },
+
+            
         ]
     },
     {
         "name": "Évaluations",
-        "order": 4,
+        "order": 5,
         "display_mod": "card-view",
         "icon": "evaluation-icon",
         "pages": [
@@ -159,7 +171,7 @@ MODULE_STRUCTURE = [
     },
     {
         "name": "Ressources Humaines",
-        "order": 5,
+        "order": 6,
         "display_mod": "card-view",
         "icon": "hr-icon",
         "pages": [
@@ -177,28 +189,6 @@ MODULE_STRUCTURE = [
                 "link": "/contract-types",
                 "tags": ["contract_type"]
             },
-        ]
-    },
-    {
-        "name": "Administration",
-        "order": 10,
-        "display_mod": "card-view",
-        "icon": "settings-icon",
-        "pages": [
-            {
-                "title": "Comptes Utilisateurs",
-                "icon": "user-icon",
-                "order": 0,
-                "link": "/users",
-                "tags": ["user"]
-            },
-            {
-                "title": "Rôles & Permissions",
-                "icon": "role-icon",
-                "order": 1,
-                "link": "/roles",
-                "tags": ["role"]
-            }
         ]
     },
     {
@@ -225,7 +215,7 @@ MODULE_STRUCTURE = [
     },
     {
         "name": "Finance",
-        "order": 6,
+        "order": 8,
         "display_mod": "card-view",
         "icon": "evaluation-icon",
         "pages": [
@@ -264,6 +254,28 @@ MODULE_STRUCTURE = [
                 "link": "/expenses",
                 "tags": ["expense"]
             },
+        ]
+    },
+    {
+        "name": "Administration",
+        "order": 10,
+        "display_mod": "card-view",
+        "icon": "settings-icon",
+        "pages": [
+            {
+                "title": "Comptes Utilisateurs",
+                "icon": "user-icon",
+                "order": 0,
+                "link": "/users",
+                "tags": ["user"]
+            },
+            {
+                "title": "Rôles & Permissions",
+                "icon": "role-icon",
+                "order": 1,
+                "link": "/roles",
+                "tags": ["role"]
+            }
         ]
     },
 ]

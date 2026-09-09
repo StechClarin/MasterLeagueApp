@@ -22,9 +22,25 @@ class RouterView(APIView):
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        if 'export_data' in request.path:
-             return Response({"debug": "RouterView hit!", "path": request.path}, status=200)
+        # [FIX v1.0] Retrait du bloc debug 'export_data' qui court-circuitait super().dispatch()
+        # et provoquait une erreur 500 (AssertionError: .accepted_renderer not set on Response).
         return super().dispatch(request, *args, **kwargs)
+
+    def perform_content_negotiation(self, request, force=False):
+        """
+        [FIX v1.0] L'export/import-trame retourne un HttpResponse brut (CSV/Excel)
+        mais utilise le paramètre '?format=csv|excel'. Sans renderer enregistré,
+        DRF lève Http404 (filter_renderers) avant même d'exécuter le handler.
+        On force donc la négociation pour ces routes afin que le handler s'exécute
+        et renvoie le fichier directement (finalize_response laisse passer les
+        HttpResponse qui ne sont pas des DRF Response).
+        """
+        if request.method == 'GET' and any(
+            marker in request.path for marker in ('export_data', 'import_template')
+        ):
+            from rest_framework.renderers import JSONRenderer
+            return (JSONRenderer(), JSONRenderer().media_type)
+        return super().perform_content_negotiation(request, force)
 
     def post(self, request, model_name, method_name, pk=None):
         # 1. Trouver la classe du contrôleur

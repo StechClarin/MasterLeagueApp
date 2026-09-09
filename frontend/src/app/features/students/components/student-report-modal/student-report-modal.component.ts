@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, inject, signal, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgApexchartsModule, ChartComponent, ApexAxisChartSeries, ApexChart, ApexXAxis, ApexTitleSubtitle, ApexYAxis, ApexDataLabels, ApexStroke, ApexMarkers, ApexFill } from 'ng-apexcharts';
@@ -44,7 +44,11 @@ export type ChartOptions = {
   templateUrl: './student-report-modal.component.html',
   styleUrl: './student-report-modal.component.css'
 })
-export class StudentReportModalComponent implements OnInit, OnChanges {
+export class StudentReportModalComponent implements OnInit, OnChanges, OnDestroy {
+    /** Classe posée sur <html> pendant l'impression pour n'imprimer que le rapport (voir styles.scss). */
+    private readonly PRINT_FLAG = 'printing-student-report';
+    private removePrintFlag = () => document.documentElement.classList.remove(this.PRINT_FLAG);
+
     @Input() isOpen: boolean = false;
     @Input() student: any = null;
     @Input() enrollment: any = null;
@@ -77,6 +81,7 @@ export class StudentReportModalComponent implements OnInit, OnChanges {
     globalChartOptions: Partial<ChartOptions> | any;
 
     ngOnInit() {
+        window.addEventListener('afterprint', this.removePrintFlag);
         this.loadYears();
 
         this.yearControl.valueChanges.subscribe(yearId => {
@@ -176,12 +181,41 @@ export class StudentReportModalComponent implements OnInit, OnChanges {
         const currentGrades = this.grades();
         
         // 1. Extraire toutes les sessions uniques pour l'axe X
+        // L'ordre DOIT suivre la chronologie pédagogique : devoirs, puis
+        // composition/bilan, puis examen (et non l'ordre d'arrivée des notes).
         const sessionSet = new Set<string>();
+        const sessionMeta = new Map<string, { rank: number; seq: number; title: string }>();
         currentGrades.forEach(g => {
-            const sessionTitle = g.evaluationSubject?.session?.title || 'Session Inconnue';
-            sessionSet.add(sessionTitle);
+            const session: any = g.evaluationSubject?.session;
+            const title = session?.title || 'Session Inconnue';
+            sessionSet.add(title);
+
+            if (!sessionMeta.has(title)) {
+                const rawType = String(
+                    session?.evaluationType?.code || session?.evaluationType?.name || title || ''
+                ).toLowerCase();
+
+                let rank = 3;
+                if (/devoir|interro|controle|contrôle|^ds$|^cc$|\bds\b|\bcc\b/.test(rawType)) {
+                    rank = 0; // Devoirs d'abord
+                } else if (/compo|composition|bilan|projet/.test(rawType)) {
+                    rank = 1;
+                } else if (/exam|synth|final|session/.test(rawType)) {
+                    rank = 2; // Examens en dernier
+                }
+
+                const num = String(title).match(/(\d+)/);
+                sessionMeta.set(title, { rank, seq: num ? parseInt(num[1], 10) : 0, title });
+            }
         });
-        const categories = Array.from(sessionSet);
+
+        const categories = Array.from(sessionSet).sort((a, b) => {
+            const ma = sessionMeta.get(a) || { rank: 3, seq: 0, title: a };
+            const mb = sessionMeta.get(b) || { rank: 3, seq: 0, title: b };
+            if (ma.rank !== mb.rank) return ma.rank - mb.rank;
+            if (ma.seq !== mb.seq) return ma.seq - mb.seq;
+            return ma.title.localeCompare(mb.title, 'fr', { numeric: true });
+        });
         
         // 2. Grouper les notes par matière et par session
         // Map<SubjectName, Map<SessionTitle, number>>
@@ -389,8 +423,15 @@ export class StudentReportModalComponent implements OnInit, OnChanges {
         this.weakSubjects.set(weak);
     }
     
+    ngOnDestroy() {
+        window.removeEventListener('afterprint', this.removePrintFlag);
+    }
+
     printReport() {
-        window.print();
+        document.documentElement.classList.add(this.PRINT_FLAG);
+        // Léger délai pour laisser le navigateur appliquer le mode d'impression
+        // (le flag est retiré automatiquement via l'événement 'afterprint').
+        setTimeout(() => window.print(), 60);
     }
 
     closeModal() {

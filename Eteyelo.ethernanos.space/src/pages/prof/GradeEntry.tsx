@@ -61,7 +61,7 @@ const GradeEntryProf: React.FC = () => {
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '40px' }} onClick={() => activeAbsenceMenu && setActiveAbsenceMenu(null)}>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="page-header page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <h1 className="page-title" style={{ fontSize: '24px' }}>
             Saisie des Notes : <span style={{ color: 'var(--primary)' }}>Évaluation #{id}</span>
@@ -72,7 +72,7 @@ const GradeEntryProf: React.FC = () => {
           </p>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <button onClick={() => navigate('/prof/evaluations')} className="glass-card hover-lift" style={{ 
             display: 'flex', alignItems: 'center', gap: '8px', 
             padding: '10px 20px', background: 'white', color: 'var(--text-main)', border: '1px solid var(--glass-border)', borderRadius: '12px', cursor: 'pointer', fontWeight: 600
@@ -90,7 +90,7 @@ const GradeEntryProf: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
+      <div className="grade-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
         <div className="glass-card" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '4px' }}>Total Élèves</div>
@@ -155,8 +155,9 @@ const GradeEntryProf: React.FC = () => {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'visible' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="glass-panel">
+        <div className="table-wrap">
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--glass-border)' }}>
               <th style={{ padding: '16px 24px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)' }}>Étudiant</th>
@@ -269,6 +270,7 @@ const GradeEntryProf: React.FC = () => {
             )}
           </tbody>
         </table>
+        </div>
         <div style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'flex-end', fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
           Étudiants filtrés : {filteredStudents.length} / {students.length}
         </div>

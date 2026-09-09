@@ -1,6 +1,7 @@
 import React from 'react';
-import { Users, FileText, CheckCircle, Clock, AlertTriangle, BookOpen, GraduationCap, TrendingUp, Star } from 'lucide-react';
+import { Users, FileText, Clock, AlertTriangle, GraduationCap, TrendingUp, Star } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { usePortalAuth } from '../../context/PortalAuthContext';
 
 const classEvolutionData = [
   { period: 'Devoir 1', 'Terminale S': 11.5, '1ère S': 10.5, 'Seconde A': 12.0 },
@@ -15,10 +16,12 @@ const CLASS_COLORS = {
 };
 
 const DashboardProf: React.FC = () => {
+  const { session } = usePortalAuth();
+  const prof = session?.person;
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title">Bonjour, Prof. Martin 👋</h1>
+        <h1 className="page-title">Bonjour, {prof?.name ?? 'Enseignant'} 👋</h1>
         <p className="page-subtitle">Voici votre tableau de bord du jour.</p>
       </div>
 
@@ -60,7 +63,7 @@ const DashboardProf: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
+      <div className="dashboard-split" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
         
         {/* Évolution par classe */}
         <div className="glass-panel" style={{ padding: '24px' }}>

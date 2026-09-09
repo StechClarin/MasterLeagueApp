@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Users, LayoutDashboard, Sparkles, BookOpen, ShieldCheck, ChevronRight, CalendarDays, Wallet, BarChart3, MessageCircle, Star, FileText } from 'lucide-react';
+import { GraduationCap, Users, LayoutDashboard, Sparkles, BookOpen, ShieldCheck, ChevronRight, CalendarDays, Wallet, Star, FileText } from 'lucide-react';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Landing: React.FC = () => {
   ];
 
   return (
-    <div className="animate-fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)' }}>
+    <div className="animate-fade-in landing-root" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)' }}>
       {/* HEADER */}
       <header style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--glass-border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -39,14 +39,14 @@ const Landing: React.FC = () => {
         
         <div style={{ display: 'flex', gap: '16px' }}>
           <button 
-            onClick={() => navigate('/prof')}
+            onClick={() => navigate('/auth?space=prof')}
             className="hover-bg"
             style={{ padding: '10px 20px', background: 'transparent', color: 'var(--text-main)', border: '1px solid var(--glass-border)', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.3s' }}
           >
             Espace Professeur
           </button>
           <button 
-            onClick={() => navigate('/student')}
+            onClick={() => navigate('/auth?space=student')}
             className="hover-lift"
             style={{ padding: '10px 24px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)' }}
           >
@@ -90,7 +90,7 @@ const Landing: React.FC = () => {
 
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button 
-              onClick={() => navigate('/student')}
+              onClick={() => navigate('/auth?space=student')}
               className="glass-card hover-lift"
               style={{ position: 'relative', overflow: 'hidden', padding: '32px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', cursor: 'pointer', width: '280px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}
             >
@@ -105,7 +105,7 @@ const Landing: React.FC = () => {
             </button>
 
             <button 
-              onClick={() => navigate('/prof')}
+              onClick={() => navigate('/auth?space=prof')}
               className="glass-card hover-lift"
               style={{ position: 'relative', overflow: 'hidden', padding: '32px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', cursor: 'pointer', width: '280px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}
             >

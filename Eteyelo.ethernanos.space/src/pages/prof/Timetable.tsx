@@ -21,13 +21,13 @@ const TimetableProf: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="page-header page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">Mon Planning</h1>
           <p className="page-subtitle">{getWeekRange()}</p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+        <div className="inline-tools" style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '12px', border: '1px solid var(--glass-border)', flexWrap: 'wrap' }}>
           <button 
             onClick={() => setWeekOffset(prev => prev - 1)}
             style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -59,7 +59,7 @@ const TimetableProf: React.FC = () => {
           <h2 style={{ fontSize: '20px', fontWeight: 600 }}>Emploi du temps</h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
+        <div className="tt-week" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
           {scheduleData.map((day, idx) => (
             <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 600 }}>

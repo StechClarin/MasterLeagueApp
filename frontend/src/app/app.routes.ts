@@ -33,6 +33,11 @@ export const routes: Routes = [
       .then(m => m.IdcardPrintComponent)
   },
   {
+    path: 'print/personnel-contract',
+    loadComponent: () => import('./features/hr/components/personnel-contract-print/personnel-contract-print.component')
+      .then(m => m.PersonnelContractPrintComponent)
+  },
+  {
     path: 'print/receipt/:id',
     loadComponent: () => import('@features/finance/components/payment-receipt/payment-receipt.component')
       .then(m => m.PaymentReceiptComponent)

@@ -27,6 +27,35 @@ class BaseController(APIView):
             raise NotImplementedError("Les attributs 'service_class' et 'serializer_class' doivent être définis.")
         self.service = self.service_class()
 
+    @staticmethod
+    def _shallow_copy_data(data):
+        """
+        Copie « shallow » de request.data.
+
+        Un simple `request.data.copy()` déclenche un deepcopy de tout le payload.
+        Or, en POST multipart/form-data (logo, fichiers...), DRF fusionne les
+        fichiers dans le QueryDict : le deepcopy tente alors de sérialiser les
+        objets UploadedFile (BufferedRandom) et échoue
+        (TypeError: cannot pickle 'BufferedRandom' instances) -> erreur 500.
+
+        On reconstruit donc une copie MUTABLE qui réutilise les valeurs
+        existantes (listes et UploadedFile) PAR RÉFÉRENCE, sans deep-copy.
+        """
+        # FormData multipart : QueryDict mélangeant champs + fichiers
+        if hasattr(data, 'lists') and hasattr(data, 'setlist'):
+            from django.http import QueryDict
+            clone = QueryDict(mutable=True)
+            for key, values in data.lists():
+                clone.setlist(key, list(values))
+            return clone
+        # JSON : dict Python classique
+        if isinstance(data, dict):
+            return dict(data)
+        # Autres objets : fallback vers la copie native si disponible
+        if hasattr(data, 'copy'):
+            return data.copy()
+        return data
+
     def get_serializer_class(self, action='read'):
         """
         Retourne la classe du serializer à utiliser.
@@ -53,6 +82,17 @@ class BaseController(APIView):
         kwargs.setdefault('context', {})
         kwargs['context']['request'] = getattr(self, 'request', None)
         return serializer_class(*args, **kwargs)
+
+    def perform_content_negotiation(self, request, force=False):
+        """
+        [FIX v1.0] Le RouterView négocie déjà le renderer (y compris pour les
+        exports via '?format=csv|excel' qui n'ont pas de renderer DRF dédié).
+        Sans ce bypass, l'APIView.initial() du contrôleur relance la négociation
+        (filter_renderers) et lève Http404 -> l'export_data ne fonctionne jamais.
+        """
+        if getattr(request, 'accepted_renderer', None):
+            return (request.accepted_renderer, request.accepted_media_type)
+        return super().perform_content_negotiation(request, force)
 
     def initial(self, request, *args, **kwargs):
         """
@@ -219,8 +259,10 @@ class BaseController(APIView):
 
         # 1. PRÉPARATION (Service)
         # On laisse le service nettoyer les données brutes (ex: trim, upper, formatage)
-        # On utilise .copy() pour éviter de modifier la request.data immuable
-        raw_data = request.data.copy() if hasattr(request.data, 'copy') else request.data
+        # Copie « shallow » volontaire : request.data peut contenir des UploadedFile
+        # (multipart/form-data), or un .copy() classique déclenche un deepcopy qui
+        # plante sur les fichiers (TypeError: cannot pickle 'BufferedRandom').
+        raw_data = self._shallow_copy_data(request.data)
         
         try:
             prepared_data = self.service.before_validate(raw_data, instance)

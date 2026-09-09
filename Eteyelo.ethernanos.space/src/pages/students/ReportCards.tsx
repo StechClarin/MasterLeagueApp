@@ -136,7 +136,7 @@ const ReportCards: React.FC = () => {
         {subjectResults.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '3fr 4fr 1fr 1fr', gap: '16px', padding: '0 24px 8px 24px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)' }}>
+            <div className="report-header" style={{ display: 'grid', gridTemplateColumns: '3fr 4fr 1fr 1fr', gap: '16px', padding: '0 24px 8px 24px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)' }}>
               <div>Matière & Professeur</div>
               <div>Détail des Évaluations</div>
               <div style={{ textAlign: 'center' }}>Rang</div>
@@ -145,7 +145,7 @@ const ReportCards: React.FC = () => {
 
             {/* Rows */}
             {subjectResults.map((result, idx) => (
-              <div key={idx} className="glass-card hover-bg" style={{ display: 'grid', gridTemplateColumns: '3fr 4fr 1fr 1fr', gap: '16px', alignItems: 'center', padding: '20px 24px', transition: 'background 0.2s' }}>
+              <div key={idx} className="glass-card hover-bg report-row" style={{ display: 'grid', gridTemplateColumns: '3fr 4fr 1fr 1fr', gap: '16px', alignItems: 'center', padding: '20px 24px', transition: 'background 0.2s' }}>
                 
                 {/* Matière */}
                 <div>
@@ -176,12 +176,12 @@ const ReportCards: React.FC = () => {
                 </div>
                 
                 {/* Rang */}
-                <div style={{ textAlign: 'center' }}>
+                <div style={{ textAlign: 'center' }} data-label="Rang">
                   <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-muted)' }}>{result.rank}</div>
                 </div>
 
                 {/* Moyenne de la matière */}
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'right' }} data-label="Moyenne">
                   <div style={{ 
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     minWidth: '60px', padding: '6px 12px', borderRadius: '8px',

@@ -6,6 +6,13 @@ from ..models import Personnel
 class PersonnelService(BaseService):
     model = Personnel
 
+    def before_validate(self, data, instance=None):
+        # Multi-établissements : on accepte `establishment_ids` (nom envoyé par le
+        # formulaire) et on le traduit vers le champ M2M attendu par DRF.
+        if isinstance(data, dict) and 'establishment_ids' in data:
+            data['attached_establishments'] = data.pop('establishment_ids')
+        return super().before_validate(data, instance)
+
     def after_save(self, instance, created):
         # 1. Capture nested user data from initial request (as it's read_only in serializer)
         initial_data = getattr(self, 'initial_data', {}) or {}

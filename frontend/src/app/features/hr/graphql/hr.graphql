@@ -31,6 +31,18 @@ query GetAllPersonnels($search: String, $establishment: ID, $contractType: ID, $
         id
         name
       }
+      attachedEstablishments {
+        id
+        name
+      }
+      paymentMode
+      grossSalary
+      hourlyRate
+      bankName
+      bankAccountNumber
+      bankIban
+      socialSecurityNumber
+      contractFile
     }
     totalCount
     numPages

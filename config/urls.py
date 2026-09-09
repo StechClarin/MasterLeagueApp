@@ -17,6 +17,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('apps.core.api.urls')),
 
+    # 1bis. Portail Eteyelo (magic link) — API publique du portail élève/prof
+    path('api/portal/', include('apps.portal.api.urls')),
+
     # 2. Authentification (Publique)
     # L'exemption CSRF est nécessaire pour les APIs JWT car on n'utilise pas encore de session/cookie
     path('api/auth/login/', csrf_exempt(CustomTokenObtainPairView.as_view()), name='token_obtain_pair'),

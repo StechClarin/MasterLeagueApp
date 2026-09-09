@@ -49,7 +49,17 @@ class EstablishmentMiddleware:
 
     def __call__(self, request):
         est_id = request.headers.get('x-establishment-id') or request.headers.get('X-Establishment-ID')
-        
+
+        # [FIX v1.0] Validation du format UUID pour TOUS les utilisateurs (y compris superusers).
+        # Un X-Establishment-ID malformé provoquait une erreur 500 (ValidationError) lors des
+        # filtres de queryset dans les controllers/services REST.
+        if est_id:
+            try:
+                import uuid
+                uuid.UUID(str(est_id))
+            except (ValueError, TypeError):
+                est_id = None
+
         # Sécurité : Si l'utilisateur est connecté, on vérifie qu'il a le droit d'être là
         if est_id and request.user.is_authenticated and not request.user.is_superuser:
             from apps.core.models.establishment_membership import EstablishmentMembership

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { BookOpen, Award, CreditCard, AlertTriangle, Compass, Star, TrendingUp, Activity, FileText, CheckCircle, MessageSquare } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { usePortalAuth } from '../../context/PortalAuthContext';
 
 // Data used for Averages and Orientation
 const performanceData = [
@@ -29,6 +30,8 @@ const COLORS = {
 };
 
 const Dashboard: React.FC = () => {
+  const { activeChild } = usePortalAuth();
+
   const subjectsWithAverage = useMemo(() => {
     return [...performanceData].sort((a, b) => b.average - a.average);
   }, []);
@@ -60,8 +63,12 @@ const Dashboard: React.FC = () => {
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title">Bonjour, John 👋</h1>
-        <p className="page-subtitle">Voici un résumé de votre situation actuelle.</p>
+        <h1 className="page-title">Bonjour, {activeChild?.firstName ?? 'élève'} 👋</h1>
+        <p className="page-subtitle">
+          {activeChild?.className
+            ? `Voici le résumé de ${activeChild.firstName} — ${activeChild.className} (${activeChild.academicYear ?? ''}).`
+            : 'Voici un résumé de votre situation actuelle.'}
+        </p>
       </div>
 
       <div className="grid-cards" style={{ marginBottom: '32px' }}>
@@ -103,7 +110,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Analytics Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', marginBottom: '32px' }}>
+      <div className="dashboard-split" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', marginBottom: '32px' }}>
         
         {/* Graph: Évolution des notes (Courbes) */}
         <div className="glass-panel" style={{ padding: '24px' }}>

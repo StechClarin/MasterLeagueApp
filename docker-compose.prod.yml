@@ -40,6 +40,31 @@ services:
       - schoolmanage_default
     restart: always
 
+  frontend-react:
+    container_name: schoolmanage-react
+    build:
+      context: ./Eteyelo.ethernanos.space
+      dockerfile: Dockerfile
+    networks:
+      - schoolmanage_default
+    restart: always
+
+  nginx-router:
+    image: nginx:alpine
+    container_name: schoolmanage-router
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-saas.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend-test
+      - frontend-test
+      - frontend-react
+    networks:
+      - schoolmanage_default
+    restart: always
+
 networks:
   # On se connecte au réseau existant créé par le docker-compose de prod
   schoolmanage_default:

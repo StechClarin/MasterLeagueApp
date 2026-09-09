@@ -1,10 +1,15 @@
 import { Injectable, signal, effect, inject } from '@angular/core';
 import { GetAllEstablishmentsGQL } from '../../features/structure/graphql/structure.generated';
 import { GetMeGQL } from '../../features/profilmanagement/graphql/profil.generated';
-import { map, tap } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { EstablishmentType } from '@app/graphql/types';
 import { AuthService } from './auth.service';
 import { PermissionService } from './permission.service';
+
+/** Nombre d'établissements récupérés par requête (le resolver par défaut n'en renvoie que 10). */
+const ESTABLISHMENTS_PAGE_SIZE = 100;
+/** Garde-fou anti-boucle infinie si le serveur renvoyait une pagination incohérente. */
+const MAX_ESTABLISHMENT_PAGES = 100;
 
 @Injectable({
     providedIn: 'root'
@@ -43,42 +48,72 @@ export class StructureStateService {
         }
     }
 
-    fetchEstablishments() {
+    async fetchEstablishments(): Promise<void> {
         this.isLoading.set(true);
         const userId = this.auth.getUserId();
 
-        this.getAllEstablishmentsGQL.watch(
-            { userId: userId }, 
-            { fetchPolicy: 'network-only' }
-        ).valueChanges.pipe(
-            map(res => res.data.establishments?.items || []),
-            tap(items => {
-                this.establishments.set(items);
-                this.isLoading.set(false);
+        try {
+            // Le resolver GraphQL `establishments` pagine par défaut à 10 éléments/page.
+            // On boucle sur TOUTES les pages pour que l'intégralité des établissements
+            // soit disponible (grille de sélection de l'accueil, sélecteur du header...).
+            const seen = new Set<string>();
+            const all: any[] = [];
+            let page = 1;
+            let numPages = 1;
 
-                const currentId = this.currentEstablishmentId();
-                const firstEstablishmentId = items[0]?.id ?? null;
-                
-                // Si on a un ID mais qu'il n'est plus dans la liste (ex: changement de compte)
-                if (currentId && !items.find((i: any) => i?.id === currentId)) {
-                    console.log('[StructureState] ID invalid ou obsolète, reset.');
-                    this.setEstablishment(null);
-                }
+            do {
+                const res = await firstValueFrom(
+                    this.getAllEstablishmentsGQL.fetch(
+                        { userId, page, pageSize: ESTABLISHMENTS_PAGE_SIZE },
+                        { fetchPolicy: 'network-only' },
+                    ),
+                );
 
-                // Auto-sélection si unique
-                if (items.length === 1 && firstEstablishmentId && !this.currentEstablishmentId()) {
-                    console.log('[StructureState] Auto-selection unique site:', firstEstablishmentId);
-                    this.setEstablishment(firstEstablishmentId);
-                }
+                const meta = res?.data?.establishments;
+                (meta?.items ?? []).forEach((item: any) => {
+                    if (item?.id && !seen.has(String(item.id))) {
+                        seen.add(String(item.id));
+                        all.push(item);
+                    }
+                });
 
-                // Bypass pour l'administrateur technique 'ethernanos'
-                const username = this.auth.getUsername();
-                if (username?.toLowerCase() === 'ethernanos' && firstEstablishmentId && !this.currentEstablishmentId()) {
-                    console.log('[StructureState] Admin master détecté, sélection automatique du premier établissement.');
-                    this.setEstablishment(firstEstablishmentId);
-                }
-            })
-        ).subscribe();
+                numPages = meta?.numPages ?? page;
+                page += 1;
+            } while (page <= numPages && page <= MAX_ESTABLISHMENT_PAGES);
+
+            this.onEstablishmentsLoaded(all);
+        } catch (error) {
+            console.error('[StructureState] Erreur chargement des établissements:', error);
+            this.establishments.set([]);
+            this.isLoading.set(false);
+        }
+    }
+
+    private onEstablishmentsLoaded(items: any[]): void {
+        this.establishments.set(items);
+        this.isLoading.set(false);
+
+        const currentId = this.currentEstablishmentId();
+        const firstEstablishmentId = items[0]?.id ?? null;
+
+        // Si on a un ID mais qu'il n'est plus dans la liste (ex: changement de compte)
+        if (currentId && !items.find((i: any) => i?.id === currentId)) {
+            console.log('[StructureState] ID invalid ou obsolète, reset.');
+            this.setEstablishment(null);
+        }
+
+        // Auto-sélection si unique
+        if (items.length === 1 && firstEstablishmentId && !this.currentEstablishmentId()) {
+            console.log('[StructureState] Auto-selection unique site:', firstEstablishmentId);
+            this.setEstablishment(firstEstablishmentId);
+        }
+
+        // Bypass pour l'administrateur technique 'ethernanos'
+        const username = this.auth.getUsername();
+        if (username?.toLowerCase() === 'ethernanos' && firstEstablishmentId && !this.currentEstablishmentId()) {
+            console.log('[StructureState] Admin master détecté, sélection automatique du premier établissement.');
+            this.setEstablishment(firstEstablishmentId);
+        }
     }
 
     setEstablishment(id: string | null) {

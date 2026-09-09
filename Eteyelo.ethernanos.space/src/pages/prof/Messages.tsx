@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Search, Users, ShieldAlert, Paperclip } from 'lucide-react';
+import { Send, Search, Users, ShieldAlert, Paperclip, ArrowLeft } from 'lucide-react';
 
 const messagesData = [
   { id: 1, sender: 'Direction', role: 'Admin', subject: 'Réunion Pédagogique', snippet: 'N\'oubliez pas la réunion de demain à 14h en salle des profs...', time: '10:30', unread: true },
@@ -9,17 +9,18 @@ const messagesData = [
 
 const MessagesProf: React.FC = () => {
   const [selectedMsg, setSelectedMsg] = useState(messagesData[0]);
+  const [detailMode, setDetailMode] = useState(false);
 
   return (
-    <div className="animate-fade-in" style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
+    <div className="animate-fade-in messages-page" style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
       <div className="page-header">
         <h1 className="page-title">Messagerie</h1>
         <p className="page-subtitle">Communiquez avec la direction, les élèves et les parents.</p>
       </div>
 
-      <div className="glass-panel" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div className={`glass-panel mail-shell ${detailMode ? 'show-detail' : 'show-list'}`} style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* Liste des messages */}
-        <div style={{ width: '350px', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
+        <div className="mail-list" style={{ width: '350px', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '20px', borderBottom: '1px solid var(--glass-border)' }}>
             <div style={{ position: 'relative' }}>
               <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -39,7 +40,10 @@ const MessagesProf: React.FC = () => {
             {messagesData.map((msg) => (
               <div 
                 key={msg.id} 
-                onClick={() => setSelectedMsg(msg)}
+                onClick={() => {
+                  setSelectedMsg(msg);
+                  setDetailMode(true);
+                }}
                 style={{ 
                   padding: '20px', 
                   borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -68,11 +72,28 @@ const MessagesProf: React.FC = () => {
         </div>
 
         {/* Corps du message */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.1)' }}>
-          <div style={{ padding: '24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
+        <div className="mail-view" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.1)' }}>
+          <div style={{ padding: '24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              className="mail-back"
+              onClick={() => setDetailMode(false)}
+              title="Retour à la liste"
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                border: '1px solid var(--glass-border)',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '8px' }}>{selectedMsg.subject}</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                 <span>De: <strong style={{ color: 'var(--text-main)' }}>{selectedMsg.sender}</strong></span>
                 <span style={{ padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', fontSize: '12px' }}>{selectedMsg.role}</span>
               </div>

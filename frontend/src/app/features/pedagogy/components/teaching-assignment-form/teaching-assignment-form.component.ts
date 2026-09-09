@@ -44,7 +44,11 @@ import { map } from 'rxjs/operators';
 export class TeachingAssignmentFormComponent extends BaseModalFormComponent implements OnInit {
     // Inherit Abstract properties
     form!: FormGroup;
-    isEditMode = signal(false);
+
+    /** Mode édition si une donnée existante a été injectée (fiable même si le composant est réutilisé). */
+    get isEditMode(): boolean {
+        return !!this.data;
+    }
 
     service = inject(TeachingAssignmentService);
     private yearService = inject(AcademicYearService);
@@ -81,7 +85,6 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
         this.setupFilters();
 
         if (this.data) {
-            this.isEditMode.set(true);
             this.patchCustomValues(this.data);
         }
     }
@@ -124,19 +127,34 @@ export class TeachingAssignmentFormComponent extends BaseModalFormComponent impl
     }
 
     patchCustomValues(data: any) {
+        if (!data) return;
+
+        // L'API GraphQL/REST expose la relation enseignant sous le nom 'personnel'
+        // (et non 'teacher'). On garde 'teacher' en secours pour d'éventuels caches.
+        const teacherId = data.personnel?.id ?? data.teacher?.id ?? null;
+
+        const classroom = data.classroom || {};
+        const subject = data.subject || {};
+
         // En mode édition, on déduit le niveau de la classe existante
-        const levelId = data.classroom?.level?.id || data.subject?.levelSubjects?.[0]?.level?.id;
+        // (sinon repli sur le niveau associé à la matière via levelSubjects)
+        const levelSubjects = Array.isArray(subject.levelSubjects) ? subject.levelSubjects : [];
+        const levelId =
+            classroom.level?.id ??
+            levelSubjects.map((ls: any) => ls?.level?.id).find(Boolean) ??
+            data.levelId ??
+            null;
 
         this.form.patchValue({
-            id: data.id,
-            academic_year_id: data.academicYear?.id,
+            id: data.id ?? null,
+            academic_year_id: data.academicYear?.id ?? data.academic_year_id ?? null,
             level_id: levelId,
-            classroom_id: data.classroom?.id,
-            subject_id: data.subject?.id,
-            teacher_id: data.teacher?.id,
-            start_date: data.startDate,
-            end_date: data.endDate,
-            hours_scheduled: data.hoursScheduled
+            classroom_id: classroom.id ?? data.classroom_id ?? null,
+            subject_id: subject.id ?? data.subject_id ?? null,
+            teacher_id: teacherId,
+            start_date: data.startDate ?? data.start_date ?? null,
+            end_date: data.endDate ?? data.end_date ?? null,
+            hours_scheduled: data.hoursScheduled ?? data.hours_scheduled ?? 0
         }, { emitEvent: true }); // Emit to trigger setupFilters subscribers
     }
 

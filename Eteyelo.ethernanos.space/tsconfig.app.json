@@ -15,6 +15,12 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* react-router-dom v7 est livré sans ses fichiers .d.ts : on force le
+       typage minimal local (src/types/react-router-dom.d.ts). */
+    "paths": {
+      "react-router-dom": ["./src/types/react-router-dom.d.ts"]
+    },
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,

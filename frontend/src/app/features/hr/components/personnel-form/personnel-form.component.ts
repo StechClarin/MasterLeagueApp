@@ -12,7 +12,7 @@ import { PersonnelService } from '../../services/personnel.service';
 import { RoleService } from '../../../profilmanagement/services/role.service';
 import { map, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { EstablishmentService } from '../../../structure/services/establishment.service';
-import { Observable, of } from 'rxjs';
+import { Observable, of, firstValueFrom } from 'rxjs';
 import { GetAllContractTypesGQL, GetAllPersonnelsGQL } from '../../graphql/hr.generated';
 
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
@@ -47,6 +47,10 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
     roles$ = this.roleService.getAll().pipe(map((res: any) => res.data?.roles?.items || []));
     establishments$ = this.establishmentService.getAll().pipe(map((res: any) => res.data?.establishments?.items || []));
     contractTypes$ = inject(GetAllContractTypesGQL).watch().valueChanges.pipe(map((res: any) => res.data?.contractTypes?.items || []));
+    paymentModeOptions = [
+        { id: 'BRUT', label: 'Salaire brut mensuel' },
+        { id: 'POINTAGE', label: 'Rémunération horaire (pointage)' }
+    ];
     private getAllPersonnelsGQL = inject(GetAllPersonnelsGQL);
 
     // User Search
@@ -90,12 +94,14 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
     }
 
     initForm(): FormGroup {
-        return this.fb.group({
+        const group = this.fb.group({
             matricule: [''], // Auto-generated
             job_title: ['', Validators.required],
             roles: [[], Validators.required],
             contract_type: [null], // Optional or required? Model allows null, but UI might want it.
-            establishment: [null, Validators.required],
+            // Établissements de rattachement (multi). L'établissement PRINCIPAL reste
+            // celui de la création (contexte courant), géré côté serveur.
+            attached_establishments: [[]],
             address: [''], // Moved to root (Personnel has address, User does not)
             date_hired: [null],
             gender: ['M', Validators.required],
@@ -106,20 +112,56 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
             }),
             email_pro: ['', [Validators.required, Validators.email]],
             phone_number: [''],
+            // --- Rémunération / Paie ---
+            payment_mode: ['BRUT'],
+            gross_salary: [null],
+            hourly_rate: [null],
+            bank_name: [''],
+            bank_account_number: [''],
+            bank_iban: [''],
+            social_security_number: [''],
         });
+
+        // Validation dynamique selon la modalité de paiement :
+        // BRUT -> salaire mensuel requis ; POINTAGE -> taux horaire requis.
+        group.get('payment_mode')!.valueChanges.subscribe((mode: string | null) => {
+            const selected = mode || 'BRUT';
+            const gross = group.get('gross_salary');
+            const hourly = group.get('hourly_rate');
+            if (selected === 'POINTAGE') {
+                gross?.clearValidators();
+                hourly?.setValidators([Validators.required, Validators.min(0)]);
+            } else {
+                hourly?.clearValidators();
+                gross?.setValidators([Validators.required, Validators.min(0)]);
+            }
+            gross?.updateValueAndValidity({ emitEvent: false });
+            hourly?.updateValueAndValidity({ emitEvent: false });
+        });
+
+        return group;
     }
     
     override fieldLabels = {
         job_title: 'Intitulé du poste',
         roles: 'Rôles',
-        establishment: 'Établissement',
+        establishment: 'Établissement principal',
+        attached_establishments: 'Établissements de rattachement',
         email_pro: 'Email professionnel',
         first_name: 'Prénom',
         last_name: 'Nom',
         email: 'Email personnel',
         address: 'Adresse',
         date_hired: 'Date de recrutement',
-        gender: 'Genre'
+        gender: 'Genre',
+        payment_mode: 'Modalité de paiement',
+        gross_salary: 'Salaire brut mensuel',
+        hourly_rate: 'Taux horaire',
+        bank_name: 'Banque',
+        bank_account_number: 'Numéro de compte',
+        bank_iban: 'IBAN',
+        social_security_number: 'N° Sécurité sociale (CNPS)',
+        contract_file: 'Contrat signé',
     };
 
     save(): Observable<any> {
@@ -156,6 +198,16 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
     override patchValue(data: any): void {
         if (!data) return;
 
+        const principalId: string | null = data.establishment?.id || null;
+        const attached = Array.isArray(data.attachedEstablishments)
+            ? data.attachedEstablishments.map((e: any) => e?.id).filter(Boolean)
+            : [];
+        const establishmentIds = Array.from(new Set<string>(
+            attached.length > 0 ? attached : (principalId ? [principalId] : [])
+        ));
+
+        const numOrNull = (v: any): number | null => (v === null || v === undefined || v === '') ? null : Number(v);
+
         const formData = {
             ...data,
             job_title: data.jobTitle,
@@ -163,10 +215,17 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
             phone_number: data.phoneNumber,
             date_hired: data.dateHired,
             roles: data.roles?.map((r: any) => r.id) || [],
-            establishment: data.establishment?.id,
+            attached_establishments: establishmentIds,
             contract_type: data.contractType?.id,
             address: data.address, // Address is on Personnel
             gender: data.gender || 'M',
+            payment_mode: data.paymentMode || 'BRUT',
+            gross_salary: numOrNull(data.grossSalary),
+            hourly_rate: numOrNull(data.hourlyRate),
+            bank_name: data.bankName || '',
+            bank_account_number: data.bankAccountNumber || '',
+            bank_iban: data.bankIban || '',
+            social_security_number: data.socialSecurityNumber || '',
             user: {
                 first_name: data.user?.firstName,
                 last_name: data.user?.lastName,
@@ -180,5 +239,91 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
         return String(user.username).substring(0, 2).toUpperCase();
     }
 
+    // ================= CONTRAT DE TRAVAIL =================
+    isBusyContract = signal(false);
+
+    get contractFileUrl(): string {
+        const path = (this.data as any)?.contractFile;
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('data:')) return path;
+        const baseUrl = environment.apiUrl.replace('/api', '');
+        const clean = String(path).replace(/^\/+/, '');
+        return `${baseUrl}/media/${clean}`;
+    }
+
+    contractFileName(): string {
+        const path = (this.data as any)?.contractFile || '';
+        const parts = String(path).split('/');
+        return parts[parts.length - 1] || 'contrat.pdf';
+    }
+
+    onSelectContractFile(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        if (!this.data?.id) {
+            this.toastService.error("Enregistrez d'abord le personnel avant d'importer son contrat.");
+            input.value = '';
+            return;
+        }
+
+        this.isBusyContract.set(true);
+        this.service.uploadContract(this.data.id, file).subscribe({
+            next: (res: any) => {
+                this.isBusyContract.set(false);
+                input.value = '';
+                const updated = res?.data || res;
+                if (updated && this.data) {
+                    (this.data as any).contractFile = updated.contractFile;
+                }
+                this.toastService.success('Contrat signé importé avec succès.');
+            },
+            error: (err: any) => {
+                this.isBusyContract.set(false);
+                input.value = '';
+                console.error('Erreur upload contrat', err);
+                this.toastService.error("Erreur lors de l'import du contrat.");
+            }
+        });
+    }
+
+    async printContract() {
+        const v = this.form.getRawValue();
+        let ests: any[] = [];
+        try {
+            const res: any = await firstValueFrom(this.establishmentService.getAll());
+            ests = res?.data?.establishments?.items || [];
+        } catch { /* silencieux : le document restera générique */ }
+
+        const attachedIds: string[] = v.attached_establishments || [];
+        const attachedNames = ests.filter((e: any) => attachedIds.includes(e?.id)).map((e: any) => e?.name);
+        const principalName = (this.data as any)?.establishment?.name || attachedNames[0] || '________________';
+
+        const printPayload = {
+            personnel: {
+                firstName: v.user?.first_name || '',
+                lastName: v.user?.last_name || '',
+                email: v.user?.email || v.email_pro || '',
+                matricule: v.matricule || '',
+                jobTitle: v.job_title || '',
+                gender: v.gender || 'M',
+                dateHired: v.date_hired || null,
+            },
+            establishment: principalName,
+            attachedEstablishments: attachedNames,
+            contract: {
+                contractTypeId: v.contract_type || null,
+                paymentMode: v.payment_mode || 'BRUT',
+                grossSalary: v.gross_salary,
+                hourlyRate: v.hourly_rate,
+                socialSecurityNumber: v.social_security_number || '',
+            },
+            generatedAt: new Date().toISOString()
+        };
+
+        localStorage.setItem('personnel_contract_print_data', JSON.stringify(printPayload));
+        window.open('/print/personnel-contract', '_blank');
+    }
 
 }

@@ -37,8 +37,8 @@
 
         <ng-template #roomTypeCell let-item>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                [ngClass]="roomTypeBadgeClass(item.roomType)">
-                {{ roomTypeLabel(item.roomType) }}
+                [ngClass]="roomTypeBadgeClass(item)">
+                {{ roomTypeLabel(item) }}
             </span>
         </ng-template>
 

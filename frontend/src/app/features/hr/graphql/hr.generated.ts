@@ -15,7 +15,7 @@ export type GetAllPersonnelsQueryVariables = Types.Exact<{
 }>;
 
 
-export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: any, matricule: string, gender: Types.HrPersonnelGenderChoices, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, username: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: any, name: string } } | null> | null } | null };
+export type GetAllPersonnelsQuery = { __typename?: 'Query', personnels?: { __typename?: 'PersonnelTypePaginated', totalCount?: number | null, numPages?: number | null, currentPage?: number | null, items?: Array<{ __typename?: 'PersonnelType', id: any, matricule: string, gender: Types.HrPersonnelGenderChoices, jobTitle: string, emailPro?: string | null, phoneNumber?: string | null, address?: string | null, dateHired?: any | null, isActive: boolean, user?: { __typename?: 'UserType', id: any, username: string, firstName: string, lastName: string, email: string, photo?: string | null } | null, roles: Array<{ __typename?: 'RoleType', id: any, name: string }>, contractType?: { __typename?: 'ContractTypeType', id: any, designation: string, code: string } | null, establishment: { __typename?: 'EstablishmentType', id: any, name: string }, attachedEstablishments?: Array<{ __typename?: 'EstablishmentType', id: any, name: string }> | null, paymentMode: string, grossSalary?: any | null, hourlyRate?: any | null, bankName?: string | null, bankAccountNumber?: string | null, bankIban?: string | null, socialSecurityNumber?: string | null, contractFile?: string | null } | null> | null } | null };
 
 export type GetPersonnelQueryVariables = Types.Exact<{
   id: Types.Scalars['ID']['input'];
@@ -79,6 +79,18 @@ export const GetAllPersonnelsDocument = gql`
         id
         name
       }
+      attachedEstablishments {
+        id
+        name
+      }
+      paymentMode
+      grossSalary
+      hourlyRate
+      bankName
+      bankAccountNumber
+      bankIban
+      socialSecurityNumber
+      contractFile
     }
     totalCount
     numPages

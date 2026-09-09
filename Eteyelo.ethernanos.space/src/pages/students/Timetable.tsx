@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-reac
 
 const Timetable: React.FC = () => {
   const [weekOffset, setWeekOffset] = useState(0);
-  
+
   const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const hours = ['08:00', '10:00', '12:00', '14:00', '16:00'];
 
@@ -16,13 +16,13 @@ const Timetable: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="page-header page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">Emploi du temps</h1>
           <p className="page-subtitle">{getWeekRange()}</p>
         </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+
+        <div className="inline-tools" style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '12px', border: '1px solid var(--glass-border)', flexWrap: 'wrap' }}>
           <button 
             onClick={() => setWeekOffset(prev => prev - 1)}
             style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '8px', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -46,8 +46,9 @@ const Timetable: React.FC = () => {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', tableLayout: 'fixed' }}>
+      <div className="glass-panel">
+        <div className="table-wrap">
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', tableLayout: 'fixed' }}>
           <thead>
             <tr>
               <th style={{ width: '80px', padding: '20px', borderBottom: '1px solid var(--glass-border)', borderRight: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>Heures</th>
@@ -120,6 +121,7 @@ const Timetable: React.FC = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
