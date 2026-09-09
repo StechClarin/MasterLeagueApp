@@ -53,8 +53,7 @@ services:
     image: nginx:alpine
     container_name: schoolmanage-router
     ports:
-      - "80:80"
-      - "443:443"
+      - "8081:80"
     volumes:
       - ./nginx-saas.conf:/etc/nginx/nginx.conf:ro
     depends_on:
