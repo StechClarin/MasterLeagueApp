@@ -1,8 +1,21 @@
 services:
-  # On ne redéfinit pas 'db' ici car on utilise celui de la prod
-  
+  db:
+    image: postgres:15-alpine
+    container_name: schoolmanage-test-db
+    volumes:
+      - postgres_data_test:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=app_user
+      - POSTGRES_PASSWORD=secure_password
+      - POSTGRES_DB=schoolmanage_test
+    networks:
+      - schoolmanage_default
+    restart: always
+
   backend-test:
     container_name: schoolmanage-test-api
+    depends_on:
+      - db
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,8 +26,7 @@ services:
       # Force UTF-8 encoding to prevent migration decoding errors
       - PYTHONIOENCODING=utf-8
       - PYTHONDEFAULTENCODING=utf-8
-      # On pointe vers le container de db de la prod, mais sur la base 'schoolmanage_test'
-      - DATABASE_URL=postgres://app_user:secure_password@schoolmanage-db-1:5432/schoolmanage_test
+      - DATABASE_URL=postgres://app_user:secure_password@db:5432/schoolmanage_test
       - DEBUG=0
       - SECRET_KEY=test_secret_key_123
       - ALLOWED_HOSTS=*
@@ -65,10 +77,10 @@ services:
     restart: always
 
 networks:
-  # On se connecte au réseau existant créé par le docker-compose de prod
   schoolmanage_default:
-    external: true
+    driver: bridge
 
 volumes:
   static_volume_test:
   media_volume_test:
+  postgres_data_test:
