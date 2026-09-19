@@ -66,10 +66,15 @@ export class AuthService {
 
     this.currentUserSignal.set(false);
 
-    // On récupère Apollo via l'injecteur pour éviter une dépendance circulaire
-    // car le GraphQLProvider (qui configure Apollo) dépend de AuthService
+    // On récupère Apollo et ModuleStateService via l'injecteur pour éviter une dépendance circulaire
     const apollo = this.injector.get(Apollo);
     apollo.client.resetStore().catch(() => {});
+
+    try {
+      const { ModuleStateService } = require('./module-state.service');
+      const moduleState = this.injector.get(ModuleStateService);
+      moduleState.clear();
+    } catch (e) {}
 
     this.permissionService.setPermissions([]);
 

@@ -17,15 +17,12 @@
      <!-- Filters / Toolbar -->
      <ng-container filters>
          <div class="flex justify-end">
-             <button (click)="openExportModal()"
-                 class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
-                 <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor">
-                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                 </svg>
-                 Exporter
-             </button>
+             <app-ui-button
+                 label="Exporter"
+                 icon="export"
+                 variant="secondary"
+                 (btnClick)="openExportModal()">
+             </app-ui-button>
          </div>
      </ng-container>
 
