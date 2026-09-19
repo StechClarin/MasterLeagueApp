@@ -63,22 +63,38 @@ class EstablishmentMiddleware:
         # Sécurité : Si l'utilisateur est connecté, on vérifie qu'il a le droit d'être là
         if est_id and request.user.is_authenticated and not request.user.is_superuser:
             from apps.core.models.establishment_membership import EstablishmentMembership
+            from apps.core.models.establishment import Establishment
             from django.core.exceptions import ValidationError
             
             try:
-                # On vérifie l'existence d'un membership actif
-                exists = EstablishmentMembership.objects.filter(
+                # On vérifie si l'utilisateur est soit propriétaire soit membre actif
+                is_owner = Establishment.objects.filter(id=est_id, user=request.user).exists()
+                is_member = EstablishmentMembership.objects.filter(
                     user=request.user, 
                     establishment_id=est_id,
                     status='active'
                 ).exists()
                 
-                if not exists:
-                    # Si pas de membership, on ignore le header (empêche le "hop" entre établissements)
+                if not (is_owner or is_member):
                     est_id = None
             except (ValidationError, ValueError):
                 # ID malformé -> On ignore
                 est_id = None
+
+        # Fallback automatique si aucun header fourni mais utilisateur connecté
+        if not est_id and request.user.is_authenticated:
+            try:
+                from apps.core.models.establishment import Establishment
+                user_est = Establishment.objects.filter(user=request.user).first()
+                if user_est:
+                    est_id = str(user_est.id)
+                else:
+                    from apps.core.models.establishment_membership import EstablishmentMembership
+                    mem = EstablishmentMembership.objects.filter(user=request.user, status='active').first()
+                    if mem:
+                        est_id = str(mem.establishment_id)
+            except Exception:
+                pass
 
         request.establishment_id = est_id if est_id else None
         return self.get_response(request)

@@ -208,9 +208,11 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
         });
 
         this.control.valueChanges.subscribe(value => {
-            this.value = value || [];
-            this.syncSelectedObjects();
-            this.onChange(value);
+            if (JSON.stringify(this.value) !== JSON.stringify(value)) {
+                this.value = value || [];
+                this.syncSelectedObjects();
+                this.onChange(this.value);
+            }
         });
     }
 
@@ -266,6 +268,18 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
         }
     }
 
+    private notifyChange() {
+        if (this.control && JSON.stringify(this.control.value) !== JSON.stringify(this.value)) {
+            this.control.setValue(this.value);
+            this.control.markAsDirty();
+            this.control.markAsTouched();
+            this.control.updateValueAndValidity();
+        }
+        this.onChange(this.value);
+        this.syncSelectedObjects();
+        this.cdr.detectChanges();
+    }
+
     toggleSelection(option: any) {
         const val = option[this.bindValue];
         const index = this.value.indexOf(val);
@@ -278,7 +292,7 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
             this.selectedObjects = this.selectedObjects.filter(o => o[this.bindValue] !== val);
         }
 
-        this.onChange(this.value);
+        this.notifyChange();
     }
 
     toggleSelectAll() {
@@ -295,7 +309,7 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
                 }
             });
         }
-        this.onChange(this.value);
+        this.notifyChange();
     }
 
     toggleSelectAllGroup(event: Event, group: any) {
@@ -315,7 +329,7 @@ export class UiMultiSelectComponent implements ControlValueAccessor, OnInit, OnC
                 }
             });
         }
-        this.onChange(this.value);
+        this.notifyChange();
     }
 
     isGroupAllSelected(group: any): boolean {

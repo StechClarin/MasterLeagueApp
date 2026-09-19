@@ -18,6 +18,7 @@ import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
 import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 @Component({
   selector: 'app-asset-list',
@@ -34,7 +35,8 @@ import { UiInputComponent } from '@shared/components/ui-input/ui-input.component
     UiTableComponent,
     UiDropdownComponent,
     UiSelectComponent,
-    UiInputComponent
+    UiInputComponent,
+    UiButtonComponent
   ],
   templateUrl: './asset-list.component.html'
 })

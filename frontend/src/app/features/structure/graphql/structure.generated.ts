@@ -325,6 +325,7 @@ export const RoomFieldsFragmentDoc = gql`
   id
   name
   capacity
+  roomType
 }
     `;
 export const CycleFieldsFragmentDoc = gql`

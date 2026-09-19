@@ -123,39 +123,63 @@ class RouterView(APIView):
     def get_controller_class(self, model_name):
         """
         Trouve la classe du contrôleur.
-        Gère la casse : Fichier = minuscule, Classe = Majuscule.
+        Gère la casse et les aliases : Fichier = snake_case, Classe = PascalCase.
         """
-        # Cas spécial pour l'Auth (qui n'est pas un modèle Django)
         if model_name.lower() == 'auth':
-            # On redirige vers l'app profilmanagement manuellement ou on lève une erreur
-            # car l'Auth doit passer par les routes spécifiques dans urls.py
             raise Http404("L'authentification ne passe pas par le routeur générique.")
 
-        app_label = self.get_app_name_from_model(model_name)
+        # Mappages d'alias courants
+        alias_map = {
+            'fee': 'fee_definition',
+            'feedefinition': 'fee_definition',
+            'academicyear': 'academic_year',
+            'academicperiod': 'academic_period',
+            'subjectgroup': 'subject_group',
+            'contracttype': 'contract_type',
+            'stockitem': 'stock_item',
+            'evaluationtype': 'evaluation_type',
+            'teachingassignment': 'teaching_assignment',
+            'classroom': 'class_room',
+        }
+
+        normalized_name = alias_map.get(model_name.lower(), model_name)
+
+        app_label = self.get_app_name_from_model(normalized_name)
         if not app_label:
-            # Retry with removed underscores (e.g. academic_year -> academicyear)
-            app_label = self.get_app_name_from_model(model_name.replace('_', ''))
-            
+            app_label = self.get_app_name_from_model(normalized_name.replace('_', ''))
+
         if not app_label:
             raise LookupError(f"Aucune application ne contient le modèle '{model_name}'")
-        
-        # Construction du chemin :
-        # app: 'profilmanagement'
-        # fichier: 'role_controller' (minuscule, snake_case)
-        # classe: 'RoleController' (PascalCase)
-        
-        # Fichier : on garde le snake_case (ou on le force si besoin)
-        file_name = model_name.lower()
-        module_path = f'apps.{app_label}.api.controllers.{file_name}_controller'
-        
-        # Importation du module
-        module = import_module(module_path)
-        
-        # Récupération de la classe: academic_year -> AcademicYear
-        class_name_base = model_name.replace('_', ' ').title().replace(' ', '')
+
+        possible_module_names = [normalized_name.lower()]
+        if normalized_name.lower() != model_name.lower():
+            possible_module_names.append(model_name.lower())
+
+        module = None
+        last_error = None
+        for mod_name in possible_module_names:
+            module_path = f'apps.{app_label}.api.controllers.{mod_name}_controller'
+            try:
+                module = import_module(module_path)
+                break
+            except ImportError as e:
+                last_error = e
+
+        if not module:
+            raise last_error or ImportError(f"Module introuvable pour '{model_name}'")
+
+        class_name_base = normalized_name.replace('_', ' ').title().replace(' ', '')
         class_name = f'{class_name_base}Controller'
-        
-        return getattr(module, class_name)
+
+        if hasattr(module, class_name):
+            return getattr(module, class_name)
+
+        # Fallback : chercher toute classe finissant par 'Controller' dans le module
+        for attr_name in dir(module):
+            if attr_name.endswith('Controller') and attr_name != 'BaseController':
+                return getattr(module, attr_name)
+
+        raise AttributeError(f"Classe '{class_name}' introuvable dans {module_path}")
 
     def get_app_name_from_model(self, model_name):
         """

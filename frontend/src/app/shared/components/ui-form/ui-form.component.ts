@@ -50,17 +50,18 @@ export class UiFormComponent {
   @Input() formErrors: Array<{ field: string, message: string }> = [];
   @Input() submitLabel: string = 'Enregistrer';
   @Input() cancelLabel: string = 'Annuler';
-  @Input() disableInvalid: boolean = true;
+  @Input() disableInvalid: boolean = false;
   @Input() isReadOnly: boolean = false;
 
   @Output() submitForm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 
   onSubmit() {
-    if ((!this.disableInvalid || this.formGroup.valid) && !this.isLoading) {
+    if (!this.isLoading) {
+      if (this.formGroup && this.formGroup.invalid) {
+        this.formGroup.markAllAsTouched();
+      }
       this.submitForm.emit();
-    } else {
-      this.formGroup.markAllAsTouched();
     }
   }
 

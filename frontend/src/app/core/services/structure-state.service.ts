@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { EstablishmentType } from '@app/graphql/types';
 import { AuthService } from './auth.service';
 import { PermissionService } from './permission.service';
+import { ModuleStateService } from './module-state.service';
 
 /** Nombre d'établissements récupérés par requête (le resolver par défaut n'en renvoie que 10). */
 const ESTABLISHMENTS_PAGE_SIZE = 100;
@@ -19,6 +20,7 @@ export class StructureStateService {
     private getMeGQL = inject(GetMeGQL);
     private auth = inject(AuthService);
     private permissionService = inject(PermissionService);
+    private moduleState = inject(ModuleStateService);
 
     // Signal pour l'ID de l'établissement sélectionné
     readonly currentEstablishmentId = signal<string | null>(this.getInitialId());
@@ -120,6 +122,8 @@ export class StructureStateService {
         console.log('[StructureState] Changement établissement:', id);
         this.currentEstablishmentId.set(id);
         this.fetchCurrentUserRole();
+        // Recharge automatiquement la liste des modules autorisés pour cet établissement
+        this.moduleState.fetchModules(true);
     }
 
     fetchCurrentUserRole() {

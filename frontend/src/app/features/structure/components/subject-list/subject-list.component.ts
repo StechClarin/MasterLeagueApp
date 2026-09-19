@@ -16,6 +16,7 @@ import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 @Component({
     selector: 'app-subject-list',
@@ -32,7 +33,8 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
         UiTableComponent,
         UiFilterPanelComponent,
         UiDropdownComponent,
-        UiExportModalComponent
+        UiExportModalComponent,
+        UiButtonComponent
     ],
     templateUrl: './subject-list.component.html'
 })

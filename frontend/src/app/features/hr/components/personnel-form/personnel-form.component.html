@@ -225,7 +225,7 @@
     <!-- Footer Actions -->
     <app-ui-form-actions
         [isSubmitting]="isSubmitting"
-        [disabled]="isSubmitting || form.invalid"
+        [disabled]="isSubmitting"
         (submit)="submit()"
         (cancel)="cancel.emit()">
     </app-ui-form-actions>

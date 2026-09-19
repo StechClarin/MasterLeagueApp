@@ -18,6 +18,7 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
@@ -43,7 +44,8 @@ import { ToastService } from '@core/services/toast.service';
         UiConfirmModalComponent,
         UiTableComponent,
         UiFilterPanelComponent,
-        UiSelectComponent
+        UiSelectComponent,
+        UiButtonComponent
     ],
     templateUrl: './evaluation-list.component.html'
 })

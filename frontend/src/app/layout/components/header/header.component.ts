@@ -10,7 +10,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { AuthService } from '@core/services/auth.service';
 import { StructureStateService } from '@core/services/structure-state.service';
 import { ModuleStateService } from '@core/services/module-state.service';
-import { EstablishmentSelectorComponent } from '../establishment-selector/establishment-selector.component';
+import { UiEstablishmentSelectorComponent } from '@shared/components/ui-establishment-selector/ui-establishment-selector.component';
 
 interface Page {
   id: string;
@@ -23,7 +23,7 @@ interface Page {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, EstablishmentSelectorComponent],
+  imports: [CommonModule, ReactiveFormsModule, UiEstablishmentSelectorComponent],
   template: `
     <header class="fixed top-0 right-0 left-72 h-20 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 z-40 transition-all duration-300">
       
@@ -48,7 +48,7 @@ interface Page {
         
         <!-- Establishment Selector (recherche distante / combobox) -->
         <div class="hidden md:flex items-center">
-          <app-establishment-selector></app-establishment-selector>
+          <app-ui-establishment-selector></app-ui-establishment-selector>
         </div>
 
         <!-- Search Bar -->

@@ -13,6 +13,7 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 @Component({
   selector: 'app-stock-item-list',
@@ -27,7 +28,8 @@ import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.
     UiToolbarComponent,
     UiConfirmModalComponent,
     UiTableComponent,
-    UiDropdownComponent
+    UiDropdownComponent,
+    UiButtonComponent
   ],
   templateUrl: './stock-item-list.component.html'
 })

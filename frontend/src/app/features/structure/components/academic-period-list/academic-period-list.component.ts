@@ -23,6 +23,7 @@ import { UiSelectComponent } from '@shared/components/ui-select/ui-select.compon
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { UiStatusBadgeComponent } from '@shared/components/ui-status-badge/ui-status-badge.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 @Component({
     selector: 'app-academic-period-list',
@@ -41,7 +42,8 @@ import { UiStatusBadgeComponent } from '@shared/components/ui-status-badge/ui-st
         UiSelectComponent,
         UiDropdownComponent,
         UiExportModalComponent,
-        UiStatusBadgeComponent
+        UiStatusBadgeComponent,
+        UiButtonComponent
     ],
     templateUrl: './academic-period-list.component.html'
 })

@@ -19,6 +19,9 @@ import { environment } from 'src/environments/environment';
 import { UiFormHeaderComponent } from '@shared/components/ui-form-header/ui-form-header.component';
 import { UiFormActionsComponent } from '@shared/components/ui-form-actions/ui-form-actions.component';
 import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form-errors.component';
+import { ClassRoomFormComponent } from '@features/structure/components/classroom-form/classroom-form.component';
+import { UiModalComponent } from '@shared/components/ui-modal/ui-modal.component';
+import { FormUtils } from '@core/utils/form.utils';
 
 @Component({
     selector: 'app-student-form',
@@ -27,13 +30,20 @@ import { UiFormErrorsComponent } from '@shared/components/ui-form-errors/ui-form
         CommonModule, ReactiveFormsModule,
         UiTabsComponent, UiInputComponent, UiSelectComponent, UiMediaInputComponent,
         DocumentUploadComponent,
-        UiFormHeaderComponent, UiFormActionsComponent, UiFormErrorsComponent
+        UiFormHeaderComponent, UiFormActionsComponent, UiFormErrorsComponent,
+        ClassRoomFormComponent, UiModalComponent
     ],
     templateUrl: './student-form.component.html'
 })
 export class StudentFormComponent extends BaseModalFormComponent {
     service = inject(StudentService);
     override form!: FormGroup;
+
+    shouldAutoCreateClassroom = signal(false);
+    fullClassroomInfo = signal<any | null>(null);
+    showFullClassroomModal = signal(false);
+    showUpdateClassroomModal = signal(false);
+    targetClassroomToUpdate = signal<any | null>(null);
 
     override ngOnInit(): void {
         super.ngOnInit();
@@ -181,9 +191,43 @@ export class StudentFormComponent extends BaseModalFormComponent {
     };
 
     override submit() {
-        super.submit();
+        this.errorMessage = null;
+        this.formErrors = [];
 
-        if (this.form.invalid) {
+        if (this.form.valid) {
+            this.isSubmitting = true;
+
+            this.save(this.shouldAutoCreateClassroom()).subscribe({
+                next: (res) => {
+                    this.isSubmitting = false;
+                    this.shouldAutoCreateClassroom.set(false);
+                    this.form.reset();
+                    this.success.emit();
+                },
+                error: (err) => {
+                    this.isSubmitting = false;
+                    const errObj = err?.error || {};
+                    const isFull = errObj?.code === 'CLASSROOM_FULL' || errObj?.classroom_full || (typeof errObj?.detail === 'string' && errObj.detail.includes('pleine'));
+                    
+                    if (isFull) {
+                        const info = errObj.classroom_full || {
+                            classroom_id: this.enrollmentGroup.get('classroom_id')?.value,
+                            classroom_name: this.classroomsOptions().find(c => c.value === this.enrollmentGroup.get('classroom_id')?.value)?.label || 'Sélectionnée',
+                            capacity: errObj.capacity || 35,
+                            enrolled_count: errObj.enrolled_count || 35
+                        };
+                        this.fullClassroomInfo.set(info);
+                        this.showFullClassroomModal.set(true);
+                        return;
+                    }
+
+                    const allErrors = FormUtils.setErrors(this.form, err, this.fieldLabels);
+                    this.formErrors = allErrors;
+                    this.toastService.error(FormUtils.getError(err));
+                }
+            });
+        } else {
+            this.form.markAllAsTouched();
             if (this.form.get('first_name')?.invalid || this.form.get('last_name')?.invalid || this.form.get('gender')?.invalid) {
                 this.currentTab.set('identity');
             } else if (this.enrollmentGroup.invalid) {
@@ -193,6 +237,7 @@ export class StudentFormComponent extends BaseModalFormComponent {
             } else if (this.healthGroup.invalid) {
                 this.currentTab.set('health');
             }
+            this.toastService.warning('Le formulaire est incomplet. Veuillez vérifier les champs requis.');
         }
     }
 
@@ -284,10 +329,14 @@ export class StudentFormComponent extends BaseModalFormComponent {
         this.familyGroup.patchValue(familyInput);
     }
 
-    save() {
+    save(autoCreateClassroom = false) {
         const payload = { ...this.form.getRawValue() };
         if (this.isEditMode) {
             payload.id = this.data.id;
+        }
+
+        if (autoCreateClassroom && payload.enrollment_input) {
+            payload.enrollment_input.auto_create_classroom = true;
         }
 
         // Map family_input to parents_input for the backend
@@ -328,6 +377,33 @@ export class StudentFormComponent extends BaseModalFormComponent {
         }
 
         return this.service.save(formData);
+    }
+
+    confirmAutoCreateClassroom() {
+        this.showFullClassroomModal.set(false);
+        this.shouldAutoCreateClassroom.set(true);
+        this.submit();
+    }
+
+    openUpdateClassroomModal() {
+        const info = this.fullClassroomInfo();
+        const classroomId = info?.classroom_id || this.enrollmentGroup.get('classroom_id')?.value;
+        this.showFullClassroomModal.set(false);
+
+        if (classroomId) {
+            this.classService.get_by_id(classroomId).subscribe((res: any) => {
+                const roomObj = res.data?.classroom || { id: classroomId, name: info?.classroom_name, capacity: info?.capacity || 35 };
+                this.targetClassroomToUpdate.set(roomObj);
+                this.showUpdateClassroomModal.set(true);
+            });
+        }
+    }
+
+    onClassroomCapacityUpdated() {
+        this.showUpdateClassroomModal.set(false);
+        this.toastService.success('Capacité de la classe mise à jour avec succès.');
+        this.loadDropdowns();
+        this.submit();
     }
 
     getInitials(name: string): string {

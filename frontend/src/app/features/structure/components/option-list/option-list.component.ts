@@ -15,6 +15,7 @@ import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiSelectComponent } from '@shared/components/ui-select/ui-select.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 import { CycleService } from '../../services/cycle.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, map } from 'rxjs/operators';
@@ -34,7 +35,8 @@ import { debounceTime, distinctUntilChanged, takeUntil, map } from 'rxjs/operato
         UiTableComponent,
         UiFilterPanelComponent,
         UiDropdownComponent,
-        UiSelectComponent
+        UiSelectComponent,
+        UiButtonComponent
     ],
     templateUrl: './option-list.component.html'
 })

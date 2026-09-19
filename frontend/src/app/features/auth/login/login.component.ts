@@ -8,6 +8,7 @@ import { UiInputComponent } from '@shared/components/ui-input/ui-input.component
 import { Observable } from 'rxjs';
 import { DynamicRouterService } from '@core/routing/dynamic-router.service';
 import { StructureStateService } from '@core/services/structure-state.service';
+import { ModuleStateService } from '@core/services/module-state.service';
 
 @Component({
   selector: 'app-login',
@@ -290,17 +291,25 @@ export class LoginComponent extends BaseFormComponent {
     return this.auth.login({ username, password });
   }
 
+  private moduleState = inject(ModuleStateService);
+
   // Surcharge de submit pour gérer la redirection après succès
   override submit() {
     // On s'abonne à l'événement success émis par BaseFormComponent
     this.success.subscribe(async () => {
-      // 1. Recharger les établissements (PRÉ-REQUIS pour l'overlay du layout)
-      this.structureState.fetchEstablishments();
+      // 1. Réinitialiser les modules d'une ancienne session
+      this.moduleState.clear();
 
-      // 2. Recharger les routes dynamiques
+      // 2. Recharger les établissements et attendre la sélection
+      await this.structureState.fetchEstablishments();
+
+      // 3. Forcer le chargement frais des modules pour le nouvel utilisateur et établissement
+      await this.moduleState.fetchModules(true);
+
+      // 4. Recharger les routes dynamiques
       await this.dynamicRouter.loadDynamicRoutes();
 
-      // 3. Rediriger
+      // 5. Rediriger vers le tableau de bord
       this.router.navigate(['/dashboard']);
     });
     super.submit();

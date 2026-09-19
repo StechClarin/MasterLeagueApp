@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiButtonComponent } from '../ui-button/ui-button.component';
 
 @Component({
     selector: 'app-ui-confirm-modal',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, UiButtonComponent],
     template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto backdrop-blur-sm">
       <div class="p-6 bg-white rounded-xl shadow-2xl max-w-md w-full text-center relative z-10 transform transition-all">
@@ -32,20 +33,20 @@ import { CommonModule } from '@angular/common';
           </p>
         </div>
 
-        <div class="mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-          <button type="button" (click)="confirm.emit()"
-            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:col-start-2 sm:text-sm transition-colors"
-            [ngClass]="{
-              'bg-red-600 hover:bg-red-700 focus:ring-red-500': type === 'danger',
-              'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500': type === 'warning',
-              'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500': type === 'info'
-            }">
-            {{ confirmLabel }}
-          </button>
-          <button type="button" (click)="cancel.emit()"
-            class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm transition-colors">
-            {{ cancelLabel }}
-          </button>
+        <div class="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3">
+          <app-ui-button
+            [label]="cancelLabel"
+            variant="secondary"
+            customClass="w-full sm:w-auto"
+            (btnClick)="cancel.emit()">
+          </app-ui-button>
+          
+          <app-ui-button
+            [label]="confirmLabel"
+            [variant]="type === 'danger' ? 'danger' : (type === 'warning' ? 'warning' : 'primary')"
+            customClass="w-full sm:w-auto"
+            (btnClick)="confirm.emit()">
+          </app-ui-button>
         </div>
       </div>
     </div>

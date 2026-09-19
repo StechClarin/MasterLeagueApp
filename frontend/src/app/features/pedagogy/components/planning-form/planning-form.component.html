@@ -166,7 +166,7 @@
     <!-- Real Action Footer -->
     <app-ui-form-actions
         [isSubmitting]="isSubmitting"
-        [disabled]="!form.valid || isSubmitting || tabs().length === 0"
+        [disabled]="isSubmitting || (!form.get('is_conge')?.value && tabs().length === 0)"
         submitLabel="Enregistrer le Planning Global"
         [cancelLabel]="'Annuler les modifications'"
         (submit)="submit()"

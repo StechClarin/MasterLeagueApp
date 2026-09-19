@@ -24,13 +24,14 @@ import { UiToolbarComponent } from '@shared/components/ui-toolbar/ui-toolbar.com
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 import { HasPermissionDirective } from '@core/guards/has-permission.directive';
 import { PermissionService } from '@core/services/permission.service';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UserFormComponent, UiModalComponent, UiPaginationComponent, UiDropdownComponent, UiStatusBadgeComponent, UiAvatarComponent, UserDetailComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiFilterPanelComponent, UiConfirmModalComponent, UiTableComponent, HasPermissionDirective],
+  imports: [CommonModule, ReactiveFormsModule, UserFormComponent, UiModalComponent, UiPaginationComponent, UiDropdownComponent, UiStatusBadgeComponent, UiAvatarComponent, UserDetailComponent, UiListPageComponent, UiExportModalComponent, UiToolbarComponent, UiFilterPanelComponent, UiConfirmModalComponent, UiTableComponent, UiButtonComponent, HasPermissionDirective],
   templateUrl: './user-list.component.html'
 })
 export class UserListComponent extends BaseModalListComponent<User> implements OnInit, OnDestroy, AfterViewInit {

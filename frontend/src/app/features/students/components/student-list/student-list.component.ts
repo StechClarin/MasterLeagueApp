@@ -27,6 +27,7 @@ import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-
 import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-table.component';
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 @Component({
     selector: 'app-student-list',
@@ -46,7 +47,8 @@ import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-ex
         UiConfirmModalComponent,
         UiTableComponent,
         UiFilterPanelComponent,
-        UiExportModalComponent
+        UiExportModalComponent,
+        UiButtonComponent
     ],
     templateUrl: './student-list.component.html'
 })

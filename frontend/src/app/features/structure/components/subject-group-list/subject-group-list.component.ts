@@ -16,6 +16,7 @@ import { UiTableComponent, UiTableColumn } from '@shared/components/ui-table/ui-
 import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-filter-panel.component';
 import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 import { GetAllSubjectGroupsDocument } from '../../graphql/structure.generated';
 
@@ -34,7 +35,8 @@ import { GetAllSubjectGroupsDocument } from '../../graphql/structure.generated';
         UiTableComponent,
         UiFilterPanelComponent,
         UiDropdownComponent,
-        UiExportModalComponent
+        UiExportModalComponent,
+        UiButtonComponent
     ],
     templateUrl: './subject-group-list.component.html'
 })

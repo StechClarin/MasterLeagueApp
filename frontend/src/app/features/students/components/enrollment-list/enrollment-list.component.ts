@@ -25,6 +25,7 @@ import { UiFilterPanelComponent } from '@shared/components/ui-filter-panel/ui-fi
 import { UiDropdownComponent } from '@shared/components/ui-dropdown/ui-dropdown.component';
 import { UiConfirmModalComponent } from '@shared/components/ui-confirm-modal/ui-confirm-modal.component';
 import { UiExportModalComponent } from '@shared/components/ui-export-modal/ui-export-modal.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 import { StudentReportModalComponent } from '../student-report-modal/student-report-modal.component';
 
 @Component({
@@ -43,10 +44,11 @@ import { StudentReportModalComponent } from '../student-report-modal/student-rep
         UiDropdownComponent,
         UiConfirmModalComponent,
         UiExportModalComponent,
+        UiButtonComponent,
         StudentReportModalComponent
     ],
     template: `
-    <app-ui-list-page title="Gestion des Inscriptions" description="Consultez et gérez les inscriptions des élèves par année et par classe."
+    <app-ui-list-page title="Inscriptions & Réinscriptions" description="Gérez le parcours académique et l'affectation des élèves dans les classes."
       [isLoading]="isLoading()" [isEmpty]="(items$ | async)?.length === 0">
  
       <ng-container header-actions>
@@ -72,15 +74,12 @@ import { StudentReportModalComponent } from '../student-report-modal/student-rep
           </div>
 
           <div class="flex items-center gap-3">
-              <button (click)="openExportModal()"
-                  class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
-                  <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Exporter
-              </button>
+              <app-ui-button
+                  label="Exporter"
+                  icon="export"
+                  variant="secondary"
+                  (btnClick)="openExportModal()">
+              </app-ui-button>
           </div>
         </div>
 

@@ -137,7 +137,7 @@
   <!-- Footer Actions -->
   <app-ui-form-actions
     [isSubmitting]="isSubmitting"
-    [disabled]="form.invalid || tranchesError() !== null"
+    [disabled]="isSubmitting || tranchesError() !== null"
     submitLabel="Enregistrer le tarif"
     cancelLabel="Annuler"
     (submit)="submit()"

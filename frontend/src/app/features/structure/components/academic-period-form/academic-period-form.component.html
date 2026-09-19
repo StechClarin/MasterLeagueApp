@@ -1,5 +1,5 @@
 <app-ui-form [formErrors]="formErrors" [title]="item ? (isReadOnly ? 'Détails de la Période' : 'Modifier la Période') : 'Nouvelle Période'"
-    [formGroup]="form" [isLoading]="isSubmitting" [errorMessage]="errorMessage"
+    [formGroup]="form" [isLoading]="isSubmitting" [errorMessage]="errorMessage" [disableInvalid]="false"
     [submitLabel]="item ? 'Modifier' : 'Créer'" [isReadOnly]="isReadOnly"
     description="Définissez les périodes de l'année scolaire (trimestres, semestres, etc.)" (submitForm)="submit()"
     (cancel)="onCancel()">

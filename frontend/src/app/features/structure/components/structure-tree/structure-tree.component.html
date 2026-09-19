@@ -1,18 +1,33 @@
 <app-ui-list-page title="Cycles & Niveaux" [isLoading]="false">
 
-    <!-- Header Actions (Search + Add) -->
+    <!-- Header Actions (CTA Tabs + Search + Add) -->
     <ng-container header-actions>
-        <app-ui-toolbar [searchControl]="searchControl"
-            [placeholder]="activeTab() === 'cycles' ? 'Rechercher un cycle...' : 'Rechercher un niveau...'">
-            
-            <button (click)="onAdd()"
-                class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg flex items-center justify-center font-medium text-sm">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                {{ activeTab() === 'cycles' ? 'Nouveau Cycle' : 'Nouveau Niveau' }}
-            </button>
-        </app-ui-toolbar>
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Segmented CTA Tabs -->
+            <div class="bg-gray-100 p-1 rounded-xl flex items-center gap-1 border border-gray-200/80 shadow-inner shrink-0">
+                <button 
+                    *ngFor="let tab of tabs"
+                    type="button"
+                    (click)="onTabChange(tab.id)"
+                    [class]="activeTab() === tab.id 
+                        ? 'px-4 py-2 text-sm font-bold text-indigo-600 bg-white rounded-lg shadow-sm transition-all'
+                        : 'px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-all'">
+                    {{ tab.label }}
+                </button>
+            </div>
+
+            <app-ui-toolbar [searchControl]="searchControl"
+                [placeholder]="activeTab() === 'cycles' ? 'Rechercher un cycle...' : 'Rechercher un niveau...'">
+                
+                <button (click)="onAdd()"
+                    class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg flex items-center justify-center font-medium text-sm">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    {{ activeTab() === 'cycles' ? 'Nouveau Cycle' : 'Nouveau Niveau' }}
+                </button>
+            </app-ui-toolbar>
+        </div>
     </ng-container>
 
     <!-- Filters -->
@@ -57,20 +72,15 @@
         </app-ui-filter-panel>
     </ng-container>
 
-    <!-- Main Content: Tabs + Lists -->
+    <!-- Main Content: Lists -->
     <ng-container table>
+        <div [class.hidden]="activeTab() !== 'cycles'">
+            <app-cycle-list [isEmbedded]="true" [showPagination]="false"></app-cycle-list>
+        </div>
 
-        <app-ui-tabs [tabs]="tabs" [currentTab]="activeTab()" (tabChange)="onTabChange($event)">
-
-            <div [class.hidden]="activeTab() !== 'cycles'">
-                <app-cycle-list [isEmbedded]="true" [showPagination]="false"></app-cycle-list>
-            </div>
-
-            <div [class.hidden]="activeTab() !== 'levels'">
-                <app-level-list [isEmbedded]="true" [showPagination]="false"></app-level-list>
-            </div>
-
-        </app-ui-tabs>
+        <div [class.hidden]="activeTab() !== 'levels'">
+            <app-level-list [isEmbedded]="true" [showPagination]="false"></app-level-list>
+        </div>
     </ng-container>
 
     <!-- Pagination (Hoisted) -->
