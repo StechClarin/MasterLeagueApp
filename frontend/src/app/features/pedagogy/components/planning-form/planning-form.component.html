@@ -81,12 +81,20 @@
                     <h3 class="font-extrabold text-xl text-slate-900 capitalize">{{ formattedActiveDate }}</h3>
                     <p class="text-sm text-slate-500 font-medium">Gestion des cours pour cette journée</p>
                  </div>
-                 <button type="button" 
-                    class="btn-gradient px-5 py-2.5 text-white rounded-xl transition-all flex items-center gap-2 shadow-md shadow-indigo-200 font-bold active:scale-95 text-sm group" 
-                    (click)="addDetail(activeTab())">
-                    <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Ajouter un cours
-                 </button>
+                 <div class="flex items-center gap-2">
+                     <button type="button" (click)="prevDay()" class="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-colors" title="Jour précédent">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                     </button>
+                     <button type="button" (click)="nextDay()" class="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-colors" title="Jour suivant">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                     </button>
+                     <button type="button" 
+                        class="btn-gradient px-5 py-2.5 text-white rounded-xl transition-all flex items-center gap-2 shadow-md shadow-indigo-200 font-bold active:scale-95 text-sm group" 
+                        (click)="addDetail(activeTab())">
+                        <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Ajouter un cours
+                     </button>
+                 </div>
             </div>
             
             <!-- List of Courses -->
@@ -111,17 +119,19 @@
                             </div>
                             
                             <!-- Selection Area -->
+                            <div class="md:col-span-2 pt-1">
+                                <app-ui-select label="Salle / Classe" [options]="classrooms()" formControlName="classe_id" bindLabel="name" bindValue="id" [required]="true"></app-ui-select>
+                            </div>
+                            <div class="md:col-span-2 pt-1">
+                                <app-ui-select label="Matière" [options]="subjects()" formControlName="matiere_id" bindLabel="name" bindValue="id" [required]="true"></app-ui-select>
+                            </div>
                             <div class="md:col-span-3 pt-1">
                                 <app-ui-select label="Enseignant" [options]="getFilteredTeachers($any(ctrl))" formControlName="enseignant_id" bindLabel="fullName" bindValue="id" [required]="true"></app-ui-select>
                             </div>
                             
-                            <div class="md:col-span-2 pt-1">
-                                <app-ui-select label="Matière" [options]="subjects()" formControlName="matiere_id" bindLabel="name" bindValue="id" [required]="true"></app-ui-select>
-                            </div>
+
                             
-                            <div class="md:col-span-2 pt-1">
-                                <app-ui-select label="Salle / Classe" [options]="classrooms()" formControlName="classe_id" bindLabel="name" bindValue="id" [required]="true"></app-ui-select>
-                            </div>
+
                             
                             <!-- Actions & Status -->
                             <div class="md:col-span-1 flex flex-col justify-center items-center gap-2 pt-2">
@@ -129,10 +139,16 @@
                                     <input type="checkbox" formControlName="is_cancelled" class="w-4 h-4 text-red-600 rounded focus:ring-red-500 cursor-pointer">
                                     <span class="text-[10px] font-bold text-red-600">Annulé</span>
                                 </label>
-                                <button type="button" (click)="removeDetailControl(ctrl)" 
-                                    class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Supprimer">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" (click)="duplicateDetailControl(ctrl)" 
+                                        class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Dupliquer ce cours">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    </button>
+                                    <button type="button" (click)="removeDetailControl(ctrl)" 
+                                        class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Supprimer">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </ng-container>
@@ -167,7 +183,7 @@
     <app-ui-form-actions
         [isSubmitting]="isSubmitting"
         [disabled]="isSubmitting || (!form.get('is_conge')?.value && tabs().length === 0)"
-        submitLabel="Enregistrer le Planning Global"
+        [submitLabel]="submitButtonLabel"
         [cancelLabel]="'Annuler les modifications'"
         (submit)="submit()"
         (cancel)="onCancel()">

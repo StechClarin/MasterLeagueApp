@@ -7,19 +7,20 @@ class PlanningDetailService(BaseService):
     model = PlanningDetail
     
     def before_save(self, data, instance=None):
-        # Création d'une instance temporaire pour la validation (Overlap)
-        # data contient des objets (liés par le serializer) ou des valeurs brutes
-        
+        # Gérer le cas où establishment est fourni sous forme de string/UUID
+        if 'establishment' in data and not hasattr(data['establishment'], '_meta'):
+            data['establishment_id'] = data.pop('establishment')
+
+        # Appel au super().before_save pour injecter l'établissement si manquant
+        data = super().before_save(data, instance)
+
         is_creation = instance is None
         
         if is_creation:
-            # Attention : data peut contenir des objets (FK resolues)
-            # On instancie proprement
             valid_fields = {k: v for k, v in data.items() if hasattr(self.model, k) or k == 'id'}
             temp_instance = self.model(**valid_fields)
         else:
             temp_instance = instance
-            # On applique les changements (simulation)
             for k, v in data.items():
                 if hasattr(temp_instance, k):
                     setattr(temp_instance, k, v)

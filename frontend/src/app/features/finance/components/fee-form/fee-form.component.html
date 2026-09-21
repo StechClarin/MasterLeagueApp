@@ -1,8 +1,8 @@
-<div class="w-full h-[650px] flex flex-col overflow-hidden font-sans">
+<div class="w-full h-[680px] flex flex-col overflow-hidden font-sans">
   <!-- Header -->
   <app-ui-form-header
     [title]="(item?.id ? 'Modifier' : 'Ajouter') + ' un tarif'"
-    description="Gérez les paramètres financiers de l'établissement."
+    description="Gérez les paramètres financiers et les modalités de paiement de l'établissement."
     (close)="onCancel()">
   </app-ui-form-header>
 
@@ -22,112 +22,164 @@
     
         <form [formGroup]="form" class="h-full overflow-y-auto px-8 py-6 pr-4 custom-scrollbar space-y-8">
 
-            <!-- TAB 1: INFORMATIONS GÉNÉRALES -->
-            <div *ngIf="currentTab() === 'info'" class="animate-in fade-in slide-in-from-right-4 duration-300">
-                <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                  <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  </div>
-                  <h3 class="text-lg font-bold text-slate-800">Informations de base</h3>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                  <app-ui-input label="Libellé du frais" formControlName="name" [required]="true"></app-ui-input>
-                  <app-ui-select label="Catégorie" formControlName="category" [options]="categories" [required]="true"></app-ui-select>
-                  
-                  <app-ui-input label="Montant (FCFA)" type="number" formControlName="amount" [required]="true"></app-ui-input>
-                  <app-ui-select label="Statut" formControlName="isActive" [options]="statusOptions" [required]="true"></app-ui-select>
-                  
-                  <app-ui-select label="Niveau Scolaire" formControlName="level" [options]="levels()" [required]="true"></app-ui-select>
-                  <app-ui-select label="Année Académique" formControlName="academicYear" [options]="academicYears()" [required]="true"></app-ui-select>
-
-                  <div class="flex items-center px-4 h-11 bg-slate-50 border border-slate-200 rounded-xl mt-2">
-                    <label class="flex items-center cursor-pointer w-full group">
-                      <input type="checkbox" formControlName="isRequired" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all duration-200">
-                      <span class="ml-3 text-sm font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">Frais Obligatoire (Facturé à l'inscription)</span>
-                    </label>
-                  </div>
-
-                  <div class="flex items-center px-4 h-11 bg-indigo-50 border border-indigo-100 rounded-xl mt-2" *ngIf="!item?.id">
-                    <label class="flex items-center cursor-pointer w-full group">
-                      <input type="checkbox" formControlName="applyToExisting" class="w-5 h-5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 transition-all duration-200">
-                      <span class="ml-3 text-sm font-semibold text-indigo-900 group-hover:text-indigo-700 transition-colors">Appliquer aux déjà inscrits 🚀</span>
-                    </label>
-                  </div>
-                </div>
-            </div>
-
-            <!-- TAB 2: PAIEMENT ET TRANCHES -->
-            <div *ngIf="currentTab() === 'payment'" class="animate-in fade-in slide-in-from-right-4 duration-300">
+            <!-- TAB 1: TARIF & MODALITÉS DE PAIEMENT -->
+            <div *ngIf="currentTab() === 'tarif'" class="animate-in fade-in slide-in-from-right-4 duration-300">
                 <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
                   <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
-                  <h3 class="text-lg font-bold text-slate-800">Modalités de Paiement</h3>
+                  <div>
+                    <h3 class="text-lg font-bold text-slate-800">Définition du Tarif & Modalités</h3>
+                    <p class="text-xs text-slate-500">Fixez le montant global et la façon dont les élèves vont régler ce tarif.</p>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                  <app-ui-select label="Modalité de Paiement" formControlName="paymentModality" [options]="modalities" [required]="true"></app-ui-select>
+                  <app-ui-input label="Libellé du tarif" formControlName="name" placeholder="ex: Scolarité Annuelle 6ème" [required]="true"></app-ui-input>
+                  <app-ui-select label="Catégorie" formControlName="category" [options]="categories" [required]="true"></app-ui-select>
+                  
+                  <app-ui-input label="Montant Global (FCFA)" type="number" formControlName="amount" [required]="true"></app-ui-input>
+                  <app-ui-select label="Statut du Tarif" formControlName="isActive" [options]="statusOptions" [required]="true"></app-ui-select>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 mt-4 animate-in slide-in-from-top-2 duration-300" *ngIf="form.get('paymentModality')?.value === 'INSTALLMENTS'">
-                  <app-ui-input label="Nombre de tranches" type="number" formControlName="installmentCount" [required]="true"></app-ui-input>
-                  <app-ui-select label="Périodicité" formControlName="installmentPeriod" [options]="periods" [required]="true"></app-ui-select>
-                </div>
+                <!-- Section Modalité de Paiement -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                  <div class="grid grid-cols-2 gap-4">
+                    <app-ui-select label="Modalités de Règlement" formControlName="paymentModality" [options]="modalities" [required]="true"></app-ui-select>
+                    
+                    <div *ngIf="form.get('paymentModality')?.value === 'INSTALLMENTS'" class="grid grid-cols-2 gap-3 animate-in fade-in duration-200">
+                      <app-ui-input label="Nombre de tranches" type="number" formControlName="installmentCount" [required]="true"></app-ui-input>
+                      <app-ui-select label="Périodicité" formControlName="installmentPeriod" [options]="periods" [required]="true"></app-ui-select>
+                    </div>
+                  </div>
 
-                <!-- Tranches dynamiques -->
-                <div class="mt-8 animate-in slide-in-from-top-2 duration-300" *ngIf="form.get('paymentModality')?.value === 'INSTALLMENTS' && customInstallments.length > 0">
-                   <h4 class="text-sm font-bold text-slate-700 mb-3">Répartition par tranche</h4>
-                   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" formArrayName="customInstallments">
-                      <div *ngFor="let control of customInstallments.controls; let i = index" class="relative">
-                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tranche {{ i + 1 }}</label>
-                         <div class="relative flex items-center">
-                            <input type="number" [formControlName]="i" (input)="onTrancheChange(i)"
-                                   class="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all shadow-sm"
-                                   [class.border-indigo-400]="control.dirty"
-                                   [class.bg-indigo-50]="control.dirty">
-                            <span class="absolute right-3 text-xs font-bold text-slate-400 pointer-events-none">F</span>
-                         </div>
+                  <!-- Grille dynamique des tranches -->
+                  <div *ngIf="form.get('paymentModality')?.value === 'INSTALLMENTS' && customInstallments.length > 0" class="mt-6 p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 animate-in slide-in-from-top-2 duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Échéancier des tranches (Entiers FCFA)</h4>
                       </div>
-                   </div>
-                   <div *ngIf="tranchesError()" class="mt-2 text-xs font-bold text-red-500">
-                       {{ tranchesError() }}
-                   </div>
+                      <app-ui-button 
+                        variant="ghost" size="sm" icon="filter"
+                        label="Répartir équitablement"
+                        (btnClick)="resetEqualInstallments()">
+                      </app-ui-button>
+                    </div>
+
+                    <div class="space-y-3" formArrayName="customInstallments">
+                      <div *ngFor="let controlGroup of customInstallments.controls; let i = index" [formGroupName]="i" class="grid grid-cols-12 gap-3 items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="col-span-2 flex items-center gap-2">
+                          <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold flex items-center justify-center">{{ i + 1 }}</span>
+                          <span class="text-xs font-bold text-slate-700">Tranche {{ i + 1 }}</span>
+                        </div>
+                        <div class="col-span-5">
+                          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Montant (FCFA)</label>
+                          <input type="number" formControlName="amount" (input)="onTrancheAmountChange()"
+                                 class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                        </div>
+                        <div class="col-span-5">
+                          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date d'échéance</label>
+                          <input type="date" formControlName="dueDate"
+                                 class="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="tranchesError()" class="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 flex items-center gap-2">
+                      <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                      <span>{{ tranchesError() }}</span>
+                    </div>
+                  </div>
                 </div>
             </div>
 
-            <!-- TAB 3: CIBLAGE -->
+            <!-- TAB 2: POPULATION ET CIBLAGE -->
             <div *ngIf="currentTab() === 'targeting'" class="animate-in fade-in slide-in-from-right-4 duration-300">
                 <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
                   <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                   </div>
-                  <h3 class="text-lg font-bold text-slate-800">Ciblage Avancé</h3>
+                  <div>
+                    <h3 class="text-lg font-bold text-slate-800">Population Scolaire & Ciblage</h3>
+                    <p class="text-xs text-slate-500">Définissez à qui s'applique ce tarif (Niveau complet, classe ou élève particulier).</p>
+                  </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                  <app-ui-select label="Type de Ciblage" formControlName="targetType" [options]="targetTypes"></app-ui-select>
+                <!-- Contexte Académique -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                  <app-ui-select label="Année Académique" formControlName="academicYear" [options]="academicYears()" [required]="true"></app-ui-select>
+                  <app-ui-select label="Niveau Scolaire" formControlName="level" [options]="levels()" [required]="true"></app-ui-select>
+                </div>
 
-                  <app-ui-multi-select 
-                    *ngIf="form.get('targetType')?.value === 'CLASSROOM'"
-                    label="Classes Spécifiques" formControlName="classrooms" [options]="classrooms()" [required]="true">
-                  </app-ui-multi-select>
+                <!-- Cartes Interactives de Ciblage -->
+                <div class="mb-6">
+                  <label class="block text-xs font-bold text-slate-600 uppercase mb-3">Niveau de ciblage du tarif</label>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div *ngFor="let t of targetTypes" 
+                         (click)="setTargetType(t.value)"
+                         class="cursor-pointer p-4 rounded-2xl border transition-all duration-200 flex items-start gap-3 relative"
+                         [class.border-indigo-600]="form.get('targetType')?.value === t.value"
+                         [class.bg-indigo-50]="form.get('targetType')?.value === t.value"
+                         [class.shadow-sm]="form.get('targetType')?.value === t.value"
+                         [class.border-slate-200]="form.get('targetType')?.value !== t.value"
+                         [class.hover:border-slate-300]="form.get('targetType')?.value !== t.value">
+                       
+                       <div class="p-2.5 rounded-xl text-indigo-600 bg-white border border-slate-100 shadow-xs shrink-0">
+                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="t.icon" /></svg>
+                       </div>
 
+                       <div class="flex-1 min-w-0">
+                         <div class="flex items-center gap-1.5">
+                           <h4 class="text-sm font-bold text-slate-800 mb-0.5">{{ t.label }}</h4>
+                         </div>
+                         <p class="text-[11px] text-slate-500 leading-tight">{{ t.desc }}</p>
+                       </div>
+
+                       <div *ngIf="form.get('targetType')?.value === t.value" class="absolute top-3 right-3 text-indigo-600">
+                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Champs dynamiques de sélection -->
+                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 mb-6" *ngIf="form.get('targetType')?.value !== 'GLOBAL'">
                   <app-ui-select 
                     *ngIf="form.get('targetType')?.value === 'OPTION'"
                     label="Filière / Option Spécifique" formControlName="option" [options]="filteredOptions()" [required]="true">
                   </app-ui-select>
 
                   <app-ui-multi-select 
+                    *ngIf="form.get('targetType')?.value === 'CLASSROOM'"
+                    label="Classes Spécifiques concernées" formControlName="classrooms" [options]="filteredClassrooms()" [required]="true">
+                  </app-ui-multi-select>
+
+                  <app-ui-multi-select 
                     *ngIf="form.get('targetType')?.value === 'STUDENT'"
-                    label="Élèves Spécifiques" formControlName="students" [options]="students()"
+                    label="Élèves Spécifiques bénéficiaires" formControlName="students" [options]="students()"
                     [isSearchable]="true" [isLoading]="isSearchingStudents()" bindLabel="label" bindValue="value" bindSubLabel="matricule"
                     placeholder="Rechercher par nom ou matricule..." (search)="onStudentSearch($event)" [required]="true">
                   </app-ui-multi-select>
                 </div>
-                <p class="mt-4 text-[13px] text-slate-500 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <span class="font-bold text-slate-700">Note :</span> Par défaut, le tarif s'applique à tout le niveau scolaire sélectionné. Utilisez ces champs uniquement pour restreindre à une classe, une filière ou un élève particulier.
-                </p>
+
+
+                <!-- Directives et Rétro-application -->
+                <div class="space-y-3 border-t border-slate-100 pt-5">
+                  <div class="flex items-center px-4 h-12 bg-white border border-slate-200 rounded-xl">
+                    <label class="flex items-center cursor-pointer w-full group">
+                      <input type="checkbox" formControlName="isRequired" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all duration-200">
+                      <span class="ml-3 text-xs font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">Frais Obligatoire (Facturé lors de la validation d'inscription)</span>
+                    </label>
+                  </div>
+
+                  <div class="flex items-center px-4 h-12 bg-indigo-50/70 border border-indigo-100 rounded-xl" *ngIf="!item?.id">
+                    <label class="flex items-center cursor-pointer w-full group">
+                      <input type="checkbox" formControlName="applyToExisting" class="w-5 h-5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 transition-all duration-200">
+                      <span class="ml-3 text-xs font-bold text-indigo-900 group-hover:text-indigo-700 transition-colors">Générer rétroactivement les factures pour les élèves déjà inscrits 🚀</span>
+                    </label>
+                  </div>
+                </div>
             </div>
 
         </form>
@@ -144,3 +196,4 @@
     (cancel)="onCancel()">
   </app-ui-form-actions>
 </div>
+

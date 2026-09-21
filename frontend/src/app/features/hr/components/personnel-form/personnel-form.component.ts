@@ -74,13 +74,18 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
     tabs: Tab[] = [
         { 
             id: 'identity', 
-            label: 'Identité',
+            label: 'Identité & Contact',
             icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`
         },
         { 
             id: 'professional', 
-            label: 'Infos Professionnelles',
+            label: 'Poste & Affectation',
             icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>`
+        },
+        { 
+            id: 'payroll_contract', 
+            label: 'Rémunération & Contrat',
+            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
         }
     ];
     currentTab = signal('identity');
@@ -98,11 +103,9 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
             matricule: [''], // Auto-generated
             job_title: ['', Validators.required],
             roles: [[], Validators.required],
-            contract_type: [null], // Optional or required? Model allows null, but UI might want it.
-            // Établissements de rattachement (multi). L'établissement PRINCIPAL reste
-            // celui de la création (contexte courant), géré côté serveur.
+            contract_type: [null],
             attached_establishments: [[]],
-            address: [''], // Moved to root (Personnel has address, User does not)
+            address: [''],
             date_hired: [null],
             gender: ['M', Validators.required],
             user: this.fb.group({
@@ -123,16 +126,19 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
         });
 
         // Validation dynamique selon la modalité de paiement :
-        // BRUT -> salaire mensuel requis ; POINTAGE -> taux horaire requis.
+        // BRUT -> salaire mensuel requis (et réinitialiser le taux horaire)
+        // POINTAGE -> taux horaire requis (et réinitialiser le salaire brut)
         group.get('payment_mode')!.valueChanges.subscribe((mode: string | null) => {
             const selected = mode || 'BRUT';
             const gross = group.get('gross_salary');
             const hourly = group.get('hourly_rate');
             if (selected === 'POINTAGE') {
                 gross?.clearValidators();
+                gross?.setValue(null, { emitEvent: false });
                 hourly?.setValidators([Validators.required, Validators.min(0)]);
             } else {
                 hourly?.clearValidators();
+                hourly?.setValue(null, { emitEvent: false });
                 gross?.setValidators([Validators.required, Validators.min(0)]);
             }
             gross?.updateValueAndValidity({ emitEvent: false });
@@ -163,6 +169,39 @@ export class PersonnelFormComponent extends BaseModalFormComponent implements On
         social_security_number: 'N° Sécurité sociale (CNPS)',
         contract_file: 'Contrat signé',
     };
+
+    override submit(): void {
+        if (!this.form.valid) {
+            this.focusFirstInvalidTab();
+        }
+        super.submit();
+    }
+
+    focusFirstInvalidTab(): void {
+        const userGroup = this.form.get('user') as FormGroup;
+        if (userGroup && userGroup.invalid) {
+            this.currentTab.set('identity');
+            return;
+        }
+
+        const identityFields = ['gender', 'phone_number', 'address'];
+        if (identityFields.some(f => this.form.get(f)?.invalid)) {
+            this.currentTab.set('identity');
+            return;
+        }
+
+        const professionalFields = ['job_title', 'roles', 'contract_type', 'attached_establishments', 'date_hired'];
+        if (professionalFields.some(f => this.form.get(f)?.invalid)) {
+            this.currentTab.set('professional');
+            return;
+        }
+
+        const payrollFields = ['payment_mode', 'gross_salary', 'hourly_rate', 'bank_name', 'bank_account_number', 'bank_iban', 'social_security_number'];
+        if (payrollFields.some(f => this.form.get(f)?.invalid)) {
+            this.currentTab.set('payroll_contract');
+            return;
+        }
+    }
 
     save(): Observable<any> {
         const payload = {

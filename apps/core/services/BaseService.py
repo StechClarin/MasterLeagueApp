@@ -122,7 +122,6 @@ class BaseService:
         if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
              if not data.get('establishment') and not data.get('establishment_id'):
                  data['establishment_id'] = self.establishment_id
-                 data['establishment'] = self.establishment_id
         
         return data
 

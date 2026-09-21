@@ -24,7 +24,7 @@ import { environment } from '../../../../../environments/environment'; // Adjust
       <div class="px-6 relative flex-shrink-0">
         <div class="flex flex-col sm:flex-row items-center sm:items-end -mt-12 mb-6 gap-4">
           <div class="h-24 w-24 rounded-2xl bg-white p-1 shadow-xl">
-            <img *ngIf="data?.user?.photo && !imageError" [src]="getPhotoUrl(data.user.photo)" class="w-full h-full object-cover rounded-xl border border-indigo-50" alt="Avatar" (error)="imageError = true">
+            <img *ngIf="data?.user?.photo && !imageError" [src]="getPhotoUrl(data?.user?.photo)" class="w-full h-full object-cover rounded-xl border border-indigo-50" alt="Avatar" (error)="imageError = true">
             <div *ngIf="!data?.user?.photo || imageError" class="h-full w-full rounded-xl bg-gradient-to-br from-indigo-100 to-white flex items-center justify-center text-3xl font-bold text-indigo-600 border border-indigo-50">
               {{ getInitials(data?.user?.username) }}
             </div>

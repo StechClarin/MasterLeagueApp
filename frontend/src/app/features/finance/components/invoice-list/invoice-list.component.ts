@@ -61,16 +61,16 @@ import { ClassRoomService } from '@features/structure/services/classroom.service
             <!-- Barre de filtres par catégorie -->
             <div class="flex items-center gap-2 overflow-x-auto min-w-max">
                <button 
-                 (click)="setCategory(null)"
-                 [class]="!filterForm.value.search ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                 (click)="filterForm.patchValue({ category: null })"
+                 [class]="!filterForm.value.category ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
                  class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all border border-transparent flex items-center gap-2">
                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                  Tout
                </button>
                <button 
                  *ngFor="let cat of dynamicCategories"
-                 (click)="setCategory(cat.value)"
-                 [class]="filterForm.value.search === cat.value ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-100'"
+                 (click)="filterForm.patchValue({ category: cat.value })"
+                 [class]="filterForm.value.category === cat.value ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-100'"
                  class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all border flex items-center gap-2">
                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" [innerHTML]="cat.svg"></svg>
                  {{ cat.label }}
@@ -245,6 +245,7 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
       this.tableColumns = [
         { header: 'Référence', key: 'reference', className: 'font-mono text-xs font-bold' },
         { header: 'Libellé', key: 'title' },
+        { header: 'Catégorie', format: (item) => this.getCategoryLabel(item.category) },
         { header: 'Élève', template: this.studentCell },
         { header: 'Total', format: (item) => `${item.totalAmount?.toLocaleString()} FCFA` },
         { header: 'Payé', format: (item) => `${item.paidAmount?.toLocaleString()} FCFA` },
@@ -254,6 +255,18 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
       this.cdr.detectChanges();
     });
   }
+
+  getCategoryLabel(category: string): string {
+    const labels: any = {
+      'TUITION': 'Scolarité',
+      'REGISTRATION': 'Inscription',
+      'CANTEEN': 'Cantine',
+      'TRANSPORT': 'Transport',
+      'OTHER': 'Autre'
+    };
+    return labels[category] || category || 'Autre';
+  }
+
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -443,8 +456,9 @@ export class InvoiceListComponent extends BaseModalListComponent<any> implements
   }
 
   setCategory(val: string | null) {
-    this.searchControl.setValue(val);
+    this.filterForm.patchValue({ category: val });
   }
+
 
   openPaymentModal(invoice: any) {
     this.openModal(invoice, 'create');

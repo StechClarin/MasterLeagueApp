@@ -273,6 +273,53 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
         }
     }
 
+    duplicateDetailControl(ctrl: AbstractControl) {
+        const group = this.fb.group({
+            id: [null],
+            date: [ctrl.get('date')?.value],
+            heure_debut: [ctrl.get('heure_debut')?.value || '08:00', Validators.required],
+            heure_fin: [ctrl.get('heure_fin')?.value || '10:00', Validators.required],
+            enseignant_id: [ctrl.get('enseignant_id')?.value, Validators.required],
+            matiere_id: [ctrl.get('matiere_id')?.value, Validators.required],
+            classe_id: [ctrl.get('classe_id')?.value, Validators.required],
+            salle_id: [ctrl.get('salle_id')?.value],
+            establishment_id: [this.structureState.currentEstablishmentId()]
+        }, { validators: [timeRangeValidator] });
+
+        this.details.push(group);
+    }
+
+    getCourseCountForDate(dateStr: string): number {
+        if (!this.details) return 0;
+        return this.details.controls.filter(c => c.get('date')?.value === dateStr).length;
+    }
+
+    prevDay() {
+        const currentTabs = this.tabs();
+        const idx = currentTabs.findIndex(t => t.id === this.activeTab());
+        if (idx > 0) {
+            this.activeTab.set(currentTabs[idx - 1].id);
+        }
+    }
+
+    nextDay() {
+        const currentTabs = this.tabs();
+        const idx = currentTabs.findIndex(t => t.id === this.activeTab());
+        if (idx >= 0 && idx < currentTabs.length - 1) {
+            this.activeTab.set(currentTabs[idx + 1].id);
+        }
+    }
+
+    get submitButtonLabel(): string {
+        if (this.form.get('is_conge')?.value) {
+            return 'Enregistrer le Congé / Férié';
+        }
+        if (this.form.get('is_specific')?.value) {
+            return 'Enregistrer le Planning Spécifique';
+        }
+        return 'Enregistrer le Planning Global';
+    }
+
     getDaysArray(start: Date, end: Date): Tab[] {
         const arr: Tab[] = [];
         const dt = new Date(start);
@@ -280,9 +327,11 @@ export class PlanningFormComponent extends BaseFormComponent implements OnInit {
         let limit = 0;
         while (dt <= end && limit < 31) {
             const dateStr = dt.toISOString().split('T')[0];
+            const count = this.getCourseCountForDate(dateStr);
+            const dateText = dt.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
             arr.push({
                 id: dateStr,
-                label: dt.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }),
+                label: count > 0 ? `${dateText} (${count})` : dateText,
             });
             dt.setDate(dt.getDate() + 1);
             limit++;

@@ -152,15 +152,30 @@ class FinanceQuery(graphene.ObjectType):
 
     def resolve_used_fee_categories(self, info):
         """
-        Retourne la liste des noms de tarifs uniques créés pour l'établissement courant.
+        Retourne la liste des catégories uniques de tarifs/factures pour l'établissement courant.
         """
         est_id = info.context.establishment_id
-        # On récupère les paires (name, category) uniques par établissement
-        data = FeeDefinition.objects.filter(establishment_id=est_id).values('name', 'category').distinct().order_by('category', 'name')
+        from apps.finance.models.fee_definition import FeeCategory, FeeDefinition
+        from apps.finance.models.invoice import Invoice
+
+        # Récupération des catégories distinctes présentes dans les factures ou définitions de frais
+        used_cats = list(Invoice.objects.filter(establishment_id=est_id).values_list('category', flat=True).distinct())
+        if not used_cats:
+            used_cats = list(FeeDefinition.objects.filter(establishment_id=est_id).values_list('category', flat=True).distinct())
         
-        # On retourne une structure légère pour le frontend
-        return [{
-            "label": item['name'],
-            "value": item['name'], # On filtrera par le nom (title dans invoice)
-            "category": item['category']
-        } for item in data]
+        # Fallback sur les catégories standard si aucune donnée
+        if not used_cats or not any(used_cats):
+            used_cats = [choice[0] for choice in FeeCategory.choices]
+
+        category_choices = dict(FeeCategory.choices)
+
+        result = []
+        for cat in used_cats:
+            if cat and cat in category_choices:
+                result.append({
+                    "label": category_choices[cat],
+                    "value": cat,
+                    "category": cat
+                })
+        return result
+

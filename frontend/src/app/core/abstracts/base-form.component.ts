@@ -63,8 +63,9 @@ export abstract class BaseFormComponent implements OnInit {
                         const richMessage = globalErrors.map(e => e.message).join('\n');
                         this.toastService.error(richMessage);
                     } else if (fieldErrors.length > 0) {
-                        // S'il n'y a que des erreurs de champs, on alerte pour corriger le formulaire
-                        this.toastService.warning('Veuillez corriger les erreurs de saisie.');
+                        // Affichage clair des 3 premières erreurs de champs dans le Toast
+                        const sampleMsg = fieldErrors.slice(0, 3).map(e => `${e.field} : ${e.message}`).join(' | ');
+                        this.toastService.warning(`Erreur de saisie : ${sampleMsg}`);
                     } else {
                         this.toastService.error(FormUtils.getError(err));
                     }

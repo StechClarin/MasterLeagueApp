@@ -41,7 +41,7 @@ class FeeDefinition(EstablishmentAwareModel):
     )
     custom_installments = models.JSONField(
         null=True, blank=True,
-        help_text="Format: [{'tranche': 1, 'amount': 50000}, {'tranche': 2, 'amount': 25000}]"
+        help_text="Format: [{'tranche': 1, 'amount': 50000, 'due_date': '2026-09-15'}]"
     )
 
     # Relation avec le niveau (Level) de l'app 'structure'
@@ -57,7 +57,7 @@ class FeeDefinition(EstablishmentAwareModel):
     class Meta:
         verbose_name = "Définition de Frais"
         verbose_name_plural = "Définitions de Frais"
-        unique_together = ['level', 'option', 'category', 'academic_year', 'establishment']
 
     def __str__(self):
         return f"{self.name} - {self.level.name} ({self.amount} FCFA)"
+

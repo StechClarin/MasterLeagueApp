@@ -122,11 +122,11 @@
     <ng-template #userCell let-item>
       <div class="flex items-center">
         <div class="h-11 w-11 flex-shrink-0">
-          <app-ui-avatar [name]="item.user.username" [photoUrl]="item.user.photo"></app-ui-avatar>
+          <app-ui-avatar [name]="item?.user?.username || ''" [photoUrl]="item?.user?.photo"></app-ui-avatar>
         </div>
         <div class="ml-4">
-          <div class="text-sm font-semibold text-gray-900">{{ item.user.firstName }} {{ item.user.lastName }}</div>
-          <div class="text-sm text-gray-500">{{ item.user.email }}</div>
+          <div class="text-sm font-semibold text-gray-900">{{ item?.user?.firstName || '—' }} {{ item?.user?.lastName || '' }}</div>
+          <div class="text-sm text-gray-500">{{ item?.user?.email || '—' }}</div>
         </div>
       </div>
     </ng-template>
