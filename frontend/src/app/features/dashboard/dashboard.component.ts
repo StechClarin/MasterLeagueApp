@@ -77,7 +77,9 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Data is handled by the effect on initialization
+    if (!this.dashboardData() && this.structureState.currentEstablishmentId()) {
+      this.fetchData();
+    }
   }
 
   fetchData() {
@@ -100,6 +102,10 @@ export class DashboardComponent implements OnInit {
 
   navigateTo(route: string) {
     this.router.navigate([route]);
+  }
+
+  printDashboardReport() {
+    window.print();
   }
 
   getPaymentMethodLabel(method: string): string {
@@ -212,7 +218,7 @@ export class DashboardComponent implements OnInit {
     // 4. Payment Methods Distribution (Pie/Donut)
     this.paymentMethodsChartOptions = {
       series: data.paymentMethodsDistribution.map((p: any) => p.count),
-      labels: data.paymentMethodsDistribution.map((p: any) => p.category),
+      labels: data.paymentMethodsDistribution.map((p: any) => this.getPaymentMethodLabel(p.category)),
       chart: {
         type: "pie",
         height: 280

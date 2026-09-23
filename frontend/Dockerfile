@@ -7,7 +7,7 @@ COPY package.json package-lock.json ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
-RUN npm run build -- --base-href /schoolmanage/test/
+RUN npm run build -- --base-href /admin/
 
 # STAGE 2: Serve aa
 FROM nginx:alpine

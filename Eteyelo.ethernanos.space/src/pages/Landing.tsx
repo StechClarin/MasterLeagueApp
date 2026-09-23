@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Users, LayoutDashboard, Sparkles, BookOpen, ShieldCheck, ChevronRight, CalendarDays, Wallet, Star, FileText } from 'lucide-react';
+import { GraduationCap, Users, LayoutDashboard, Sparkles, BookOpen, ShieldCheck, ChevronRight, CalendarDays, Wallet, Star, FileText, Building2 } from 'lucide-react';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ const Landing: React.FC = () => {
           <span style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.5px' }}>Eteyelo</span>
         </div>
         
-        <div style={{ display: 'flex', gap: '16px' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <button 
             onClick={() => navigate('/auth?space=prof')}
             className="hover-bg"
@@ -53,6 +53,14 @@ const Landing: React.FC = () => {
             Espace Étudiant
             <ChevronRight size={18} />
           </button>
+          <a 
+            href="/admin/"
+            className="hover-lift"
+            style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)' }}
+          >
+            <Building2 size={18} />
+            App de Gestion
+          </a>
         </div>
       </header>
 
@@ -63,7 +71,7 @@ const Landing: React.FC = () => {
         <div style={{ position: 'absolute', top: '10%', left: '15%', width: '500px', height: '500px', background: 'rgba(99, 102, 241, 0.12)', filter: 'blur(120px)', borderRadius: '50%', zIndex: 0, pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', bottom: '10%', right: '15%', width: '500px', height: '500px', background: 'rgba(236, 72, 153, 0.08)', filter: 'blur(120px)', borderRadius: '50%', zIndex: 0, pointerEvents: 'none' }}></div>
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '900px', width: '100%' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '960px', width: '100%' }}>
           
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '100px', marginBottom: '32px', color: 'var(--text-main)', fontSize: '14px', fontWeight: 700, backdropFilter: 'blur(10px)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
             <Sparkles size={16} color="var(--accent)" />
@@ -118,6 +126,21 @@ const Landing: React.FC = () => {
                 <span style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5, display: 'block' }}>Saisissez vos notes, gérez vos évaluations et suivez vos classes avec précision.</span>
               </div>
             </button>
+
+            <a 
+              href="/admin/"
+              className="glass-card hover-lift"
+              style={{ position: 'relative', overflow: 'hidden', padding: '32px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', cursor: 'pointer', width: '280px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', textDecoration: 'none' }}
+            >
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #10b981, #059669)' }}></div>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                <Building2 size={40} />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ display: 'block', fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '8px' }}>App de Gestion</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5, display: 'block' }}>Accédez à la console d'administration centrale (scolarité, RH, trésorerie et configuration).</span>
+              </div>
+            </a>
           </div>
 
           {/* Trust Indicators */}

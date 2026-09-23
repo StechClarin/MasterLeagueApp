@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowLeft,
+  Building2,
   CheckCircle2,
   GraduationCap,
   KeyRound,
@@ -180,6 +181,17 @@ export default function Login() {
                 </div>
               </div>
             </div>
+            <a href="/admin/" className="auth-space-tab" style={{ justifyContent: 'flex-start', padding: '20px', textAlign: 'left', textDecoration: 'none' }} role="button">
+              <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(16,185,129,0.14)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Building2 size={26} />
+              </div>
+              <div>
+                <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)' }}>Espace Administration</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Accès à la console d'administration et de gestion scolaire.
+                </div>
+              </div>
+            </a>
           </div>
         )}
 
