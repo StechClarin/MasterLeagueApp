@@ -468,7 +468,7 @@ export const GradesManager: React.FC = () => {
         </div>
       </div>
 
-      {/* REFORMULATED DYNAMIC & RESPONSIVE STUDENT GRADE LIST */}
+      {/* REFORMULATED CLEAN TABLE/LIST FOR STUDENT GRADES */}
       <div style={{ marginBottom: '24px' }}>
         {loading ? (
           <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -482,71 +482,81 @@ export const GradesManager: React.FC = () => {
             <p style={{ fontSize: '13px', marginTop: '4px' }}>Seuls les élèves ayant un statut d'inscription validé apparaissent ici.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {filteredStudents.map((student) => {
-              const inp = gradeInputs[student.id] || { grade: '', comment: '' };
-              const numVal = inp.grade !== '' && !isNaN(parseFloat(inp.grade)) ? parseFloat(inp.grade) : null;
-              const isPassing = numVal !== null && numVal >= 10;
-              const isFailing = numVal !== null && numVal < 10;
-              const appConfig = getAppreciation(numVal);
+          <div
+            className="glass-panel"
+            style={{
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.12))',
+              background: 'var(--bg-card, #1e293b)',
+            }}
+          >
+            {/* EN-TÊTE DE LISTE */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(220px, 1.8fr) 140px 160px',
+                alignItems: 'center',
+                padding: '14px 20px',
+                background: 'rgba(15, 23, 42, 0.8)',
+                borderBottom: '1px solid var(--glass-border, rgba(255, 255, 255, 0.12))',
+                fontSize: '12px',
+                fontWeight: 800,
+                color: 'var(--text-muted, #94a3b8)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
+              <div>Matricule & Nom de l'Élève</div>
+              <div style={{ textAlign: 'center' }}>Note / 20</div>
+              <div style={{ textAlign: 'right' }}>Appréciation</div>
+            </div>
 
-              return (
-                <div
-                  key={student.id}
-                  className="glass-card hover-lift"
-                  style={{
-                    padding: '16px 20px',
-                    borderRadius: '16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '14px',
-                    background: 'var(--bg-card, #1e293b)',
-                    border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.12))',
-                  }}
-                >
-                  {/* LIGNE 1 : EN-TÊTE ÉLÈVE ET BADGE D'APPRÉCIATION */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            {/* RANGÉES DES ÉLÈVES */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {filteredStudents.map((student, idx) => {
+                const inp = gradeInputs[student.id] || { grade: '', comment: '' };
+                const numVal = inp.grade !== '' && !isNaN(parseFloat(inp.grade)) ? parseFloat(inp.grade) : null;
+                const isPassing = numVal !== null && numVal >= 10;
+                const isFailing = numVal !== null && numVal < 10;
+                const appConfig = getAppreciation(numVal);
+
+                return (
+                  <div
+                    key={student.id}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(220px, 1.8fr) 140px 160px',
+                      alignItems: 'center',
+                      padding: '12px 20px',
+                      borderBottom: idx < filteredStudents.length - 1 ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
+                      background: idx % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.02)',
+                      transition: 'background 0.2s ease',
+                    }}
+                  >
+                    {/* COLONNE 1 : MATRICULE & NOM */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <span
                         style={{
-                          fontSize: '12px',
+                          fontSize: '11px',
                           fontWeight: 800,
-                          padding: '4px 10px',
-                          borderRadius: '8px',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
                           background: 'rgba(16, 185, 129, 0.15)',
                           color: '#10b981',
                           letterSpacing: '0.5px',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         {student.matricule}
                       </span>
-                      <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-main)' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)' }}>
                         {student.lastName} {student.firstName}
                       </span>
                     </div>
 
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 14px',
-                        borderRadius: '100px',
-                        background: appConfig.bg,
-                        color: appConfig.color,
-                        fontSize: '12px',
-                        fontWeight: 800,
-                      }}
-                    >
-                      <Sparkles size={13} />
-                      {appConfig.text}
-                    </span>
-                  </div>
-
-                  {/* LIGNE 2 : CHAMPS DE SAISIE FLUIDES (NOTE + REMARQUE) */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '0 0 auto' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>Note / 20 :</span>
+                    {/* COLONNE 2 : NOTE / 20 */}
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
                       <input
                         type="number"
                         min="0"
@@ -556,8 +566,8 @@ export const GradesManager: React.FC = () => {
                         onChange={(e) => handleGradeInputChange(student.id, e.target.value)}
                         placeholder="-- / 20"
                         style={{
-                          width: '105px',
-                          padding: '10px 12px',
+                          width: '95px',
+                          padding: '8px 10px',
                           borderRadius: '10px',
                           background: 'rgba(15, 23, 42, 0.8)',
                           border: isPassing
@@ -566,36 +576,37 @@ export const GradesManager: React.FC = () => {
                             ? '1px solid rgba(239, 68, 68, 0.6)'
                             : '1px solid var(--glass-border, rgba(255, 255, 255, 0.12))',
                           color: isPassing ? '#10b981' : isFailing ? '#ef4444' : 'var(--text-main)',
-                          fontWeight: 900,
-                          fontSize: '16px',
+                          fontWeight: 800,
+                          fontSize: '15px',
                           textAlign: 'center',
                           outline: 'none',
                         }}
                       />
                     </div>
 
-                    <div style={{ flex: '1 1 200px' }}>
-                      <input
-                        type="text"
-                        placeholder="Remarque / Appréciation de l'enseignant..."
-                        value={inp.comment}
-                        onChange={(e) => handleCommentInputChange(student.id, e.target.value)}
+                    {/* COLONNE 3 : APPRÉCIATION */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span
                         style={{
-                          width: '100%',
-                          padding: '10px 14px',
-                          borderRadius: '10px',
-                          background: 'rgba(15, 23, 42, 0.6)',
-                          border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.12))',
-                          color: 'var(--text-main)',
-                          fontSize: '13px',
-                          outline: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '5px 12px',
+                          borderRadius: '100px',
+                          background: appConfig.bg,
+                          color: appConfig.color,
+                          fontSize: '12px',
+                          fontWeight: 800,
                         }}
-                      />
+                      >
+                        <Sparkles size={13} />
+                        {appConfig.text}
+                      </span>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

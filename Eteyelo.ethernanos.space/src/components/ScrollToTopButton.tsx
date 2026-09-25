@@ -3,11 +3,11 @@ import { ArrowUp } from 'lucide-react';
 
 export const ScrollToTopButton: React.FC = () => {
   const [visible, setVisible] = useState(false);
-  const scrollIntervalRef = useRef<any>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     const onScroll = () => {
-      if (window.scrollY > 150) {
+      if (window.scrollY > 100) {
         setVisible(true);
       } else {
         setVisible(false);
@@ -17,45 +17,60 @@ export const ScrollToTopButton: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const stopContinuousScroll = () => {
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-      scrollIntervalRef.current = null;
+  const stopScroll = () => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
   };
 
-  const handlePointerDown = (e: React.SyntheticEvent) => {
-    // Empêcher la sélection de texte ou le drag
-    e.stopPropagation();
-    stopContinuousScroll();
+  const startScrollingUp = () => {
+    stopScroll();
 
-    // Démarrer un défilement progressif vers le haut tant que le bouton est maintenu enfoncé
-    scrollIntervalRef.current = setInterval(() => {
+    const step = () => {
       if (window.scrollY <= 0) {
-        stopContinuousScroll();
+        stopScroll();
         return;
       }
-      window.scrollBy({ top: -35, behavior: 'auto' });
-    }, 16);
+      // Vitesse progressive 60fps (~32px par frame)
+      window.scrollBy(0, -32);
+      animationFrameRef.current = requestAnimationFrame(step);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(step);
   };
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    stopContinuousScroll();
-    // Clic unique : remonter instantanément/smooth au début de la page
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Sécurité : arrêter immédiatement le défilement dès que le pointeur est relâché n'importe où
+  useEffect(() => {
+    const handleGlobalRelease = () => {
+      stopScroll();
+    };
+
+    window.addEventListener('pointerup', handleGlobalRelease);
+    window.addEventListener('mouseup', handleGlobalRelease);
+    window.addEventListener('touchend', handleGlobalRelease);
+    window.addEventListener('touchcancel', handleGlobalRelease);
+
+    return () => {
+      window.removeEventListener('pointerup', handleGlobalRelease);
+      window.removeEventListener('mouseup', handleGlobalRelease);
+      window.removeEventListener('touchend', handleGlobalRelease);
+      window.removeEventListener('touchcancel', handleGlobalRelease);
+      stopScroll();
+    };
+  }, []);
 
   if (!visible) return null;
 
   return (
     <button
-      onClick={handleClick}
-      onMouseDown={handlePointerDown}
-      onMouseUp={stopContinuousScroll}
-      onMouseLeave={stopContinuousScroll}
-      onTouchStart={handlePointerDown}
-      onTouchEnd={stopContinuousScroll}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        startScrollingUp();
+      }}
+      onPointerUp={stopScroll}
+      onPointerLeave={stopScroll}
+      onPointerCancel={stopScroll}
       style={{
         position: 'fixed',
         bottom: '85px',
@@ -75,9 +90,9 @@ export const ScrollToTopButton: React.FC = () => {
         userSelect: 'none',
         WebkitUserSelect: 'none',
         touchAction: 'none',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'transform 0.15s ease, opacity 0.2s ease',
       }}
-      title="Clic simple : remonter en haut • Maintien : remonter progressivement"
+      title="Maintenir enfoncé pour remonter • Relâcher pour arrêter"
     >
       <ArrowUp size={22} strokeWidth={2.5} />
     </button>
