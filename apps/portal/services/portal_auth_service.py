@@ -126,7 +126,7 @@ def find_profile(space: str, kind: str, identifier: str):
             return {"kind": "student", "pk": st.pk}
         return None
 
-    # ---- space = prof : Personnel par email pro, téléphone ou user lié ----
+    # ---- space = prof ou manager : Personnel ou User par email, téléphone ----
     query = Q(is_active=True)
     if kind == "email":
         query &= Q(email_pro__iexact=identifier) | Q(user__email__iexact=identifier)
@@ -136,7 +136,7 @@ def find_profile(space: str, kind: str, identifier: str):
 
     personnel = Personnel.objects.filter(query).order_by("pk").first()
     if personnel:
-        return {"kind": "personnel", "pk": personnel.pk}
+        return {"kind": "personnel", "pk": personnel.pk, "space": space}
     return None
 
 
@@ -154,7 +154,7 @@ def _display_name(profile_kind, obj):
             if full:
                 return full
             return obj.user.email or ""
-        return "Enseignant"
+        return "Enseignant / Gestionnaire"
     # student
     return f"{obj.first_name} {obj.last_name}".strip()
 
@@ -195,6 +195,7 @@ def resolve_person_context(profile):
     Les enfants ne sont renseignés que pour les parents/tuteurs.
     """
     kind, pk = profile["kind"], profile["pk"]
+    target_space = profile.get("space", PortalOtp.Space.PROF)
 
     if kind == "guardian":
         g = Guardian.objects.select_related("user", "establishment").filter(pk=pk).first()
@@ -232,9 +233,48 @@ def resolve_person_context(profile):
         }
 
     # personnel
-    p = Personnel.objects.select_related("user", "establishment").filter(pk=pk).first()
+    p = Personnel.objects.select_related("user", "establishment").prefetch_related("roles").filter(pk=pk).first()
     if not p:
         raise PortalAuthError("Session invalide : profil introuvable.", 401)
+
+    is_super = bool(p.user and (p.user.is_superuser or p.user.username.lower() in ["ethernanos", "admin"]))
+    roles_list = [r.name.lower() for r in p.roles.all()] if p.roles.exists() else []
+
+    # Récupération des établissements liés à l'utilisateur
+    from apps.core.models.establishment import Establishment
+    from apps.core.models.establishment_membership import EstablishmentMembership
+
+    user_ests = []
+    if is_super:
+        user_ests = list(Establishment.objects.all().order_by("name"))
+    else:
+        est_ids = set()
+        if p.establishment_id:
+            est_ids.add(p.establishment_id)
+        if p.user:
+            mb_ids = list(EstablishmentMembership.objects.filter(user=p.user).values_list("establishment_id", flat=True))
+            est_ids.update(mb_ids)
+            owned_ids = list(Establishment.objects.filter(user=p.user).values_list("pk", flat=True))
+            est_ids.update(owned_ids)
+
+        if est_ids:
+            user_ests = list(Establishment.objects.filter(pk__in=est_ids).order_by("name"))
+
+        if not user_ests:
+            user_ests = list(Establishment.objects.all().order_by("name"))
+
+
+    establishments_data = [
+        {"id": str(e.pk), "name": e.name, "code": e.code or "", "city": e.city or ""}
+        for e in user_ests
+    ]
+
+    default_est_id = str(p.establishment_id or "")
+    default_est_name = p.establishment.name if p.establishment_id else None
+    if not default_est_id and establishments_data:
+        default_est_id = establishments_data[0]["id"]
+        default_est_name = establishments_data[0]["name"]
+
     person = {
         "kind": "personnel",
         "id": str(p.pk),
@@ -245,10 +285,14 @@ def resolve_person_context(profile):
         "phone": p.phone_number or getattr(p.user, "phone", "") or "",
         "matricule": p.matricule or "",
         "jobTitle": p.job_title or "",
-        "establishmentId": str(p.establishment_id or ""),
-        "establishmentName": p.establishment.name if p.establishment_id else None,
+        "isSuperAdmin": is_super,
+        "roles": roles_list,
+        "establishmentId": default_est_id,
+        "establishmentName": default_est_name,
+        "establishments": establishments_data,
     }
-    return {"space": PortalOtp.Space.PROF, "person": person, "children": []}
+    return {"space": target_space, "person": person, "children": []}
+
 
 def request_otp(space: str, contact: str):
     """
@@ -258,8 +302,8 @@ def request_otp(space: str, contact: str):
       request_id, channel, identifier (masqué), expires_in, resend_after,
       debug_code (UNIQUEMENT si settings.DEBUG).
     """
-    if space not in (PortalOtp.Space.STUDENT, PortalOtp.Space.PROF):
-        raise PortalAuthError("Espace invalide : 'student' ou 'prof' attendu.", 400)
+    if space not in (PortalOtp.Space.STUDENT, PortalOtp.Space.PROF, PortalOtp.Space.MANAGER):
+        raise PortalAuthError("Espace invalide : 'student', 'prof' ou 'manager' attendu.", 400)
 
     kind, identifier = normalize_contact(contact)
 
@@ -318,7 +362,7 @@ def verify_otp(space: str, contact: str, code: str):
     Consomme le code, résout le profil réel et retourne
     (token_payload, session_context).
     """
-    if space not in (PortalOtp.Space.STUDENT, PortalOtp.Space.PROF):
+    if space not in (PortalOtp.Space.STUDENT, PortalOtp.Space.PROF, PortalOtp.Space.MANAGER):
         raise PortalAuthError("Espace invalide.", 400)
     kind, identifier = normalize_contact(contact)
 
@@ -395,6 +439,80 @@ def context_from_token(token: str):
     context = resolve_person_context(profile)
     context["claims"] = claims
     return context
+
+
+from django.contrib.auth import authenticate, get_user_model
+
+def authenticate_manager_password(username_or_email: str, password: str):
+    """
+    Authentification classique par nom d'utilisateur / email + mot de passe (Django natif).
+    Retourne (token_payload, session_context).
+    """
+    raw = (username_or_email or "").strip()
+    pwd = (password or "").strip()
+    if not raw or not pwd:
+        raise PortalAuthError("Identifiant et mot de passe requis.", 400)
+
+    User = get_user_model()
+    user = authenticate(username=raw, password=pwd)
+
+    if not user and "@" in raw:
+        u_obj = User.objects.filter(email__iexact=raw).first()
+        if u_obj:
+            user = authenticate(username=u_obj.username, password=pwd)
+
+    if not user:
+        raise PortalAuthError("Identifiant ou mot de passe incorrect.", 401)
+
+    personnel = Personnel.objects.filter(user=user, is_active=True).first()
+
+    if personnel:
+        profile = {"kind": "personnel", "pk": personnel.pk, "space": PortalOtp.Space.MANAGER}
+        context = resolve_person_context(profile)
+    else:
+        from apps.core.models.establishment import Establishment
+        from apps.core.models.establishment_membership import EstablishmentMembership
+        is_super = bool(user.is_superuser or user.username.lower() in ["ethernanos", "admin"])
+        if is_super:
+            user_ests = list(Establishment.objects.filter(is_active=True).order_by("name"))
+        else:
+            mb_ids = list(EstablishmentMembership.objects.filter(user=user, status="active").values_list("establishment_id", flat=True))
+            owned_ids = list(Establishment.objects.filter(user=user, is_active=True).values_list("pk", flat=True))
+            all_ids = set(mb_ids + owned_ids)
+            if all_ids:
+                user_ests = list(Establishment.objects.filter(pk__in=all_ids, is_active=True).order_by("name"))
+            else:
+                user_ests = list(Establishment.objects.filter(is_active=True).order_by("name"))
+
+        establishments_data = [
+            {"id": str(e.pk), "name": e.name, "code": e.code or "", "city": e.city or ""}
+            for e in user_ests
+        ]
+        def_id = str(getattr(user, "current_establishment_id", "") or "")
+        def_name = "Administration Centrale"
+        if not def_id and establishments_data:
+            def_id = establishments_data[0]["id"]
+            def_name = establishments_data[0]["name"]
+
+        person = {
+            "kind": "personnel",
+            "id": str(user.pk),
+            "name": f"{user.first_name} {user.last_name}".strip() or user.username,
+            "firstName": user.first_name or "",
+            "lastName": user.last_name or "",
+            "email": user.email or "",
+            "phone": getattr(user, "phone", "") or "",
+            "jobTitle": "Directeur / Administrateur",
+            "isSuperAdmin": is_super,
+            "establishmentId": def_id,
+            "establishmentName": def_name,
+            "establishments": establishments_data,
+        }
+        context = {"space": PortalOtp.Space.MANAGER, "person": person, "children": []}
+
+
+    token = issue_portal_token(context)
+    return token, context
 
 
 # Imports tardifs (évite les dépendances circulaires au chargement des apps)

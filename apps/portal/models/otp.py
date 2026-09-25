@@ -16,6 +16,7 @@ class PortalOtp(models.Model):
     class Space(models.TextChoices):
         STUDENT = "student", "Espace étudiant / parent"
         PROF = "prof", "Espace enseignant"
+        MANAGER = "manager", "Espace gestionnaire / directeur"
 
     class Channel(models.TextChoices):
         EMAIL = "email", "Email"

@@ -30,9 +30,11 @@ class BaseService:
     import_fields = []
     import_field_labels = {}
 
-    def __init__(self):
-        self.user = None
-        self.establishment_id = None
+    def __init__(self, user=None, establishment_id=None):
+        self.user = user
+        self.establishment_id = establishment_id
+        if user is not None or establishment_id is not None:
+            self.set_context(user, establishment_id)
 
     def get_import_fields(self):
         """
@@ -142,10 +144,55 @@ class BaseService:
 
         return obj
 
+    def save_bulk(self, data_list, lookup_fields=None):
+        """
+        [GÉNÉRIQUE & DRY] Sauvegarde un lot (liste) d'objets.
+        Détecte automatiquement si chaque élément existe déjà (via id ou lookup_fields)
+        pour exécuter un UPDATE (avec instance) ou un CREATE (sans instance) via self.save().
+        """
+        results = []
+        with db_atomic():
+            for item in data_list:
+                if not item or not isinstance(item, dict):
+                    continue
+                item_data = dict(item)
+                instance = None
+                item_id = item_data.get('id') or item_data.get('pk')
+
+                if item_id:
+                    instance = self.model.objects.filter(pk=item_id, is_deleted=False).first()
+                elif lookup_fields and self.model is not None:
+                    lookup = {}
+                    for f in lookup_fields:
+                        val = item_data.get(f) or item_data.get(f"{f}_id")
+                        if val is not None:
+                            key_name = f if f.endswith("_id") else f"{f}_id"
+                            lookup[key_name] = val
+                    if len(lookup) == len(lookup_fields):
+                        lookup['is_deleted'] = False
+                        if hasattr(self.model, 'establishment') and self.establishment_id:
+                            lookup['establishment_id'] = self.establishment_id
+                        instance = self.model.objects.filter(**lookup).first()
+
+                obj = self.save(item_data, instance=instance)
+                results.append(obj)
+
+        return results
+
     # --- Les Hooks surchargeables ---
 
     def before_save(self, data, instance=None):
-        # Gérer le cas où establishment est fourni sous forme de string/UUID (ex: via DRF default)
+        # Auto-normalisation générique des clés étrangères (FK Cleanup)
+        if self.model is not None:
+            for field in self.model._meta.get_fields():
+                if field.is_relation and field.many_to_one:
+                    fk_name = field.name
+                    if fk_name in data and not hasattr(data[fk_name], '_meta'):
+                        val = data.pop(fk_name)
+                        if val is not None:
+                            data[f"{fk_name}_id"] = val
+
+        # Gérer le cas où establishment est fourni sous forme de string/UUID
         if 'establishment' in data and not hasattr(data['establishment'], '_meta'):
             data['establishment_id'] = data.pop('establishment')
 

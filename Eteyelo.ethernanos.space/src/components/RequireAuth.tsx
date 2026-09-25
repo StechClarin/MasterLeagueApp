@@ -32,7 +32,9 @@ function FullScreenLoader() {
 }
 
 function routeSpace(pathname: string): PortalSpace {
-  return pathname.startsWith('/prof') ? 'prof' : 'student';
+  if (pathname.startsWith('/manager')) return 'manager';
+  if (pathname.startsWith('/prof')) return 'prof';
+  return 'student';
 }
 
 /**

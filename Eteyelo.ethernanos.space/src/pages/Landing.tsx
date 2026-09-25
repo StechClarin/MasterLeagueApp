@@ -127,18 +127,33 @@ const Landing: React.FC = () => {
               </div>
             </button>
 
-            <a 
-              href="/admin/"
+            <button 
+              onClick={() => navigate('/auth?space=manager')}
               className="glass-card hover-lift"
-              style={{ position: 'relative', overflow: 'hidden', padding: '32px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', cursor: 'pointer', width: '280px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', textDecoration: 'none' }}
+              style={{ position: 'relative', overflow: 'hidden', padding: '32px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', cursor: 'pointer', width: '280px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}
             >
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #10b981, #059669)' }}></div>
               <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
                 <Building2 size={40} />
               </div>
               <div style={{ textAlign: 'center' }}>
-                <span style={{ display: 'block', fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '8px' }}>App de Gestion</span>
-                <span style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5, display: 'block' }}>Accédez à la console d'administration centrale (scolarité, RH, trésorerie et configuration).</span>
+                <span style={{ display: 'block', fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '8px' }}>Espace Directeur (Mobile)</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5, display: 'block' }}>Pilotez l'établissement depuis votre mobile (effectif, trésorerie et staff).</span>
+              </div>
+            </button>
+
+            <a 
+              href="/admin/"
+              className="glass-card hover-lift"
+              style={{ position: 'relative', overflow: 'hidden', padding: '32px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', cursor: 'pointer', width: '280px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', textDecoration: 'none' }}
+            >
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, var(--accent), var(--primary))' }}></div>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                <Building2 size={40} />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ display: 'block', fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '8px' }}>Console PC (Admin)</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5, display: 'block' }}>Accédez à la console d'administration complète sur ordinateur.</span>
               </div>
             </a>
           </div>

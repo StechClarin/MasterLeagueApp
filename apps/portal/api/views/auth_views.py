@@ -8,6 +8,7 @@ from ...services.portal_auth_service import (
     AlreadyRequestedError,
     request_otp,
     verify_otp,
+    authenticate_manager_password,
 )
 
 
@@ -62,3 +63,58 @@ class PortalAuthVerifyView(APIView):
             },
             status=200,
         )
+
+
+class PortalManagerLoginView(APIView):
+    """
+    POST /api/portal/auth/manager-login/
+    Body : {"username": "email ou nom d'utilisateur", "password": "..."}
+    Authentification Django classique par mot de passe.
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser]
+
+    def post(self, request):
+        try:
+            data = request.data or {}
+            username = str(data.get("username", "")).strip()
+            password = str(data.get("password", "")).strip()
+            token, context = authenticate_manager_password(username, password)
+        except PortalAuthError as exc:
+            return Response({"detail": exc.detail}, status=exc.status)
+
+        return Response(
+            {
+                **token,
+                "space": context["space"],
+                "person": context["person"],
+                "children": context["children"],
+            },
+            status=200,
+        )
+
+
+class PortalEstablishmentsListView(APIView):
+    """
+    GET /api/portal/auth/establishments/
+    Liste des établissements actifs pour la sélection multisite.
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from apps.core.models.establishment import Establishment
+        ests = Establishment.objects.all().order_by("name")
+        data = [
+            {
+                "id": str(e.pk),
+                "name": e.name,
+                "code": e.code or "",
+                "city": e.city or "",
+            }
+            for e in ests
+        ]
+        return Response({"establishments": data}, status=200)
+
+

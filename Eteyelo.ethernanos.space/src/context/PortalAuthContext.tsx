@@ -11,6 +11,7 @@ import {
   fetchPortalSession,
   requestMagicCode,
   verifyMagicCode,
+  loginManagerPassword,
   type PortalChild,
   type PortalSession,
   type PortalSpace,
@@ -34,8 +35,10 @@ export interface PortalAuthValue {
   /** Enfant actuellement sélectionné dans l'espace étudiant. */
   activeChild: PortalChild | null;
   requestCode: (space: PortalSpace, contact: string) => Promise<RequestCodeResult>;
-  confirmCode: (space: PortalSpace, contact: string, code: string) => Promise<void>;
+  confirmCode: (space: PortalSpace, contact: string, code: string) => Promise<PortalSession>;
+  confirmPassword: (username: string, password: string) => Promise<PortalSession>;
   selectChild: (childId: string) => void;
+  selectEstablishment: (estId: string, estName?: string) => void;
   logout: () => void;
 }
 
@@ -134,6 +137,16 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
     async (space: PortalSpace, contact: string, code: string) => {
       const next = await verifyMagicCode(space, contact, code);
       applySession(next);
+      return next;
+    },
+    [applySession],
+  );
+
+  const confirmPassword = useCallback(
+    async (username: string, password: string) => {
+      const next = await loginManagerPassword(username, password);
+      applySession(next);
+      return next;
     },
     [applySession],
   );
@@ -141,6 +154,21 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
   const selectChild = useCallback((childId: string) => {
     setActiveChildId(childId);
     localStorage.setItem(ACTIVE_CHILD_KEY, childId);
+  }, []);
+
+  const selectEstablishment = useCallback((estId: string, estName?: string) => {
+    setSession((prev) => {
+      if (!prev || !prev.person) return prev;
+      const foundName = estName || prev.person.establishments?.find((e: any) => e.id === estId)?.name || prev.person.establishmentName;
+      const updatedPerson = {
+        ...prev.person,
+        establishmentId: estId,
+        establishmentName: foundName,
+      };
+      const updatedSession = { ...prev, person: updatedPerson };
+      store(SESSION_KEY, updatedSession);
+      return updatedSession;
+    });
   }, []);
 
   const logout = useCallback(() => {
@@ -165,10 +193,12 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
       activeChild,
       requestCode,
       confirmCode,
+      confirmPassword,
       selectChild,
+      selectEstablishment,
       logout,
     };
-  }, [loading, session, activeChildId, requestCode, confirmCode, selectChild, logout]);
+  }, [loading, session, activeChildId, requestCode, confirmCode, confirmPassword, selectChild, selectEstablishment, logout]);
 
   return <PortalAuthContext.Provider value={value}>{children}</PortalAuthContext.Provider>;
 }

@@ -12,11 +12,14 @@ import {
   RefreshCw,
   Send,
   Users,
+  Check,
+  ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { usePortalAuth } from '../../context/PortalAuthContext';
-import { ApiError, type PortalSpace } from '../../lib/api';
+import { ApiError, fetchEstablishments, type EstablishmentItem, type PortalSpace } from '../../lib/api';
 
-type Step = 'space' | 'contact' | 'code';
+type Step = 'space' | 'contact' | 'code' | 'select_establishment';
 
 function BrandHeader({ subtitle }: { subtitle: string }) {
   return (
@@ -50,13 +53,15 @@ function BrandHeader({ subtitle }: { subtitle: string }) {
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { requestCode, confirmCode } = usePortalAuth();
+  const { requestCode, confirmCode, confirmPassword, selectEstablishment, session } = usePortalAuth();
 
-  const initialSpace = (searchParams.get('space') === 'prof' ? 'prof' : 'student') as PortalSpace;
+  const paramSpace = searchParams.get('space');
+  const initialSpace = (paramSpace === 'prof' ? 'prof' : (paramSpace === 'manager' ? 'manager' : 'student')) as PortalSpace;
   const [space, setSpace] = useState<PortalSpace>(initialSpace);
   const [step, setStep] = useState<Step>(searchParams.get('space') ? 'contact' : 'space');
 
   const [contact, setContact] = useState('');
+  const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -64,6 +69,10 @@ export default function Login() {
   const [resendIn, setResendIn] = useState(0);
   const debugCode = useRef<string | null>(null);
   const submitted = useRef(false);
+
+  // Multisite : Établissements accessibles
+  const [availableEstablishments, setAvailableEstablishments] = useState<EstablishmentItem[]>([]);
+  const [selectedEstId, setSelectedEstId] = useState<string>('');
 
   const isEmail = contact.includes('@');
 
@@ -107,6 +116,26 @@ export default function Login() {
     }
   }
 
+  async function handlePostLoginEstablishmentCheck(s: any) {
+    let ests: EstablishmentItem[] = s?.person?.establishments || [];
+    if (!ests || ests.length === 0) {
+      try {
+        const fetched = await fetchEstablishments();
+        ests = fetched.establishments || [];
+      } catch {}
+    }
+
+    setAvailableEstablishments(ests);
+    if (ests.length > 0) {
+      const defaultId = s?.person?.establishmentId || ests[0].id;
+      setSelectedEstId(defaultId);
+      setStep('select_establishment');
+    } else {
+      const dest = space === 'manager' ? '/manager' : (space === 'prof' ? '/prof' : '/student');
+      navigate(dest, { replace: true });
+    }
+  }
+
   async function confirmLogin() {
     if (submitted.current) return;
     if (!/^\d{6}$/.test(code.trim())) {
@@ -117,14 +146,47 @@ export default function Login() {
     setError(null);
     setBusy(true);
     try {
-      await confirmCode(space, contact.trim(), code.trim());
-      navigate(space === 'prof' ? '/prof' : '/student', { replace: true });
+      const s = await confirmCode(space, contact.trim(), code.trim());
+      if (space === 'manager') {
+        await handlePostLoginEstablishmentCheck(s);
+      } else {
+        const dest = space === 'prof' ? '/prof' : '/student';
+        navigate(dest, { replace: true });
+      }
     } catch (e) {
       submitted.current = false;
       setError(e instanceof ApiError ? e.message : 'Code incorrect.');
     } finally {
       setBusy(false);
     }
+  }
+
+  async function confirmManagerPasswordLogin() {
+    if (submitted.current) return;
+    if (!contact.trim() || !password.trim()) {
+      setError('Saisissez votre identifiant et votre mot de passe.');
+      return;
+    }
+    submitted.current = true;
+    setError(null);
+    setBusy(true);
+    try {
+      const s = await confirmPassword(contact.trim(), password.trim());
+      await handlePostLoginEstablishmentCheck(s);
+    } catch (e) {
+      submitted.current = false;
+      setError(e instanceof ApiError ? e.message : 'Identifiant ou mot de passe incorrect.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function handleEstablishmentSubmit() {
+    if (!selectedEstId) return;
+    const estObj = availableEstablishments.find((e) => e.id === selectedEstId);
+    selectEstablishment(selectedEstId, estObj?.name);
+    const dest = space === 'manager' ? '/manager' : (space === 'prof' ? '/prof' : '/student');
+    navigate(dest, { replace: true });
   }
 
   function fillDebug() {
@@ -136,6 +198,7 @@ export default function Login() {
     setError(null);
     setInfo(null);
     setCode('');
+    setPassword('');
   };
 
   const spinner = (
@@ -155,7 +218,15 @@ export default function Login() {
   return (
     <div className="auth-screen animate-fade-in">
       <div className="auth-card glass-panel">
-        <BrandHeader subtitle="Connexion par code à usage unique (email ou SMS)" />
+        <BrandHeader
+          subtitle={
+            step === 'select_establishment'
+              ? 'Sélectionnez votre Établissement de Travail'
+              : space === 'manager'
+              ? 'Connexion Directeur / Gestionnaire'
+              : 'Connexion par code à usage unique (email ou SMS)'
+          }
+        />
 
         {step === 'space' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -170,6 +241,7 @@ export default function Login() {
                 </div>
               </div>
             </div>
+
             <div className="auth-space-tab" style={{ justifyContent: 'flex-start', padding: '20px', textAlign: 'left' }} onClick={() => pickSpace('prof')} role="button">
               <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(236,72,153,0.14)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Users size={26} />
@@ -181,21 +253,94 @@ export default function Login() {
                 </div>
               </div>
             </div>
-            <a href="/admin/" className="auth-space-tab" style={{ justifyContent: 'flex-start', padding: '20px', textAlign: 'left', textDecoration: 'none' }} role="button">
+
+            <div className="auth-space-tab" style={{ justifyContent: 'flex-start', padding: '20px', textAlign: 'left' }} onClick={() => pickSpace('manager')} role="button">
               <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'rgba(16,185,129,0.14)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Building2 size={26} />
               </div>
               <div>
-                <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-main)' }}>Espace Administration</div>
+                <div style={{ fontSize: '17px', fontWeight: 800 }}>Espace Directeur & Gestionnaire</div>
                 <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Accès à la console d'administration et de gestion scolaire.
+                  Connexion par Identifiant & Mot de passe Django.
                 </div>
               </div>
-            </a>
+            </div>
           </div>
         )}
 
-        {step === 'contact' && (
+        {step === 'contact' && space === 'manager' && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              confirmManagerPasswordLogin();
+            }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+          >
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', alignSelf: 'center', padding: '8px 16px', borderRadius: '100px', background: 'rgba(16,185,129,0.12)', border: '1px solid var(--glass-border)', fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+              <Building2 size={14} color="#10b981" />
+              Espace Directeur & Gestionnaire
+            </div>
+
+            <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>
+              Identifiant ou Email Django
+            </label>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>
+                <Mail size={18} />
+              </div>
+              <input
+                className="auth-input"
+                style={{ paddingLeft: '46px' }}
+                autoFocus
+                type="text"
+                placeholder="ex : ethernanos ou d.directeur@ecole.com"
+                value={contact}
+                onChange={(e) => {
+                  setContact(e.target.value);
+                  setError(null);
+                }}
+              />
+            </div>
+
+            <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>
+              Mot de passe
+            </label>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>
+                <KeyRound size={18} />
+              </div>
+              <input
+                className="auth-input"
+                style={{ paddingLeft: '46px' }}
+                type="password"
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError(null);
+                }}
+              />
+            </div>
+
+            {error && (
+              <div className="auth-alert error" style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                <AlertCircle size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <button type="submit" className="auth-btn" disabled={busy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              {busy ? spinner : <Building2 size={18} />}
+              {busy ? 'Vérification…' : 'Se connecter'}
+            </button>
+
+            <button type="button" className="auth-btn auth-secondary-btn" onClick={backToSpaces} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <ArrowLeft size={16} /> Changer d’espace
+            </button>
+          </form>
+        )}
+
+        {step === 'contact' && space !== 'manager' && (
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -315,6 +460,119 @@ export default function Login() {
           </form>
         )}
 
+        {/* ÉTAPE DE SÉLECTION DE L'ÉTABLISSEMENT */}
+        {step === 'select_establishment' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ padding: '12px 16px', borderRadius: '14px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <ShieldCheck size={24} color="#10b981" />
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-main)' }}>
+                  Bienvenue, {session?.person?.name || session?.person?.firstName || 'Utilisateur'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>
+                  Choisissez votre établissement de travail pour cette session.
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '280px', overflowY: 'auto' }}>
+              {availableEstablishments.map((est) => {
+                const isSelected = selectedEstId === est.id;
+                return (
+                  <div
+                    key={est.id}
+                    onClick={() => setSelectedEstId(est.id)}
+                    style={{
+                      padding: '16px',
+                      borderRadius: '16px',
+                      background: isSelected ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.04)',
+                      border: isSelected ? '2px solid #10b981' : '1px solid var(--glass-border)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: isSelected ? '0 0 15px rgba(16,185,129,0.2)' : 'none',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div
+                        style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '12px',
+                          background: isSelected ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.08)',
+                          color: isSelected ? 'white' : 'var(--text-muted)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                        }}
+                      >
+                        <Building2 size={22} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-main)' }}>
+                          {est.name}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          {est.city ? `Ville : ${est.city}` : (est.code ? `Code : ${est.code}` : 'Site d’enseignement')}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        border: isSelected ? '2px solid #10b981' : '2px solid var(--text-muted)',
+                        background: isSelected ? '#10b981' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                      }}
+                    >
+                      {isSelected && <Check size={14} />}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={handleEstablishmentSubmit}
+              disabled={!selectedEstId}
+              className="auth-btn"
+              style={{
+                marginTop: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                boxShadow: '0 8px 20px rgba(16,185,129,0.4)',
+              }}
+            >
+              <span>Accéder à l'Espace Gestionnaire</span>
+              <ChevronRight size={18} />
+            </button>
+
+            <button
+              type="button"
+              className="auth-btn auth-secondary-btn"
+              onClick={() => {
+                setStep('contact');
+                submitted.current = false;
+              }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <ArrowLeft size={16} /> Retour aux identifiants
+            </button>
+          </div>
+        )}
+
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', marginTop: '22px', lineHeight: 1.5 }}>
           Code à usage unique, valable 10 minutes.
           <br />
@@ -323,5 +581,4 @@ export default function Login() {
       </div>
     </div>
   );
-
 }
