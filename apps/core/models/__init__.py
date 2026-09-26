@@ -8,4 +8,5 @@ from .group import Group
 from .sync_log import SyncLog
 from .user_audit_model import UserAuditModel
 from .tenant_license import TenantLicense
+from .tenant_quota import TenantQuota
 

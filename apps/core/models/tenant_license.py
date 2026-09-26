@@ -31,6 +31,12 @@ class TenantLicense(UserAuditModel):
         help_text="Liste des tags/pages autorisés pour ce module. Si vide, toutes les pages du module sont autorisées.",
         verbose_name="Pages Autorisées"
     )
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date d'expiration de la licence (null = illimitée)",
+        verbose_name="Date d'Expiration"
+    )
 
     class Meta:
         unique_together = ['user', 'module_code']
@@ -105,6 +111,12 @@ class TenantLicense(UserAuditModel):
         ).first()
 
         if not licence:
+            request._license_access_cache[cache_key] = False
+            return False
+
+        # 3.5. Vérification d'expiration de la licence
+        from django.utils import timezone
+        if licence.expires_at and licence.expires_at < timezone.now():
             request._license_access_cache[cache_key] = False
             return False
 

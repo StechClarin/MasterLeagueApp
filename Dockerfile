@@ -1,5 +1,5 @@
 # BASE IMAGE
-FROM python:3.10-slim-bullseye as builder
+FROM python:3.10-slim-bookworm as builder
 
 # ENV VARS
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -18,7 +18,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # RUNNER STAGE
-FROM python:3.10-slim-bullseye
+FROM python:3.10-slim-bookworm
 
 WORKDIR /app
 

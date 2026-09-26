@@ -11,6 +11,22 @@ class PersonnelService(BaseService):
         # formulaire) et on le traduit vers le champ M2M attendu par DRF.
         if isinstance(data, dict) and 'establishment_ids' in data:
             data['attached_establishments'] = data.pop('establishment_ids')
+
+        # Contrôle du Quota d'utilisateurs (Personnel / Staff) lors de la création
+        if not instance and isinstance(data, dict):
+            est_id = data.get('establishment_id') or data.get('establishment')
+            if est_id:
+                from apps.core.models import Establishment, TenantQuota
+                from django.core.exceptions import ValidationError
+                est = Establishment.objects.filter(id=est_id).first()
+                if est and est.user:
+                    quota, _ = TenantQuota.objects.get_or_create(user=est.user)
+                    if not quota.can_add_staff():
+                        raise ValidationError(
+                            f"Quota d'utilisateurs du personnel atteint ({quota.current_staff_users_count()}/{quota.max_users}). "
+                            "Veuillez augmenter votre formule dans le Store EtherNanos."
+                        )
+
         return super().before_validate(data, instance)
 
     def after_save(self, instance, created):
