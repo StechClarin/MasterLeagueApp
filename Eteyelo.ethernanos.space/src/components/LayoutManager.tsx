@@ -43,14 +43,14 @@ const LayoutManager: React.FC = () => {
 
   const isDirector =
     isSuperAdmin ||
-    rolesLower.some((r) => r.includes('direct')) ||
+    rolesLower.some((r: string) => r.includes('direct')) ||
     jobTitleLower.includes('direct') ||
     jobTitleLower.includes('proviseur') ||
     jobTitleLower.includes('principal');
 
   const isGestionnaire =
     isSuperAdmin ||
-    rolesLower.some((r) => r.includes('gestion') || r.includes('manager') || r.includes('économe') || r.includes('comptable')) ||
+    rolesLower.some((r: string) => r.includes('gestion') || r.includes('manager') || r.includes('économe') || r.includes('comptable')) ||
     jobTitleLower.includes('gestion') ||
     jobTitleLower.includes('économe') ||
     jobTitleLower.includes('comptable') ||

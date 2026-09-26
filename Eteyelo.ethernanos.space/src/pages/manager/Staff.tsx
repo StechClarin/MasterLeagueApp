@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { UserCheck, PhoneCall, Mail, GraduationCap, ShieldCheck } from 'lucide-react';
+import { PhoneCall, Mail } from 'lucide-react';
 import { usePortalAuth } from '../../context/PortalAuthContext';
 import { fetchManagerStaff, type ManagerStaffItem } from '../../lib/api';
 
@@ -8,10 +8,8 @@ const Staff: React.FC = () => {
   const manager = session?.person;
 
   const [staff, setStaff] = useState<ManagerStaffItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const loadStaff = async () => {
-    setLoading(true);
     try {
       const res = await fetchManagerStaff(manager?.establishmentId);
       setStaff(res.staff);
@@ -21,8 +19,6 @@ const Staff: React.FC = () => {
         { id: '2', name: 'Marc Tchoupo', jobTitle: 'Professeur d\'Anglais', phone: '+241 07 98 76 54', email: 'm.tchoupo@ecole.com', isTeacher: true },
         { id: '3', name: 'Honorine KOMBILA', jobTitle: 'Comptable Principal', phone: '+241 06 55 44 33', email: 'h.kombila@ecole.com', isTeacher: false },
       ]);
-    } finally {
-      setLoading(false);
     }
   };
 

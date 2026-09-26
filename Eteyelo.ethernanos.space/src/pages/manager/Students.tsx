@@ -6,25 +6,19 @@ import {
   GraduationCap,
   CheckCircle2,
   AlertCircle,
-  Plus,
   UserPlus,
   Filter,
   X,
   Building2,
-  Calendar,
-  Users,
   Check,
   RefreshCw,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Wallet,
 } from 'lucide-react';
 import { usePortalAuth } from '../../context/PortalAuthContext';
 import {
   fetchManagerStudents,
   createManagerStudent,
-  updateManagerStudentStatus,
   type ManagerStudentItem,
 } from '../../lib/api';
 
@@ -38,9 +32,9 @@ const Students: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedClassroom, setSelectedClassroom] = useState<string>('');
 
-  const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [totalCount, setTotalCount] = useState<number>(0);
+  const [_page, setPage] = useState<number>(1);
+  const [_totalPages, setTotalPages] = useState<number>(1);
+  const [_totalCount, setTotalCount] = useState<number>(0);
   const pageSize = 15;
 
   const isFetchingRef = useRef(false);
@@ -200,12 +194,6 @@ const Students: React.FC = () => {
     pageRef.current = 1;
     setPage(1);
     loadData(search, selectedStatus, val, 1, false);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setPage(newPage);
-    loadData(search, selectedStatus, selectedClassroom, newPage);
   };
 
 

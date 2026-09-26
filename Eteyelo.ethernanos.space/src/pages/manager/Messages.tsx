@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Send, Bell, Sparkles } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 const Messages: React.FC = () => {
   return (

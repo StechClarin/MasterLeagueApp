@@ -7,13 +7,10 @@ import {
   Sparkles,
   RefreshCw,
   Award,
-  Clock,
-  CheckCircle2,
   BookOpen,
   Wallet,
   CreditCard,
   ShieldCheck,
-  DollarSign,
 } from 'lucide-react';
 import { usePortalAuth } from '../../context/PortalAuthContext';
 import {

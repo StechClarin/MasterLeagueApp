@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  Wallet,
-  CreditCard,
   Banknote,
   Search,
   PlusCircle,
@@ -10,15 +8,9 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
-  PieChart,
-  ArrowUpRight,
   TrendingUp,
-  Tag,
   Clock,
   Send,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
   RefreshCw,
 } from 'lucide-react';
 import { usePortalAuth } from '../../context/PortalAuthContext';
@@ -50,13 +42,13 @@ const FinanceManagerPage: React.FC = () => {
   const manager = session?.person;
 
   const [activeTab, setActiveTab] = useState<'invoices' | 'history'>('invoices');
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [data, setData] = useState<ManagerFinanceData | null>(null);
 
   // Pagination
-  const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [totalCount, setTotalCount] = useState<number>(0);
+  const [, setPage] = useState<number>(1);
+  const [_totalPages, setTotalPages] = useState<number>(1);
+  const [, setTotalCount] = useState<number>(0);
   const pageSize = 15;
 
   const isFetchingRef = useRef(false);
@@ -273,11 +265,7 @@ const FinanceManagerPage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [search, selectedCategory, selectedStatus, manager]);
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setPage(newPage);
-    loadFinanceData(search, selectedCategory, selectedStatus, newPage);
-  };
+
 
   const openCollectModal = (inv?: ManagerInvoiceItem) => {
     if (inv) {
@@ -886,7 +874,6 @@ const FinanceManagerPage: React.FC = () => {
               right: 0,
               bottom: 0,
               width: '100vw',
-              height: '100vh',
               height: '100dvh',
               background: 'rgba(2, 6, 23, 0.85)',
               backdropFilter: 'blur(12px)',
@@ -904,7 +891,6 @@ const FinanceManagerPage: React.FC = () => {
               style={{
                 width: '100%',
                 maxWidth: '440px',
-                maxHeight: 'calc(100vh - 24px)',
                 maxHeight: 'calc(100dvh - 24px)',
                 overflowY: 'auto',
                 borderRadius: '16px',
@@ -965,7 +951,7 @@ const FinanceManagerPage: React.FC = () => {
                       Facture à régler *
                     </label>
                     <select
-                      value={selectedInvoice?.id || ''}
+                      value=""
                       onChange={(e) => {
                         const inv = data?.invoices.find((i) => i.id === e.target.value);
                         if (inv) {

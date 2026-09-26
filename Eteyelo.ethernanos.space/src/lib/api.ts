@@ -164,6 +164,9 @@ export interface PortalPerson {
   jobTitle?: string;
   establishmentId?: string;
   establishmentName?: string | null;
+  isSuperAdmin?: boolean;
+  roles?: string[];
+  establishments?: any[];
 }
 
 export interface PortalSession {
@@ -448,7 +451,8 @@ export function fetchManagerGrades(
 }
 
 export function saveManagerGrades(data: {
-  evaluation_id: string;
+  evaluation_id?: string;
+  evaluation_session_id?: string;
   classroom_id: string;
   subject_id: string;
   establishment_id?: string;
@@ -458,7 +462,7 @@ export function saveManagerGrades(data: {
     comment?: string;
     absence_status?: string;
   }[];
-}): Promise<{ success: boolean; message: string }> {
+}): Promise<{ success: boolean; message: string; error?: string }> {
   return request('/api/portal/manager/grades/', {
     method: 'POST',
     body: JSON.stringify(data),

@@ -130,17 +130,6 @@ export const GradesManager: React.FC = () => {
     setSavedSuccess(false);
   };
 
-  const handleCommentInputChange = (studentId: string, val: string) => {
-    setGradeInputs((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        comment: val,
-      },
-    }));
-    setSavedSuccess(false);
-  };
-
   const handleSaveAllGrades = async () => {
     if (students.length === 0) return;
     setSaving(true);
@@ -153,17 +142,17 @@ export const GradesManager: React.FC = () => {
         const parsedGrade = inp.grade !== '' && !isNaN(parseFloat(inp.grade)) ? parseFloat(inp.grade) : null;
         return {
           student_id: st.id,
-          grade: parsedGrade,
+          value: parsedGrade,
           comment: inp.comment,
           absence_status: 'NONE',
         };
       });
 
       const res = await saveManagerGrades({
-        evaluation_subject_id: evaluationSubjectId || undefined,
+        evaluation_id: evaluationSubjectId || undefined,
         evaluation_session_id: selectedEval || undefined,
-        classroom_id: selectedClass || undefined,
-        subject_id: selectedSubject || undefined,
+        classroom_id: selectedClass || '',
+        subject_id: selectedSubject || '',
         grades: gradesToSave,
       });
 
