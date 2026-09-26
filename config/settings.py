@@ -51,13 +51,19 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'X-Hub-Session-Token', # <--- AJOUTÉ pour le confort Dev (v9.1)
 ]
 
-# CSRF standard pour le développement
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:4200", # Angular Dev
-    "http://127.0.0.1:4200",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-]
+# CSRF configuration
+env_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS')
+if env_csrf:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in env_csrf.split(',') if origin.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
 
 # On garde les sessions standard (cookies) pour le confort du navigateur
 CSRF_USE_SESSIONS = False 

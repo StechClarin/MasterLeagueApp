@@ -1,7 +1,19 @@
 // Client API du Portail Eteyelo
 // L'URL du backend se configure via VITE_API_URL (voir .env.example).
-const API_BASE: string =
-  (import.meta as any).env?.VITE_API_URL?.replace(/\/$/, '') ?? 'http://localhost:8000';
+function getApiBaseUrl(): string {
+  const envUrl = (import.meta as any).env?.VITE_API_URL;
+  if (envUrl !== undefined && envUrl !== '') {
+    return envUrl.replace(/\/$/, '');
+  }
+  // En mode développement local (Vite dev server)
+  if ((import.meta as any).env?.DEV) {
+    return 'http://localhost:8000';
+  }
+  // En production (VPS / Nginx), utiliser des URLs relatives pour passer par le reverse proxy
+  return '';
+}
+
+const API_BASE: string = getApiBaseUrl();
 
 export type PortalSpace = 'student' | 'prof' | 'manager';
 
