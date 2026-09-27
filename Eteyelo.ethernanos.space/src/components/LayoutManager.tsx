@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   Building2,
-  ChevronRight,
   Edit3,
 } from 'lucide-react';
 import { usePortalAuth } from '../context/PortalAuthContext';
@@ -133,7 +132,7 @@ const LayoutManager: React.FC = () => {
           </NavLink>
         </nav>
 
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {/* <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <a
             href="/admin/"
             className="glass-card"
@@ -207,7 +206,7 @@ const LayoutManager: React.FC = () => {
               <LogOut size={18} />
             </button>
           </div>
-        </div>
+        </div> */}
       </aside>
 
       {menuOpen && <div className="menu-backdrop" onClick={closeMenu} aria-hidden="true" />}

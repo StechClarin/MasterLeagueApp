@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="url(#icon-grad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+  <defs>
+    <linearGradient id="icon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+  </defs>
+  <path d="M12 5v14"/>
+  <path d="M12 5c-3-2-7-2-9 0v13c2-2 6-2 9 0"/>
+  <path d="M12 5c3-2 7-2 9 0v13c-2-2-6-2-9 0"/>
+  <path d="M5 8h4M5 11h4M15 8h4M15 11h4"/>
+</svg>

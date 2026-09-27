@@ -199,14 +199,14 @@ MODULE_STRUCTURE = [
         "pages":[
             {
                 "title": "Materiel/Equipement",
-                "icon": "materiel-icon",
+                "icon": "logistic-icon",
                 "order": 0,
                 "link": "/materiel",
                 "tags": ["logistique"]
             },
             {
                 "title": "Fournitures/Consommables",
-                "icon": "inventory-icon",
+                "icon": "logistic-icon",
                 "order": 1,
                 "link": "/consommables",
                 "tags": ["logistique"]
@@ -249,7 +249,7 @@ MODULE_STRUCTURE = [
             },
             {
                 "title": "Dépenses",
-                "icon": "cash-icon",
+                "icon": "finance-icon",
                 "order": 4,
                 "link": "/expenses",
                 "tags": ["expense"]
@@ -310,7 +310,7 @@ class Command(BaseCommand):
                 # Si c'est le module finance, on utilise l'icône dédiée
                 if mod_data.get('name') == "Finance" and icon_name == "evaluation-icon":
                     icon_name = "finance-icon"
-                mod_data['icon'] = f"/static/icons/{icon_name}.svg"
+                mod_data['icon'] = f"/icons/{icon_name}.svg" if not icon_name.startswith('/') else icon_name
             
             module = Module.objects.create(code=mod_code, **mod_data)
             self.stdout.write(f"  Module '{module.name}' cree avec le code '{module.code}'.")
@@ -320,7 +320,7 @@ class Command(BaseCommand):
                     continue
                 
                 page_icon_name = page_data.get('icon', '')
-                page_icon_url = f"/static/icons/{page_icon_name}.svg" if page_icon_name else ""
+                page_icon_url = f"/icons/{page_icon_name}.svg" if page_icon_name and not page_icon_name.startswith('/') else page_icon_name
                     
                 Page.objects.create(
                     module=module,
