@@ -280,6 +280,30 @@ MODULE_STRUCTURE = [
     },
 ]
 
+from typing import Any
+
+def normalize_icon_path(icon_name: Any) -> str:
+    """
+    Normalise le nom de l'icône pour former l'URL canonique /icons/<nom>.svg
+    """
+    if not icon_name or not isinstance(icon_name, str):
+        return ""
+    
+    icon_str = icon_name.strip()
+    if not icon_str:
+        return ""
+        
+    if icon_str.startswith("http://") or icon_str.startswith("https://"):
+        return icon_str
+    
+    clean_name = icon_str.lstrip('/')
+    if clean_name.startswith('icons/'):
+        clean_name = clean_name[6:]
+    if clean_name.endswith('.svg'):
+        clean_name = clean_name[:-4]
+        
+    return f"/icons/{clean_name}.svg"
+
 class Command(BaseCommand):
     help = "Crée les Modules et les Pages pour la navigation."
 
@@ -287,13 +311,10 @@ class Command(BaseCommand):
         self.stdout.write(getattr(self.style, 'NOTICE', lambda x: x)("--- Debut du seeding Navigation (Modules & Pages) ---"))
         
         # Point Industrial v22.4: On doit utiliser hard_delete() via 'all_objects' car Module et Page utilisent SoftDeleteManager.
-        # delete() les mettrait simplement en is_deleted=True, ce qui ferait échouer l'insertion de nouveaux modules
-        # avec le même 'code' unique (ex: mod-referentiel).
         Page.all_objects.all().hard_delete()
         Module.all_objects.all().hard_delete()
         
         for mod_data in MODULE_STRUCTURE:
-            # On s'assure que c'est bien un dictionnaire avant d'extraire
             if not isinstance(mod_data, dict):
                 continue
                 
@@ -307,10 +328,9 @@ class Command(BaseCommand):
             # Formater l'url de l'icône du module
             icon_name = mod_data.get('icon', '')
             if icon_name:
-                # Si c'est le module finance, on utilise l'icône dédiée
                 if mod_data.get('name') == "Finance" and icon_name == "evaluation-icon":
                     icon_name = "finance-icon"
-                mod_data['icon'] = f"/icons/{icon_name}.svg" if not icon_name.startswith('/') else icon_name
+                mod_data['icon'] = normalize_icon_path(icon_name)
             
             module = Module.objects.create(code=mod_code, **mod_data)
             self.stdout.write(f"  Module '{module.name}' cree avec le code '{module.code}'.")
@@ -319,8 +339,7 @@ class Command(BaseCommand):
                 if not isinstance(page_data, dict):
                     continue
                 
-                page_icon_name = page_data.get('icon', '')
-                page_icon_url = f"/icons/{page_icon_name}.svg" if page_icon_name and not page_icon_name.startswith('/') else page_icon_name
+                page_icon_url = normalize_icon_path(page_data.get('icon', ''))
                     
                 Page.objects.create(
                     module=module,

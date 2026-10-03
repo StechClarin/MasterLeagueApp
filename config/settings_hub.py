@@ -1,5 +1,7 @@
 from .settings_base import *
 
+import logging
+
 # --- CONFIGURATION HUB INDUSTRIEL (v7.2) ---
 # Ce fichier est activé lors du push / empaquetage du Hub.
 DEBUG = env.bool('DEBUG', default=False)
@@ -7,7 +9,7 @@ DEBUG = env.bool('DEBUG', default=False)
 # --- SYNCHRONISATION DES CHEMINS HUB ---
 FORCE_SCRIPT_NAME = os.environ.get('ETHER_APP_PREFIX', None)
 if FORCE_SCRIPT_NAME:
-    print(f"[DEBUG] ROUTING: Hub settings anchored to prefix '{FORCE_SCRIPT_NAME}'")
+    logging.getLogger(__name__).info("ROUTING: Hub settings anchored to prefix '%s'", FORCE_SCRIPT_NAME)
 
 # 1. SÉCURITÉ PURE JWT (Pas de sessions sur l'API)
 REST_FRAMEWORK = {
@@ -21,6 +23,7 @@ REST_FRAMEWORK = {
 }
 
 # 2. HANDSHAKE HUB & MIDDLEWARE
+# ORDRE CRITIQUE : JWTMiddleware injecte request.user, EstablishmentMiddleware injecte request.establishment_id
 MIDDLEWARE = [
     'apps.core.middleware.HubPrefixMiddleware.HubPrefixMiddleware',
     'corsheaders.middleware.CorsMiddleware', 
@@ -32,9 +35,9 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'apps.core.middleware.JWTMiddleware',
+    'apps.core.middleware.EstablishmentMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.EstablishmentMiddleware',
 ]
 
 # 3. RÉGLAGES IFRAME & CSRF

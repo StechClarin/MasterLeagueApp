@@ -25,6 +25,7 @@ class ModuleQuery(graphene.ObjectType):
         license_restrictions = {}
         if est_id:
             from apps.core.models import TenantLicense, Establishment
+            from django.core.exceptions import ObjectDoesNotExist
             try:
                 est = Establishment.objects.get(id=est_id)
                 active_licenses = TenantLicense.objects.filter(
@@ -36,7 +37,7 @@ class ModuleQuery(graphene.ObjectType):
                     unlocked_codes.append(lic.module_code)
                     if lic.allowed_pages:
                         license_restrictions[lic.module_code] = lic.allowed_pages
-            except Establishment.DoesNotExist:
+            except ObjectDoesNotExist:
                 unlocked_codes = []
 
             core_codes = ['mod-referentiel', 'mod-administration']
@@ -111,7 +112,7 @@ class ModuleQuery(graphene.ObjectType):
                         page_tags = set(page.permission_tags)
                         if page_tags.intersection(allowed_tags):
                             allowed_pages_in_module.append(page)
-            
+
             # Si le module contient des pages visibles, on l'ajoute
             if allowed_pages_in_module:
                 module._prefetched_objects_cache = {'pages': allowed_pages_in_module}
