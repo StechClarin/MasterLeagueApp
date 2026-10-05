@@ -3,7 +3,7 @@ from apps.core.api.serializers.BaseSerializer import BaseSerializer
 from ...models import Enrollment
 
 class EnrollmentSerializer(BaseSerializer):
-    auto_create_classroom = serializers.BooleanField(required=False, default=False)
+    auto_create_classroom = serializers.BooleanField(required=False, write_only=True, default=False)
 
     class Meta:
         model = Enrollment
@@ -11,8 +11,8 @@ class EnrollmentSerializer(BaseSerializer):
 
     def validate(self, data):
         data = super().validate(data)
+        auto_create = data.pop('auto_create_classroom', False)
         classroom = data.get('classroom')
-        auto_create = data.get('auto_create_classroom', False)
 
         if classroom:
             current_student_id = self.instance.student_id if self.instance else data.get('student')
@@ -63,3 +63,4 @@ class EnrollmentSerializer(BaseSerializer):
                         "enrolled_count": enrolled_count
                     })
         return data
+

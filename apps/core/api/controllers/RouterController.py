@@ -138,8 +138,13 @@ class RouterView(APIView):
             'contracttype': 'contract_type',
             'stockitem': 'stock_item',
             'evaluationtype': 'evaluation_type',
+            'evaluationsession': 'evaluation_session',
+            'evaluationsubject': 'evaluation_subject',
+            'evaluationplanning': 'evaluation_planning',
+            'evaluationsupervision': 'evaluation_supervision',
             'teachingassignment': 'teaching_assignment',
             'classroom': 'class_room',
+            'studenthealth': 'student_health',
         }
 
         normalized_name = alias_map.get(model_name.lower(), model_name)

@@ -230,9 +230,6 @@ export class SubjectFormComponent extends BaseFormComponent implements OnChanges
             option: ls.optionId,
             group: ls.groupId,
             coefficient: ls.coefficient,
-            // NOTE: le volume horaire (hourly_quota) se gère dans l'affectation prof,
-            // pas ici. On force 0 pour garder le schéma DB cohérent.
-            hourly_quota: 0,
             credits: ls.credits,
             is_optional: ls.isOptional
         }));

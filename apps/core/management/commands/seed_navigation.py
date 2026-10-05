@@ -99,6 +99,7 @@ MODULE_STRUCTURE = [
             },
         ]
     },
+
     {
         "name": "Pedagogie",
         "order": 3,
@@ -116,6 +117,7 @@ MODULE_STRUCTURE = [
 
         ]
     },
+
     {
         "name": "Planning & suivi",
         "order": 4,
@@ -140,6 +142,7 @@ MODULE_STRUCTURE = [
             
         ]
     },
+
     {
         "name": "Évaluations",
         "order": 5,
@@ -169,6 +172,7 @@ MODULE_STRUCTURE = [
             },
         ]
     },
+
     {
         "name": "Ressources Humaines",
         "order": 6,
@@ -191,6 +195,7 @@ MODULE_STRUCTURE = [
             },
         ]
     },
+
     {
         "name": "Logistique",
         "order": 7,

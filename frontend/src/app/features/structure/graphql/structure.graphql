@@ -126,7 +126,6 @@ fragment ClassRoomFields on ClassRoomType {
 fragment LevelSubjectFields on LevelSubjectType {
   id
   coefficient
-  hourlyQuota
   credits
   isOptional
   group {

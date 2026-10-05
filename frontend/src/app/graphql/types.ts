@@ -358,6 +358,7 @@ export type EstablishmentType = {
   academicyearSet: Array<AcademicYearType>;
   address?: Maybe<Scalars['String']['output']>;
   assetSet: Array<AssetType>;
+  attachedPersonnel: Array<PersonnelType>;
   city?: Maybe<Scalars['String']['output']>;
   classroomSet: Array<ClassRoomType>;
   code?: Maybe<Scalars['String']['output']>;
@@ -374,6 +375,7 @@ export type EstablishmentType = {
   evaluationsubjectSet: Array<EvaluationSubjectType>;
   evaluationsupervisionSet: Array<EvaluationSupervisionType>;
   evaluationtypeSet: Array<EvaluationTypeType>;
+  expenseSet: Array<ExpenseType>;
   feedefinitionSet: Array<FeeDefinitionType>;
   gradeSet: Array<GradeType>;
   guardianSet: Array<GuardianType>;
@@ -596,6 +598,35 @@ export type EvolutionPointType = {
   value?: Maybe<Scalars['Float']['output']>;
 };
 
+export type ExpenseType = {
+  __typename?: 'ExpenseType';
+  amount: Scalars['Decimal']['output'];
+  category: FinanceExpenseCategoryChoices;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdByUser?: Maybe<UserType>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  description: Scalars['String']['output'];
+  establishment: EstablishmentType;
+  expenseDate: Scalars['Date']['output'];
+  id: Scalars['UUID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isDeleted: Scalars['Boolean']['output'];
+  paymentMethod: FinanceExpensePaymentMethodChoices;
+  reference: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  updatedByUser?: Maybe<UserType>;
+};
+
+export type ExpenseTypePaginated = {
+  __typename?: 'ExpenseTypePaginated';
+  currentPage?: Maybe<Scalars['Int']['output']>;
+  items?: Maybe<Array<Maybe<ExpenseType>>>;
+  numPages?: Maybe<Scalars['Int']['output']>;
+  pageSize?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type FeeDefinitionType = {
   __typename?: 'FeeDefinitionType';
   academicYear: AcademicYearType;
@@ -604,7 +635,7 @@ export type FeeDefinitionType = {
   classrooms: Array<ClassRoomType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
-  /** Format: [{'tranche': 1, 'amount': 50000}, {'tranche': 2, 'amount': 25000}] */
+  /** Format: [{'tranche': 1, 'amount': 50000, 'due_date': '2026-09-15'}] */
   customInstallments?: Maybe<Scalars['JSONString']['output']>;
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
@@ -632,6 +663,36 @@ export type FeeDefinitionTypePaginated = {
   pageSize?: Maybe<Scalars['Int']['output']>;
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
+
+/** An enumeration. */
+export enum FinanceExpenseCategoryChoices {
+  /** Autre */
+  Autre = 'AUTRE',
+  /** Communication */
+  Communication = 'COMMUNICATION',
+  /** Entretien & Réparations */
+  Maintenance = 'MAINTENANCE',
+  /** Salaires */
+  Salaries = 'SALARIES',
+  /** Fournitures */
+  Supplies = 'SUPPLIES',
+  /** Transport */
+  Transport = 'TRANSPORT',
+  /** Factures (Eau, Élec, Internet) */
+  Utilities = 'UTILITIES'
+}
+
+/** An enumeration. */
+export enum FinanceExpensePaymentMethodChoices {
+  /** Virement Bancaire */
+  BankTransfer = 'BANK_TRANSFER',
+  /** Espèces */
+  Cash = 'CASH',
+  /** Chèque */
+  Check = 'CHECK',
+  /** Mobile Money */
+  MobileMoney = 'MOBILE_MONEY'
+}
 
 /** An enumeration. */
 export enum FinanceFeeDefinitionCategoryChoices {
@@ -693,36 +754,6 @@ export enum FinanceInvoiceStatusChoices {
 
 /** An enumeration. */
 export enum FinancePaymentPaymentMethodChoices {
-  /** Virement Bancaire */
-  BankTransfer = 'BANK_TRANSFER',
-  /** Espèces */
-  Cash = 'CASH',
-  /** Chèque */
-  Check = 'CHECK',
-  /** Mobile Money */
-  MobileMoney = 'MOBILE_MONEY'
-}
-
-/** An enumeration. */
-export enum FinanceExpenseCategoryChoices {
-  /** Autre */
-  Autre = 'AUTRE',
-  /** Communication */
-  Communication = 'COMMUNICATION',
-  /** Entretien & Réparations */
-  Maintenance = 'MAINTENANCE',
-  /** Salaires */
-  Salaries = 'SALARIES',
-  /** Fournitures */
-  Supplies = 'SUPPLIES',
-  /** Transport */
-  Transport = 'TRANSPORT',
-  /** Factures (Eau, Élec, Internet) */
-  Utilities = 'UTILITIES'
-}
-
-/** An enumeration. */
-export enum FinanceExpensePaymentMethodChoices {
   /** Virement Bancaire */
   BankTransfer = 'BANK_TRANSFER',
   /** Espèces */
@@ -798,6 +829,14 @@ export enum HrPersonnelGenderChoices {
   F = 'F',
   /** Masculin */
   M = 'M'
+}
+
+/** An enumeration. */
+export enum HrPersonnelPaymentModeChoices {
+  /** Salaire brut mensuel */
+  Brut = 'BRUT',
+  /** Rémunération horaire (pointage) */
+  Pointage = 'POINTAGE'
 }
 
 export type InterventionRequestType = {
@@ -882,8 +921,6 @@ export type LevelSubjectType = {
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
   establishment: EstablishmentType;
   group?: Maybe<SubjectGroupType>;
-  /** Volume horaire annuel */
-  hourlyQuota: Scalars['Int']['output'];
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
   isDeleted: Scalars['Boolean']['output'];
@@ -1101,6 +1138,11 @@ export type PermissionType = {
 export type PersonnelType = {
   __typename?: 'PersonnelType';
   address?: Maybe<Scalars['String']['output']>;
+  attachedEstablishments: Array<EstablishmentType>;
+  bankAccountNumber: Scalars['String']['output'];
+  bankIban: Scalars['String']['output'];
+  bankName: Scalars['String']['output'];
+  contractFile?: Maybe<Scalars['String']['output']>;
   contractType?: Maybe<ContractTypeType>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   createdByUser?: Maybe<UserType>;
@@ -1109,16 +1151,20 @@ export type PersonnelType = {
   emailPro?: Maybe<Scalars['String']['output']>;
   establishment: EstablishmentType;
   gender: HrPersonnelGenderChoices;
+  grossSalary?: Maybe<Scalars['Decimal']['output']>;
+  hourlyRate?: Maybe<Scalars['Decimal']['output']>;
   id: Scalars['UUID']['output'];
   isActive: Scalars['Boolean']['output'];
   isDeleted: Scalars['Boolean']['output'];
   jobTitle: Scalars['String']['output'];
   matricule: Scalars['String']['output'];
+  paymentMode: HrPersonnelPaymentModeChoices;
   paymentSet: Array<PaymentType>;
   pedagogyAssignments: Array<TeachingAssignmentType>;
   phoneNumber?: Maybe<Scalars['String']['output']>;
   planningDetails: Array<PlanningDetailType>;
   roles: Array<RoleType>;
+  socialSecurityNumber: Scalars['String']['output'];
   supervisions: Array<EvaluationSupervisionType>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   updatedByUser?: Maybe<UserType>;
@@ -1228,6 +1274,8 @@ export type Query = {
   evaluationSession?: Maybe<EvaluationSessionType>;
   evaluationSessions?: Maybe<EvaluationSessionTypePaginated>;
   evaluationTypes?: Maybe<EvaluationTypeTypePaginated>;
+  expense?: Maybe<ExpenseType>;
+  expenses?: Maybe<ExpenseTypePaginated>;
   feeDefinitions?: Maybe<FeeDefinitionTypePaginated>;
   grades?: Maybe<GradeTypePaginated>;
   guardian?: Maybe<GuardianType>;
@@ -1420,6 +1468,19 @@ export type QueryEvaluationSessionsArgs = {
 
 
 export type QueryEvaluationTypesArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  pageSize?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryExpenseArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryExpensesArgs = {
+  category?: InputMaybe<Scalars['String']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -1659,6 +1720,7 @@ export type QuerySubjectgroupArgs = {
 
 
 export type QuerySubjectgroupsArgs = {
+  establishmentId?: InputMaybe<Scalars['ID']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   pageSize?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -2038,6 +2100,7 @@ export type UserType = {
   createdEvaluationsubjectSet: Array<EvaluationSubjectType>;
   createdEvaluationsupervisionSet: Array<EvaluationSupervisionType>;
   createdEvaluationtypeSet: Array<EvaluationTypeType>;
+  createdExpenseSet: Array<ExpenseType>;
   createdFeedefinitionSet: Array<FeeDefinitionType>;
   createdGradeSet: Array<GradeType>;
   createdGuardianSet: Array<GuardianType>;
@@ -2102,6 +2165,7 @@ export type UserType = {
   updatedEvaluationsubjectSet: Array<EvaluationSubjectType>;
   updatedEvaluationsupervisionSet: Array<EvaluationSupervisionType>;
   updatedEvaluationtypeSet: Array<EvaluationTypeType>;
+  updatedExpenseSet: Array<ExpenseType>;
   updatedFeedefinitionSet: Array<FeeDefinitionType>;
   updatedGradeSet: Array<GradeType>;
   updatedGuardianSet: Array<GuardianType>;

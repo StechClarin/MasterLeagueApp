@@ -91,7 +91,6 @@ class SubjectService(BaseService):
                              'option_id': actual_option_id if actual_option_id else None,
                              'group_id': actual_group_id if actual_group_id else None,
                              'coefficient': item.get('coefficient', 1),
-                             'hourly_quota': item.get('hourly_quota') or item.get('weekly_hours', 0),
                              'credits': item.get('credits', 0),
                              'is_optional': item.get('is_optional', False)
                          }

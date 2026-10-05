@@ -185,6 +185,20 @@ export const PaymentFieldsFragmentDoc = gql`
   }
 }
     `;
+export const ExpenseFieldsFragmentDoc = gql`
+    fragment ExpenseFields on ExpenseType {
+  id
+  title
+  category
+  amount
+  expenseDate
+  paymentMethod
+  reference
+  description
+  isActive
+  createdAt
+}
+    `;
 export const GetFeeDefinitionsDocument = gql`
     query GetFeeDefinitions($search: String, $levelId: ID, $page: Int, $pageSize: Int) {
   feeDefinitions(
@@ -311,20 +325,6 @@ export const GetUsedFeeCategoriesDocument = gql`
       super(apollo);
     }
   }
-export const ExpenseFieldsFragmentDoc = gql`
-    fragment ExpenseFields on ExpenseType {
-  id
-  title
-  category
-  amount
-  expenseDate
-  paymentMethod
-  reference
-  description
-  isActive
-  createdAt
-}
-    `;
 export const GetExpensesDocument = gql`
     query GetExpenses($search: String, $category: String, $page: Int, $pageSize: Int) {
   expenses(search: $search, category: $category, page: $page, pageSize: $pageSize) {
@@ -344,7 +344,7 @@ export const GetExpensesDocument = gql`
   })
   export class GetExpensesGQL extends Apollo.Query<GetExpensesQuery, GetExpensesQueryVariables> {
     document = GetExpensesDocument;
-
+    
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
     }
@@ -362,7 +362,7 @@ export const GetExpenseByIdDocument = gql`
   })
   export class GetExpenseByIdGQL extends Apollo.Query<GetExpenseByIdQuery, GetExpenseByIdQueryVariables> {
     document = GetExpenseByIdDocument;
-
+    
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
     }
