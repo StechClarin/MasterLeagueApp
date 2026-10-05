@@ -19,10 +19,6 @@ export const routes: Routes = [
         loadComponent: () => import('@features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
-        path: 'map-tracking',
-        loadComponent: () => import('@features/map-tracking/map-tracking.component').then(m => m.MapTrackingComponent)
-      },
-      {
         path: 'profils/roles',
         loadChildren: () => import('@features/profilmanagement/profil.routes').then(m => m.PROFIL_ROUTES)
       }

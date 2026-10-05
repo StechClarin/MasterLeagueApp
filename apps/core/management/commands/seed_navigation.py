@@ -23,41 +23,10 @@ MODULE_STRUCTURE = [
                 "order": 1,
                 "link": "/roles",
                 "tags": ["role"]
-            },
-            {
-                "title": "Carte Live",
-                "icon": "map-icon",
-                "order": 2,
-                "link": "/map-tracking",
-                "tags": ["map"]
             }
         ]
     }
 ]
-
-from typing import Any
-
-def normalize_icon_path(icon_name: Any) -> str:
-    """
-    Normalise le nom de l'icône pour former l'URL canonique /icons/<nom>.svg
-    """
-    if not icon_name or not isinstance(icon_name, str):
-        return ""
-    
-    icon_str = icon_name.strip()
-    if not icon_str:
-        return ""
-        
-    if icon_str.startswith("http://") or icon_str.startswith("https://"):
-        return icon_str
-    
-    clean_name = icon_str.lstrip('/')
-    if clean_name.startswith('icons/'):
-        clean_name = clean_name[6:]
-    if clean_name.endswith('.svg'):
-        clean_name = clean_name[:-4]
-        
-    return f"/icons/{clean_name}.svg"
 
 class Command(BaseCommand):
     help = "Crée les Modules et les Pages pour la navigation."
@@ -72,12 +41,12 @@ class Command(BaseCommand):
             mod_code = f"mod-{slugify(str(mod_data.get('name', '')))}"
             icon_name = mod_data.get('icon', '')
             if icon_name:
-                mod_data['icon'] = normalize_icon_path(icon_name)
+                mod_data['icon'] = f"/apps/core/assets/icons/{icon_name}.svg"
             
             module = Module.objects.create(code=mod_code, **mod_data)
             for page_data in pages_data:
                 page_icon_name = page_data.get('icon', '')
-                page_icon_url = normalize_icon_path(page_icon_name) if page_icon_name else ""
+                page_icon_url = f"/apps/core/assets/icons/{page_icon_name}.svg" if page_icon_name else ""
                 Page.objects.create(
                     module=module,
                     title=page_data.get('title', ''),

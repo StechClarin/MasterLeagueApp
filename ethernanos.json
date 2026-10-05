@@ -1,7 +1,7 @@
 {
-  "id": "a155bb90-9e8a-48f9-89ef-0f0ec2aa3f4d",
-  "name": "Hub Starter",
+  "id": "d8725a1f-d4bc-409f-95ad-c47f81361cc5",
+  "name": "MasterLeague",
   "version": "1.0.0",
-  "port": 8000,
+  "port": 8080,
   "exec_command": "./snake start"
 }
