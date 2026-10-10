@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Apollo } from 'apollo-angular';
+import { firstValueFrom } from 'rxjs';
 import { GET_SIDEBAR_MODULES } from '../../layout/components/sidebar/sidebar.queries';
-import { map, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -19,30 +19,28 @@ export class ModuleStateService {
    * Charge les modules depuis le backend. 
    * Si force est à false et qu'on a déjà des données, on ne refait pas la requête.
    */
-  async fetchModules(force: boolean = false): Promise<void> {
+  async fetchModules(force: boolean = false): Promise<any[]> {
     // Si on a déjà chargé et qu'on ne force pas, on sort
     if (this.modules().length > 0 && !force) {
-        return;
+        return this.modules();
     }
 
     this.isLoading.set(true);
     
     try {
-        const result = await new Promise<any>((resolve, reject) => {
-            this.apollo.watchQuery<any>({
+        const res = await firstValueFrom(
+            this.apollo.query<any>({
                 query: GET_SIDEBAR_MODULES,
-                fetchPolicy: 'network-only' // Toujours frais pour le service central
-            }).valueChanges.pipe(
-                map(res => res.data.modules || [])
-            ).subscribe({
-                next: (items) => resolve(items),
-                error: (err) => reject(err)
-            });
-        });
+                fetchPolicy: 'network-only'
+            })
+        );
 
-        this.modules.set(result);
+        const items = res?.data?.modules || [];
+        this.modules.set(items);
+        return items;
     } catch (error) {
         console.error('[ModuleState] Erreur lors du chargement des modules:', error);
+        return [];
     } finally {
         this.isLoading.set(false);
     }

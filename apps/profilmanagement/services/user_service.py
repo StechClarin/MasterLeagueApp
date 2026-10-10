@@ -35,6 +35,10 @@ class UserService(BaseService):
         """
         Gère l'assignation des rôles (Liste d'IDs ou Noms séparés par virgule).
         """
+        # [CRITIQUE] On appelle le hook parent : injection automatique de
+        # l'audit (created_by_user / updated_by_user) et de l'établissement.
+        data = super().before_save(data, instance)
+
         # On extrait les rôles des données brutes pour les traiter
         # Attention : ManyToMany ne peut être sauvé qu'APRÈS la création de l'objet.
         # On stocke temporairement les rôles dans une variable d'instance du service

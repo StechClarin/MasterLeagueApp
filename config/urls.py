@@ -46,6 +46,34 @@ else:
 
 
 
+# 4.5. Route dynamique pour les icônes (servir les SVG avec content-type image/svg+xml garanti)
+from django.http import HttpResponse, Http404
+import mimetypes
+
+def serve_icon(request, path):
+    candidates = [
+        os.path.join(settings.BASE_DIR, 'frontend', 'public', 'icons', path),
+        os.path.join(settings.FRONTEND_DIR, 'icons', path),
+        os.path.join(settings.FRONTEND_DIR, 'public', 'icons', path),
+        os.path.join(settings.BASE_DIR, 'apps', 'core', 'assets', 'icons', path),
+    ]
+    for file_path in candidates:
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            content_type, _ = mimetypes.guess_type(file_path)
+            if file_path.endswith('.svg') or not content_type:
+                content_type = 'image/svg+xml'
+            with open(file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type=content_type)
+                response['Access-Control-Allow-Origin'] = '*'
+                response['Cache-Control'] = 'public, max-age=86400'
+                return response
+    raise Http404("Icon not found")
+
+urlpatterns += [
+    re_path(r'^icons/(?P<path>.*)$', serve_icon),
+    re_path(r'^static/icons/(?P<path>.*)$', serve_icon),
+]
+
 # 5. Frontend Angular (Maquette/App) - MUST BE LAST
 urlpatterns += [
     path('', TemplateView.as_view(template_name='index.html'), name='index'),

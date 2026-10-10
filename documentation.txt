@@ -1,19 +1,19 @@
-==============================================================================
+===============================================================================================================
 DOCUMENTATION TECHNIQUE - PROJET DJANGO / ANGULAR / GRAPHQL
-==============================================================================
+===============================================================================================================
 
 Bienvenue sur le projet ! 
 Cette documentation détaille le workflow standard pour ajouter une nouvelle fonctionnalité (Module/Entité) en respectant l'architecture "Modulaire & Scalable".
 
 PRÉ-REQUIS
 ----------
-- Backend : Python 3.10+, Django, Strawberry (strawberry-graphql-django)
+- Backend : Python 3.10+, Django, Strawberry GraphQL (strawberry-graphql-django)
 - Frontend : Node 18+, Angular 18+, Apollo GraphQL
 - Outils : Script `./snake` (Wrapper manage.py)
 
-==============================================================================
+==================================================================================================================
 0. ARBORESCENCE & GUIDAGE RAPIDE (LA CARTE)
-==============================================================================
+==================================================================================================================
 
 Pour vous repérer rapidement : L'architecture est symétrique (Backend <-> Frontend).
 
@@ -74,10 +74,11 @@ c) CORRECTION CRITIQUE : IMPLÉMENTER LA PAGINATION
    
    Fichier : apps/<app>/graphql/Queries/<entite>_query.py
    
-   Modèle à suivre :
+   Modèle à suivre (Strawberry GraphQL) :
    ------------------------------------------------------------
    import strawberry
    from apps.core.graphql.Types.paginated_type import PaginatedType
+   from apps.core.utils.pagination import paginate_queryset
    from ..Types.<entite>_type import <Entite>Type
 
    @strawberry.type
@@ -89,16 +90,14 @@ c) CORRECTION CRITIQUE : IMPLÉMENTER LA PAGINATION
            search: str | None = None,
            page: int = 1,
            page_size: int = 10
-       ) -> PaginatedType[<Entite>Type]:
+       ) -> PaginatedType[<Entite>Type] | None:
            queryset = <Entite>.objects.filter(is_deleted=False).order_by('-created_at')
            
            if search:
-               queryset = queryset.filter(Q(nom__icontains=search)) # Adapter le filtre
+               queryset = queryset.filter(nom__icontains=search)
 
-           # Utilisation de l'utilitaire de pagination (DRY)
-           from apps.core.utils.pagination import paginate_queryset
            paginated_data = paginate_queryset(queryset, page, page_size)
-
+           paginated_data['items'] = list(paginated_data['items'])
            return PaginatedType[<Entite>Type](**paginated_data)
    ------------------------------------------------------------
 
@@ -239,6 +238,33 @@ b) Formulaires & Modales
      </ng-container>
    </app-ui-modal>
    ------------------------------------------------------------
+
+c) Composant Bouton Standardisé (<app-ui-button>) & Icônes Fichiers (f_*.svg)
+   Ne créez JAMAIS de balises <button> avec du HTML/CSS brut ou des SVG inline répétitifs. Utilisez <app-ui-button>.
+
+   1. Usage Standard (Icônes intégrées) :
+      ------------------------------------------------------------
+      <app-ui-button label="Importer" icon="import" variant="secondary" (btnClick)="onImport()"></app-ui-button>
+      <app-ui-button label="Exporter" icon="export" variant="secondary" (btnClick)="openExportModal()"></app-ui-button>
+      <app-ui-button label="Télécharger trame" icon="download" variant="info" (btnClick)="onDownloadTemplate()"></app-ui-button>
+      ------------------------------------------------------------
+
+   2. Convention d'Icônes Fichiers (f_*.svg) :
+      Pour ajouter une nouvelle icône SVG sans modifier de code TypeScript :
+      - Déposez votre fichier SVG dans : frontend/public/icons/f_nom_icone.svg (ex: frontend/public/icons/f_exemple_user.svg).
+      - Utilisez la convention icon="f_nom_icone" sur le bouton :
+      ------------------------------------------------------------
+      <app-ui-button label="Profil Utilisateur" icon="f_exemple_user" variant="primary" (btnClick)="monAction()"></app-ui-button>
+      ------------------------------------------------------------
+      Le composant applique automatiquement un masque CSS (mask-image: url(/icons/f_nom_icone.svg)) avec `bg-current` afin que l'icône prenne dynamiquement la couleur du texte du bouton et réagisse au survol (hover) !
+
+   3. Options du composant <app-ui-button> :
+      - label : texte du bouton (optionnel).
+      - icon : nom d'icône prédéfinie ('import', 'export', 'download', 'plus', 'search', 'filter', 'edit', 'trash', etc.) OU nom de fichier ('f_...').
+      - variant : 'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'ghost'.
+      - size : 'sm', 'md', 'lg'.
+      - shape : 'rounded', 'pill', 'circle', 'square'.
+      - loading : boolean (affiche un spinner automatique).
 
 5. UTILITAIRES PARTAGÉS (BACKEND)
 ---------------------------------
@@ -569,5 +595,102 @@ c) Le Pont Frontend (Le Chef d'Orchestre)
    - syncAssets() : Compare les deux Manifestes MD5 (Local vs Cloud). Si une différence 
      est détectée (fichier manquant ou modifié), le Hub télécharge l'image depuis la source 
      et l'upload vers la destination (via des requêtes POST/GET multipart).
+
+==============================================================================
+13. SÉCURITÉ, RBAC & GESTION DES ERREURS (BACKEND & FRONTEND)
+==============================================================================
+
+a) Contrôle d'Accès Réparti (RBAC - Role-Based Access Control)
+   -----------------------------------------------------------
+   Le système de sécurité est modulaire et synchronisé entre Django et Angular.
+
+   1. Backend (Permissions & Rôles) :
+      - `seed_access.py` : Définit les permissions atomiques par couple Ressource/Action (ex: `student.create`, `user.delete`).
+      - `seed_roles.py` : Associe les permissions aux rôles métiers (Admin, Manager, Enseignant, etc.).
+      - `JWTAuthentication` & `check_permissions()` : Chaque contrôleur (`RouterController`, `BaseController`, Graphene GraphQL) vérifie l'en-tête `Authorization: Bearer <token>`.
+      - SuperAdmin : Les comptes administrateurs suprêmes (`is_superuser=True` ou `ethernanos`) possèdent un bypass de sécurité natif.
+
+   2. Frontend (Menu & Interface Réactive) :
+      - `PermissionService` : Stocke les permissions réactives de l'utilisateur connecté dans un Signal Angular (`activePermissions`).
+      - Directive `[appHasPermission]` : Conditionne l'affichage des éléments UI en temps réel :
+        Exemple : `<app-ui-button *appHasPermission="'student.create'" label="Ajouter" ...></app-ui-button>`
+      - Menu Dynamique BDD (`seed_navigation.py` -> `DynamicRouterService`) : L'initialiseur `APP_INITIALIZER` interroge le backend et injecte uniquement les modules et routes autorisés pour l'utilisateur.
+
+b) Gestion Industrielle des Erreurs (End-to-End Error Handling)
+   ------------------------------------------------------------
+   L'architecture gère les erreurs en deux étapes complémentaires :
+
+   1. Phase 1 : Validation locale réactive (Frontend)
+      - Lors de la soumission d'un formulaire (`BaseFormComponent.submit()`), si des champs sont obligatoires ou invalides, l'envoi HTTP est bloqué (`form.markAllAsTouched()`).
+      - Les erreurs sont extraites et le composant déclenche une alerte Toast : `Le formulaire est incomplet.`
+      - Chaque champ invalide est surligné en rouge avec son message d'erreur sous l'input (`<app-ui-input>`).
+
+   2. Phase 2 : Interception et rétroaction Backend (DRF / GraphQL -> Angular)
+      - Si le backend renvoie une exception `ValidationError` (erreur 400 Bad Request) :
+        * Erreurs de champs (`fieldErrors`) : `FormUtils.setErrors()` rattache l'erreur backend directement au `FormControl` Angular correspondant via `control.setErrors({ serverError: message })`. Le champ s'affiche en rouge avec l'erreur retournée par Django.
+        * Erreurs globales (`globalErrors`) : Si une règle métier globale échoue (ex: chevauchement de dates, matricule dupliqué, contrainte relationnelle), l'erreur est extraite et affichée dans un Toast rouge flottant (`ToastService.error(...)`).
+
+
+==============================================================================
+14. ARCHITECTURE DES ICÔNES SVG, ROUTAGE NGINX & FILTRAGE DES LICENCES
+==============================================================================
+
+a) Gestion des Icônes Vectorielles (SVG) End-to-End
+   -------------------------------------------------
+   Le système gère les icônes de la navigation via une architecture résiliente 
+   et multi-environnement (Dev Local, Production Web, Executable Standalone) :
+
+   1. Source de Vérité Unique (Fichiers SVG) :
+      - Tous les fichiers vectoriels sont stockés dans `frontend/public/icons/`.
+      - Ils sont automatiquement copiés par Angular (`ng build`) vers 
+        `dist/frontend/browser/icons/` et embarqués dans PyInstaller via 
+        `apps/core/assets/icons/`.
+
+   2. Normalisation & Seeding (`seed_navigation.py`) :
+      - La fonction `normalize_icon_path(icon_name: Any)` prend n'importe quelle 
+        variante (`"user-icon"`, `"user-icon.svg"`, `"/icons/user-icon.svg"`).
+      - Elle formate et enregistre le chemin canonique universel en BDD : 
+        `"/icons/<nom>.svg"`.
+      - Totalement compatible avec les linters stricts (Pyright/Mypy).
+
+   3. Résoluteur Statique & Type MIME (`config/urls.py`) :
+      - Le handler HTTP `serve_icon(request, path)` intercepte les requêtes `GET /icons/*.svg`.
+      - Recherche dynamique en cascade dans les répertoires :
+        * `frontend/public/icons/` (Source Dev)
+        * `FRONTEND_DIR/icons/` (Dist Production)
+        * `apps/core/assets/icons/` (Binaire PyInstaller embarqué)
+      - Forçage strict de l'en-tête `Content-Type: image/svg+xml`, des en-têtes CORS (`*`) 
+        et du cache navigateur (24h) pour garantir qu'aucun carré brisé `[ ]` n'apparaisse.
+
+   4. Rendu Frontend Angular (`sidebar.component.ts`) :
+      - La Sidebar consomme le champ `icon` retourné par GraphQL.
+      - Injecte directement l'URL SVG dans `<img [src]="module.icon" class="w-5 h-5 object-contain" />`.
+
+b) Configuration Nginx & Anti-404 Proxying
+   ---------------------------------------
+   1. Règle du Slash Final sur `proxy_pass` :
+      - Lors de la configuration de reverse-proxy Nginx pour des sous-chemins (ex: `/schoolmanage/test/`), 
+        la directive `proxy_pass` DOIT se terminer par un slash `/` :
+        `proxy_pass http://127.0.0.1:8080/;`
+      - Sans ce slash final, Nginx transmet l'URL complète avec le préfixe au backend Django, 
+        qui ne trouve pas le pattern et renvoie une erreur `404 Not Found`.
+
+   2. Bloc Optionnel Nginx pour les Icônes :
+      - Pour décharger Django en production, Nginx peut servir directement les icônes :
+        ```nginx
+        location /icons/ {
+            alias /chemin/absolu/vers/votre/projet/frontend/public/icons/;
+            expires 30d;
+            add_header Cache-Control "public, no-transform";
+        }
+        ```
+
+c) Filtrage Réactif des Licences & Navigation (`module_query.py`)
+   --------------------------------------------------------------
+   - `ModuleQuery` filtre dynamiquement les modules selon l'établissement actif (`establishment_id`) 
+     et les licences débloquées (`TenantLicense`).
+   - Les modules systèmes (`mod-referentiel`, `mod-administration`) sont toujours accessibles.
+   - Les exceptions d'absence de modèle sont capturées de façon type-safe via 
+     `django.core.exceptions.ObjectDoesNotExist`.
 
 ==============================================================================

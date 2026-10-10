@@ -34,6 +34,18 @@ class BaseService:
         self.user = None
         self.establishment_id = None
 
+    def get_import_fields(self):
+        """
+        Retourne la liste des champs d'importation.
+        Si 'import_fields' n'est pas explicité mais 'import_field_labels' l'est,
+        déduit automatiquement les champs d'import depuis les clés de 'import_field_labels'.
+        """
+        if self.import_fields:
+            return self.import_fields
+        if hasattr(self, 'import_field_labels') and self.import_field_labels:
+            return list(self.import_field_labels.keys())
+        return []
+
     # ==========================================================================
     # 1. MÉTHODES DE LECTURE (Read)
     # ==========================================================================
@@ -44,6 +56,19 @@ class BaseService:
         Appelé par le Contrôleur avant chaque action.
         """
         self.user = user
+        if not establishment_id and user and getattr(user, 'is_authenticated', False):
+            try:
+                from apps.core.models.establishment import Establishment
+                user_est = Establishment.objects.filter(user=user).first()
+                if user_est:
+                    establishment_id = str(user_est.id)
+                else:
+                    from apps.core.models.establishment_membership import EstablishmentMembership
+                    mem = EstablishmentMembership.objects.filter(user=user, status='active').first()
+                    if mem:
+                        establishment_id = str(mem.establishment_id)
+            except Exception:
+                pass
         self.establishment_id = establishment_id
 
     def list(self, filters=None):
@@ -95,12 +120,9 @@ class BaseService:
              
         # Injection automatique de l'établissement si le modèle est lié
         if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
-             print(f"DEBUG: Injecting establishment_id {self.establishment_id} into data")
-             # On ne l'ajoute que s'il n'est pas déjà présent (permet de forcer si besoin)
-             if 'establishment' not in data and 'establishment_id' not in data:
+             if not data.get('establishment') and not data.get('establishment_id'):
                  data['establishment_id'] = self.establishment_id
-        else:
-            print(f"DEBUG: Skip injection. Model:{hasattr(self.model, 'establishment')}, ID:{getattr(self, 'establishment_id', 'Not Set')}")
+                 data['establishment'] = self.establishment_id
         
         return data
 
@@ -109,17 +131,19 @@ class BaseService:
         Chef d'orchestre de la sauvegarde.
         Ne pas surcharger cette méthode ! Surchargez les hooks ci-dessous.
         Gère la séquence : Before -> Process (Create/Update) -> After.
+        Garantit l'atomicité transactionnelle (rollback complet en cas d'erreur).
         """
-        # 1. Hook Avant (Dernière modif des données validées avant écriture)
-        validated_data = self.before_save(validated_data, instance)
+        with db_atomic():
+            # 1. Hook Avant (Dernière modif des données validées avant écriture)
+            validated_data = self.before_save(validated_data, instance)
 
-        # 2. Écriture en base (gère automatiquement Create ou Update)
-        obj, created = self.save_process(validated_data, instance)
+            # 2. Écriture en base (gère automatiquement Create ou Update)
+            obj, created = self.save_process(validated_data, instance)
 
-        # 3. Hook Après (Notifications, Logs, actions asynchrones)
-        self.after_save(obj, created)
+            # 3. Hook Après (Notifications, Logs, actions asynchrones)
+            self.after_save(obj, created)
 
-        return obj
+            return obj
 
     # --- Les Hooks surchargeables ---
 
@@ -128,17 +152,40 @@ class BaseService:
         if 'establishment' in data and not hasattr(data['establishment'], '_meta'):
             data['establishment_id'] = data.pop('establishment')
 
-        # [SAFETY NET] Injection de l'établissement si manquant
-        if hasattr(self.model, 'establishment') and hasattr(self, 'establishment_id') and self.establishment_id:
+        # [SAFETY NET] Injection de l'établissement si manquant ou vide/None.
+        est_id = getattr(self, 'establishment_id', None)
+        if not est_id and hasattr(self, 'user') and self.user and getattr(self.user, 'is_authenticated', False):
+            try:
+                from apps.core.models.establishment import Establishment
+                user_est = Establishment.objects.filter(user=self.user).first()
+                if user_est:
+                    est_id = str(user_est.id)
+                    self.establishment_id = est_id
+                else:
+                    from apps.core.models.establishment_membership import EstablishmentMembership
+                    mem = EstablishmentMembership.objects.filter(user=self.user, status='active').first()
+                    if mem:
+                        est_id = str(mem.establishment_id)
+                        self.establishment_id = est_id
+            except Exception:
+                pass
+
+        if hasattr(self.model, 'establishment') and est_id:
             should_inject = False
             if not instance:
                 should_inject = True # Création
-            elif not instance.establishment_id:
+            elif not getattr(instance, 'establishment_id', None):
                 should_inject = True # Instance orpheline (rare)
-            
-            if should_inject:
-                if 'establishment' not in data and 'establishment_id' not in data:
-                     data['establishment_id'] = self.establishment_id
+
+            if should_inject and not data.get('establishment_id') and not data.get('establishment'):
+                data['establishment_id'] = est_id
+
+        # [SAFETY NET] Convertir chaînes vides en None pour les champs nullables uniques (ex: rfid_uid) pour éviter Key (...)=() already exists en SQL
+        if hasattr(self.model, '_meta'):
+            for field in self.model._meta.fields:
+                if field.name in data and field.null and isinstance(data[field.name], str) and not data[field.name].strip():
+                    if field.unique or getattr(field, 'unique', False):
+                        data[field.name] = None
 
         # [AUDIT] Injection automatique de l'utilisateur (Pattern Global)
         if hasattr(self, 'user') and self.user:
@@ -206,14 +253,60 @@ class BaseService:
         """
         pass
 
+    def before_delete(self, instance):
+        """
+        [HOOK] À surcharger pour exécuter une action avant suppression.
+        """
+        pass
+
+    def after_delete(self, instance_id):
+        """
+        [HOOK] À surcharger pour exécuter une action après suppression.
+        """
+        pass
+
+    def _cascade_delete_documents(self, instance):
+        """ Nettoie les documents GED rattachés via GenericForeignKey """
+        try:
+            from django.contrib.contenttypes.models import ContentType
+            from apps.documents.models import Document
+            content_type = ContentType.objects.get_for_model(instance)
+            attached_docs = Document.objects.filter(content_type=content_type, object_id=str(instance.pk))
+            for doc in attached_docs:
+                if hasattr(doc, 'is_deleted'):
+                    doc.is_deleted = True
+                    if hasattr(self, 'user') and self.user and hasattr(doc, 'deleted_by'):
+                        doc.deleted_by = self.user
+                    doc.save()
+                else:
+                    doc.delete()
+        except Exception:
+            pass
+
     def delete(self, instance):
         """
-        Supprime un objet.
-        Retourne un petit rapport.
+        Supprime un objet avec gestion du soft-delete, hooks et cascade GED.
+        Garantit l'atomicité transactionnelle (rollback complet en cas d'erreur).
         """
-        instance_id = instance.id
-        instance.delete()
-        return {"id": instance_id, "status": "deleted"}
+        with db_atomic():
+            self.before_delete(instance)
+            
+            # 1. Cascading GED
+            self._cascade_delete_documents(instance)
+
+            # 2. Suppression (Soft or Hard)
+            instance_id = instance.id
+            if hasattr(instance, 'is_deleted'):
+                instance.is_deleted = True
+                if hasattr(self, 'user') and self.user and hasattr(instance, 'deleted_by'):
+                    instance.deleted_by = self.user
+                instance.save()
+            else:
+                instance.delete()
+
+            self.after_delete(instance_id)
+            return {"id": instance_id, "status": "deleted"}
+
 
     # ==========================================================================
     # 3. IMPORT / EXPORT (Outils de masse)
@@ -283,6 +376,23 @@ class BaseService:
             return ExportFile.to_excel(data_list, filename)
         return ExportFile.to_csv(data_list, filename)
 
+    def generate_template(self):
+        """
+        Génère une trame Excel d'import (.xlsx) avec en-têtes en français et un exemple indicatif.
+        """
+        sample_row = {}
+        if hasattr(self, 'import_field_labels') and self.import_field_labels:
+            for field, label in self.import_field_labels.items():
+                sample_row[label] = f"Exemple {label}"
+        elif self.import_fields:
+            for field in self.import_fields:
+                name = field if isinstance(field, str) else list(field.keys())[0]
+                sample_row[name] = f"Exemple {name}"
+
+        filename = f"trame_import_{self.model._meta.model_name}"
+        data_list = [sample_row] if sample_row else []
+        return ExportFile.to_excel(data_list, filename)
+
     def relation_in_import(self, field_name, value, config, cache=None):
         """
         Helper pour résoudre une clé étrangère lors de l'import.
@@ -334,9 +444,10 @@ class BaseService:
         # Analyse de la configuration (Champs simples vs Relations)
         simple_fields = set()
         relation_configs = {}
+        import_fields_list = self.get_import_fields()
 
-        if self.import_fields:
-            for field in self.import_fields:
+        if import_fields_list:
+            for field in import_fields_list:
                 if isinstance(field, dict):
                     # C'est une relation : {'role': {'model': Role...}}
                     key = list(field.keys())[0]
@@ -369,7 +480,7 @@ class BaseService:
 
                         for key, value in translated_row.items():
                             # Cas 1 : Champ simple autorisé
-                            if not self.import_fields or key in simple_fields:
+                            if not import_fields_list or key in simple_fields:
                                 data_to_save[key] = value
                             
                             # Cas 2 : Relation configurée (Résolution auto avec Cache)
@@ -502,13 +613,14 @@ class BaseService:
     def generate_template(self):
         """
         Génère un fichier Excel vide contenant uniquement les en-têtes
-        basés sur la configuration 'import_fields'.
+        basés sur la configuration 'import_field_labels' ou 'import_fields'.
         """
-        # 1. Extraction des en-têtes depuis import_fields
         headers = []
         labels_map = getattr(self, 'import_field_labels', {}) or {}
-        if self.import_fields:
-            for field in self.import_fields:
+        import_fields_list = self.get_import_fields()
+
+        if import_fields_list:
+            for field in import_fields_list:
                 if isinstance(field, dict):
                     # Cas complexe : {'role': {'model': Role...}} -> 'role'
                     key = list(field.keys())[0]
@@ -517,17 +629,10 @@ class BaseService:
                     # Cas simple : 'username'
                     headers.append(labels_map.get(field, field))
         else:
-            # Fallback : tous les champs du modèle (moins risqué de ne rien mettre ?)
-            # On met au moins les champs obligatoires si possible, ou tous.
+            # Fallback : tous les champs du modèle
             for f in self.model._meta.fields:
                 headers.append(labels_map.get(f.name, f.name))
 
-        # 2. Création de la structure pour l'export (une seule ligne vide ou juste headers)
-        # ExportFile.to_excel attend une liste de dicts.
-        # On peut passer une liste vide [], mais il faut que to_excel sache gérer les headers seuls.
-        # Ou on passe une ligne avec des valeurs vides.
         empty_row = {header: "" for header in headers}
-        
-        # 3. Génération
         filename = f"trame_import_{self.model._meta.verbose_name_plural.lower().replace(' ', '_')}"
         return ExportFile.to_excel([empty_row], filename)

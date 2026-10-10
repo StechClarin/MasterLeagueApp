@@ -1,10 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-ui-status-badge',
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     template: `
     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border"
       [class]="isActive 

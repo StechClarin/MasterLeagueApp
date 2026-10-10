@@ -31,17 +31,19 @@ import { trigger, transition, style, animate, query, stagger, group } from '@ang
       <div (click)="onToggle($event)">
         <ng-content select="[trigger]"></ng-content>
       </div>
-
+    
       <!-- Menu (Backdrop removed) -->
-      <div *ngIf="isOpen" 
-           [@dropdownAnimation]
-           [ngClass]="menuClasses">
-        <div [class.py-1]="direction === 'vertical'" role="none" [class.flex]="direction === 'horizontal'" [class.gap-1]="direction === 'horizontal'">
+      @if (isOpen) {
+        <div
+          [@dropdownAnimation]
+          [ngClass]="menuClasses">
+          <div [class.py-1]="direction === 'vertical'" role="none" [class.flex]="direction === 'horizontal'" [class.gap-1]="direction === 'horizontal'">
             <ng-content select="[menu]"></ng-content>
+          </div>
         </div>
-      </div>
+      }
     </div>
-  `
+    `
 })
 export class UiDropdownComponent {
   @Input() isOpen = false;

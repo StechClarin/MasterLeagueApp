@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, effect, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Apollo, QueryRef } from 'apollo-angular';
 import { DocumentNode } from 'graphql';
@@ -13,6 +14,7 @@ export abstract class BaseListComponent<T> implements OnInit {
   protected fb = inject(FormBuilder);
   protected structureState = inject(StructureStateService);
   protected toastService = inject(ToastService);
+  protected destroyRef = inject(DestroyRef);
 
   abstract query: DocumentNode;
   abstract responseKey: string;
@@ -51,9 +53,11 @@ export abstract class BaseListComponent<T> implements OnInit {
     this.filterForm = this.initFilterForm();
     this.initQuery();
 
-    // Reactive Sync: Auto-refresh on mutation
+    // Reactive Sync: Auto-refresh on mutation (avec sécurité anti-fuite mémoire)
     if (this.service && this.service.refresh$) {
-      this.service.refresh$.subscribe(() => {
+      this.service.refresh$.pipe(
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe(() => {
         this.refresh();
       });
     }
@@ -79,11 +83,10 @@ export abstract class BaseListComponent<T> implements OnInit {
           return [];
         }
         const data = result.data[this.responseKey];
-        // Support both camelCase (Graphene default) and snake_case (Python raw)
+        // Support both camelCase (Strawberry default) and snake_case (Python raw)
         const totalCount = data?.totalCount ?? data?.total_count;
         const numPages = data?.numPages ?? data?.num_pages;
 
-        // Auto-update pagination metadata if available
         // Auto-update pagination metadata if available
         if (totalCount !== undefined) {
           this.totalCount.set(totalCount);

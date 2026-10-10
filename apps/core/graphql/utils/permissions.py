@@ -22,6 +22,11 @@ def has_permission(required_permission):
             est_id = getattr(info.context, 'establishment_id', None)
             
             if est_id:
+                # 2.1. Vérification de la licence de l'établissement pour la fonctionnalité demandée
+                from apps.core.models.tenant_license import TenantLicense
+                if not TenantLicense.verify_access(info.context, est_id, required_permission):
+                    raise GraphQLError(f"Accès refusé : Votre licence d'établissement ne comprend pas la fonctionnalité '{required_permission}'.")
+                
                 from apps.core.models.establishment_membership import EstablishmentMembership
                 from apps.core.models.permission import Permission
                 from django.core.exceptions import ObjectDoesNotExist

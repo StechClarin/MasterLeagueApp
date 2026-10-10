@@ -103,25 +103,31 @@ import { StructureStateService } from '@core/services/structure-state.service';
   `],
   template: `
     <div class="min-h-screen flex bg-[#0f172a] font-sans relative overflow-hidden">
-      
+    
       <!-- Space Background Animation Layer (Z-0) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
         <!-- Stars -->
-        <div *ngFor="let star of stars" class="star" [ngStyle]="star.style"></div>
+        @for (star of stars; track star) {
+          <div class="star" [ngStyle]="star.style"></div>
+        }
         <!-- Meteors -->
-        <div *ngFor="let meteor of meteors" class="meteor" [ngClass]="meteor.class" [ngStyle]="meteor.style"></div>
-        
+        @for (meteor of meteors; track meteor) {
+          <div class="meteor" [ngClass]="meteor.class" [ngStyle]="meteor.style"></div>
+        }
+    
         <!-- Floating Management Icons -->
-        <div *ngFor="let icon of floatingIcons" class="icon-wrapper" [ngStyle]="icon.wrapperStyle">
+        @for (icon of floatingIcons; track icon) {
+          <div class="icon-wrapper" [ngStyle]="icon.wrapperStyle">
             <svg class="floating-icon" [ngStyle]="icon.iconStyle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="icon.path"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="icon.path"></path>
             </svg>
-        </div>
+          </div>
+        }
       </div>
-
+    
       <!-- Left Column: Form (Z-10, Semi-transparent) -->
       <div class="w-full lg:w-1/2 xl:w-1/3 p-8 flex flex-col justify-between relative z-10 border-r border-slate-800/50 bg-[#0f172a]/60 backdrop-blur-md">
-        
+    
         <!-- Logo -->
         <div class="flex items-center gap-3 animate-enter" style="animation-delay: 0ms;">
           <div class="relative h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-inner border border-white/10">
@@ -129,37 +135,37 @@ import { StructureStateService } from '@core/services/structure-state.service';
           </div>
           <span class="text-xl font-bold text-white tracking-tight">Eteyelo</span>
         </div>
-
+    
         <!-- Form Container -->
         <div class="w-full max-w-sm mx-auto">
           <div class="mb-8 animate-enter" style="animation-delay: 100ms;">
             <h2 class="text-3xl font-bold text-white mb-2">Bon retour !</h2>
             <p class="text-slate-400">Veuillez saisir vos identifiants pour continuer.</p>
           </div>
-
+    
           <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
-            
+    
             <div class="animate-enter" style="animation-delay: 200ms;">
-                <app-ui-input
+              <app-ui-input
                 label="Nom d'utilisateur"
                 [control]="form.controls.username"
                 [required]="true"
                 placeholder="Votre identifiant"
                 theme="dark"
-                ></app-ui-input>
+              ></app-ui-input>
             </div>
-
+    
             <div class="animate-enter" style="animation-delay: 300ms;">
-                <app-ui-input
+              <app-ui-input
                 label="Mot de passe"
                 type="password"
                 [control]="form.controls.password"
                 [required]="true"
                 placeholder="Votre mot de passe"
                 theme="dark"
-                ></app-ui-input>
+              ></app-ui-input>
             </div>
-
+    
             <div class="flex items-center justify-between animate-enter" style="animation-delay: 400ms;">
               <div class="flex items-center">
                 <input id="remember-me" type="checkbox" class="h-4 w-4 bg-slate-800 border-slate-700 rounded text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900">
@@ -169,40 +175,44 @@ import { StructureStateService } from '@core/services/structure-state.service';
                 <a href="#" class="font-medium text-indigo-400 hover:text-indigo-300 transition-colors">Mot de passe oublié ?</a>
               </div>
             </div>
-
-            <button 
-              type="submit" 
+    
+            <button
+              type="submit"
               [disabled]="form.invalid || isSubmitting"
               class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-500/20 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 animate-enter"
               style="animation-delay: 500ms;"
-            >
-              <svg *ngIf="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              >
+              @if (isSubmitting) {
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              }
               {{ isSubmitting ? 'Connexion en cours...' : 'Se connecter' }}
             </button>
-
+    
           </form>
-
-          <p *ngIf="errorMessage" class="mt-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm text-center animate-enter" style="animation-delay: 600ms;">
-            {{ errorMessage }}
-          </p>
+    
+          @if (errorMessage) {
+            <p class="mt-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm text-center animate-enter" style="animation-delay: 600ms;">
+              {{ errorMessage }}
+            </p>
+          }
         </div>
-
+    
         <!-- Footer -->
         <div class="text-xs text-slate-600 font-medium animate-enter" style="animation-delay: 700ms;">
           Developed by <span class="text-slate-500 hover:text-indigo-400 transition-colors cursor-default">ethernanos</span>
         </div>
-
+    
       </div>
-
+    
       <!-- Right Column: Decorative (Transparent Background) -->
       <div class="hidden lg:block lg:w-1/2 xl:w-2/3 relative overflow-hidden z-10">
         <!-- Background Gradients -->
         <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
-        
+    
         <!-- Content -->
         <div class="relative h-full flex flex-col items-center justify-center p-12 text-center">
           <div class="relative mb-8">
@@ -215,9 +225,9 @@ import { StructureStateService } from '@core/services/structure-state.service';
           </p>
         </div>
       </div>
-
+    
     </div>
-  `
+    `
 })
 export class LoginComponent extends BaseFormComponent {
   private fb = inject(FormBuilder);
