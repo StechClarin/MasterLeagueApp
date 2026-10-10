@@ -1,73 +1,75 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-ui-pagination',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
-    <div *ngIf="totalCount > 0" class="w-full select-none animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div class="w-full flex items-center bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-1.5 gap-2 group/pagination">
-        
-        <!-- Stats Integration -->
-        <div class="flex items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 gap-4">
-          <div class="flex flex-col min-w-[60px]">
-            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Total</span>
-            <span class="text-xs font-bold text-slate-700">{{ totalCount }} <span class="text-[10px] font-medium text-slate-400 ml-0.5">items</span></span>
+    @if (totalCount > 0) {
+      <div class="w-full select-none animate-in fade-in slide-in-from-bottom-2 duration-700">
+        <div class="w-full flex items-center bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-1.5 gap-2 group/pagination">
+          <!-- Stats Integration -->
+          <div class="flex items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 gap-4">
+            <div class="flex flex-col min-w-[60px]">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Total</span>
+              <span class="text-xs font-bold text-slate-700">{{ totalCount }} <span class="text-[10px] font-medium text-slate-400 ml-0.5">items</span></span>
+            </div>
+            <div class="w-px h-6 bg-slate-200"></div>
+            <div class="flex flex-col min-w-[40px]">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Pages</span>
+              <span class="text-xs font-bold text-slate-700 text-center">{{ numPages }}</span>
+            </div>
           </div>
-          <div class="w-px h-6 bg-slate-200"></div>
-          <div class="flex flex-col min-w-[40px]">
-            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Pages</span>
-            <span class="text-xs font-bold text-slate-700 text-center">{{ numPages }}</span>
+          <!-- Navigation Track (Centered) -->
+          <div class="flex-1 flex items-center justify-center gap-1">
+            <!-- Previous Button -->
+            <button (click)="onPrev()" [disabled]="currentPage === 1"
+              class="nav-trigger group/prev" [class.disabled]="currentPage === 1">
+              <svg class="w-4 h-4 transition-transform group-hover/prev:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <!-- Pages Container -->
+            <div class="flex items-center gap-1.5 px-4">
+              @for (page of visiblePages; track page) {
+                @if (page === -1) {
+                  <span class="text-slate-300 font-bold px-1">...</span>
+                }
+                @if (page !== -1) {
+                  <button
+                    (click)="onGoTo(page)"
+                    class="page-item"
+                    [class.active]="page === currentPage">
+                    {{ page }}
+                    @if (page === currentPage) {
+                      <div class="active-pill"></div>
+                    }
+                  </button>
+                }
+              }
+            </div>
+            <!-- Next Button -->
+            <button (click)="onNext()" [disabled]="currentPage === numPages"
+              class="nav-trigger group/next" [class.disabled]="currentPage === numPages">
+              <svg class="w-4 h-4 transition-transform group-hover/next:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
-        </div>
-
-        <!-- Navigation Track (Centered) -->
-        <div class="flex-1 flex items-center justify-center gap-1">
-          <!-- Previous Button -->
-          <button (click)="onPrev()" [disabled]="currentPage === 1" 
-                  class="nav-trigger group/prev" [class.disabled]="currentPage === 1">
-            <svg class="w-4 h-4 transition-transform group-hover/prev:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          <!-- Pages Container -->
-          <div class="flex items-center gap-1.5 px-4">
-            <ng-container *ngFor="let page of visiblePages">
-              <span *ngIf="page === -1" class="text-slate-300 font-bold px-1">...</span>
-              
-              <button *ngIf="page !== -1"
-                      (click)="onGoTo(page)"
-                      class="page-item"
-                      [class.active]="page === currentPage">
-                {{ page }}
-                <div *ngIf="page === currentPage" class="active-pill"></div>
-              </button>
-            </ng-container>
+          <!-- Current View Indicator -->
+          <div class="flex items-center pr-2">
+            <div class="page-indicator">
+              <span class="text-slate-400 mr-1 uppercase">Vue</span>
+              <span class="text-indigo-600 font-black">{{ currentPage }}</span>
+              <span class="text-slate-300 mx-1">/</span>
+              <span class="text-slate-500 font-bold">{{ numPages }}</span>
+            </div>
           </div>
-
-          <!-- Next Button -->
-          <button (click)="onNext()" [disabled]="currentPage === numPages" 
-                  class="nav-trigger group/next" [class.disabled]="currentPage === numPages">
-            <svg class="w-4 h-4 transition-transform group-hover/next:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Current View Indicator -->
-        <div class="flex items-center pr-2">
-           <div class="page-indicator">
-             <span class="text-slate-400 mr-1 uppercase">Vue</span>
-             <span class="text-indigo-600 font-black">{{ currentPage }}</span>
-             <span class="text-slate-300 mx-1">/</span>
-             <span class="text-slate-500 font-bold">{{ numPages }}</span>
-           </div>
         </div>
       </div>
-    </div>
-  `,
+    }
+    `,
   styles: [`
     .nav-trigger {
       width: 38px;

@@ -1,12 +1,12 @@
 <div class="p-6 min-h-screen bg-slate-50">
-  
+
   <!-- Header & Alert Banner -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
     <div>
       <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
         <svg class="w-10 h-10 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
         </svg>
         Pilotage Stratégique du Parc Auto
       </h1>
@@ -14,534 +14,516 @@
     </div>
     <div class="flex flex-wrap gap-3">
       <!-- Critical alerts badge -->
-      <div *ngIf="dashboardData()?.activeAlertsCount > 0" class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-black uppercase tracking-wider animate-bounce">
-        <span class="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping"></span>
-        {{ dashboardData()?.activeAlertsCount }} Alertes Flotte
-      </div>
-      <button (click)="fetchData()" class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 shadow-sm font-medium">
-        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        Actualiser
-      </button>
-      <button class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-md font-medium">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-        </svg>
-        Rapport PDF
-      </button>
+      @if (dashboardData()?.activeAlertsCount > 0) {
+        <div class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-black uppercase tracking-wider animate-bounce">
+          <span class="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping"></span>
+          {{ dashboardData()?.activeAlertsCount }} Alertes Flotte
+        </div>
+      }
+      <app-ui-button
+        label="Actualiser"
+        variant="secondary"
+        icon="refresh"
+        (btnClick)="fetchData()">
+      </app-ui-button>
+      <app-ui-button
+        label="Rapport PDF"
+        variant="primary"
+        icon="file">
+      </app-ui-button>
     </div>
   </div>
 
   <!-- Operational Alerts Ribbon -->
-  <div *ngIf="!isLoading() && dashboardData()?.activeAlertsCount > 0" class="mb-8 p-4 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-600 rounded-2xl flex items-center justify-between shadow-sm">
-    <div class="flex items-center gap-3">
-      <div class="p-2 bg-red-100 text-red-600 rounded-xl">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
+  @if (!isLoading() && dashboardData()?.activeAlertsCount > 0) {
+    <div class="mb-8 p-4 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-600 rounded-2xl flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-red-100 text-red-600 rounded-xl">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-slate-800">Alertes administratives & techniques</p>
+          <p class="text-xs text-slate-500">{{ dashboardData()?.activeAlertsCount }} véhicules ont des assurances/contrôles techniques arrivant à échéance sous 15 jours. {{ dashboardData()?.upcomingMaintenances }} révisions programmées.</p>
+        </div>
       </div>
-      <div>
-        <p class="text-sm font-bold text-slate-800">Alertes administratives & techniques</p>
-        <p class="text-xs text-slate-500">{{ dashboardData()?.activeAlertsCount }} véhicules ont des assurances/contrôles techniques arrivant à échéance sous 15 jours. {{ dashboardData()?.upcomingMaintenances }} révisions programmées.</p>
-      </div>
+      <app-ui-button
+        label="Gérer les alertes"
+        variant="danger"
+        size="sm"
+        icon="bell">
+      </app-ui-button>
     </div>
-    <button class="text-xs font-bold text-red-600 hover:text-red-700 bg-red-100/50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
-      Gérer les alertes
-    </button>
-  </div>
+  }
 
-  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center h-96 space-y-4">
-    <div class="relative">
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center h-96 space-y-4">
+      <div class="relative">
         <div class="h-16 w-16 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin"></div>
         <div class="absolute inset-0 flex items-center justify-center">
-            <svg class="w-8 h-8 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-            </svg>
+          <svg class="w-8 h-8 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+          </svg>
         </div>
+      </div>
+      <p class="text-slate-500 font-medium animate-pulse">Consolidation des données financières et géographiques...</p>
     </div>
-    <p class="text-slate-500 font-medium animate-pulse">Consolidation des données financières et géographiques...</p>
-  </div>
+  }
 
-  <div *ngIf="!isLoading()" class="space-y-8 animate-in">
-    
-    <!-- Row 1: KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      
-      <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Chiffre d'Affaires</p>
-            <h3 class="text-2xl font-black text-slate-900 mt-2">{{ dashboardData()?.totalRevenue | number }} F</h3>
-            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-1">
-              +12.4% ce mois
-            </span>
-          </div>
-          <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-inner">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Rotation Flotte</p>
-            <h3 class="text-2xl font-black text-indigo-600 mt-2">{{ dashboardData()?.utilizationRate }} %</h3>
-            <span class="text-xs text-slate-500 mt-1 block">Taux d'utilisation globale</span>
-          </div>
-          <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Satisfaction Client</p>
-            <h3 class="text-2xl font-black text-emerald-600 mt-2">{{ dashboardData()?.clientSatisfaction }} / 5</h3>
-            <span class="text-xs text-slate-500 mt-1 block">Note sur 1 250 trajets avisés</span>
-          </div>
-          <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 shadow-inner">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.243.588 1.81l-3.97 2.883a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.971-2.883a1 1 0 00-1.18 0l-3.97 2.883c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.98 12.08c-.773-.568-.375-1.81.587-1.81h4.907a1 1 0 00.95-.69l1.519-4.674z" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Ventes Boutique</p>
-            <h3 class="text-2xl font-black text-slate-900 mt-2">{{ dashboardData()?.storeOrders }} com.</h3>
-            <span class="text-xs text-slate-500 mt-1 block">Pièces & accessoires auto</span>
-          </div>
-          <div class="p-4 bg-pink-50 text-pink-600 rounded-2xl group-hover:bg-pink-600 group-hover:text-white transition-all duration-500 shadow-inner">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Row 2: Detailed Fleet Management Block -->
-    <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
-          <h4 class="text-xl font-bold text-slate-800">État Détaillé du Parc Automobile</h4>
-          <p class="text-sm text-slate-500">Vue d'ensemble par type d'usage, disponibilité et personnel navigant</p>
-        </div>
-        <div class="px-4 py-2 bg-indigo-50 text-indigo-700 text-xs font-black uppercase tracking-wider rounded-xl shadow-inner border border-indigo-100">
-          Flotte Totale : {{ dashboardData()?.totalVehicles }} Véhicules
-        </div>
-      </div>
-
+  @if (!isLoading()) {
+    <div class="space-y-8 animate-in">
+      <!-- Row 1: KPI Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <!-- Parc Locatif -->
-        <div class="bg-gradient-to-br from-amber-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
-          <div class="flex items-center gap-3 text-amber-600 mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span class="font-black text-xs tracking-wider uppercase">Parc Locatif</span>
+        <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Chiffre d'Affaires</p>
+              <h3 class="text-2xl font-black text-slate-900 mt-2">{{ dashboardData()?.totalRevenue | number }} F</h3>
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-1">
+                +12.4% ce mois
+              </span>
+            </div>
+            <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-inner">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
           </div>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Voitures libres à louer</span>
-              <span class="font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-sm">
-                {{ dashboardData()?.vehiclesToRent }}
-              </span>
+        </div>
+        <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Rotation Flotte</p>
+              <h3 class="text-2xl font-black text-indigo-600 mt-2">{{ dashboardData()?.utilizationRate }} %</h3>
+              <span class="text-xs text-slate-500 mt-1 block">Taux d'utilisation globale</span>
             </div>
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Actuellement en location</span>
-              <span class="font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded">
-                {{ dashboardData()?.vehiclesRented }}
-              </span>
+            <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-inner">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
             </div>
-            <!-- Progress Bar -->
-            <div class="pt-2">
-              <div class="w-full bg-slate-100 rounded-full h-2">
-                <div class="bg-amber-500 h-2 rounded-full shadow-inner" 
-                     [style.width.%]="(dashboardData()?.vehiclesRented / (dashboardData()?.vehiclesToRent + dashboardData()?.vehiclesRented)) * 100">
+          </div>
+        </div>
+        <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Satisfaction Client</p>
+              <h3 class="text-2xl font-black text-emerald-600 mt-2">{{ dashboardData()?.clientSatisfaction }} / 5</h3>
+              <span class="text-xs text-slate-500 mt-1 block">Note sur 1 250 trajets avisés</span>
+            </div>
+            <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 shadow-inner">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.243.588 1.81l-3.97 2.883a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.971-2.883a1 1 0 00-1.18 0l-3.97 2.883c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.98 12.08c-.773-.568-.375-1.81.587-1.81h4.907a1 1 0 00.95-.69l1.519-4.674z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card group hover:scale-[1.02] transition-all duration-300">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Ventes Boutique</p>
+              <h3 class="text-2xl font-black text-slate-900 mt-2">{{ dashboardData()?.storeOrders }} com.</h3>
+              <span class="text-xs text-slate-500 mt-1 block">Pièces & accessoires auto</span>
+            </div>
+            <div class="p-4 bg-pink-50 text-pink-600 rounded-2xl group-hover:bg-pink-600 group-hover:text-white transition-all duration-500 shadow-inner">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Row 2: Detailed Fleet Management Block -->
+      <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <h4 class="text-xl font-bold text-slate-800">État Détaillé du Parc Automobile</h4>
+            <p class="text-sm text-slate-500">Vue d'ensemble par type d'usage, disponibilité et personnel navigant</p>
+          </div>
+          <div class="px-4 py-2 bg-indigo-50 text-indigo-700 text-xs font-black uppercase tracking-wider rounded-xl shadow-inner border border-indigo-100">
+            Flotte Totale : {{ dashboardData()?.totalVehicles }} Véhicules
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Parc Locatif -->
+          <div class="bg-gradient-to-br from-amber-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
+            <div class="flex items-center gap-3 text-amber-600 mb-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="font-black text-xs tracking-wider uppercase">Parc Locatif</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Voitures libres à louer</span>
+                <span class="font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-sm">
+                  {{ dashboardData()?.vehiclesToRent }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Actuellement en location</span>
+                <span class="font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded">
+                  {{ dashboardData()?.vehiclesRented }}
+                </span>
+              </div>
+              <!-- Progress Bar -->
+              <div class="pt-2">
+                <div class="w-full bg-slate-100 rounded-full h-2">
+                  <div class="bg-amber-500 h-2 rounded-full shadow-inner"
+                    [style.width.%]="(dashboardData()?.vehiclesRented / (dashboardData()?.vehiclesToRent + dashboardData()?.vehiclesRented)) * 100">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Taxis de l'entreprise -->
+          <div class="bg-gradient-to-br from-indigo-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
+            <div class="flex items-center gap-3 text-indigo-600 mb-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span class="font-black text-xs tracking-wider uppercase">Taxis Entreprise</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Taxis de l'entreprise</span>
+                <span class="font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                  {{ dashboardData()?.companyTaxis }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Total Chauffeurs</span>
+                <span class="font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded">
+                  {{ dashboardData()?.totalDrivers }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-[10px] text-slate-400 font-medium pt-2 border-t border-slate-100">
+                <span>Ratio Chauffeurs/Taxis :</span>
+                <span class="font-bold text-slate-600">{{ (dashboardData()?.totalDrivers / dashboardData()?.companyTaxis) | number:'1.1-1' }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- Prestataires & Partenaires -->
+          <div class="bg-gradient-to-br from-emerald-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
+            <div class="flex items-center gap-3 text-emerald-600 mb-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="font-black text-xs tracking-wider uppercase">Prestataires</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Véhicules Prestataires</span>
+                <span class="font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded">
+                  {{ dashboardData()?.providerVehicles }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Revenu Partagé</span>
+                <span class="font-bold text-slate-600">45% / 55%</span>
+              </div>
+              <div class="text-[10px] text-slate-400 italic pt-2 border-t border-slate-100">
+                Partenariat externalisé actif
+              </div>
+            </div>
+          </div>
+          <!-- Santé de la Flotte -->
+          <div class="bg-gradient-to-br from-red-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
+            <div class="flex items-center gap-3 text-red-600 mb-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1" />
+              </svg>
+              <span class="font-black text-xs tracking-wider uppercase">Santé Flotte</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Véhicules en service</span>
+                <span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                  {{ dashboardData()?.activeVehicles }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500 font-medium">Voitures HS / Panne</span>
+                <span class="font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded">
+                  {{ dashboardData()?.brokenVehicles }}
+                </span>
+              </div>
+              <!-- Progress Bar -->
+              <div class="pt-2">
+                <div class="w-full bg-slate-100 rounded-full h-2">
+                  <div class="bg-emerald-500 h-2 rounded-full"
+                    [style.width.%]="(dashboardData()?.activeVehicles / (dashboardData()?.activeVehicles + dashboardData()?.brokenVehicles)) * 100">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Taxis de l'entreprise -->
-        <div class="bg-gradient-to-br from-indigo-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
-          <div class="flex items-center gap-3 text-indigo-600 mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            <span class="font-black text-xs tracking-wider uppercase">Taxis Entreprise</span>
-          </div>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Taxis de l'entreprise</span>
-              <span class="font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded">
-                {{ dashboardData()?.companyTaxis }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Total Chauffeurs</span>
-              <span class="font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded">
-                {{ dashboardData()?.totalDrivers }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-medium pt-2 border-t border-slate-100">
-              <span>Ratio Chauffeurs/Taxis :</span>
-              <span class="font-bold text-slate-600">{{ (dashboardData()?.totalDrivers / dashboardData()?.companyTaxis) | number:'1.1-1' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Prestataires & Partenaires -->
-        <div class="bg-gradient-to-br from-emerald-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
-          <div class="flex items-center gap-3 text-emerald-600 mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <span class="font-black text-xs tracking-wider uppercase">Prestataires</span>
-          </div>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Véhicules Prestataires</span>
-              <span class="font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded">
-                {{ dashboardData()?.providerVehicles }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Revenu Partagé</span>
-              <span class="font-bold text-slate-600">45% / 55%</span>
-            </div>
-            <div class="text-[10px] text-slate-400 italic pt-2 border-t border-slate-100">
-              Partenariat externalisé actif
-            </div>
-          </div>
-        </div>
-
-        <!-- Santé de la Flotte -->
-        <div class="bg-gradient-to-br from-red-50/50 to-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
-          <div class="flex items-center gap-3 text-red-600 mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1" />
-            </svg>
-            <span class="font-black text-xs tracking-wider uppercase">Santé Flotte</span>
-          </div>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Véhicules en service</span>
-              <span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                {{ dashboardData()?.activeVehicles }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500 font-medium">Voitures HS / Panne</span>
-              <span class="font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded">
-                {{ dashboardData()?.brokenVehicles }}
-              </span>
-            </div>
-            <!-- Progress Bar -->
-            <div class="pt-2">
-              <div class="w-full bg-slate-100 rounded-full h-2">
-                <div class="bg-emerald-500 h-2 rounded-full" 
-                     [style.width.%]="(dashboardData()?.activeVehicles / (dashboardData()?.activeVehicles + dashboardData()?.brokenVehicles)) * 100">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </div>
-
-    <!-- Row 3: Fuel Consumption & Operational Costs -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      
-      <!-- Fuel & Eco-driving Card -->
-      <div class="chart-container group hover:shadow-lg transition-all duration-300">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h4 class="text-lg font-bold text-slate-800">Carburant & Éco-conduite</h4>
-            <p class="text-xs text-slate-500">Optimisation de la consommation énergétique</p>
+      <!-- Row 3: Fuel Consumption & Operational Costs -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Fuel & Eco-driving Card -->
+        <div class="chart-container group hover:shadow-lg transition-all duration-300">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h4 class="text-lg font-bold text-slate-800">Carburant & Éco-conduite</h4>
+              <p class="text-xs text-slate-500">Optimisation de la consommation énergétique</p>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+              </svg>
+            </div>
           </div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-            </svg>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Consommation Moyenne</span>
+              <p class="text-2xl font-black text-slate-800 mt-1">{{ dashboardData()?.fuelConsumption }} <span class="text-sm font-normal text-slate-500">L / 100km</span></p>
+              <span class="text-[10px] text-emerald-600 font-bold">Excellent score vert</span>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Facturation Carburant</span>
+              <p class="text-2xl font-black text-slate-800 mt-1">{{ dashboardData()?.fuelCosts | number }} <span class="text-xs font-normal text-slate-500">F</span></p>
+              <span class="text-[10px] text-slate-400">Dépenses mensuelles</span>
+            </div>
+          </div>
+          <div class="mt-5 p-3.5 bg-indigo-50/50 rounded-xl flex items-center justify-between text-xs text-indigo-700">
+            <span>🎯 Objectif d'économie de flotte : <strong>-5%</strong> sous 30 jours.</span>
+            <a class="font-bold underline hover:text-indigo-800 cursor-pointer">EcoReport</a>
           </div>
         </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Consommation Moyenne</span>
-            <p class="text-2xl font-black text-slate-800 mt-1">{{ dashboardData()?.fuelConsumption }} <span class="text-sm font-normal text-slate-500">L / 100km</span></p>
-            <span class="text-[10px] text-emerald-600 font-bold">Excellent score vert</span>
+        <!-- Realtime Availability Card -->
+        <div class="chart-container group hover:shadow-lg transition-all duration-300">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h4 class="text-lg font-bold text-slate-800">Disponibilité Immédiate</h4>
+              <p class="text-xs text-slate-500">Capacité de dispatch instantané pour de nouvelles courses</p>
+            </div>
+            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
           </div>
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Facturation Carburant</span>
-            <p class="text-2xl font-black text-slate-800 mt-1">{{ dashboardData()?.fuelCosts | number }} <span class="text-xs font-normal text-slate-500">F</span></p>
-            <span class="text-[10px] text-slate-400">Dépenses mensuelles</span>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Véhicules Libres</span>
+              <p class="text-2xl font-black text-indigo-600 mt-1">{{ dashboardData()?.availableVehiclesCount }} <span class="text-xs font-normal text-slate-500">unités</span></p>
+              <span class="text-[10px] text-slate-400">Prêts au départ</span>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Maintenances en cours</span>
+              <p class="text-2xl font-black text-red-600 mt-1">{{ dashboardData()?.pendingMaintenance }} <span class="text-xs font-normal text-slate-500">véhicules</span></p>
+              <span class="text-[10px] text-red-500 font-medium">Revue d'atelier</span>
+            </div>
           </div>
-        </div>
-
-        <div class="mt-5 p-3.5 bg-indigo-50/50 rounded-xl flex items-center justify-between text-xs text-indigo-700">
-          <span>🎯 Objectif d'économie de flotte : <strong>-5%</strong> sous 30 jours.</span>
-          <a class="font-bold underline hover:text-indigo-800 cursor-pointer">EcoReport</a>
+          <div class="mt-5 p-3.5 bg-amber-50 rounded-xl flex items-center justify-between text-xs text-amber-800">
+            <span>⚠️ Prochain départ programmé : <strong>LT-982-AA</strong> (14h00).</span>
+            <a class="font-bold underline hover:text-amber-900 cursor-pointer">Voir planning</a>
+          </div>
         </div>
       </div>
-
-      <!-- Realtime Availability Card -->
-      <div class="chart-container group hover:shadow-lg transition-all duration-300">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h4 class="text-lg font-bold text-slate-800">Disponibilité Immédiate</h4>
-            <p class="text-xs text-slate-500">Capacité de dispatch instantané pour de nouvelles courses</p>
+      <!-- Row 4: Main Charts Row -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <!-- Revenue Evolution Chart -->
+        <div class="xl:col-span-2 chart-container">
+          <div class="flex justify-between items-center mb-8">
+            <div>
+              <h4 class="text-xl font-bold text-slate-800">Évolution des Recettes</h4>
+              <p class="text-sm text-slate-500">Chiffre d'affaires mensuel consolidé du parc auto</p>
+            </div>
+            <div class="flex gap-2">
+              <span class="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Trésorerie active
+              </span>
+            </div>
           </div>
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
+          @if (revenueChartOptions) {
+            <apx-chart
+              [series]="revenueChartOptions.series!"
+              [chart]="revenueChartOptions.chart!"
+              [xaxis]="revenueChartOptions.xaxis!"
+              [stroke]="revenueChartOptions.stroke!"
+              [fill]="revenueChartOptions.fill!"
+              [colors]="revenueChartOptions.colors!"
+            ></apx-chart>
+          }
         </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Véhicules Libres</span>
-            <p class="text-2xl font-black text-indigo-600 mt-1">{{ dashboardData()?.availableVehiclesCount }} <span class="text-xs font-normal text-slate-500">unités</span></p>
-            <span class="text-[10px] text-slate-400">Prêts au départ</span>
-          </div>
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Maintenances en cours</span>
-            <p class="text-2xl font-black text-red-600 mt-1">{{ dashboardData()?.pendingMaintenance }} <span class="text-xs font-normal text-slate-500">véhicules</span></p>
-            <span class="text-[10px] text-red-500 font-medium">Revue d'atelier</span>
-          </div>
-        </div>
-
-        <div class="mt-5 p-3.5 bg-amber-50 rounded-xl flex items-center justify-between text-xs text-amber-800">
-          <span>⚠️ Prochain départ programmé : <strong>LT-982-AA</strong> (14h00).</span>
-          <a class="font-bold underline hover:text-amber-900 cursor-pointer">Voir planning</a>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Row 4: Main Charts Row -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-      
-      <!-- Revenue Evolution Chart -->
-      <div class="xl:col-span-2 chart-container">
-        <div class="flex justify-between items-center mb-8">
-          <div>
-            <h4 class="text-xl font-bold text-slate-800">Évolution des Recettes</h4>
-            <p class="text-sm text-slate-500">Chiffre d'affaires mensuel consolidé du parc auto</p>
-          </div>
-          <div class="flex gap-2">
-               <span class="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                   <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Trésorerie active
-               </span>
-          </div>
-        </div>
-        <apx-chart
-          *ngIf="revenueChartOptions"
-          [series]="revenueChartOptions.series!"
-          [chart]="revenueChartOptions.chart!"
-          [xaxis]="revenueChartOptions.xaxis!"
-          [stroke]="revenueChartOptions.stroke!"
-          [fill]="revenueChartOptions.fill!"
-          [colors]="revenueChartOptions.colors!"
-        ></apx-chart>
-      </div>
-
-      <!-- Top Drivers List -->
-      <div class="chart-container overflow-hidden">
-        <div class="flex justify-between items-center mb-8">
+        <!-- Top Drivers List -->
+        <div class="chart-container overflow-hidden">
+          <div class="flex justify-between items-center mb-8">
             <h4 class="text-xl font-bold text-slate-800">Performances Chauffeurs</h4>
             <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
             </svg>
-        </div>
-        <div class="space-y-5">
-            <div *ngFor="let driver of dashboardData()?.topPerformers; let i = index" 
-                 class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-md transition-shadow group">
+          </div>
+          <div class="space-y-5">
+            @for (driver of dashboardData()?.topPerformers; track driver; let i = $index) {
+              <div
+                class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-md transition-shadow group">
                 <div class="flex items-center gap-4">
-                    <div class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        #{{ i + 1 }}
-                    </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{{ driver.driverName }}</p>
-                        <p class="text-xs text-slate-400">{{ driver.vehiclePlate }} • {{ driver.tripsCount }} trajets</p>
-                    </div>
+                  <div class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    #{{ i + 1 }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{{ driver.driverName }}</p>
+                    <p class="text-xs text-slate-400">{{ driver.vehiclePlate }} • {{ driver.tripsCount }} trajets</p>
+                  </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm font-black text-indigo-600">{{ driver.revenue | number }} F</p>
-                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Recettes</p>
+                  <p class="text-sm font-black text-indigo-600">{{ driver.revenue | number }} F</p>
+                  <p class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Recettes</p>
                 </div>
-            </div>
-            <div *ngIf="!dashboardData()?.topPerformers?.length" class="text-center py-10">
+              </div>
+            }
+            @if (!dashboardData()?.topPerformers?.length) {
+              <div class="text-center py-10">
                 <p class="text-slate-400 italic">Aucun chauffeur disponible</p>
-            </div>
+              </div>
+            }
+          </div>
         </div>
       </div>
-
-    </div>
-
-    <!-- Row 5: Secondary Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      
-      <!-- Fleet Status Distribution -->
-      <div class="chart-container">
-        <div class="mb-6">
-          <h4 class="text-lg font-bold text-slate-800">Disponibilité Opérationnelle</h4>
-          <p class="text-xs text-slate-500">Distribution par état réel des véhicules en parc</p>
+      <!-- Row 5: Secondary Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Fleet Status Distribution -->
+        <div class="chart-container">
+          <div class="mb-6">
+            <h4 class="text-lg font-bold text-slate-800">Disponibilité Opérationnelle</h4>
+            <p class="text-xs text-slate-500">Distribution par état réel des véhicules en parc</p>
+          </div>
+          @if (fleetChartOptions) {
+            <apx-chart
+              [series]="fleetChartOptions.series!"
+              [chart]="fleetChartOptions.chart!"
+              [labels]="fleetChartOptions.labels!"
+              [colors]="fleetChartOptions.colors!"
+              [legend]="fleetChartOptions.legend!"
+              [plotOptions]="fleetChartOptions.plotOptions!"
+            ></apx-chart>
+          }
         </div>
-        <apx-chart
-          *ngIf="fleetChartOptions"
-          [series]="fleetChartOptions.series!"
-          [chart]="fleetChartOptions.chart!"
-          [labels]="fleetChartOptions.labels!"
-          [colors]="fleetChartOptions.colors!"
-          [legend]="fleetChartOptions.legend!"
-          [plotOptions]="fleetChartOptions.plotOptions!"
-        ></apx-chart>
+        <!-- Service Revenue Distribution -->
+        <div class="chart-container">
+          <div class="mb-6">
+            <h4 class="text-lg font-bold text-slate-800">Chiffre d'Affaires par Activité</h4>
+            <p class="text-xs text-slate-500">Part de contribution financière de chaque pôle de service</p>
+          </div>
+          @if (serviceChartOptions) {
+            <apx-chart
+              [series]="serviceChartOptions.series!"
+              [chart]="serviceChartOptions.chart!"
+              [labels]="serviceChartOptions.labels!"
+              [colors]="serviceChartOptions.colors!"
+              [legend]="serviceChartOptions.legend!"
+            ></apx-chart>
+          }
+        </div>
       </div>
-
-      <!-- Service Revenue Distribution -->
-      <div class="chart-container">
-        <div class="mb-6">
-          <h4 class="text-lg font-bold text-slate-800">Chiffre d'Affaires par Activité</h4>
-          <p class="text-xs text-slate-500">Part de contribution financière de chaque pôle de service</p>
+      <!-- Row 6: Boutique & Gestion du Stock (Super Rich) -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <!-- Boutique Statistics Panel -->
+        <div class="chart-container group hover:shadow-lg transition-all duration-300">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h4 class="text-lg font-bold text-slate-800">Indicateurs Boutique</h4>
+              <p class="text-xs text-slate-500">Statistiques d'inventaire et valeur du stock pièces auto</p>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 114 0v2m-4 0h4m-4 0h4m1 4h3m-9 0h3m-3-4h3m4 0h3" />
+              </svg>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Références en Stock</span>
+                <p class="text-xl font-black text-slate-800 mt-0.5">{{ dashboardData()?.storeTotalItems | number }} <span class="text-xs font-normal text-slate-500">articles</span></p>
+              </div>
+              <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg font-bold">Actif</span>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Valeur Estimée Stock</span>
+                <p class="text-xl font-black text-slate-800 mt-0.5">{{ dashboardData()?.storeStockValue | number }} <span class="text-xs font-normal text-slate-500">FCFA</span></p>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold">Valorisation</span>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ruptures Critiques</span>
+                <p class="text-xl font-black text-red-600 mt-0.5">{{ dashboardData()?.storeOutOfStock }} <span class="text-xs font-normal text-slate-500">pièces</span></p>
+              </div>
+              @if (dashboardData()?.storeOutOfStock > 0) {
+                <span class="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-lg font-bold animate-pulse">
+                  Réapprovisionner
+                </span>
+              }
+            </div>
+          </div>
         </div>
-        <apx-chart
-          *ngIf="serviceChartOptions"
-          [series]="serviceChartOptions.series!"
-          [chart]="serviceChartOptions.chart!"
-          [labels]="serviceChartOptions.labels!"
-          [colors]="serviceChartOptions.colors!"
-          [legend]="serviceChartOptions.legend!"
-        ></apx-chart>
-      </div>
-
-    </div>
-
-    <!-- Row 6: Boutique & Gestion du Stock (Super Rich) -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-      
-      <!-- Boutique Statistics Panel -->
-      <div class="chart-container group hover:shadow-lg transition-all duration-300">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h4 class="text-lg font-bold text-slate-800">Indicateurs Boutique</h4>
-            <p class="text-xs text-slate-500">Statistiques d'inventaire et valeur du stock pièces auto</p>
-          </div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 114 0v2m-4 0h4m-4 0h4m1 4h3m-9 0h3m-3-4h3m4 0h3" />
-            </svg>
-          </div>
-        </div>
-
-        <div class="space-y-4">
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+        <!-- Boutique Category Stock Distribution Chart -->
+        <div class="xl:col-span-2 chart-container">
+          <div class="flex justify-between items-center mb-6">
             <div>
-              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Références en Stock</span>
-              <p class="text-xl font-black text-slate-800 mt-0.5">{{ dashboardData()?.storeTotalItems | number }} <span class="text-xs font-normal text-slate-500">articles</span></p>
+              <h4 class="text-lg font-bold text-slate-800">Volume de Stock par Catégorie</h4>
+              <p class="text-xs text-slate-500">Répartition des pièces de rechange et équipements disponibles</p>
             </div>
-            <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg font-bold">Actif</span>
-          </div>
-
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
-            <div>
-              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Valeur Estimée Stock</span>
-              <p class="text-xl font-black text-slate-800 mt-0.5">{{ dashboardData()?.storeStockValue | number }} <span class="text-xs font-normal text-slate-500">FCFA</span></p>
-            </div>
-            <span class="text-[10px] text-slate-400 font-semibold">Valorisation</span>
-          </div>
-
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
-            <div>
-              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ruptures Critiques</span>
-              <p class="text-xl font-black text-red-600 mt-0.5">{{ dashboardData()?.storeOutOfStock }} <span class="text-xs font-normal text-slate-500">pièces</span></p>
-            </div>
-            <span class="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-lg font-bold animate-pulse" *ngIf="dashboardData()?.storeOutOfStock > 0">
-              Réapprovisionner
+            <span class="text-xs bg-slate-50 text-slate-500 border border-slate-200 px-3 py-1 rounded-full font-semibold">
+              Bilan Graphique
             </span>
           </div>
+          @if (boutiqueChartOptions) {
+            <apx-chart
+              [series]="boutiqueChartOptions.series!"
+              [chart]="boutiqueChartOptions.chart!"
+              [xaxis]="boutiqueChartOptions.xaxis!"
+              [colors]="boutiqueChartOptions.colors!"
+              [plotOptions]="boutiqueChartOptions.plotOptions!"
+              [grid]="boutiqueChartOptions.grid!"
+              [dataLabels]="boutiqueChartOptions.dataLabels!"
+            ></apx-chart>
+          }
         </div>
       </div>
-
-      <!-- Boutique Category Stock Distribution Chart -->
-      <div class="xl:col-span-2 chart-container">
-        <div class="flex justify-between items-center mb-6">
-          <div>
-            <h4 class="text-lg font-bold text-slate-800">Volume de Stock par Catégorie</h4>
-            <p class="text-xs text-slate-500">Répartition des pièces de rechange et équipements disponibles</p>
-          </div>
-          <span class="text-xs bg-slate-50 text-slate-500 border border-slate-200 px-3 py-1 rounded-full font-semibold">
-            Bilan Graphique
-          </span>
-        </div>
-        <apx-chart
-          *ngIf="boutiqueChartOptions"
-          [series]="boutiqueChartOptions.series!"
-          [chart]="boutiqueChartOptions.chart!"
-          [xaxis]="boutiqueChartOptions.xaxis!"
-          [colors]="boutiqueChartOptions.colors!"
-          [plotOptions]="boutiqueChartOptions.plotOptions!"
-          [grid]="boutiqueChartOptions.grid!"
-          [dataLabels]="boutiqueChartOptions.dataLabels!"
-        ></apx-chart>
-      </div>
-
-    </div>
-
-    <!-- Action Callout -->
-    <div class="relative group">
+      <!-- Action Callout -->
+      <div class="relative group">
         <div class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
         <div class="relative bg-white border border-slate-200 rounded-3xl p-10 shadow-sm overflow-hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-10">
-                <div class="flex-1">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-widest mb-4">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Intelligence Transport
-                    </div>
-                    <h3 class="text-3xl font-black text-slate-900 leading-tight">Suivi temps réel & Géolocalisation</h3>
-                    <p class="text-slate-500 mt-4 text-lg">Visualisez la position de vos taxis en temps réel et optimisez l'affectation des chauffeurs sur les zones à forte demande.</p>
-                </div>
-                 <div class="flex gap-4">
-                    <a routerLink="/map-tracking" class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 hover:shadow-xl transition-all flex items-center gap-3 cursor-pointer">
-                        Activer Live Tracking
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
+          <div class="flex flex-col md:flex-row justify-between items-center gap-10">
+            <div class="flex-1">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-widest mb-4">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Intelligence Transport
+              </div>
+              <h3 class="text-3xl font-black text-slate-900 leading-tight">Suivi temps réel & Géolocalisation</h3>
+              <p class="text-slate-500 mt-4 text-lg">Visualisez la position de vos taxis en temps réel et optimisez l'affectation des chauffeurs sur les zones à forte demande.</p>
             </div>
-            <!-- Abstract shapes -->
-            <div class="absolute -right-10 -bottom-10 h-40 w-40 bg-indigo-50 rounded-full opacity-50"></div>
+            <div class="flex gap-4">
+              <a routerLink="/map-tracking" class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 hover:shadow-xl transition-all flex items-center gap-3 cursor-pointer">
+                Activer Live Tracking
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <!-- Abstract shapes -->
+          <div class="absolute -right-10 -bottom-10 h-40 w-40 bg-indigo-50 rounded-full opacity-50"></div>
         </div>
+      </div>
     </div>
-
-  </div>
+  }
 
   <!-- Floating Live Map Tracking Button -->
   <div class="fixed bottom-6 right-6 z-50">
-    <a routerLink="/map-tracking" 
-       class="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-full shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300 group font-bold tracking-wide cursor-pointer">
-      
+    <a routerLink="/map-tracking"
+      class="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-full shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300 group font-bold tracking-wide cursor-pointer">
+
       <!-- Pulsing radar icon -->
       <span class="relative flex h-4 w-4">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>

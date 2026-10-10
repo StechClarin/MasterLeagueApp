@@ -42,13 +42,27 @@ class RouterView(APIView):
             return (JSONRenderer(), JSONRenderer().media_type)
         return super().perform_content_negotiation(request, force)
 
+    FORBIDDEN_METHODS = {
+        'dispatch', 'initial', 'check_permissions', 'check_object_permissions',
+        'determine_version', 'get_serializer', 'get_serializer_class',
+        'get_serializer_instance', 'get_read_serializer_instance',
+        'success_response', 'error_response', 'check_membership_permissions',
+        'perform_content_negotiation', 'options', 'handle_exception',
+        'initialize_request', 'finalize_response', 'get_controller_class',
+        'get_app_name_from_model', 'post', 'get', 'put', 'patch', 'delete', 'head'
+    }
+
+    def is_valid_action(self, controller_instance, method_name):
+        if not method_name or method_name.startswith('_') or method_name in self.FORBIDDEN_METHODS:
+            return False
+        method = getattr(controller_instance, method_name, None)
+        return callable(method)
+
     def post(self, request, model_name, method_name, pk=None):
         # 1. Trouver la classe du contrôleur
         try:
             controller_class = self.get_controller_class(model_name)
         except (ImportError, AttributeError, LookupError) as e:
-            # Si on ne trouve pas la classe ou le module, c'est une 404.
-            # Mais on le fait AVANT d'instancier pour ne pas masquer les bugs internes.
             raise NotFound(f"Contrôleur pour '{model_name}' introuvable. Erreur: {str(e)}")
 
         # 2. Instancier et Vérifier la méthode
@@ -62,21 +76,19 @@ class RouterView(APIView):
         # puisse injecter le contexte (Set Context) avant l'exécution de l'action.
         controller_instance.initial(request)
         
-        if not hasattr(controller_instance, method_name):
+        if not self.is_valid_action(controller_instance, method_name):
             return Response(
-                {"detail": f"Méthode '{method_name}' non trouvée dans '{model_name}'."}, 
+                {"detail": f"Action ou méthode '{method_name}' non autorisée sur '{model_name}'."}, 
                 status=status.HTTP_405_METHOD_NOT_ALLOWED
             )
 
         method = getattr(controller_instance, method_name)
 
         # 3. Vérifier les permissions du contrôleur enfant
-        # (Le BaseController a ses propres checks, mais on force le check ici aussi)
         self.check_permissions(request)
         controller_instance.check_permissions(request)
 
         # 4. Exécuter
-        # (Si ça plante ici, c'est une erreur 500 normale, on ne l'attrape pas)
         if pk:
             return method(request, pk)
         return method(request)
@@ -102,9 +114,9 @@ class RouterView(APIView):
         # [CRITICAL] On doit appeler initial() pour injecter le contexte (Establishment/User)
         controller_instance.initial(request)
         
-        if not hasattr(controller_instance, method_name):
+        if not self.is_valid_action(controller_instance, method_name):
             return Response(
-                {"detail": f"Méthode '{method_name}' non trouvée dans '{model_name}'."}, 
+                {"detail": f"Action ou méthode '{method_name}' non autorisée sur '{model_name}'."}, 
                 status=status.HTTP_405_METHOD_NOT_ALLOWED
             )
 
@@ -118,6 +130,7 @@ class RouterView(APIView):
         if pk:
             return method(request, pk)
         return method(request)
+
 
 
     def get_controller_class(self, model_name):

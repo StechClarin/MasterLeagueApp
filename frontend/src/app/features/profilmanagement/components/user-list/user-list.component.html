@@ -4,13 +4,13 @@
   <!-- Header Actions -->
   <ng-container header-actions>
     <app-ui-toolbar [searchControl]="searchControl" placeholder="Rechercher un utilisateur...">
-      <button *appHasPermission="'add_user'" (click)="openModal()"
-        class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 active:bg-indigo-800 focus:ring-4 focus:ring-indigo-500/30 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center font-medium text-sm transform hover:-translate-y-0.5">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-        </svg>
-        Nouvel Utilisateur
-      </button>
+      <app-ui-button
+        *appHasPermission="'add_user'"
+        label="Nouvel Utilisateur"
+        icon="plus"
+        variant="primary"
+        (btnClick)="openModal()">
+      </app-ui-button>
     </app-ui-toolbar>
   </ng-container>
 
@@ -18,19 +18,12 @@
   <ng-container filters>
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div class="flex items-center gap-2">
-        <button (click)="toggleFilters()"
-          class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-gray-200 transition-all shadow-sm flex items-center justify-center font-medium text-sm group">
-          <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-600" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          Filtres
-          <svg class="w-4 h-4 ml-2 text-gray-400 transform transition-transform duration-200"
-            [class.rotate-180]="isFiltersOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+        <app-ui-button
+          label="Filtres"
+          icon="filter"
+          variant="secondary"
+          (btnClick)="toggleFilters()">
+        </app-ui-button>
       </div>
 
       <div class="flex items-center gap-3">
@@ -61,206 +54,192 @@
       <div [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         <div class="space-y-1.5">
           <label for="filter-email"
-            class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
+          class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
           <input type="text" id="filter-email" formControlName="email" placeholder="ex: @company.com"
             class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
-        </div>
+          </div>
 
-        <div class="space-y-1.5">
-          <label for="filter-role"
+          <div class="space-y-1.5">
+            <label for="filter-role"
             class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Rôle</label>
-          <div class="relative">
-            <select id="filter-role" formControlName="role" (change)="dispatchFilters()"
-              class="block w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
-              <option value="">Tous les rôles</option>
-              <option *ngFor="let role of roles$ | async" [value]="role.name">{{ role.name }}</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
+            <div class="relative">
+              <select id="filter-role" formControlName="role" (change)="dispatchFilters()"
+                class="block w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm appearance-none bg-no-repeat bg-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+                <option value="">Tous les rôles</option>
+                @for (role of roles$ | async; track role) {
+                  <option [value]="role.name">{{ role.name }}</option>
+                }
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-1.5 md:col-span-3">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 mb-2">Statut</label>
+            <div class="flex items-center gap-6">
+              <label class="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" formControlName="status_active" (change)="dispatchFilters()"
+                  class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                <span class="text-sm text-gray-700 group-hover:text-gray-900">Actif</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" formControlName="status_inactive" (change)="dispatchFilters()"
+                  class="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500 cursor-pointer">
+                <span class="text-sm text-gray-700 group-hover:text-gray-900">Inactif</span>
+              </label>
             </div>
           </div>
         </div>
+      </app-ui-filter-panel>
+    </ng-container>
 
-        <div class="space-y-1.5 md:col-span-3">
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 mb-2">Statut</label>
-          <div class="flex items-center gap-6">
-            <label class="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" formControlName="status_active" (change)="dispatchFilters()"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
-              <span class="text-sm text-gray-700 group-hover:text-gray-900">Actif</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" formControlName="status_inactive" (change)="dispatchFilters()"
-                class="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500 cursor-pointer">
-              <span class="text-sm text-gray-700 group-hover:text-gray-900">Inactif</span>
-            </label>
+    <!-- Table -->
+    <ng-container table>
+      <app-ui-table [data]="(items$ | async) || []" [columns]="tableColumns" [actionsTemplate]="actionsCell">
+      </app-ui-table>
+
+      <!-- Templates for Custom Columns -->
+      <ng-template #userCell let-user>
+        <div class="flex items-center">
+          <div class="h-11 w-11 flex-shrink-0">
+            <app-ui-avatar [name]="user.username" [photoUrl]="user.photo"></app-ui-avatar>
+          </div>
+          <div class="ml-4">
+            <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{{
+            user.username }}</div>
+            <div class="text-sm text-gray-500">{{ user.email }}</div>
           </div>
         </div>
-      </div>
-    </app-ui-filter-panel>
-  </ng-container>
+      </ng-template>
 
-  <!-- Table -->
-  <ng-container table>
-    <app-ui-table [data]="(items$ | async) || []" [columns]="tableColumns" [actionsTemplate]="actionsCell">
-    </app-ui-table>
-
-    <!-- Templates for Custom Columns -->
-    <ng-template #userCell let-user>
-      <div class="flex items-center">
-        <div class="h-11 w-11 flex-shrink-0">
-          <app-ui-avatar [name]="user.username" [photoUrl]="user.photo"></app-ui-avatar>
-        </div>
-        <div class="ml-4">
-          <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{{
-            user.username }}</div>
-          <div class="text-sm text-gray-500">{{ user.email }}</div>
-        </div>
-      </div>
-    </ng-template>
-
-    <ng-template #roleCell let-user>
-      <div class="flex items-center">
+      <ng-template #roleCell let-user>
+        <div class="flex items-center">
         <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full border items-center gap-1.5" [ngClass]="{
                 'bg-purple-50 text-purple-700 border-purple-200': user.roles?.[0]?.name === 'Admin',
                 'bg-blue-50 text-blue-700 border-blue-200': user.roles?.[0]?.name !== 'Admin'
             }">
-          <span class="w-1.5 h-1.5 rounded-full"
+            <span class="w-1.5 h-1.5 rounded-full"
             [ngClass]="user.roles?.[0]?.name === 'Admin' ? 'bg-purple-500' : 'bg-blue-500'"></span>
-          {{ (user.roles && user.roles.length > 0) ? user.roles[0].name : 'Aucun' }}
-        </span>
+            {{ (user.roles && user.roles.length > 0) ? user.roles[0].name : 'Aucun' }}
+          </span>
 
-        <span *ngIf="user.roles && user.roles.length > 1"
-          class="ml-2 h-6 w-6 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center border border-gray-200 cursor-help"
-          title="Plus d'autres rôles">
-          +{{ user.roles.length - 1 }}
-        </span>
-      </div>
-    </ng-template>
-
-    <ng-template #statusCell let-user>
-      <app-ui-status-badge [isActive]="user.isActive"></app-ui-status-badge>
-    </ng-template>
-
-    <ng-template #dateCell let-user>
-      {{ user.dateJoined | date:'dd MMM yyyy' }}
-    </ng-template>
-
-    <ng-template #actionsCell let-user>
-      <app-ui-dropdown [isOpen]="activeMenuId() === user.id" direction="horizontal"
-        (isOpenChange)="$event ? toggleMenu(user.id) : closeMenu()">
-
-        <!-- Trigger -->
-        <button trigger
-          class="bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
-          [ngClass]="{'ring-4 ring-indigo-500/30': activeMenuId() === user.id}">
-          <span class="sr-only">Options</span>
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
-            </path>
-          </svg>
-        </button>
-
-        <div menu class="flex items-center gap-1">
-
-          <button *appHasPermission="'change_user'" (click)="onEdit(user)"
-            class="p-2 rounded-full text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors relative group/btn"
-            title="Modifier">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-              </path>
-            </svg>
-          </button>
-
-          <button (click)="onDetails(user)"
-            class="p-2 rounded-full text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors relative group/btn"
-            title="Détails">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-              </path>
-            </svg>
-          </button>
-
-          <div *ngIf="permissionService.hasPermission('change_user') || permissionService.hasPermission('delete_user')" class="w-px h-6 bg-gray-200 mx-1"></div>
-
-          <button *appHasPermission="'change_user'" (click)="toggleStatus(user); closeMenu()"
-            class="p-2 rounded-full transition-colors relative group/btn"
-            [title]="user.isActive ? 'Désactiver' : 'Activer'" [class.text-red-500]="user.isActive"
-            [class.hover:bg-red-50]="user.isActive" [class.text-green-500]="!user.isActive"
-            [class.hover:bg-green-50]="!user.isActive">
-            <svg *ngIf="user.isActive" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636">
-              </path>
-            </svg>
-            <svg *ngIf="!user.isActive" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </button>
-
-          <button *appHasPermission="'delete_user'" (click)="onDelete(user)"
-            class="p-2 rounded-full text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors relative group/btn"
-            title="Supprimer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-              </path>
-            </svg>
-          </button>
+          @if (user.roles && user.roles.length > 1) {
+            <span
+              class="ml-2 h-6 w-6 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center border border-gray-200 cursor-help"
+              title="Plus d'autres rôles">
+              +{{ user.roles.length - 1 }}
+            </span>
+          }
         </div>
-      </app-ui-dropdown>
-    </ng-template>
-  </ng-container>
+      </ng-template>
 
-  <!-- Empty Actions -->
-  <ng-container empty-actions>
-    <button (click)="openModal()"
-      class="mt-6 px-5 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
-      Créer un utilisateur
-    </button>
-  </ng-container>
+      <ng-template #statusCell let-user>
+        <app-ui-status-badge [isActive]="user.isActive"></app-ui-status-badge>
+      </ng-template>
 
-  <!-- Pagination -->
-  <ng-container pagination>
-    <div class="mt-2">
-      <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
+      <ng-template #dateCell let-user>
+        {{ user.dateJoined | date:'dd MMM yyyy' }}
+      </ng-template>
+
+      <ng-template #actionsCell let-user>
+        <app-ui-dropdown [isOpen]="activeMenuId() === user.id" direction="horizontal"
+          (isOpenChange)="$event ? toggleMenu(user.id) : closeMenu()">
+
+          <!-- Trigger -->
+          <app-ui-button trigger
+            variant="primary"
+            shape="circle"
+            size="md"
+            icon="hamburger"
+            [activeIcon]="'cross'"
+            [isActive]="activeMenuId() === user.id">
+          </app-ui-button>
+
+          <div menu class="flex items-center gap-1">
+
+            <app-ui-button *appHasPermission="'change_user'"
+              variant="ghost" shape="circle" size="sm" icon="edit"
+              (btnClick)="onEdit(user)" title="Modifier">
+            </app-ui-button>
+
+            <app-ui-button
+              variant="ghost" shape="circle" size="sm" icon="eye"
+              (btnClick)="onDetails(user)" title="Détails">
+            </app-ui-button>
+
+            @if (permissionService.hasPermission('change_user') || permissionService.hasPermission('delete_user')) {
+              <div class="w-px h-6 bg-gray-200 mx-1"></div>
+            }
+
+            <app-ui-button *appHasPermission="'change_user'"
+              variant="ghost" shape="circle" size="sm"
+              [icon]="user.isActive ? 'cross' : 'check'"
+              [customClass]="user.isActive ? 'text-red-500 hover:bg-red-50' : 'text-green-500 hover:bg-green-50'"
+              (btnClick)="toggleStatus(user); closeMenu()"
+              [title]="user.isActive ? 'Désactiver' : 'Activer'">
+            </app-ui-button>
+
+            <app-ui-button *appHasPermission="'delete_user'"
+              variant="ghost" shape="circle" size="sm" icon="trash"
+              customClass="text-red-500 hover:bg-red-50 hover:text-red-700"
+              (btnClick)="onDelete(user)" title="Supprimer">
+            </app-ui-button>
+          </div>
+        </app-ui-dropdown>
+      </ng-template>
+    </ng-container>
+
+    <!-- Empty Actions -->
+    <ng-container empty-actions>
+      <app-ui-button
+        label="Créer un utilisateur"
+        icon="plus"
+        variant="info"
+        (btnClick)="openModal()">
+      </app-ui-button>
+    </ng-container>
+
+    <!-- Pagination -->
+    <ng-container pagination>
+      <div class="mt-2">
+        <app-ui-pagination [currentPage]="currentPage()" [pageSize]="pageSize()" [totalCount]="totalCount()"
         [numPages]="numPages()" (prev)="prevPage()" (next)="nextPage()" (goTo)="goToPage($event)"></app-ui-pagination>
-    </div>
-  </ng-container>
+      </div>
+    </ng-container>
 
-  <!-- Modals -->
-  <ng-container modals>
-    <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
-      <ng-container [ngSwitch]="modalMode()">
+    <!-- Modals -->
+    <ng-container modals>
+      <app-ui-modal [isOpen]="isModalOpen() && modalMode() !== 'delete'" (close)="closeModal()">
+        @switch (modalMode()) {
+          <!-- Mode Détail -->
+          @case ('detail') {
+            <app-user-detail [user]="selectedItem()" (close)="closeModal()"></app-user-detail>
+          }
+          <!-- Mode Création / Édition -->
+          @default {
+            <app-user-form [user]="selectedItem()" (cancel)="closeModal()"
+            (success)="onSave()"></app-user-form>
+          }
+        }
+      </app-ui-modal>
 
-        <!-- Mode Détail -->
-        <app-user-detail *ngSwitchCase="'detail'" [user]="selectedItem()" (close)="closeModal()"></app-user-detail>
+      <!-- Mode Suppression (outside app-ui-modal to prevent transform/overflow clipping) -->
+      @if (isModalOpen() && modalMode() === 'delete') {
+        <app-ui-confirm-modal title="Confirmer la suppression"
+          [message]="'Êtes-vous sûr de vouloir supprimer l\'utilisateur ' + selectedItem()?.username + ' ? Cette action est irréversible.'"
+          confirmLabel="Supprimer" cancelLabel="Annuler" type="danger" (confirm)="confirmDelete()"
+          (cancel)="closeModal()">
+        </app-ui-confirm-modal>
+      }
 
-        <!-- Mode Création / Édition -->
-        <app-user-form *ngSwitchDefault [user]="selectedItem()" (cancel)="closeModal()"
-          (success)="onSave()"></app-user-form>
+      <!-- Modale d'Export -->
+      <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"
+        (confirm)="confirmExport($event)">
+      </app-ui-export-modal>
+    </ng-container>
 
-      </ng-container>
-    </app-ui-modal>
-
-    <!-- Mode Suppression (outside app-ui-modal to prevent transform/overflow clipping) -->
-    <app-ui-confirm-modal *ngIf="isModalOpen() && modalMode() === 'delete'" title="Confirmer la suppression"
-      [message]="'Êtes-vous sûr de vouloir supprimer l\'utilisateur ' + selectedItem()?.username + ' ? Cette action est irréversible.'"
-      confirmLabel="Supprimer" cancelLabel="Annuler" type="danger" (confirm)="confirmDelete()"
-      (cancel)="closeModal()">
-    </app-ui-confirm-modal>
-
-    <!-- Modale d'Export -->
-    <app-ui-export-modal [isOpen]="showExportModal()" [isExporting]="isExporting()" (close)="closeExportModal()"
-      (confirm)="confirmExport($event)">
-    </app-ui-export-modal>
-  </ng-container>
-
-</app-ui-list-page>
+  </app-ui-list-page>

@@ -28,25 +28,25 @@ import { CustomValidators } from '@core/validators/custom-validators';
       [submitLabel]="user ? 'Modifier' : 'Créer'"
       (submitForm)="onSubmit()"
       (cancel)="onCancel()">
-
+    
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        
+    
         <div class="col-span-1 md:col-span-2 flex justify-center mb-4">
-            <app-ui-media-input
-                formControlName="photo"
-                shape="circle"
-                size="md"
-                label="Photo de profil"
-            ></app-ui-media-input>
+          <app-ui-media-input
+            formControlName="photo"
+            shape="circle"
+            size="md"
+            label="Photo de profil"
+          ></app-ui-media-input>
         </div>
-
+    
         <app-ui-input
           label="Nom d'utilisateur"
           [control]="getControl('username')"
           [required]="true"
           placeholder="ex: jdupont"
         ></app-ui-input>
-
+    
         <app-ui-input
           label="Email professionnel"
           type="email"
@@ -54,43 +54,45 @@ import { CustomValidators } from '@core/validators/custom-validators';
           [required]="true"
           placeholder="jean.dupont@company.com"
         ></app-ui-input>
-
+    
       </div>
-
+    
       <!-- Sélection du Rôle -->
       <div class="mb-6">
-          <app-ui-multi-select
-              label="Rôles"
-              formControlName="roles"
-              [options]="(roles$ | async) || []"
-              bindLabel="name"
-              bindValue="id"
-              placeholder="Sélectionner les rôles"
-          ></app-ui-multi-select>
-          <div *ngIf="form.get('roles')?.invalid && form.get('roles')?.touched" class="mt-1 text-sm text-red-600">
-              Au moins un rôle est requis.
+        <app-ui-multi-select
+          label="Rôles"
+          formControlName="roles"
+          [options]="(roles$ | async) || []"
+          bindLabel="name"
+          bindValue="id"
+          placeholder="Sélectionner les rôles"
+        ></app-ui-multi-select>
+        @if (form.get('roles')?.invalid && form.get('roles')?.touched) {
+          <div class="mt-1 text-sm text-red-600">
+            Au moins un rôle est requis.
           </div>
+        }
       </div>
-
+    
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <app-ui-input
-            label="Mot de passe"
-            type="password"
-            [control]="getControl('password')"
-            [required]="!user"
-          ></app-ui-input>
-
-          <app-ui-input
-            label="Confirmation"
-            type="password"
-            [control]="getControl('password2')"
-            [required]="!user"
-            errorMessage="Les mots de passe ne correspondent pas."
-          ></app-ui-input>
+        <app-ui-input
+          label="Mot de passe"
+          type="password"
+          [control]="getControl('password')"
+          [required]="!user"
+        ></app-ui-input>
+    
+        <app-ui-input
+          label="Confirmation"
+          type="password"
+          [control]="getControl('password2')"
+          [required]="!user"
+          errorMessage="Les mots de passe ne correspondent pas."
+        ></app-ui-input>
       </div>
-
+    
     </app-ui-form>
-  `
+    `
 })
 export class UserFormComponent extends BaseModalFormComponent implements OnInit, OnChanges {
   // fb is inherited

@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal, effect, ElementRef, ViewC
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 interface Vehicle {
   id: string;
@@ -21,13 +22,13 @@ interface Vehicle {
 @Component({
   selector: 'app-map-tracking',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, UiButtonComponent],
   template: `
     <div class="h-[calc(100vh-80px)] flex bg-[#0a0f1d] text-slate-100 font-sans overflow-hidden">
-      
+    
       <!-- Sidebar Control Panel -->
       <aside class="w-80 bg-[#070b19] border-r border-slate-800/60 flex flex-col z-10 shrink-0">
-        
+    
         <!-- Search & Filter Area -->
         <div class="p-6 border-b border-slate-800/60 space-y-4">
           <div class="flex items-center justify-between">
@@ -37,61 +38,67 @@ interface Vehicle {
               </svg>
               Live Tracking
             </h2>
-            <button (click)="goBack()" class="text-xs text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 px-2 py-1 rounded transition-colors font-semibold">
-              Retour
-            </button>
+            <app-ui-button
+              label="Retour"
+              variant="ghost"
+              size="sm"
+              icon="back"
+              customClass="!text-slate-400 hover:!text-white hover:!bg-slate-800 !py-1 !px-2"
+              (btnClick)="goBack()">
+            </app-ui-button>
           </div>
-
+    
           <!-- Search Input -->
           <div class="relative group">
             <svg class="w-4 h-4 absolute left-3 top-3 text-slate-500 group-focus-within:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input 
-              [(ngModel)]="searchQuery" 
+            <input
+              [(ngModel)]="searchQuery"
               (ngModelChange)="filterVehicles()"
-              type="text" 
-              placeholder="Chauffeur, immatriculation..." 
+              type="text"
+              placeholder="Chauffeur, immatriculation..."
               class="w-full pl-9 pr-4 py-2 bg-slate-800/60 border border-slate-700/50 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
-            />
+              />
           </div>
         </div>
-
+    
         <!-- Vehicles List -->
         <div class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
-          <div 
-            *ngFor="let vehicle of filteredVehicles"
-            (click)="selectVehicle(vehicle)"
-            [ngClass]="selectedVehicleId === vehicle.id ? 'border-emerald-500 bg-slate-800/40' : ''"
-            class="p-4 bg-slate-800/20 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/20 rounded-2xl cursor-pointer transition-all duration-300 flex items-start gap-3 relative group overflow-hidden"
-          >
-            <!-- Badge Color Indicator -->
-            <div class="w-1.5 absolute left-0 top-0 bottom-0" [ngClass]="vehicle.colorClass"></div>
-            
-            <img [src]="vehicle.driverAvatar" alt="Driver" class="h-10 w-10 rounded-xl object-cover shrink-0 border border-slate-700" />
-            
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between gap-2">
-                <p class="text-xs font-bold text-white truncate">{{ vehicle.driverName }}</p>
-                <span class="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded text-white shadow-sm" [ngClass]="vehicle.colorClass">
-                  {{ vehicle.statusLabel }}
-                </span>
-              </div>
-              <p class="text-[10px] text-slate-400 mt-0.5 truncate">{{ vehicle.vehicleModel }} • {{ vehicle.vehiclePlate }}</p>
-              <div class="flex items-center gap-1 mt-1 text-[10px] text-slate-500">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span class="truncate">Client: {{ vehicle.clientName }}</span>
+          @for (vehicle of filteredVehicles; track vehicle) {
+            <div
+              (click)="selectVehicle(vehicle)"
+              [ngClass]="selectedVehicleId === vehicle.id ? 'border-emerald-500 bg-slate-800/40' : ''"
+              class="p-4 bg-slate-800/20 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/20 rounded-2xl cursor-pointer transition-all duration-300 flex items-start gap-3 relative group overflow-hidden"
+              >
+              <!-- Badge Color Indicator -->
+              <div class="w-1.5 absolute left-0 top-0 bottom-0" [ngClass]="vehicle.colorClass"></div>
+              <img [src]="vehicle.driverAvatar" alt="Driver" class="h-10 w-10 rounded-xl object-cover shrink-0 border border-slate-700" />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-xs font-bold text-white truncate">{{ vehicle.driverName }}</p>
+                  <span class="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded text-white shadow-sm" [ngClass]="vehicle.colorClass">
+                    {{ vehicle.statusLabel }}
+                  </span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5 truncate">{{ vehicle.vehicleModel }} • {{ vehicle.vehiclePlate }}</p>
+                <div class="flex items-center gap-1 mt-1 text-[10px] text-slate-500">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span class="truncate">Client: {{ vehicle.clientName }}</span>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div *ngIf="filteredVehicles.length === 0" class="text-center py-12">
-            <p class="text-slate-500 text-xs italic">Aucun véhicule trouvé</p>
-          </div>
+          }
+    
+          @if (filteredVehicles.length === 0) {
+            <div class="text-center py-12">
+              <p class="text-slate-500 text-xs italic">Aucun véhicule trouvé</p>
+            </div>
+          }
         </div>
-
+    
         <!-- Quick Status Map Legend -->
         <div class="p-6 bg-[#04060c] border-t border-slate-800/60 space-y-2 text-[10px]">
           <p class="font-bold text-slate-400 uppercase tracking-widest mb-3">Légende Statuts</p>
@@ -104,13 +111,13 @@ interface Vehicle {
             <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-slate-500 rounded-full"></span> Hors Ligne</div>
           </div>
         </div>
-
+    
       </aside>
-
+    
       <!-- Map Container -->
       <div class="flex-1 relative bg-[#070b19]">
         <div id="map-container" class="absolute inset-0 z-0"></div>
-
+    
         <!-- Glassmorphic Map Control Overlay (Floating Indicator) -->
         <div class="absolute top-6 left-6 z-10 p-4 bg-[#070b19]/80 backdrop-blur-md border border-slate-700/40 rounded-2xl shadow-xl flex items-center gap-4 max-w-xs animate-in">
           <div class="h-10 w-10 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center animate-pulse">
@@ -124,9 +131,9 @@ interface Vehicle {
           </div>
         </div>
       </div>
-
+    
     </div>
-  `,
+    `,
   styles: [`
     #map-container {
       width: 100%;

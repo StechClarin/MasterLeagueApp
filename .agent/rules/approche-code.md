@@ -46,7 +46,7 @@ Pour toute tâche > 1 fichier, annonce :
 | `urls.py` manuels par app | Routing auto via `RouterController` |
 | `python manage.py <cmd>` | `./snake <cmd>` |
 | `FileField` éparpillés | GED `apps.documents` (GenericForeignKey) |
-| Query liste non paginée | `get_paginated_type()` + `paginate_queryset()` |
+| Query liste non paginée | `PaginatedType[T]` + `paginate_queryset()` |
 
 **Commandes canoniques :**
 - Scaffold : `./snake craft scaffold <Model> <App>`

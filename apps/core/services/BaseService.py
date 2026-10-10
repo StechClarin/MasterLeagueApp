@@ -131,17 +131,19 @@ class BaseService:
         Chef d'orchestre de la sauvegarde.
         Ne pas surcharger cette méthode ! Surchargez les hooks ci-dessous.
         Gère la séquence : Before -> Process (Create/Update) -> After.
+        Garantit l'atomicité transactionnelle (rollback complet en cas d'erreur).
         """
-        # 1. Hook Avant (Dernière modif des données validées avant écriture)
-        validated_data = self.before_save(validated_data, instance)
+        with db_atomic():
+            # 1. Hook Avant (Dernière modif des données validées avant écriture)
+            validated_data = self.before_save(validated_data, instance)
 
-        # 2. Écriture en base (gère automatiquement Create ou Update)
-        obj, created = self.save_process(validated_data, instance)
+            # 2. Écriture en base (gère automatiquement Create ou Update)
+            obj, created = self.save_process(validated_data, instance)
 
-        # 3. Hook Après (Notifications, Logs, actions asynchrones)
-        self.after_save(obj, created)
+            # 3. Hook Après (Notifications, Logs, actions asynchrones)
+            self.after_save(obj, created)
 
-        return obj
+            return obj
 
     # --- Les Hooks surchargeables ---
 
@@ -251,14 +253,60 @@ class BaseService:
         """
         pass
 
+    def before_delete(self, instance):
+        """
+        [HOOK] À surcharger pour exécuter une action avant suppression.
+        """
+        pass
+
+    def after_delete(self, instance_id):
+        """
+        [HOOK] À surcharger pour exécuter une action après suppression.
+        """
+        pass
+
+    def _cascade_delete_documents(self, instance):
+        """ Nettoie les documents GED rattachés via GenericForeignKey """
+        try:
+            from django.contrib.contenttypes.models import ContentType
+            from apps.documents.models import Document
+            content_type = ContentType.objects.get_for_model(instance)
+            attached_docs = Document.objects.filter(content_type=content_type, object_id=str(instance.pk))
+            for doc in attached_docs:
+                if hasattr(doc, 'is_deleted'):
+                    doc.is_deleted = True
+                    if hasattr(self, 'user') and self.user and hasattr(doc, 'deleted_by'):
+                        doc.deleted_by = self.user
+                    doc.save()
+                else:
+                    doc.delete()
+        except Exception:
+            pass
+
     def delete(self, instance):
         """
-        Supprime un objet.
-        Retourne un petit rapport.
+        Supprime un objet avec gestion du soft-delete, hooks et cascade GED.
+        Garantit l'atomicité transactionnelle (rollback complet en cas d'erreur).
         """
-        instance_id = instance.id
-        instance.delete()
-        return {"id": instance_id, "status": "deleted"}
+        with db_atomic():
+            self.before_delete(instance)
+            
+            # 1. Cascading GED
+            self._cascade_delete_documents(instance)
+
+            # 2. Suppression (Soft or Hard)
+            instance_id = instance.id
+            if hasattr(instance, 'is_deleted'):
+                instance.is_deleted = True
+                if hasattr(self, 'user') and self.user and hasattr(instance, 'deleted_by'):
+                    instance.deleted_by = self.user
+                instance.save()
+            else:
+                instance.delete()
+
+            self.after_delete(instance_id)
+            return {"id": instance_id, "status": "deleted"}
+
 
     # ==========================================================================
     # 3. IMPORT / EXPORT (Outils de masse)

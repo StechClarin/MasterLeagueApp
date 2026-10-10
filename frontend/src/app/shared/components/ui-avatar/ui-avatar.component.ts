@@ -1,19 +1,23 @@
 import { Component, Input, OnChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { environment } from '../../../../environments/environment';
 
 @Component({
     selector: 'app-ui-avatar',
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     template: `
     <div [class]="containerClasses">
-      <img *ngIf="fullPhotoUrl && !hasError" [src]="fullPhotoUrl" alt="Avatar" [class]="avatarClasses + ' object-cover'" (error)="hasError = true">
-      <div *ngIf="!fullPhotoUrl || hasError" [class]="avatarClasses">
-        {{ initials }}
-      </div>
+      @if (fullPhotoUrl && !hasError) {
+        <img [src]="fullPhotoUrl" alt="Avatar" [class]="avatarClasses + ' object-cover'" (error)="hasError = true">
+      }
+      @if (!fullPhotoUrl || hasError) {
+        <div [class]="avatarClasses">
+          {{ initials }}
+        </div>
+      }
     </div>
-  `
+    `
 })
 export class UiAvatarComponent implements OnChanges {
     @Input() name: string = '';

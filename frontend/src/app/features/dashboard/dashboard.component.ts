@@ -4,6 +4,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { GetDashboardDataGQL } from './graphql/dashboard.generated';
 import { StructureStateService } from '@core/services/structure-state.service';
 import { RouterLink } from '@angular/router';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -41,7 +42,7 @@ export type ChartOptions = {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule, RouterLink],
+  imports: [CommonModule, NgApexchartsModule, RouterLink, UiButtonComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

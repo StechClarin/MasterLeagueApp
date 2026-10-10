@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { User } from '../../models/user.model';
 import { UiAvatarComponent } from '@shared/components/ui-avatar/ui-avatar.component';
 import { UiStatusBadgeComponent } from '@shared/components/ui-status-badge/ui-status-badge.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [CommonModule, UiAvatarComponent, UiStatusBadgeComponent],
+  imports: [CommonModule, UiAvatarComponent, UiStatusBadgeComponent, UiButtonComponent],
   templateUrl: './user-detail.component.html'
 })
 export class UserDetailComponent {

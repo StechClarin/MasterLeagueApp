@@ -1,17 +1,19 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+
+import { FormBuilder, FormGroup, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { RoleService } from '../../services/role.service';
 import { ToastService } from '@core/services/toast.service';
 import { UiFormComponent } from '@shared/components/ui-form/ui-form.component';
+import { UiInputComponent } from '@shared/components/ui-input/ui-input.component';
+import { UiButtonComponent } from '@shared/components/ui-button/ui-button.component';
 
 import { BaseFormComponent } from '@core/abstracts/base-form.component';
 
 @Component({
     selector: 'app-role-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, UiFormComponent],
+    imports: [ReactiveFormsModule, FormsModule, UiFormComponent, UiInputComponent, UiButtonComponent],
     templateUrl: './role-form.component.html'
 })
 export class RoleFormComponent extends BaseFormComponent implements OnInit, OnChanges {
@@ -38,6 +40,10 @@ export class RoleFormComponent extends BaseFormComponent implements OnInit, OnCh
         this.form = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(3)]],
         });
+    }
+
+    getControl(name: string): FormControl {
+        return this.form.get(name) as FormControl;
     }
 
     override ngOnInit(): void {

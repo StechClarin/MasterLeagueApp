@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { UiButtonComponent } from '../ui-button/ui-button.component';
 
 @Component({
     selector: 'app-ui-form-actions',
     standalone: true,
-    imports: [CommonModule, UiButtonComponent],
+    imports: [UiButtonComponent],
     template: `
     <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0 bg-white">
         <!-- Cancel -->

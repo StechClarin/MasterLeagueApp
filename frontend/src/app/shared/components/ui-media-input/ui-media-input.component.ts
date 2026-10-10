@@ -16,73 +16,82 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
     template: `
     <div class="flex flex-col items-center gap-4 w-full">
       <!-- Label -->
-      <label *ngIf="label" class="block text-sm font-medium text-gray-700 w-full text-left">
-        {{ label }} <span *ngIf="required" class="text-red-500">*</span>
+      @if (label) {
+        <label class="block text-sm font-medium text-gray-700 w-full text-left">
+          {{ label }} @if (required) {
+          <span class="text-red-500">*</span>
+        }
       </label>
-
-      <!-- Preview Container -->
-      <div 
-        class="relative group cursor-pointer transition-all duration-300 ease-in-out"
-        [ngClass]="shapeClasses"
-        (click)="fileInput.click()"
+    }
+    
+    <!-- Preview Container -->
+    <div
+      class="relative group cursor-pointer transition-all duration-300 ease-in-out"
+      [ngClass]="shapeClasses"
+      (click)="fileInput.click()"
       >
-        <!-- Image Preview -->
-        <img 
-            *ngIf="previewUrl && isImage" 
-            [src]="previewUrl" 
-            class="w-full h-full object-cover border-4 border-white shadow-xl"
-            [ngClass]="shapeClasses"
-        >
-
-        <!-- Video Preview -->
-        <video 
-            *ngIf="previewUrl && isVideo" 
-            [src]="previewUrl" 
-            class="w-full h-full object-cover border-4 border-white shadow-xl bg-black"
-            [ngClass]="shapeClasses"
-            controls
+      <!-- Image Preview -->
+      @if (previewUrl && isImage) {
+        <img
+          [src]="previewUrl"
+          class="w-full h-full object-cover border-4 border-white shadow-xl"
+          [ngClass]="shapeClasses"
+          >
+      }
+    
+      <!-- Video Preview -->
+      @if (previewUrl && isVideo) {
+        <video
+          [src]="previewUrl"
+          class="w-full h-full object-cover border-4 border-white shadow-xl bg-black"
+          [ngClass]="shapeClasses"
+          controls
         ></video>
-
-        <!-- Placeholder (No File) -->
-        <div 
-            *ngIf="!previewUrl" 
-            class="w-full h-full bg-gray-50 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
-            [ngClass]="shapeClasses"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span class="text-xs font-semibold">Upload</span>
+      }
+    
+      <!-- Placeholder (No File) -->
+      @if (!previewUrl) {
+        <div
+          class="w-full h-full bg-gray-50 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
+          [ngClass]="shapeClasses"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span class="text-xs font-semibold">Upload</span>
         </div>
-
-        <!-- Overlay on Hover (Edit) -->
-        <div 
-            class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300"
-             [ngClass]="shapeClasses"
+      }
+    
+      <!-- Overlay on Hover (Edit) -->
+      <div
+        class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300"
+        [ngClass]="shapeClasses"
         >
-            <div class="bg-white/20 backdrop-blur-sm p-3 rounded-full text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-            </div>
+        <div class="bg-white/20 backdrop-blur-sm p-3 rounded-full text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
         </div>
       </div>
-
-      <!-- Helper Text -->
-      <div *ngIf="helpText" class="text-xs text-gray-500 text-center">
+    </div>
+    
+    <!-- Helper Text -->
+    @if (helpText) {
+      <div class="text-xs text-gray-500 text-center">
         {{ helpText }}
       </div>
-
-      <!-- Hidden Input -->
-      <input 
-        #fileInput
-        type="file" 
-        [accept]="accept"
-        class="hidden"
-        (change)="onFileSelected($event)"
+    }
+    
+    <!-- Hidden Input -->
+    <input
+      #fileInput
+      type="file"
+      [accept]="accept"
+      class="hidden"
+      (change)="onFileSelected($event)"
       >
     </div>
-  `
+    `
 })
 export class UiMediaInputComponent implements ControlValueAccessor {
     @Input() label: string = '';

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { UiFormHeaderComponent } from '../ui-form-header/ui-form-header.component';
@@ -9,7 +9,7 @@ import { UiFormErrorsComponent } from '../ui-form-errors/ui-form-errors.componen
 @Component({
   selector: 'app-ui-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UiFormHeaderComponent, UiFormActionsComponent, UiFormErrorsComponent],
+  imports: [ReactiveFormsModule, UiFormHeaderComponent, UiFormActionsComponent, UiFormErrorsComponent],
   template: `
     <div class="h-full flex flex-col bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
       <!-- Shared Header -->
@@ -18,28 +18,29 @@ import { UiFormErrorsComponent } from '../ui-form-errors/ui-form-errors.componen
         [description]="description"
         (close)="onCancel()">
       </app-ui-form-header>
-
+    
       <!-- Content (Scrollable) -->
       <div class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white relative">
-         <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
-            <ng-content></ng-content>
-
-            <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
-         </form>
+        <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+          <ng-content></ng-content>
+    
+          <app-ui-form-errors [errors]="formErrors"></app-ui-form-errors>
+        </form>
       </div>
-
+    
       <!-- Shared Footer -->
-      <app-ui-form-actions
-        *ngIf="!isReadOnly"
-        [isSubmitting]="isLoading"
-        [disabled]="disableInvalid && formGroup.invalid"
-        [submitLabel]="submitLabel"
-        [cancelLabel]="cancelLabel"
-        (submit)="onSubmit()"
-        (cancel)="onCancel()">
-      </app-ui-form-actions>
+      @if (!isReadOnly) {
+        <app-ui-form-actions
+          [isSubmitting]="isLoading"
+          [disabled]="disableInvalid && formGroup.invalid"
+          [submitLabel]="submitLabel"
+          [cancelLabel]="cancelLabel"
+          (submit)="onSubmit()"
+          (cancel)="onCancel()">
+        </app-ui-form-actions>
+      }
     </div>
-  `
+    `
 })
 export class UiFormComponent {
   @Input() title: string = '';
