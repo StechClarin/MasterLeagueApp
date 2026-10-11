@@ -27,13 +27,13 @@ export type ButtonShape = 'rounded' | 'pill' | 'circle' | 'square';
 
       <!-- Left Icon rendering (if no projected content used and loading is false) -->
       <ng-container *ngIf="!loading && icon && iconPosition === 'left'">
-        <!-- File-based Icon (public/icons/f_*.svg) -->
+        <!-- File-based Icon (public/static/icons/f_*.svg) -->
         <span
           *ngIf="isFileIcon(icon)"
           class="w-5 h-5 inline-block bg-current transition-colors"
           [class.mr-2]="!!label"
-          [style.mask]="'url(/icons/' + icon + '.svg) no-repeat center / contain'"
-          [style.-webkit-mask]="'url(/icons/' + icon + '.svg) no-repeat center / contain'">
+          [style.mask]="'url(/static/icons/' + icon + '.svg) no-repeat center / contain'"
+          [style.-webkit-mask]="'url(/static/icons/' + icon + '.svg) no-repeat center / contain'">
         </span>
 
         <!-- Built-in or Custom Path Vector Icon -->
@@ -60,8 +60,8 @@ export type ButtonShape = 'rounded' | 'pill' | 'circle' | 'square';
         <span
           *ngIf="isFileIcon(icon)"
           class="w-5 h-5 inline-block bg-current transition-colors ml-2"
-          [style.mask]="'url(/icons/' + icon + '.svg) no-repeat center / contain'"
-          [style.-webkit-mask]="'url(/icons/' + icon + '.svg) no-repeat center / contain'">
+          [style.mask]="'url(/static/icons/' + icon + '.svg) no-repeat center / contain'"
+          [style.-webkit-mask]="'url(/static/icons/' + icon + '.svg) no-repeat center / contain'">
         </span>
 
         <svg

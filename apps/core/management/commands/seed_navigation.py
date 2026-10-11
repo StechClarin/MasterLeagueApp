@@ -289,7 +289,8 @@ from typing import Any
 
 def normalize_icon_path(icon_name: Any) -> str:
     """
-    Normalise le nom de l'icône pour former l'URL canonique /icons/<nom>.svg
+    Normalise le nom de l'icône pour former l'URL canonique /static/icons/<nom>.svg
+    Servi nativement par Nginx en production (/static/) et par Angular en dev.
     """
     if not icon_name or not isinstance(icon_name, str):
         return ""
@@ -302,12 +303,14 @@ def normalize_icon_path(icon_name: Any) -> str:
         return icon_str
     
     clean_name = icon_str.lstrip('/')
-    if clean_name.startswith('icons/'):
+    if clean_name.startswith('static/icons/'):
+        clean_name = clean_name[13:]
+    elif clean_name.startswith('icons/'):
         clean_name = clean_name[6:]
     if clean_name.endswith('.svg'):
         clean_name = clean_name[:-4]
         
-    return f"/icons/{clean_name}.svg"
+    return f"/static/icons/{clean_name}.svg"
 
 class Command(BaseCommand):
     help = "Crée les Modules et les Pages pour la navigation."

@@ -58,8 +58,10 @@ import mimetypes
 
 def serve_icon(request, path):
     candidates = [
-        os.path.join(settings.BASE_DIR, 'frontend', 'public', 'icons', path),
+        os.path.join(settings.BASE_DIR, 'frontend', 'public', 'static', 'icons', path),
+        os.path.join(settings.FRONTEND_DIR, 'static', 'icons', path),
         os.path.join(settings.FRONTEND_DIR, 'icons', path),
+        os.path.join(settings.BASE_DIR, 'frontend', 'public', 'icons', path),
         os.path.join(settings.FRONTEND_DIR, 'public', 'icons', path),
         os.path.join(settings.BASE_DIR, 'apps', 'core', 'assets', 'icons', path),
     ]
