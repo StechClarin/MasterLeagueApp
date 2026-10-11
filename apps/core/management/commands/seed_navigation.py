@@ -78,13 +78,13 @@ MODULE_STRUCTURE = [
         ]
     },
     {
-        "name": "Vie Scolaire",
+        "name": "Scolarité",
         "order": 2,
         "display_mod": "card-view",
         "icon": "student-icon",
         "pages": [
             {
-                "title": "Apprenants (Élèves)",
+                "title": "Préinscriptions",
                 "icon": "student-icon",
                 "order": 0,
                 "link": "/students",
@@ -101,7 +101,7 @@ MODULE_STRUCTURE = [
     },
 
     {
-        "name": "Pedagogie",
+        "name": "Pédagogie",
         "order": 3,
         "display_mod": "card-view",
         "icon": "pedagogy-icon",
