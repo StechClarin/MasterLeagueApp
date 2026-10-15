@@ -31,7 +31,7 @@ services:
       - SECRET_KEY=test_secret_key_123
       - ALLOWED_HOSTS=*
       - CORS_ALLOW_ALL_ORIGINS=True
-      - CSRF_TRUSTED_ORIGINS=http://72.60.2.96:8080
+      - CSRF_TRUSTED_ORIGINS=http://72.60.2.96:8080,https://ethernanos.space,https://eteyelo.online,https://www.eteyelo.online
     # On force la connexion au réseau du container de prod pour voir la DB
     networks:
       - schoolmanage_default 
@@ -65,7 +65,7 @@ services:
     image: nginx:alpine
     container_name: schoolmanage-router
     ports:
-      - "9005:80"
+      - "127.0.0.1:9005:80"
     volumes:
       - ./nginx-saas.conf:/etc/nginx/nginx.conf:ro
     depends_on:
